@@ -7,7 +7,7 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.cytoscape.work.AbstractTask;
@@ -20,9 +20,9 @@ import com.google.common.base.Strings;
 
 public class ParseEDBEnrichmentResults extends AbstractTask {
 
-	private final DataSet dataset;
+	private final EMDataSet dataset;
 
-	public ParseEDBEnrichmentResults(DataSet dataset) {
+	public ParseEDBEnrichmentResults(EMDataSet dataset) {
 		this.dataset = dataset;
 	}
 

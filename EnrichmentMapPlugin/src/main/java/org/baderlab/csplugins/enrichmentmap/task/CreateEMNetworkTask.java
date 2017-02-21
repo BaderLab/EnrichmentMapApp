@@ -8,8 +8,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -103,8 +103,8 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		Map<String,Set<Integer>> genesetGenes = new HashMap<>();
 		
 		// Create nodes for all genesets of interest
-		for(DataSet dataset : map.getDatasetList()) {
-			Map<String,GeneSet> genesetsOfInterest = dataset.getGenesetsOfInterest().getGenesets();
+		for(EMDataSet dataset : map.getDatasetList()) {
+			Map<String,GeneSet> genesetsOfInterest = dataset.getGeneSetsOfInterest().getGeneSets();
 			Map<String,EnrichmentResult> enrichmentResults = dataset.getEnrichments().getEnrichments();
 			
 			for(String genesetName : genesetsOfInterest.keySet()) {

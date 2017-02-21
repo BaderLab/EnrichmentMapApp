@@ -10,14 +10,14 @@ import javax.swing.JTable;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.mskcc.colorgradient.ColorGradientRange;
 import org.mskcc.colorgradient.ColorGradientTheme;
 
 public class ColorRenderer implements TableCellRenderer {
 	
-	private Map<DataSet,DataSetColorRange> colorRanges = new HashMap<>();
+	private Map<EMDataSet,DataSetColorRange> colorRanges = new HashMap<>();
 	
 
 	public JLabel getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
@@ -25,7 +25,7 @@ public class ColorRenderer implements TableCellRenderer {
 		label.setOpaque(true); //MUST do this for background to show up.
 		
 		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
-		DataSet dataset = model.getDataSet(col);
+		EMDataSet dataset = model.getDataSet(col);
 		
 		Transform transform = model.getTransform();
 		DataSetColorRange range = getRange(dataset, transform);
@@ -42,7 +42,7 @@ public class ColorRenderer implements TableCellRenderer {
 	}
 	
 	
-	public DataSetColorRange getRange(DataSet dataset, Transform transform) {
+	public DataSetColorRange getRange(EMDataSet dataset, Transform transform) {
 		return colorRanges.computeIfAbsent(dataset, ds -> DataSetColorRange.create(ds, transform));
 	}
 	

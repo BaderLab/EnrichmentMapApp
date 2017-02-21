@@ -24,7 +24,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
@@ -411,7 +411,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 	void initialize(EnrichmentMap currentMap) {
 		this.map = currentMap;
 
-		Map<String, DataSet> datasetMap = map.getDatasets();
+		Map<String, EMDataSet> datasetMap = map.getDatasets();
 		String[] datasetArray = datasetMap.keySet().toArray(new String[datasetMap.size()]);
 		Arrays.sort(datasetArray);
 		this.datasetModel.removeAllElements();

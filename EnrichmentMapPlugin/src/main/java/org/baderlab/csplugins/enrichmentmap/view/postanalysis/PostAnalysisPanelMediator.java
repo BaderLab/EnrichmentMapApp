@@ -168,6 +168,7 @@ public class PostAnalysisPanelMediator {
 				return;
 
 			// Only update the view once the tasks are complete
+			controlPanelMediatorProvider.get().updateDataSetList(result.getNetworkView());
 			result.getNetworkView().updateView();
 
 			if (result.getPassedCutoffCount() == 0)

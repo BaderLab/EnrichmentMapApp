@@ -54,8 +54,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
@@ -77,7 +77,7 @@ import org.cytoscape.work.TaskMonitor;
 public class RanksFileReaderTask extends AbstractTask {
 
 	private String RankFileName;
-	private DataSet dataset;
+	private EMDataSet dataset;
 	private String ranks_name;
 
 
@@ -91,7 +91,7 @@ public class RanksFileReaderTask extends AbstractTask {
 	 * @param rankFileName - file name of ranks file
 	 * @param dataset - which dataset is this rank file related to (dataset 1 or  dataset 2)
 	 */
-	public RanksFileReaderTask(String rankFileName, DataSet dataset, boolean loadFromHeatmap) {
+	public RanksFileReaderTask(String rankFileName, EMDataSet dataset, boolean loadFromHeatmap) {
 		this.RankFileName = rankFileName;
 		this.dataset = dataset;
 		this.loadFromHeatmap = loadFromHeatmap;
@@ -103,7 +103,7 @@ public class RanksFileReaderTask extends AbstractTask {
 	 * @param rankFileName - file name of ranks file
 	 * @param dataset - which dataset is this rank file related to (dataset 1 or  dataset 2)
 	 */
-	public RanksFileReaderTask(String rankFileName, DataSet dataset, String ranks_name, boolean loadFromHeatmap) {
+	public RanksFileReaderTask(String rankFileName, EMDataSet dataset, String ranks_name, boolean loadFromHeatmap) {
 		RankFileName = rankFileName;
 		this.ranks_name = ranks_name;
 		this.dataset = dataset;
@@ -287,7 +287,7 @@ public class RanksFileReaderTask extends AbstractTask {
 			}
 		}
 		//check to see if some of the dataset genes are not in this rank file
-		Set<Integer> current_genes = dataset.getDatasetGenes();
+		Set<Integer> current_genes = dataset.getDataSetGenes();
 
 		Set<Integer> current_ranks = ranks.keySet();
 

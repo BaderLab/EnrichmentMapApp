@@ -59,7 +59,7 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 
 /**
  * Flips column headers to vertical position
@@ -70,7 +70,7 @@ public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
-		DataSet dataset = model.getDataSet(col);
+		EMDataSet dataset = model.getDataSet(col);
 		
 		JLabel label = new JLabel();
 

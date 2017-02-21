@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -66,10 +66,10 @@ public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 			Method method = dataSetParameters.getMethod();
 			DataSetFiles files = dataSetParameters.getFiles();
 			
-			DataSet dataset = map.createDataSet(datasetName, method, files);
+			EMDataSet dataset = map.createDataSet(datasetName, method, files);
 			
 			// Load GMT File
-			if(!Strings.isNullOrEmpty(dataset.getSetofgenesets().getFilename())) {
+			if(!Strings.isNullOrEmpty(dataset.getSetOfGeneSets().getFilename())) {
 				tasks.append(new GMTFileReaderTask(dataset));
 			}
 			
@@ -78,7 +78,7 @@ public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 
 			// Load expression file if specified in the dataset.
 			// If there is no expression file then create a dummy file to associate with this dataset so we can still use the expression viewer (heat map)
-			if(Strings.isNullOrEmpty(dataset.getDatasetFiles().getExpressionFileName())) {
+			if(Strings.isNullOrEmpty(dataset.getDataSetFiles().getExpressionFileName())) {
 				tasks.append(new CreateDummyExpressionTask(dataset));
 			} else {
 				tasks.append(new ExpressionFileReaderTask(dataset));

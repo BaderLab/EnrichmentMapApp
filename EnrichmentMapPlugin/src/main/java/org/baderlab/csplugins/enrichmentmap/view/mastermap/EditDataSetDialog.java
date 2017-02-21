@@ -35,7 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.parsers.DatasetLineParser;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.cytoscape.model.CyNetwork;
@@ -36,9 +36,9 @@ public class EnrichmentMapTest {
 		EMCreationParameters params = new EMCreationParameters("EM1_", 1.0, 0.24, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.25, 0.5);
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		
-		DataSet ds1 = em.createDataSet("DS1", Method.Generic, dummyDataSetFiles());
-		DataSet ds2 = em.createDataSet("DS2", Method.Generic, dummyDataSetFiles());
-		DataSet ds3 = em.createDataSet("DS3", Method.Generic, dummyDataSetFiles());
+		EMDataSet ds1 = em.createDataSet("DS1", Method.Generic, dummyDataSetFiles());
+		EMDataSet ds2 = em.createDataSet("DS2", Method.Generic, dummyDataSetFiles());
+		EMDataSet ds3 = em.createDataSet("DS3", Method.Generic, dummyDataSetFiles());
 		
 		CyNetwork network = networkTestSupport.getNetwork();
 		em.setNetworkID(network.getSUID());

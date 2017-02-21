@@ -16,7 +16,7 @@ import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;

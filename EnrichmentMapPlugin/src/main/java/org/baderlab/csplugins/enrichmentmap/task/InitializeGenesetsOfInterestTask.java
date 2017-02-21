@@ -49,8 +49,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
@@ -97,7 +97,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 
 		//create subset of genesets that contains only the genesets of interest with pvalue and qbalue less than values specified by the user.
 		//Go through each Dataset populating the Gene set of interest in each dataset object
-		Map<String, DataSet> datasets = map.getDatasets();
+		Map<String, EMDataSet> datasets = map.getDatasets();
 		
 		// count how many experiments (DataSets) contain the geneset
 		Optional<Integer> minExperiments = map.getParams().getMinExperiments();
@@ -106,16 +106,16 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 		for(String datasetName : datasets.keySet()) {
 			taskMonitor.inc();
 			
-			DataSet dataset = datasets.get(datasetName);
+			EMDataSet dataset = datasets.get(datasetName);
 
 			// all these maps use the geneset name as key
 			Map<String,EnrichmentResult> enrichmentResults = dataset.getEnrichments().getEnrichments();
-			Map<String,GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
-			Map<String,GeneSet> genesetsOfInterest = dataset.getGenesetsOfInterest().getGenesets();
+			Map<String,GeneSet> genesets = dataset.getSetOfGeneSets().getGeneSets();
+			Map<String,GeneSet> genesetsOfInterest = dataset.getGeneSetsOfInterest().getGeneSets();
 
 			// If there are no genesets associated with this dataset then get the complete set assumption being that the gmt file applies to all datasets.
 			if(genesets == null || genesets.isEmpty()) {
-				genesets = map.getAllGenesets();
+				genesets = map.getAllGeneSets();
 			}
 
 			//if there are no enrichment Results then do nothing
@@ -153,8 +153,8 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 		
 		// Remove gene-sets that don't pass the minimum occurrence cutoff
 		if(occurrences != null) {
-			for(DataSet dataset : datasets.values()) {
-				Map<String,GeneSet> genesetsOfInterest = dataset.getGenesetsOfInterest().getGenesets();
+			for(EMDataSet dataset : datasets.values()) {
+				Map<String,GeneSet> genesetsOfInterest = dataset.getGeneSetsOfInterest().getGeneSets();
 				
 				genesetsOfInterest.keySet().removeIf(geneset -> 
 					occurrences.getOrDefault(geneset, 0) < minExperiments.get()

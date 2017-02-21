@@ -34,7 +34,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Sort;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
@@ -195,7 +195,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		Object value = tableModel.getValueAt(row, col);
 		
 		if(value instanceof Double) {
-			DataSet dataset = tableModel.getDataSet(col);
+			EMDataSet dataset = tableModel.getDataSet(col);
 			ColorRenderer renderer = (ColorRenderer) table.getCellRenderer(row, col);
 			DataSetColorRange colorRange = renderer.getRange(dataset, tableModel.getTransform());
 			

@@ -39,8 +39,8 @@ import javax.swing.Timer;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
@@ -189,6 +189,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 
 			setCurrentNetworkView(applicationManager.getCurrentNetworkView());
 		});
+	}
+	
+	public void updateDataSetList(CyNetworkView netView) {
+		getControlPanel().getViewControlPanel(netView).updateDataSetList();
 	}
 	
 	public EMStyleOptions createStyleOptions(CyNetworkView netView) {
@@ -436,9 +440,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	private EMStyleOptions createStyleOptions(EnrichmentMap map, EMViewControlPanel viewPanel) {
-		Set<DataSet> dataSets = ImmutableSet.copyOf(viewPanel.getCheckboxListPanel().getSelectedDataItems());
+		Set<EMDataSet> dataSets = ImmutableSet.copyOf(viewPanel.getCheckboxListPanel().getSelectedDataItems());
 		boolean publicationReady = viewPanel.getPublicationReadyCheck().isSelected();
-		boolean postAnalysis = !map.getSignatureGenesets().isEmpty();
+		boolean postAnalysis = !map.getSignatureDataSets().isEmpty();
 		EMStyleOptions options =
 				new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, postAnalysis, publicationReady);
 
@@ -447,7 +451,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	private CyCustomGraphics2<?> createChart(EMViewControlPanel viewPanel, EMStyleOptions options) {
 		CyCustomGraphics2<?> chart = null;
-		List<CheckboxData<DataSet>> selectedData = viewPanel.getCheckboxListPanel().getSelectedData();
+		List<CheckboxData<EMDataSet>> selectedData = viewPanel.getCheckboxListPanel().getSelectedData();
 		
 		if (selectedData != null && selectedData.size() > 1) {
 			ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
@@ -661,7 +665,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			Set<CyEdge> filteredInEdges = Collections.emptySet();
 			
 			EMCreationParameters params = map.getParams();
-			List<DataSet> selectedDataSets = viewPanel.getSelectedDataSets();
+			List<EMDataSet> selectedDataSets = viewPanel.getSelectedDataSets();
 			Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(selectedDataSets);
 			
 			// Only p or q value, but not both!
@@ -767,11 +771,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				timer.stop();
 		}
 
-		private Set<String> getFilteredColumnNames(Set<String> columnNames, List<DataSet> dataSets) {
+		private Set<String> getFilteredColumnNames(Set<String> columnNames, List<EMDataSet> dataSets) {
 			Set<String> filteredNames = new HashSet<>();
 			
 			for (String name : columnNames) {
-				for (DataSet ds : dataSets) {
+				for (EMDataSet ds : dataSets) {
 					// TODO What about 2.x columns?
 					if (name.endsWith(" (" + ds.getName() + ")")) {
 						filteredNames.add(name);

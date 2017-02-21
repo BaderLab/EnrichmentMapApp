@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
@@ -25,7 +25,7 @@ public class SetOfGenesetsTest {
 	private CyServiceRegistrar serviceRegistrar = TestUtils.mockServiceRegistrar();
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	EnrichmentMap map;
-	DataSet dataset;
+	EMDataSet dataset;
 
 	@Before
 	public void before(Provider<EnrichmentMapParameters> empFactory) throws Exception {
@@ -52,17 +52,17 @@ public class SetOfGenesetsTest {
 	@Test
 	public void testGSSetVar(){
 		
-		SetOfGeneSets gs_set = map.getDataset(LegacySupport.DATASET1).getSetofgenesets();
+		SetOfGeneSets gs_set = map.getDataset(LegacySupport.DATASET1).getSetOfGeneSets();
 		
 		assertEquals("src/test/resources/org/baderlab/csplugins/enrichmentmap/model/Genesetstestfile.gmt", gs_set.getFilename());
 		
 		//make sure there are 5 genesets
-		assertEquals(6, gs_set.getGenesets().size());
+		assertEquals(6, gs_set.getGeneSets().size());
 		
 		//check that there is 1 source
-		assertEquals(1,gs_set.getGenesetTypes().size());
+		assertEquals(1,gs_set.getGeneSetTypes().size());
 		//check that the source is Reactome
-		assertTrue(gs_set.getGenesetTypes().contains("Reactome".toUpperCase()));			
+		assertTrue(gs_set.getGeneSetTypes().contains("Reactome".toUpperCase()));			
 		
 		
 	}
@@ -70,7 +70,7 @@ public class SetOfGenesetsTest {
 	@Test
 	public void testGSFilter(){
 		
-		SetOfGeneSets gs_set = map.getDataset(LegacySupport.DATASET1).getSetofgenesets();			
+		SetOfGeneSets gs_set = map.getDataset(LegacySupport.DATASET1).getSetOfGeneSets();			
 		
 		//get the genes to hash so we can create our own dataset genes to filter by
 		
@@ -91,7 +91,7 @@ public class SetOfGenesetsTest {
 		assertEquals(5, datasetgenes.size());
 		
 		//filter the gene sets by the newly formed dataset.
-		gs_set.filterGenesets(datasetgenes);
+		gs_set.filterGeneSets(datasetgenes);
 		
 		assertEquals(5,gs_set.getGeneSetByName("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4").getGenes().size());
 		assertEquals(5,gs_set.getGeneSetByName("APOPTOSIS%REACTOME%REACT_578.5").getGenes().size());

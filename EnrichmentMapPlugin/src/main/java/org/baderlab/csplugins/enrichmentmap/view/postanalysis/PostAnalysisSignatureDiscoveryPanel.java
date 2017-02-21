@@ -32,7 +32,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
@@ -462,8 +462,8 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		weightPanel.initialize(currentMap);
 		hypergomUniverseSize = currentMap.getNumberOfGenes();
 
-		Map<String, DataSet> dataSets = currentMap.getDatasets();
-		DataSet ds = dataSets.get(weightPanel.getDataSet());
+		Map<String, EMDataSet> dataSets = currentMap.getDatasets();
+		EMDataSet ds = dataSets.get(weightPanel.getDataSet());
 		mannWhitRanks = new Ranking();
 		
 		if (ds != null)

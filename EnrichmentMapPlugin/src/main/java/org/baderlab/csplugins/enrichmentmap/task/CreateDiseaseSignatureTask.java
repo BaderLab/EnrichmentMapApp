@@ -54,7 +54,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
@@ -101,9 +102,9 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 	private final EnrichmentMap map;
 	private final String interaction;
 
-	private Map<String, GeneSet> enrichmentGenesets;
-	private Map<String, GeneSet> signatureGenesets;
-	private Map<String, GeneSet> selectedSignatureGenesets;
+	private Map<String, GeneSet> enrichmentGeneSets;
+	private Map<String, GeneSet> signatureGeneSets;
+	private Map<String, GeneSet> selectedSignatureGeneSets;
 
 	private double currentNodeYOffset;
 	
@@ -127,34 +128,34 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		this.map = map;
 		this.params = params;
 
-		DataSet dataset = map.getDataset(params.getSignatureDataSet());
+		EMDataSet dataset = map.getDataset(params.getSignatureDataSet());
 		ranks = dataset.getExpressionSets().getRanks().get(params.getSignatureRankFile());
 
 		// we want genesets of interest that are not signature genesets put there by previous runs of post-analysis
-		enrichmentGenesets = new HashMap<>();
+		enrichmentGeneSets = new HashMap<>();
 		
-		for (Map.Entry<String, GeneSet> gs : dataset.getGenesetsOfInterest().getGenesets().entrySet()) {
+		for (Map.Entry<String, GeneSet> gs : dataset.getGeneSetsOfInterest().getGeneSets().entrySet()) {
 			if (map.getEnrichmentGenesets().containsKey(gs.getKey()))
-				enrichmentGenesets.put(gs.getKey(), gs.getValue());
+				enrichmentGeneSets.put(gs.getKey(), gs.getValue());
 		}
 		
-		signatureGenesets = this.params.getSignatureGenesets().getGenesets();
+		signatureGeneSets = this.params.getSignatureGenesets().getGeneSets();
 		genesetSimilarities = new HashMap<>();
-		selectedSignatureGenesets = new HashMap<>();
+		selectedSignatureGeneSets = new HashMap<>();
 		
 		for (String geneset : params.getSelectedSignatureSetNames()) {
-			selectedSignatureGenesets.put(geneset, signatureGenesets.get(geneset));
+			selectedSignatureGeneSets.put(geneset, signatureGeneSets.get(geneset));
 		}
 
 		// EnrichmentGenes: pool of all genes in Enrichment Gene Sets
 		// TODO: get enrichment map genes from enrichment map parameters now that they are computed there.
 		EnrichmentGenes = new HashSet<>();
-		for (GeneSet geneSet : enrichmentGenesets.values()) {
+		for (GeneSet geneSet : enrichmentGeneSets.values()) {
 			EnrichmentGenes.addAll(geneSet.getGenes());
 		}
 		// SignatureGenes: pool of all genes in Signature Gene Sets
 		SignatureGenes = new HashSet<>();
-		for (GeneSet geneSet : signatureGenesets.values()) {
+		for (GeneSet geneSet : signatureGeneSets.values()) {
 			SignatureGenes.addAll(geneSet.getGenes());
 		}
 
@@ -167,7 +168,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 
 	public void buildDiseaseSignature(TaskMonitor taskMonitor) {
 		// Calculate Similarity between Signature Gene Sets * and Enrichment Genesets.
-		int maxValue = selectedSignatureGenesets.size() * enrichmentGenesets.size();
+		int maxValue = selectedSignatureGeneSets.size() * enrichmentGeneSets.size();
 		
 		if (taskMonitor != null)
 			taskMonitor.setStatusMessage("Computing Geneset similarity - " + maxValue + " rows");
@@ -201,13 +202,13 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 			Map<String, String> duplicateGenesets = new HashMap<>();
 
 			//iterate over selected Signature genesets
-			for (String hubName : selectedSignatureGenesets.keySet()) {
+			for (String hubName : selectedSignatureGeneSets.keySet()) {
 				// get the Signature Genes, restrict them to the Gene-Universe and add them to the Parameters
-				GeneSet sigGeneSet = selectedSignatureGenesets.get(hubName);
+				GeneSet sigGeneSet = selectedSignatureGeneSets.get(hubName);
 
 				// Check to see if the signature geneset shares the same name with an 
 				// enrichment geneset. If it does, give the signature geneset a unique name
-				if (enrichmentGenesets.containsKey(hubName)) {
+				if (enrichmentGeneSets.containsKey(hubName)) {
 					duplicateGenesets.put(hubName, "PA_" + hubName);
 					hubName = "PA_" + hubName;
 				}
@@ -218,10 +219,11 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 				// the genes that are in this signature gene set as well as in the Universe of Enrichment-GMT Genes.    
 				Set<Integer> sigGenesInUniverse = Sets.intersection(sigGenes, geneUniverse);
 
-				emManager.getEnrichmentMap(currentNetwork.getSUID()).getSignatureGenesets().put(hubName, sigGeneSet);
+				EMSignatureDataSet sigDataSet = new EMSignatureDataSet(hubName, sigGeneSet);
+				emManager.getEnrichmentMap(currentNetwork.getSUID()).addSignatureDataSet(sigDataSet);
 
 				// iterate over Enrichment Genesets
-				for (String genesetName : enrichmentGenesets.keySet()) {
+				for (String genesetName : enrichmentGeneSets.keySet()) {
 					// Calculate Percentage.  This must be a value between 0..100.
 					int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
 					
@@ -260,7 +262,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 					 */
 					} else {
 						//get the Enrichment geneset
-						GeneSet enrGeneset = enrichmentGenesets.get(genesetName);
+						GeneSet enrGeneset = enrichmentGeneSets.get(genesetName);
 						
 						// restrict to a common gene universe
 						Set<Integer> enrGenes = Sets.intersection(enrGeneset.getGenes(), geneUniverse);
@@ -305,9 +307,9 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 			}
 
 			// Update signature geneset map with new names of all signature genesets that have duplicates
-			for (String original_hub_name : duplicateGenesets.keySet()) {
-				GeneSet geneset = selectedSignatureGenesets.remove(original_hub_name);
-				selectedSignatureGenesets.put(duplicateGenesets.get(original_hub_name), geneset);
+			for (String originalHubName : duplicateGenesets.keySet()) {
+				GeneSet geneset = selectedSignatureGeneSets.remove(originalHubName);
+				selectedSignatureGeneSets.put(duplicateGenesets.get(originalHubName), geneset);
 			}
 			
 			duplicateGenesets.clear();
@@ -320,8 +322,8 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 				if (!genesetSimilarities.get(edgeName).getInteractionType().equals(interaction))
 					// skip if it's not a signature edge from the same dataset
 					continue;
-				if (!(this.selectedSignatureGenesets.containsKey(genesetSimilarities.get(edgeName).getGeneset1Name())
-						|| this.selectedSignatureGenesets.containsKey(genesetSimilarities.get(edgeName).getGeneset2Name())))
+				if (!(this.selectedSignatureGeneSets.containsKey(genesetSimilarities.get(edgeName).getGeneset1Name())
+						|| this.selectedSignatureGeneSets.containsKey(genesetSimilarities.get(edgeName).getGeneset2Name())))
 					// skip if not either of the adjacent nodes is a SelectedSignatureGenesets of the current analysis (fixes Bug #44)
 					continue;
 
@@ -352,13 +354,13 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 				return similarity.getSizeOfOverlap() >= filterParams.getValue();
 			case PERCENT:
 				String genesetName = similarity.getGeneset2Name();
-				GeneSet enrGeneset = enrichmentGenesets.get(genesetName);
+				GeneSet enrGeneset = enrichmentGeneSets.get(genesetName);
 				int enrGenesetSize = enrGeneset.getGenes().size();
 				double relative_per = (double) similarity.getSizeOfOverlap() / (double) enrGenesetSize;
 				return relative_per >= filterParams.getValue() / 100.0;
 			case SPECIFIC:
 				String hubName = similarity.getGeneset1Name();
-				GeneSet sigGeneSet = selectedSignatureGenesets.get(hubName);
+				GeneSet sigGeneSet = selectedSignatureGeneSets.get(hubName);
 				int sigGeneSetSize = sigGeneSet.getGenes().size();
 				double relativePer2 = (double) similarity.getSizeOfOverlap() / (double) sigGeneSetSize;
 				return relativePer2 >= filterParams.getValue() / 100.0;
@@ -432,10 +434,10 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 
 		// add the geneset of the signature node to the GenesetsOfInterest,
 		// as the Heatmap will grep it's data from there.
-		DataSet dataset = map.getDataset(params.getSignatureDataSet());
-		Set<Integer> signatureGenesInDataSet = ImmutableSet.copyOf(Sets.intersection(sigGeneSet.getGenes(), dataset.getDatasetGenes()));
+		EMDataSet dataset = map.getDataset(params.getSignatureDataSet());
+		Set<Integer> signatureGenesInDataSet = ImmutableSet.copyOf(Sets.intersection(sigGeneSet.getGenes(), dataset.getDataSetGenes()));
 		GeneSet geneSetInDataSet = new GeneSet(sigGeneSet.getName(), sigGeneSet.getDescription(), signatureGenesInDataSet);
-		dataset.getGenesetsOfInterest().getGenesets().put(hubName, geneSetInDataSet);
+		dataset.getGeneSetsOfInterest().getGeneSets().put(hubName, geneSetInDataSet);
 
 		return created;
 	}

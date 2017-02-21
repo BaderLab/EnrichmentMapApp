@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.mskcc.colorgradient.ColorGradientRange;
@@ -19,7 +19,7 @@ public class DataSetColorRange {
 	/**
 	 * Reset color gradients based on a change in the data transformation.
 	 */
-	public static DataSetColorRange create(DataSet ds, Transform transform) {
+	public static DataSetColorRange create(EMDataSet ds, Transform transform) {
 		GeneExpressionMatrix expression = ds.getExpressionSets();
 		double minExpression = expression.getMinExpression();
 		double maxExpression = expression.getMaxExpression();

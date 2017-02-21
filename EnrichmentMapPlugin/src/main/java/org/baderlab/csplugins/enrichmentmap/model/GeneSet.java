@@ -68,7 +68,6 @@ public class GeneSet {
 			this.source = Optional.empty();
 	}
 	
-
 	public String getName() {
 		return name;
 	}
@@ -97,7 +96,6 @@ public class GeneSet {
 		}
 		return new GeneSet(name, description, builder.build());
 	}
-
 
 	@Override
 	public int hashCode() {
@@ -141,8 +139,4 @@ public class GeneSet {
 			return false;
 		return true;
 	}
-	
-	
-
-
 }

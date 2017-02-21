@@ -12,8 +12,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.io.ModelSerializer;
 import org.baderlab.csplugins.enrichmentmap.task.BaseNetworkTest;
@@ -57,8 +57,12 @@ public class ModelSerializerTest extends BaseNetworkTest {
 	    maps = emManager.getAllEnrichmentMaps();
 	    assertEquals(1, maps.size());
 	    EnrichmentMap expectedEM = emManager.getAllEnrichmentMaps().values().iterator().next();
-	    expectedEM.getSignatureGenesets().put("Sig1", new GeneSet("SG1", "desc1", ImmutableSet.of(1,2,3,4)));
-	    expectedEM.getSignatureGenesets().put("Sig2", new GeneSet("SG2", "desc2", ImmutableSet.of(1,2,3,4,5,6)));
+	    expectedEM.addSignatureDataSet(
+	    		new EMSignatureDataSet("Sig1", new GeneSet("SG1", "desc1", ImmutableSet.of(1,2,3,4)))
+	    );
+	    expectedEM.addSignatureDataSet(
+	    		new EMSignatureDataSet("Sig2", new GeneSet("SG2", "desc2", ImmutableSet.of(1,2,3,4,5,6)))
+	    );
 	}
 	
 
@@ -80,7 +84,7 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertEquals(expected.getNumberOfGenes(), actual.getNumberOfGenes());
 		assertEMCreationParametersEquals(expected.getParams(), actual.getParams());
 		assertSetOfGeneSetsEquals(expected.getGlobalGenesets(), actual.getGlobalGenesets());
-		assertMapsEqual(ModelSerializerTest::assertGeneSetEquals, expected.getSignatureGenesets(), actual.getSignatureGenesets());
+		assertMapsEqual(ModelSerializerTest::assertSignatureDataSetsEquals, expected.getSignatureDataSets(), actual.getSignatureDataSets());
 //		assertMapsEqual(ModelSerializerTest::assertGenesetSimilarityEquals, expected.getGenesetSimilarity(), actual.getGenesetSimilarity());
 		assertMapsEqual(ModelSerializerTest::assertDataSetEquals, expected.getDatasets(), actual.getDatasets());
 	}
@@ -101,6 +105,11 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertEquals(expected.getPvalueMin(), actual.getPvalueMin(), 0.0);
 		assertEquals(expected.getEnrichmentEdgeType(), actual.getEnrichmentEdgeType()); // MKTODO remove this field
 		assertEquals(expected.getGlobalGmtFile(), actual.getGlobalGmtFile());
+	}
+	
+	private static void assertSignatureDataSetsEquals(EMSignatureDataSet expected, EMSignatureDataSet actual) {
+		assertEquals(expected.getName(), actual.getName());
+		assertGeneSetEquals(expected.getGeneSet(), actual.getGeneSet());
 	}
 	
 	private static void assertGeneSetEquals(GeneSet expected, GeneSet actual) {
@@ -131,20 +140,20 @@ public class ModelSerializerTest extends BaseNetworkTest {
 	private static void assertSetOfGeneSetsEquals(SetOfGeneSets expected, SetOfGeneSets actual) {
 		assertEquals(expected.getName(), actual.getName());
 		assertEquals(expected.getFilename(), actual.getFilename());
-		assertEquals(expected.getGenesetTypes(), actual.getGenesetTypes());
-		assertMapsEqual(ModelSerializerTest::assertGeneSetEquals, expected.getGenesets(), actual.getGenesets());
+		assertEquals(expected.getGeneSetTypes(), actual.getGeneSetTypes());
+		assertMapsEqual(ModelSerializerTest::assertGeneSetEquals, expected.getGeneSets(), actual.getGeneSets());
 	}
 	
-	private static void assertDataSetEquals(DataSet expected, DataSet actual) {
+	private static void assertDataSetEquals(EMDataSet expected, EMDataSet actual) {
 //		assertNotNull(actual.getMap()); // MKTODO GSON can't serialize circular references, need to restore parent pointer manually
 		assertEquals(expected.getName(), actual.getName());
 		assertEquals(expected.getMethod(), actual.getMethod());
 		assertEquals(expected.isDummyExpressionData(), actual.isDummyExpressionData());
-		assertDataSetFilesEquals(expected.getDatasetFiles(), actual.getDatasetFiles());
-		assertSetOfGeneSetsEquals(expected.getSetofgenesets(), actual.getSetofgenesets());
-		assertSetOfGeneSetsEquals(expected.getGenesetsOfInterest(), actual.getGenesetsOfInterest());
+		assertDataSetFilesEquals(expected.getDataSetFiles(), actual.getDataSetFiles());
+		assertSetOfGeneSetsEquals(expected.getSetOfGeneSets(), actual.getSetOfGeneSets());
+		assertSetOfGeneSetsEquals(expected.getGeneSetsOfInterest(), actual.getGeneSetsOfInterest());
 		assertMapsEqual(Objects::equals, expected.getNodeSuids(), actual.getNodeSuids());
-		assertEquals(expected.getDatasetGenes(), actual.getDatasetGenes());
+		assertEquals(expected.getDataSetGenes(), actual.getDataSetGenes());
 		assertSetOfEnrichmentResultsEquals(expected.getEnrichments(), actual.getEnrichments());
 		assertGeneExpressionMatrixEquals(expected.getExpressionSets(), actual.getExpressionSets());
 	}

@@ -8,7 +8,7 @@ import java.util.TreeMap;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
@@ -27,7 +27,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	private final List<String> genes;
 	private final int colCount;
 	
-	private final NavigableMap<Integer,DataSet> colToDataSet = new TreeMap<>();
+	private final NavigableMap<Integer,EMDataSet> colToDataSet = new TreeMap<>();
 	
 	public HeatMapTableModel(EnrichmentMap map, List<String> genes, Transform transform) {
 		this.transform = transform;
@@ -36,9 +36,9 @@ public class HeatMapTableModel extends AbstractTableModel {
 		
 		// populate colToDataSet
 		int rangeFloor = 1; // because col 0 is gene name
-		List<DataSet> datasets = map.getDatasetList();
+		List<EMDataSet> datasets = map.getDatasetList();
 		colToDataSet.put(0, null);
-		for(DataSet dataset : datasets) {
+		for(EMDataSet dataset : datasets) {
 			GeneExpressionMatrix matrix = dataset.getExpressionSets();
 			colToDataSet.put(rangeFloor, dataset);
 			rangeFloor += getNumCols(matrix);
@@ -75,7 +75,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	public String getColumnName(int col) {
 		if(col == 0)
 			return "Gene";
-		DataSet dataset = getDataSet(col);
+		EMDataSet dataset = getDataSet(col);
 		int index = getIndex(col) + 2;
 		String[] columns = dataset.getExpressionSets().getColumnNames();
 		return columns[index];
@@ -88,7 +88,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 			return gene;
 		
 		int geneID = map.getHashFromGene(gene);
-		DataSet dataset = getDataSet(col);
+		EMDataSet dataset = getDataSet(col);
 		int index = getIndex(col);
 		Double[] vals = getExpression(dataset, geneID);
 		return vals[index];
@@ -107,7 +107,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		return col - start;
 	}
 	
-	public DataSet getDataSet(int col) {
+	public EMDataSet getDataSet(int col) {
 		return colToDataSet.floorEntry(col).getValue();
 	}
 	
@@ -117,7 +117,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 
 	
-	private Double[] getExpression(DataSet dataset, int geneID) {
+	private Double[] getExpression(EMDataSet dataset, int geneID) {
 		GeneExpressionMatrix matrix = dataset.getExpressionSets();
 		Map<Integer,GeneExpression> expressions = matrix.getExpressionMatrix();
 		GeneExpression row = expressions.get(geneID);

@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.CyActivator;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
@@ -167,7 +167,7 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 	}
 	
 	private void updateNodeSuids(EnrichmentMap map, CySession session) {
-		for(DataSet dataset : map.getDatasetList()) {
+		for(EMDataSet dataset : map.getDatasetList()) {
 			Map<String,Long> nodes = dataset.getNodeSuids();
 			for(String key : nodes.keySet()) {
 				Long suid = nodes.get(key);

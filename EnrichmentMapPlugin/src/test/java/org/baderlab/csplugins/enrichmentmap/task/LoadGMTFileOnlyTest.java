@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
@@ -46,14 +46,14 @@ public class LoadGMTFileOnlyTest {
 		
 		//Load data set
 		//create a dataset
-		DataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.GSEA, files);
+		EMDataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.GSEA, files);
 				
 		//create a DatasetTask
 				//set up task
 		GMTFileReaderTask task = new GMTFileReaderTask(dataset);
 	    task.run(taskMonitor);
 	    
-	    dataset.setGenesetsOfInterest(dataset.getSetofgenesets());
+	    dataset.setGeneSetsOfInterest(dataset.getSetOfGeneSets());
 	    
 	    //create dummy expression
 	    CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
@@ -70,13 +70,13 @@ public class LoadGMTFileOnlyTest {
 
 				
 		//check to see if the dataset loaded - there should be 36 genesets
-		assertEquals(36, dataset.getSetofgenesets().getGenesets().size());
+		assertEquals(36, dataset.getSetOfGeneSets().getGeneSets().size());
 		//there should be (36 * 35)/2 edges (geneset similarities)
 		assertEquals(18, baton.supplier().get().size());
 		//there should be 523 genes
 		assertEquals(523, em.getNumberOfGenes());
 		assertEquals(523, dataset.getExpressionSets().getNumGenes());
-		assertEquals(523, dataset.getDatasetGenes().size());
+		assertEquals(523, dataset.getDataSetGenes().size());
 		
 		assertEquals(3,dataset.getExpressionSets().getNumConditions());
 	}

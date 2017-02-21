@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.cytoscape.work.AbstractTask;
@@ -31,15 +31,15 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 	 * of genesets make sure to filter by the specific dataset genes.
 	 */
 	public void filterGenesets(TaskMonitor taskMonitor) {
-		Map<String, DataSet> datasets = map.getDatasets();
+		Map<String, EMDataSet> datasets = map.getDatasets();
 		for(String k : datasets.keySet()) {
 			taskMonitor.setStatusMessage("Filtering Data Set: " + k);
-			DataSet current_set = datasets.get(k);
+			EMDataSet current_set = datasets.get(k);
 			
 			//only filter the genesets if dataset genes are not null or empty
-			Set<Integer> datasetGenes = current_set.getDatasetGenes();
+			Set<Integer> datasetGenes = current_set.getDataSetGenes();
 			if(datasetGenes != null && !datasetGenes.isEmpty()) {
-				current_set.getGenesetsOfInterest().filterGenesets(datasetGenes);
+				current_set.getGeneSetsOfInterest().filterGeneSets(datasetGenes);
 			} else {
 				System.out.println("Dataset Genes is empty, because expression and ranks not provided: " + current_set.getName());
 			}
@@ -58,10 +58,10 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 	}
 
 	
-	private static boolean datasetsAreDistinct(Collection<DataSet> datasets) {
+	private static boolean datasetsAreDistinct(Collection<EMDataSet> datasets) {
 		Set<Set<Integer>> uniqueGeneSets = new HashSet<>();
-		for(DataSet dataset : datasets) {
-			Set<Integer> genes = dataset.getDatasetGenes();
+		for(EMDataSet dataset : datasets) {
+			Set<Integer> genes = dataset.getDataSetGenes();
 			uniqueGeneSets.add(genes);
 			if(uniqueGeneSets.size() > 1) {
 				return true;
@@ -77,9 +77,9 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 	 * 
 	 * @return true if Genesets have genes, return false if all the genesets are empty
 	 */
-	private static boolean anyGenesLeftAfterFiltering(Collection<DataSet> datasets) {
-		for(DataSet dataset : datasets) {
-			Map<String, GeneSet> genesets = dataset.getGenesetsOfInterest().getGenesets();
+	private static boolean anyGenesLeftAfterFiltering(Collection<EMDataSet> datasets) {
+		for(EMDataSet dataset : datasets) {
+			Map<String, GeneSet> genesets = dataset.getGeneSetsOfInterest().getGeneSets();
 			for(GeneSet geneset : genesets.values()) {
 				Set<Integer> genesetGenes = geneset.getGenes();
 				//if there is at least one gene in any of the genesets then the ids match.

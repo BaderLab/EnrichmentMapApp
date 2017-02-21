@@ -50,7 +50,7 @@ import java.text.Normalizer;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
@@ -69,10 +69,10 @@ public class GMTFileReaderTask extends AbstractTask {
 	private final SetOfGeneSets setOfgenesets;
 
 
-	public GMTFileReaderTask(DataSet dataset) {
+	public GMTFileReaderTask(EMDataSet dataset) {
 		this.map = dataset.getMap();
-		this.gmtFileName = dataset.getSetofgenesets().getFilename();
-		this.setOfgenesets = dataset.getSetofgenesets();
+		this.gmtFileName = dataset.getSetOfGeneSets().getFilename();
+		this.setOfgenesets = dataset.getSetOfGeneSets();
 	}
 	
 	/**
@@ -100,10 +100,10 @@ public class GMTFileReaderTask extends AbstractTask {
 		    	}
 		    	GeneSet gs = readGeneSet(map, line);
 		    	if(gs != null && setOfgenesets != null) {
-		    		Map<String, GeneSet> genesets = setOfgenesets.getGenesets();
+		    		Map<String, GeneSet> genesets = setOfgenesets.getGeneSets();
 					genesets.put(gs.getName(), gs);
 					//add the geneset type to the list of types
-					gs.getSource().ifPresent(setOfgenesets::addGenesetType);
+					gs.getSource().ifPresent(setOfgenesets::addGeneSetType);
 		    	}
 		    }
 		}

@@ -6,8 +6,8 @@ import static org.mockito.Mockito.mock;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
@@ -48,7 +48,7 @@ public class LoadEdbDatasetTest {
 		
 		//Load data set
 		//create a dataset
-		DataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.GSEA, files);
+		EMDataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.GSEA, files);
 
 		//create a DatasetTask
 		//create a DatasetTask
@@ -71,9 +71,9 @@ public class LoadEdbDatasetTest {
         //check to see if the dataset loaded
         //although the original analysis had 193 genesets because this is loaded from
         //edb version it only stores the genesets that overlapped with the dataset analyzed.
-      	assertEquals(14, dataset.getSetofgenesets().getGenesets().size());
+      	assertEquals(14, dataset.getSetOfGeneSets().getGeneSets().size());
       	assertEquals(14, dataset.getEnrichments().getEnrichments().size());
-      	assertEquals(41, dataset.getDatasetGenes().size());
+      	assertEquals(41, dataset.getDataSetGenes().size());
       	assertEquals(41, dataset.getExpressionSets().getNumGenes());
 	}
 }

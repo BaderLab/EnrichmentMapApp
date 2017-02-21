@@ -1,11 +1,11 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class ExpressionFileReaderTaskFactory implements TaskFactory {
-	private DataSet dataset;
+	private EMDataSet dataset;
 	private TaskIterator expressionFileReaderIterator;
 
 	private void initialize() {
@@ -13,7 +13,7 @@ public class ExpressionFileReaderTaskFactory implements TaskFactory {
 		this.expressionFileReaderIterator.append(task);
 	}
 
-	public ExpressionFileReaderTaskFactory(DataSet dataset) {
+	public ExpressionFileReaderTaskFactory(EMDataSet dataset) {
 		this.dataset = dataset;
 	}
 

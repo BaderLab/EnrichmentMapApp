@@ -25,7 +25,7 @@ import java.awt.Paint;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNode;
@@ -205,7 +205,7 @@ public class EMStyleBuilder {
 		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.EDGE_COLOR_COMPOUND);
 		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, Colors.EDGE_COLOR_SIG);
 		int i = 0;
-		for(DataSet dataSet : options.getDataSets()) {
+		for(EMDataSet dataSet : options.getDataSets()) {
 			Color color = Colors.EDGE_COLORS_DISTINCT[i++ % Colors.EDGE_COLORS_DISTINCT.length];
 			edgePaint.putMapValue(dataSet.getName(), color);
 			dataSet.setColor(color);

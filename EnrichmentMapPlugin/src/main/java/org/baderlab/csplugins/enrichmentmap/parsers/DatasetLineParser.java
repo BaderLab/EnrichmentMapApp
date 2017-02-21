@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -16,9 +16,9 @@ public abstract class DatasetLineParser extends AbstractTask {
 
 	public static final Double DefaultScoreAtMax = -1000000.0;
 
-	private DataSet dataset;
+	private EMDataSet dataset;
 
-	public DatasetLineParser(DataSet dataset) {
+	public DatasetLineParser(EMDataSet dataset) {
 		this.dataset = dataset;
 	}
 		
@@ -68,5 +68,5 @@ public abstract class DatasetLineParser extends AbstractTask {
 	}
 	
 	
-	public abstract void parseLines(List<String> lines, DataSet dataset, TaskMonitor taskMonitor);
+	public abstract void parseLines(List<String> lines, EMDataSet dataset, TaskMonitor taskMonitor);
 }

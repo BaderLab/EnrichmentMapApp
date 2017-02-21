@@ -53,8 +53,8 @@ import javax.swing.UIManager;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
@@ -424,7 +424,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JLabel chartColorsLabel = new JLabel("Chart Colors:");
 		private JLabel dsFilterLabel = new JLabel("Data Sets:");
 		
-		private CheckboxListPanel<DataSet> checkboxListPanel;
+		private CheckboxListPanel<EMDataSet> checkboxListPanel;
 		private JCheckBox publicationReadyCheck;
 		private JButton setEdgeWidthButton;
 		private JButton resetStyleButton;
@@ -475,7 +475,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			update();
 		}
 		
-		List<DataSet> getSelectedDataSets() {
+		List<EMDataSet> getSelectedDataSets() {
 			return getCheckboxListPanel().getSelectedDataItems();
 		}
 		
@@ -486,11 +486,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		void updateDataSetList() {
 			// Save the current datasets selection
-			Map<DataSet, Boolean> dataSetSelection = new HashMap<>();
-			CheckboxListModel<DataSet> model = getCheckboxListPanel().getModel();
+			Map<EMDataSet, Boolean> dataSetSelection = new HashMap<>();
+			CheckboxListModel<EMDataSet> model = getCheckboxListPanel().getModel();
 			
 			for (int i = 0; i < model.getSize(); i++) {
-				CheckboxData<DataSet> cd = model.get(i);
+				CheckboxData<EMDataSet> cd = model.get(i);
 				dataSetSelection.put(cd.getData(), cd.isSelected());
 			}
 			
@@ -499,7 +499,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
 			
 			if (map != null) {
-				for (DataSet dataset : map.getDatasetList()) {
+				for (EMDataSet dataset : map.getDatasetList()) {
 					// Restore the previous selection
 					Boolean selected = dataSetSelection.get(dataset);
 					selected = selected != null ? selected : Boolean.TRUE; // The datasets are selected by default!
@@ -509,7 +509,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			}
 		}
 		
-		void updateChartDataCombo(List<CheckboxData<DataSet>> dataSets) {
+		void updateChartDataCombo(List<CheckboxData<EMDataSet>> dataSets) {
 			boolean b1 = getChartDataCombo().isEnabled();
 			boolean b2 = dataSets != null && dataSets.size() > 1; // Can't have charts with less than 2 columns!
 			
@@ -763,7 +763,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return similaritySliderPanel;
 		}
 		
-		CheckboxListPanel<DataSet> getCheckboxListPanel() {
+		CheckboxListPanel<EMDataSet> getCheckboxListPanel() {
 			if (checkboxListPanel == null) {
 				checkboxListPanel = new CheckboxListPanel<>(true, false);
 				

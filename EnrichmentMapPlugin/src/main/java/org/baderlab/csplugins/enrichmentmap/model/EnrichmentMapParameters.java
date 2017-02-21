@@ -54,8 +54,8 @@ import java.util.Scanner;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
@@ -684,10 +684,10 @@ public class EnrichmentMapParameters {
 	public void copyValuesFrom(EnrichmentMap map) {
 		EMCreationParameters params = map.getParams();
 		
-		for(Map.Entry<String,DataSet> entry : map.getDatasets().entrySet()) {
-			DataSet dataset = entry.getValue();
+		for(Map.Entry<String,EMDataSet> entry : map.getDatasets().entrySet()) {
+			EMDataSet dataset = entry.getValue();
 			DataSetFiles newDsFiles = new DataSetFiles();
-			newDsFiles.copy(dataset.getDatasetFiles());
+			newDsFiles.copy(dataset.getDataSetFiles());
 			this.files.put(entry.getKey(), newDsFiles);
 		}
 
@@ -877,14 +877,14 @@ public class EnrichmentMapParameters {
 	 *            (6)
 	 * @return properly constructed Hashmap repopulated from the specified file.
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public HashMap repopulateHashmap(String fileInput, int type) {
 		//TODO: for Type-safety we should generate and return individual HashMaps specifying the correct Types
 
 		//Create a hashmap to contain all the values in the rpt file.
-		HashMap newMap;
+		final HashMap newMap;
 
 		boolean incrementRank = false;
-
 		String[] lines = fileInput.split("\n");
 
 		//GeneSet

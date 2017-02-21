@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -32,16 +32,17 @@ public class EnrichmentMap {
 	private transient CyServiceRegistrar serviceRegistrar;
 	
 	private long networkID;
-	//reference to the parameters used to create this map
+	
+	/** Parameters used to create this map */
 	private final EMCreationParameters params;
 
-	private Map<String, DataSet> datasets = new HashMap<>();
+	private Map<String, EMDataSet> dataSets = new HashMap<>();
 
-	//The set of genes defined in the Enrichment map
-	private BiMap<Integer,String> genes = HashBiMap.create();
+	/** The set of genes defined in the Enrichment map. */
+	private BiMap<Integer, String> genes = HashBiMap.create();
 
-	//post analysis signature genesets associated with this map.
-	private Map<String, GeneSet> signatureGenesets = new HashMap<>();
+	/** Post analysis signature genesets associated with this map.*/
+	private Map<String, EMSignatureDataSet> signatureDataSets = new HashMap<>();
 	
 	private SetOfGeneSets globalGenesets = new SetOfGeneSets();
 
@@ -49,6 +50,7 @@ public class EnrichmentMap {
 	private boolean isLegacy = false;
 	private boolean isDistinctExpressionSets = false;
 
+	private final Object lock = new Object();
 	
 	/**
 	 * Class Constructor Given - EnrichmentnMapParameters create a new
@@ -59,52 +61,53 @@ public class EnrichmentMap {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public DataSet createDataSet(String name, Method method, DataSetFiles files) {
-		if(datasets.containsKey(name)) {
+	public EMDataSet createDataSet(String name, Method method, DataSetFiles files) {
+		if (dataSets.containsKey(name))
 			throw new IllegalArgumentException("DataSet with name " + name + " already exists in this enrichment map");
-		}
-		if(isNullOrEmpty(files.getEnrichmentFileName1()) && isNullOrEmpty(files.getGMTFileName()) && isNullOrEmpty(files.getExpressionFileName())) {
+
+		if (isNullOrEmpty(files.getEnrichmentFileName1()) && isNullOrEmpty(files.getGMTFileName())
+				&& isNullOrEmpty(files.getExpressionFileName()))
 			throw new IllegalArgumentException("At least one of the required files must be given");
-		}
-			
-		DataSet dataset = new DataSet(this, name, method, files);
-		datasets.put(name, dataset);
-		initializeFiles(dataset);
-		return dataset;
+
+		EMDataSet ds = new EMDataSet(this, name, method, files);
+		dataSets.put(name, ds);
+		initializeFiles(ds);
+		
+		return ds;
 	}
 	
 	/**
 	 * Method to transfer files specified in the parameters to the objects they correspond to.
 	 */
-	private void initializeFiles(DataSet dataset) {
-		DataSetFiles files = dataset.getDatasetFiles();
-		if(!isNullOrEmpty(files.getGMTFileName()))
-			dataset.getSetofgenesets().setFilename(files.getGMTFileName());
+	private void initializeFiles(EMDataSet ds) {
+		DataSetFiles files = ds.getDataSetFiles();
+		if (!isNullOrEmpty(files.getGMTFileName()))
+			ds.getSetOfGeneSets().setFilename(files.getGMTFileName());
 
-		//expression files
-		if(!isNullOrEmpty(files.getExpressionFileName()))
-			dataset.getExpressionSets().setFilename(files.getExpressionFileName());
+		// expression files
+		if (!isNullOrEmpty(files.getExpressionFileName()))
+			ds.getExpressionSets().setFilename(files.getExpressionFileName());
 
-		//enrichment results files
-		if(!isNullOrEmpty(files.getEnrichmentFileName1()))
-			dataset.getEnrichments().setFilename1(files.getEnrichmentFileName1());
-		if(files.getEnrichmentFileName2() != null && !files.getEnrichmentFileName2().isEmpty())
-			dataset.getEnrichments().setFilename2(files.getEnrichmentFileName2());
+		// enrichment results files
+		if (!isNullOrEmpty(files.getEnrichmentFileName1()))
+			ds.getEnrichments().setFilename1(files.getEnrichmentFileName1());
+		if (files.getEnrichmentFileName2() != null && !files.getEnrichmentFileName2().isEmpty())
+			ds.getEnrichments().setFilename2(files.getEnrichmentFileName2());
 
 		//phenotypes
-		if(!isNullOrEmpty(files.getPhenotype1()))
-			dataset.getEnrichments().setPhenotype1(files.getPhenotype1());
-		if(!isNullOrEmpty(files.getPhenotype2()))
-			dataset.getEnrichments().setPhenotype2(files.getPhenotype2());
+		if (!isNullOrEmpty(files.getPhenotype1()))
+			ds.getEnrichments().setPhenotype1(files.getPhenotype1());
+		if (!isNullOrEmpty(files.getPhenotype2()))
+			ds.getEnrichments().setPhenotype2(files.getPhenotype2());
 
 		//rank files - dataset1 
-		if(!isNullOrEmpty(files.getRankedFile())) {
-			if(dataset.getMethod() == Method.GSEA) {
-				dataset.getExpressionSets().createNewRanking(Ranking.GSEARanking);
-				dataset.getExpressionSets().getRanksByName(Ranking.GSEARanking).setFilename(files.getRankedFile());
+		if (!isNullOrEmpty(files.getRankedFile())) {
+			if (ds.getMethod() == Method.GSEA) {
+				ds.getExpressionSets().createNewRanking(Ranking.GSEARanking);
+				ds.getExpressionSets().getRanksByName(Ranking.GSEARanking).setFilename(files.getRankedFile());
 			} else {
-				dataset.getExpressionSets().createNewRanking(dataset.getName());
-				dataset.getExpressionSets().getRanksByName(dataset.getName()).setFilename(files.getRankedFile());
+				ds.getExpressionSets().createNewRanking(ds.getName());
+				ds.getExpressionSets().getRanksByName(ds.getName()).setFilename(files.getRankedFile());
 			}
 		}
 	}
@@ -159,38 +162,39 @@ public class EnrichmentMap {
 		NumberOfGenes = numberOfGenes;
 	}
 
-	/*
+	/**
 	 * Given a set of genesets Go through the genesets and extract all the genes
 	 * Return - hashmap of genes to hash keys (used to create an expression file
 	 * when it is not present so user can use expression viewer to navigate
 	 * genes in a geneset without have to generate their own dummy expression file)
 	 */
-	public Map<String, Integer> getGenesetsGenes(Collection<GeneSet> currentGenesets) {
-		Map<String, Integer> genesetGenes = new HashMap<>();
+	public Map<String, Integer> getGeneSetsGenes(Collection<GeneSet> currentGeneSets) {
+		Map<String, Integer> geneSetsGenes = new HashMap<>();
 
-		for(GeneSet geneset : currentGenesets) {
-			//compare the HashSet of dataset genes to the HashSet of the current Geneset
-			//only keep the genes from the geneset that are in the dataset genes
-			for(Integer genekey : geneset.getGenes()) {
-				//get the current geneName
-				if(genes.containsKey(genekey)) {
-					String name = genes.get(genekey);
-					genesetGenes.put(name, genekey);
+		for (GeneSet geneSet : currentGeneSets) {
+			// Compare the HashSet of dataset genes to the HashSet of the current Geneset
+			// only keep the genes from the geneset that are in the dataset genes
+			for (Integer geneKey : geneSet.getGenes()) {
+				// Get the current geneName
+				if (genes.containsKey(geneKey)) {
+					String name = genes.get(geneKey);
+					geneSetsGenes.put(name, geneKey);
 				}
 			}
 		}
-		return genesetGenes;
+		
+		return geneSetsGenes;
 	}
 
-	/*
+	/**
 	 * Filter all the genesets by the dataset genes If there are multiple sets
 	 * of genesets make sure to filter by the specific dataset genes
 	 */
 	public void filterGenesets() {
-		for(DataSet dataset : datasets.values()) {
-			//only filter the genesets if dataset genes are not null or empty
-			if(dataset.getDatasetGenes() != null && !dataset.getDatasetGenes().isEmpty()) {
-				dataset.getSetofgenesets().filterGenesets(dataset.getDatasetGenes());
+		for (EMDataSet ds : dataSets.values()) {
+			// only filter the genesets if dataset genes are not null or empty
+			if (ds.getDataSetGenes() != null && !ds.getDataSetGenes().isEmpty()) {
+				ds.getSetOfGeneSets().filterGeneSets(ds.getDataSetGenes());
 			}
 		}
 	}
@@ -212,22 +216,26 @@ public class EnrichmentMap {
 	 * Return a hash of all the genesets in the set of genesets regardless of which dataset it comes from.
 	 */
 	@Deprecated
-	public Map<String, GeneSet> getAllGenesets() {
-		//go through each dataset and get the genesets from each
-		Map<String, GeneSet> allGenesets = new HashMap<>();
+	public Map<String, GeneSet> getAllGeneSets() {
+		// Go through each dataset and get the genesets from each
+		Map<String, GeneSet> allGeneSets = new HashMap<>();
 		
-		allGenesets.putAll(globalGenesets.getGenesets());
+		synchronized (lock) {
+			allGeneSets.putAll(globalGenesets.getGeneSets());
 		
-		// If a GeneSet appears in more than one DataSet, then its totally arbitrary which version of it gets picked
-		// If a GeneSet appears in an enrichment file it will override the one with the same name in the global GMT file
-		for(DataSet dataset : datasets.values()) {
-			allGenesets.putAll(dataset.getSetofgenesets().getGenesets());
+			// If a GeneSet appears in more than one DataSet, then its totally arbitrary which version of it gets picked
+			// If a GeneSet appears in an enrichment file it will override the one with the same name in the global GMT file
+			for (EMDataSet ds : dataSets.values()) {
+				allGeneSets.putAll(ds.getSetOfGeneSets().getGeneSets());
+			}
+			
+			if (signatureDataSets != null) {
+				for (EMSignatureDataSet sds : signatureDataSets.values())
+					allGeneSets.put(sds.getName(), sds.getGeneSet());
+			}
 		}
 		
-		if(signatureGenesets != null)
-			allGenesets.putAll(signatureGenesets);
-		
-		return allGenesets;
+		return allGeneSets;
 	}
 
 	/*
@@ -236,91 +244,97 @@ public class EnrichmentMap {
 	@Deprecated
 	public Map<String, GeneSet> getEnrichmentGenesets() {
 		//go through each dataset and get the genesets from each
-		Map<String, GeneSet> allGenesets = new HashMap<>();
-		for(DataSet dataset : datasets.values()) {
-			Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
-			allGenesets.putAll(genesets);
+		Map<String, GeneSet> allGeneSets = new HashMap<>();
+		
+		for (EMDataSet ds : dataSets.values()) {
+			Map<String, GeneSet> geneSets = ds.getSetOfGeneSets().getGeneSets();
+			allGeneSets.putAll(geneSets);
 		}
-		return allGenesets;
+		
+		return allGeneSets;
 	}
 
 	@Deprecated
-	public Map<String, GeneSet> getAllGenesetsOfInterest() {
+	public Map<String, GeneSet> getAllGeneSetsOfInterest() {
 		//go through each dataset and get the genesets from each
-		Map<String, GeneSet> allGenesetsOfInterest = new HashMap<>();
+		Map<String, GeneSet> allGeneSets = new HashMap<>();
 		
-		for(DataSet dataset : datasets.values()) {
-			Map<String, GeneSet> genesets = dataset.getGenesetsOfInterest().getGenesets();
-			allGenesetsOfInterest.putAll(genesets);
+		for (EMDataSet ds : dataSets.values()) {
+			Map<String, GeneSet> genesets = ds.getGeneSetsOfInterest().getGeneSets();
+			allGeneSets.putAll(genesets);
 		}
-		//if there are post analysis genesets, add them to the set of all genesets
-		if(signatureGenesets != null)
-			allGenesetsOfInterest.putAll(signatureGenesets);
 		
-		return allGenesetsOfInterest;
+		// if there are post analysis genesets, add them to the set of all genesets
+		if (signatureDataSets != null) {
+			for (EMSignatureDataSet sds : signatureDataSets.values())
+				allGeneSets.put(sds.getName(), sds.getGeneSet());
+		}
+		
+		return allGeneSets;
 	}
 	
 	// MKTODO write a JUnit
 	public Map<String,Set<Integer>> unionAllGeneSetsOfInterest() {
-		Map<String,Set<Integer>> unionedGenesets = new HashMap<>();
-		for(DataSet dataset : getDatasetList()) {
-			Map<String,GeneSet> genesets = dataset.getGenesetsOfInterest().getGenesets();
-			for(Map.Entry<String, GeneSet> entry : genesets.entrySet()) {
+		Map<String, Set<Integer>> allGeneSets = new HashMap<>();
+		
+		for (EMDataSet ds : getDatasetList()) {
+			Map<String, GeneSet> geneSets = ds.getGeneSetsOfInterest().getGeneSets();
+			for (Map.Entry<String, GeneSet> entry : geneSets.entrySet()) {
 				String name = entry.getKey();
 				GeneSet gs = entry.getValue();
-				unionedGenesets.computeIfAbsent(name, k->new HashSet<>()).addAll(gs.getGenes());
+				allGeneSets.computeIfAbsent(name, k -> new HashSet<>()).addAll(gs.getGenes());
 			}
 		}
-		return unionedGenesets;
+		
+		return allGeneSets;
 	}
 	
 	// MKTODO write a JUnit
-	public Set<String> getAllGenesetNames() {
-		Set<String> genesetNames = new HashSet<>();
-		for(DataSet dataset : getDatasetList()) {
-			Map<String,GeneSet> genesets = dataset.getGenesetsOfInterest().getGenesets();
-			genesetNames.addAll(genesets.keySet());
+	public Set<String> getAllGeneSetNames() {
+		Set<String> names = new HashSet<>();
+		
+		for (EMDataSet ds : getDatasetList()) {
+			Map<String, GeneSet> geneSets = ds.getGeneSetsOfInterest().getGeneSets();
+			names.addAll(geneSets.keySet());
 		}
-		return genesetNames;
+		
+		return names;
 	}
 
-	
-	
 	public SetOfGeneSets getGlobalGenesets() {
 		return globalGenesets;
 	}
 	
-	
-	public Map<String, DataSet> getDatasets() {
-		return datasets;
+	public Map<String, EMDataSet> getDatasets() {
+		return dataSets;
 	}
 	
 	/**
 	 * Returns all the DataSets in a predictable order.
 	 */
-	public List<DataSet> getDatasetList() {
-		List<DataSet> datasetList = new ArrayList<>(datasets.values());
+	public List<EMDataSet> getDatasetList() {
+		List<EMDataSet> datasetList = new ArrayList<>(dataSets.values());
 		datasetList.sort(Comparator.naturalOrder());
 		return datasetList;
 	}
 
-	public void setDatasets(Map<String, DataSet> datasets) {
-		this.datasets = datasets;
+	public void setDatasets(Map<String, EMDataSet> datasets) {
+		this.dataSets = datasets;
 	}
 
 	public int getDataSetCount() {
-		return datasets.size();
+		return dataSets.size();
 	}
 	
-	public DataSet getDataset(String datasetname) {
-		return datasets.get(datasetname);
+	public EMDataSet getDataset(String datasetname) {
+		return dataSets.get(datasetname);
 	}
 	
 	/**
 	 * Returns all the DataSet names in a predictable order.
 	 */
 	public List<String> getDatasetNames() {
-		return getDatasetList().stream().map(DataSet::getName).collect(Collectors.toList());
+		return getDatasetList().stream().map(EMDataSet::getName).collect(Collectors.toList());
 	}
 
 	public EMCreationParameters getParams() {
@@ -339,14 +353,16 @@ public class EnrichmentMap {
 	 * Returns the node SUIDs for all the gene-sets in the given collection of DataSets.
 	 * Each returned gene-set is contained in at least one of the given DataSets.
 	 */
-	public static Set<Long> getNodesUnion(Collection<DataSet> queryDatasets) {
-		if(queryDatasets.isEmpty())
+	public static Set<Long> getNodesUnion(Collection<EMDataSet> queryDatasets) {
+		if (queryDatasets.isEmpty())
 			return Collections.emptySet();
 		
 		Set<Long> suids = new HashSet<>();
-		for(DataSet dataset : queryDatasets) {
+		
+		for (EMDataSet dataset : queryDatasets) {
 			suids.addAll(dataset.getNodeSuids().values());
 		}
+		
 		return suids;
 	}
 	
@@ -354,16 +370,16 @@ public class EnrichmentMap {
 	 * Returns the node SUIDs for all the gene-sets in the given collection of DataSets.
 	 * Each returned gene-set is contained all of the given DataSets.
 	 */
-	public static Set<Long> getNodesIntersection(Collection<DataSet> queryDatasets) {
+	public static Set<Long> getNodesIntersection(Collection<EMDataSet> queryDatasets) {
 		if(queryDatasets.isEmpty())
 			return Collections.emptySet();
 		
-		Iterator<DataSet> iter = queryDatasets.iterator();
-		DataSet first = iter.next();
+		Iterator<EMDataSet> iter = queryDatasets.iterator();
+		EMDataSet first = iter.next();
 		Set<Long> suids = new HashSet<>(first.getNodeSuids().values());
 		
 		while(iter.hasNext()) {
-			DataSet dataset = iter.next();
+			EMDataSet dataset = iter.next();
 			suids.retainAll(dataset.getNodeSuids().values());
 		}
 		return suids;
@@ -374,7 +390,7 @@ public class EnrichmentMap {
 	public Set<String> getAllRankNames() {
 		Set<String> allRankNames = new HashSet<>();
 		//go through each Dataset
-		for(DataSet dataset : datasets.values()) {
+		for(EMDataSet dataset : dataSets.values()) {
 			//there could be duplicate ranking names for two different datasets. Add the dataset to the ranks name
 			Set<String> all_names = dataset.getExpressionSets().getAllRanksNames();
 			for(String name : all_names) {
@@ -387,7 +403,7 @@ public class EnrichmentMap {
 
 	public Map<String, Ranking> getAllRanks() {
 		Map<String, Ranking> allranks = new HashMap<>();
-		for(DataSet dataset : datasets.values()) {
+		for(EMDataSet dataset : dataSets.values()) {
 			allranks.putAll(dataset.getExpressionSets().getRanks());
 		}
 		return allranks;
@@ -405,15 +421,15 @@ public class EnrichmentMap {
 			rank = ranks_name.split("-")[0];
 		}
 
-		for(Iterator<String> k = datasets.keySet().iterator(); k.hasNext();) {
+		for(Iterator<String> k = dataSets.keySet().iterator(); k.hasNext();) {
 			String current_dataset = k.next();
 			if(!ds.equalsIgnoreCase("") && !rank.equalsIgnoreCase("")) {
 				//check that this is the right dataset
-				if(ds.equalsIgnoreCase(current_dataset) && (datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(rank)) {
-					return datasets.get(current_dataset).getExpressionSets().getRanksByName(rank);
+				if(ds.equalsIgnoreCase(current_dataset) && (dataSets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(rank)) {
+					return dataSets.get(current_dataset).getExpressionSets().getRanksByName(rank);
 				}
-			} else if((datasets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(ranks_name)) {
-				return datasets.get(current_dataset).getExpressionSets().getRanksByName(ranks_name);
+			} else if((dataSets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(ranks_name)) {
+				return dataSets.get(current_dataset).getExpressionSets().getRanksByName(ranks_name);
 			}
 		}
 		return null;
@@ -426,33 +442,34 @@ public class EnrichmentMap {
 	public Set<String> getAllGenesetTypes() {
 		//go through each dataset and get the genesets from each
 		Set<String> allGenesetTypes = new HashSet<>();
-		for(DataSet dataset : datasets.values()) {
-			Set<String> genesetsTypes = dataset.getSetofgenesets().getGenesetTypes();
+		for(EMDataSet dataset : dataSets.values()) {
+			Set<String> genesetsTypes = dataset.getSetOfGeneSets().getGeneSetTypes();
 			allGenesetTypes.addAll(genesetsTypes);
 		}
 		return allGenesetTypes;
 	}
 
-	/**
-	 * @param signatureGenesets
-	 *            the signatureGenesets to set
-	 */
-	public void setSignatureGenesets(Map<String, GeneSet> signatureGenesets) {
-		this.signatureGenesets = signatureGenesets;
+	public void setSignatureDataSets(Collection<EMSignatureDataSet> newValue) {
+		synchronized (lock) {
+			signatureDataSets.clear();
+			
+			if (newValue != null && !newValue.isEmpty()) {
+				for (EMSignatureDataSet sigDataSet: newValue)
+					addSignatureDataSet(sigDataSet);
+			}
+		}
 	}
 
-	/**
-	 * @return the signatureGenesets
-	 */
-	public Map<String, GeneSet> getSignatureGenesets() {
-		return signatureGenesets;
-	}
-
-	@Override
-	public String toString() {
-		return getName();
+	public Map<String, EMSignatureDataSet> getSignatureDataSets() {
+		return new HashMap<>(signatureDataSets);
 	}
 	
+	public void addSignatureDataSet(EMSignatureDataSet sigDataSet) {
+		synchronized (lock) {
+			signatureDataSets.put(sigDataSet.getName(), sigDataSet);
+		}
+	}
+
 	public void setDistinctExpressionSets(boolean d) {
 		this.isDistinctExpressionSets = d;
 	}
@@ -470,5 +487,10 @@ public class EnrichmentMap {
 	 */
 	public boolean isLegacy() {
 		return isLegacy;
+	}
+	
+	@Override
+	public String toString() {
+		return getName();
 	}
 }

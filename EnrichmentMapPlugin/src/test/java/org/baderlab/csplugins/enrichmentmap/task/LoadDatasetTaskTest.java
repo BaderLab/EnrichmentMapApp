@@ -6,8 +6,8 @@ import static org.mockito.Mockito.mock;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
@@ -46,7 +46,7 @@ public class LoadDatasetTaskTest {
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		
 		//create a dataset
-		DataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Generic, files);
+		EMDataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Generic, files);
 		
 		//load Data
 		GMTFileReaderTask task = new GMTFileReaderTask(dataset);
@@ -60,9 +60,9 @@ public class LoadDatasetTaskTest {
         exptask.run(taskMonitor);
         		
 		//check to see if the dataset loaded
-		assertEquals(193, dataset.getSetofgenesets().getGenesets().size());
+		assertEquals(193, dataset.getSetOfGeneSets().getGeneSets().size());
 		assertEquals(14, dataset.getEnrichments().getEnrichments().size());
-		assertEquals(41, dataset.getDatasetGenes().size());
+		assertEquals(41, dataset.getDataSetGenes().size());
 		assertEquals(41, dataset.getExpressionSets().getNumGenes());
     }
 }

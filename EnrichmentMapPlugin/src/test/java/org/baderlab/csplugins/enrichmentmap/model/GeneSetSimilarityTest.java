@@ -7,7 +7,7 @@ import static org.mockito.Mockito.mock;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTaskParallel;
 import org.baderlab.csplugins.enrichmentmap.util.Baton;
@@ -24,7 +24,7 @@ import com.google.inject.Provider;
 public class GeneSetSimilarityTest {
 	
 	EnrichmentMap map;
-	DataSet dataset;
+	EMDataSet dataset;
 
 	private TaskMonitor taskMonitor = mock(TaskMonitor.class);
 	private CyServiceRegistrar serviceRegistrar = TestUtils.mockServiceRegistrar();
@@ -49,7 +49,7 @@ public class GeneSetSimilarityTest {
         GMTFileReaderTask task = new GMTFileReaderTask(dataset);
         task.run(taskMonitor);
         
-        this.dataset.setGenesetsOfInterest(this.dataset.getSetofgenesets());
+        this.dataset.setGeneSetsOfInterest(this.dataset.getSetOfGeneSets());
     }
 	
 	@Test
