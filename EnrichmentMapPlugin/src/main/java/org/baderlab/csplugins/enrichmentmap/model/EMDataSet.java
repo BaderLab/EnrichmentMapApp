@@ -1,9 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.awt.Color;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,7 +29,6 @@ public class EMDataSet extends AbstractDataSet {
 	/** Hashmap of all genesets in the geneset file (gmt file). */
 	private SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
 	private SetOfGeneSets geneSetsOfInterest = new SetOfGeneSets();
-	private Map<String, Long> nodeSuids = new HashMap<>();
 
 	/** The set of genes in the analysis (there might be genes in the gmt file that are not in expression set). */
 	private Set<Integer> dataSetGenes = new HashSet<>();
@@ -140,10 +137,6 @@ public class EMDataSet extends AbstractDataSet {
 		this.dummyExpressionData = dummyExpressionData;
 	}
 
-	public Map<String, Long> getNodeSuids() {
-		return nodeSuids;
-	}
-	
 	@Override
 	public int hashCode() {
 		final int prime = 11;

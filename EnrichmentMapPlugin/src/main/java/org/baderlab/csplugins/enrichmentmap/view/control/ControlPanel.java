@@ -21,6 +21,7 @@ import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -53,8 +54,10 @@ import javax.swing.UIManager;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
+import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
@@ -424,7 +427,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JLabel chartColorsLabel = new JLabel("Chart Colors:");
 		private JLabel dsFilterLabel = new JLabel("Data Sets:");
 		
-		private CheckboxListPanel<EMDataSet> checkboxListPanel;
+		private CheckboxListPanel<AbstractDataSet> checkboxListPanel;
 		private JCheckBox publicationReadyCheck;
 		private JButton setEdgeWidthButton;
 		private JButton resetStyleButton;
@@ -475,7 +478,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			update();
 		}
 		
-		List<EMDataSet> getSelectedDataSets() {
+		List<AbstractDataSet> getSelectedDataSets() {
 			return getCheckboxListPanel().getSelectedDataItems();
 		}
 		
@@ -486,11 +489,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		void updateDataSetList() {
 			// Save the current datasets selection
-			Map<EMDataSet, Boolean> dataSetSelection = new HashMap<>();
-			CheckboxListModel<EMDataSet> model = getCheckboxListPanel().getModel();
+			Map<AbstractDataSet, Boolean> dataSetSelection = new HashMap<>();
+			CheckboxListModel<AbstractDataSet> model = getCheckboxListPanel().getModel();
 			
 			for (int i = 0; i < model.getSize(); i++) {
-				CheckboxData<EMDataSet> cd = model.get(i);
+				CheckboxData<AbstractDataSet> cd = model.get(i);
 				dataSetSelection.put(cd.getData(), cd.isSelected());
 			}
 			
@@ -499,17 +502,29 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
 			
 			if (map != null) {
-				for (EMDataSet dataset : map.getDatasetList()) {
-					// Restore the previous selection
-					Boolean selected = dataSetSelection.get(dataset);
+				// Restore the previous selection:
+				// First, the "source" data sets...
+				for (EMDataSet ds : map.getDataSetList()) {
+					Boolean selected = dataSetSelection.get(ds);
 					selected = selected != null ? selected : Boolean.TRUE; // The datasets are selected by default!
 					
-					model.addElement(new CheckboxData<>(dataset.getName(), dataset, selected));
+					model.addElement(new CheckboxData<>(ds.getName(), ds, selected));
+				}
+				
+				// Then, the signature gene sets, if any...
+				List<EMSignatureDataSet> sdsList = new ArrayList<>(map.getSignatureDataSets().values());
+				sdsList.sort(Comparator.naturalOrder());
+				
+				for (EMSignatureDataSet sds : sdsList) {
+					Boolean selected = dataSetSelection.get(sds);
+					selected = selected != null ? selected : Boolean.TRUE; // The datasets are selected by default!
+					
+					model.addElement(new CheckboxData<>(sds.getName(), sds, selected));
 				}
 			}
 		}
 		
-		void updateChartDataCombo(List<CheckboxData<EMDataSet>> dataSets) {
+		void updateChartDataCombo(List<CheckboxData<AbstractDataSet>> dataSets) {
 			boolean b1 = getChartDataCombo().isEnabled();
 			boolean b2 = dataSets != null && dataSets.size() > 1; // Can't have charts with less than 2 columns!
 			
@@ -763,7 +778,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return similaritySliderPanel;
 		}
 		
-		CheckboxListPanel<EMDataSet> getCheckboxListPanel() {
+		CheckboxListPanel<AbstractDataSet> getCheckboxListPanel() {
 			if (checkboxListPanel == null) {
 				checkboxListPanel = new CheckboxListPanel<>(true, false);
 				

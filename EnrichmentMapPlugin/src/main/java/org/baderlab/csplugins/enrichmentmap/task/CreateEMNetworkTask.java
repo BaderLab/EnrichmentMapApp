@@ -96,25 +96,25 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		return network.getSUID();
 	}
 	
-	private Map<String,CyNode> createNodes(CyNetwork network) {
+	private Map<String, CyNode> createNodes(CyNetwork network) {
 		// Keep track of nodes as we create them, key is geneset name
-		Map<String,CyNode> nodes = new HashMap<>();
+		Map<String, CyNode> nodes = new HashMap<>();
 		// Keep a running union of all the genes in each geneset across all datasets
-		Map<String,Set<Integer>> genesetGenes = new HashMap<>();
+		Map<String, Set<Integer>> genesetGenes = new HashMap<>();
 		
 		// Create nodes for all genesets of interest
-		for(EMDataSet dataset : map.getDatasetList()) {
-			Map<String,GeneSet> genesetsOfInterest = dataset.getGeneSetsOfInterest().getGeneSets();
-			Map<String,EnrichmentResult> enrichmentResults = dataset.getEnrichments().getEnrichments();
-			
-			for(String genesetName : genesetsOfInterest.keySet()) {
+		for (EMDataSet ds : map.getDataSetList()) {
+			Map<String, GeneSet> genesetsOfInterest = ds.getGeneSetsOfInterest().getGeneSets();
+			Map<String, EnrichmentResult> enrichmentResults = ds.getEnrichments().getEnrichments();
+
+			for (String genesetName : genesetsOfInterest.keySet()) {
 				GeneSet gs = genesetsOfInterest.get(genesetName);
-				
 				CyNode node = nodes.get(genesetName);
-				if(node == null) {
+				
+				if (node == null) {
 					node = network.addNode();
 					nodes.put(genesetName, node);
-					dataset.getNodeSuids().put(genesetName, node.getSUID());
+					ds.addNodeSuid(genesetName, node.getSUID());
 					genesetGenes.put(genesetName, new HashSet<>(gs.getGenes()));
 					
 					CyRow row = network.getRow(node);

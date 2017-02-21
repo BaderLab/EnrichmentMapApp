@@ -353,14 +353,14 @@ public class EnrichmentMap {
 	 * Returns the node SUIDs for all the gene-sets in the given collection of DataSets.
 	 * Each returned gene-set is contained in at least one of the given DataSets.
 	 */
-	public static Set<Long> getNodesUnion(Collection<EMDataSet> queryDatasets) {
-		if (queryDatasets.isEmpty())
+	public static Set<Long> getNodesUnion(Collection<AbstractDataSet> dataSets) {
+		if (dataSets.isEmpty())
 			return Collections.emptySet();
 		
 		Set<Long> suids = new HashSet<>();
 		
-		for (EMDataSet dataset : queryDatasets) {
-			suids.addAll(dataset.getNodeSuids().values());
+		for (AbstractDataSet ds : dataSets) {
+			suids.addAll(ds.getNodeSuids().values());
 		}
 		
 		return suids;

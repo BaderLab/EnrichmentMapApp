@@ -12,8 +12,8 @@ import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -48,16 +48,16 @@ public class EnrichmentMapTest {
 		CyNode gs3 = network.addNode();
 		CyNode gs4 = network.addNode();
 		
-		ds1.getNodeSuids().put("gs1", gs1.getSUID());
-		ds1.getNodeSuids().put("gs2", gs2.getSUID());
+		ds1.addNodeSuid("gs1", gs1.getSUID());
+		ds1.addNodeSuid("gs2", gs2.getSUID());
 		
-		ds2.getNodeSuids().put("gs1", gs1.getSUID());
-		ds2.getNodeSuids().put("gs2", gs2.getSUID());
-		ds2.getNodeSuids().put("gs3", gs3.getSUID());
+		ds2.addNodeSuid("gs1", gs1.getSUID());
+		ds2.addNodeSuid("gs2", gs2.getSUID());
+		ds2.addNodeSuid("gs3", gs3.getSUID());
 		
-		ds3.getNodeSuids().put("gs2", gs2.getSUID());
-		ds3.getNodeSuids().put("gs3", gs3.getSUID());
-		ds3.getNodeSuids().put("gs4", gs4.getSUID());
+		ds3.addNodeSuid("gs2", gs2.getSUID());
+		ds3.addNodeSuid("gs3", gs3.getSUID());
+		ds3.addNodeSuid("gs4", gs4.getSUID());
 		
 		{	// ds1 vs ds2
 			Set<Long> union = EnrichmentMap.getNodesUnion(Arrays.asList(ds1, ds2));
