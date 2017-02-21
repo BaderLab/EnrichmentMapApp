@@ -5,6 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -17,6 +18,8 @@ import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -31,6 +34,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Sort;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
@@ -40,6 +44,7 @@ import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.mskcc.colorgradient.ColorGradientWidget;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -59,7 +64,9 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 	
 	@Inject private IconManager iconManager;
 	
+	private JPanel legendHolder;
 	private JTable table;
+	private JScrollPane scrollPane;
 	private SettingsPopupPanel settingsPanel;
 	private JComboBox<ComboItem<Transform>> normCombo;
 	private JComboBox<ComboItem<Sort>> sortCombo;
@@ -73,8 +80,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		settingsPanel.setShowValuesListener(this::updateTableCellRenderer);
 		
 		JPanel toolbarPanel = createToolbarPanel();
-		JPanel expressionPanel = createExpressionPanel();
-
+		JPanel expressionPanel = createTablePanel();
+		
 		setLayout(new BorderLayout());
 		add(toolbarPanel, BorderLayout.NORTH);
 		add(expressionPanel, BorderLayout.CENTER);
@@ -83,6 +90,8 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private JPanel createToolbarPanel() {
 		JLabel title = new JLabel(" Expression Data");
+		legendHolder = new JPanel(new BorderLayout());
+		legendHolder.setOpaque(false);
 		JLabel normLabel = new JLabel("Normalization:");
 		normCombo = new JComboBox<>();
 		JLabel sortLabel = new JLabel("Sorting:");
@@ -123,19 +132,22 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 			.addComponent(title)
+			.addGap(10)
+			.addComponent(legendHolder, 180, 180, 180)
 			.addGap(0, 0, Short.MAX_VALUE)
 			.addComponent(normLabel)
 			.addComponent(normCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			.addGap(10, 10, 10)
+			.addGap(10)
 			.addComponent(sortLabel)
 			.addComponent(sortCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			.addComponent(sortDirectionButton)
-			.addGap(10, 10, 10)
+			.addGap(10)
 			.addComponent(gearButton)
 			.addComponent(menuButton)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
 			.addComponent(title)
+			.addComponent(legendHolder)
 			.addComponent(normLabel)
 			.addComponent(normCombo)
 			.addComponent(sortLabel)
@@ -145,17 +157,31 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 			.addComponent(menuButton)
 		);
 		
+		panel.setOpaque(false);
 		return panel;
 	}
 
+	
+	
 
-	private JPanel createExpressionPanel() {
+	private JPanel createTablePanel() {
 		table = new JTable();
-		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane = new JScrollPane(table);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		table.setFillsViewportHeight(true);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		table.setCellSelectionEnabled(true);
+		
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				Point p = e.getPoint();
+				int row = table.rowAtPoint(p);
+				int col = table.columnAtPoint(p);
+				updateLegend(row, col);
+			}
+		});
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(scrollPane, BorderLayout.CENTER);
@@ -163,6 +189,50 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		return panel;
 	}
 	
+	
+	private void updateLegend(int row, int col) {
+		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
+		Object value = tableModel.getValueAt(row, col);
+		
+		if(value instanceof Double) {
+			DataSet dataset = tableModel.getDataSet(col);
+			ColorRenderer renderer = (ColorRenderer) table.getCellRenderer(row, col);
+			DataSetColorRange colorRange = renderer.getRange(dataset, tableModel.getTransform());
+			
+			JPanel panel = createExpressionLegendPanel(colorRange);
+			legendHolder.removeAll();
+			legendHolder.add(panel, BorderLayout.CENTER);
+			legendHolder.revalidate();
+		}
+	}
+	
+	private static JPanel createExpressionLegendPanel(DataSetColorRange range) {
+		JPanel panel = new JPanel();
+		
+		GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+
+		ParallelGroup hGroup = layout.createParallelGroup(Alignment.CENTER, true);
+		SequentialGroup vGroup = layout.createSequentialGroup();
+		layout.setHorizontalGroup(hGroup);
+		layout.setVerticalGroup(vGroup);
+
+		ColorGradientWidget legend = ColorGradientWidget.getInstance("", range.getTheme(),
+				range.getRange(), true, ColorGradientWidget.LEGEND_POSITION.NA);
+
+		hGroup.addComponent(legend, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+		vGroup.addComponent(legend, 25, 25, 25);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+
+		panel.revalidate();
+		panel.setOpaque(false);
+		return panel;
+	}
+
 	
 	private JButton createIconButton(String icon, String toolTip) {
 		JButton iconButton = new JButton(icon);
@@ -209,6 +279,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 			column.setHeaderRenderer(vertRenderer);
 			column.setPreferredWidth(width);
 		}
+		
 	}
 	
 	private void updateTableCellRenderer(boolean showValues) {
@@ -227,13 +298,6 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 				}
 			}
 		});
-//		menu.addPopupMenuListener(new PopupMenuListener() {
-//			@Override public void popupMenuWillBecomeVisible(PopupMenuEvent e) { }
-//			@Override public void popupMenuCanceled(PopupMenuEvent e) { }
-//			@Override public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-//				// Do stuff here
-//			}
-//		});
 		Component c = (Component) event.getSource();
 		menu.show(c, 0, c.getHeight());
 	}

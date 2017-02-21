@@ -344,8 +344,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 			}
 
 			FilterMetric filterMetric = createFilterMetric();
-			LoadSignatureSetsActionListener action = loadSignatureSetsActionListenerFactory.create(filePath,
-					filterMetric);
+			LoadSignatureSetsActionListener action = loadSignatureSetsActionListenerFactory.create(filePath, filterMetric);
 
 			action.setGeneSetCallback(gs -> {
 				this.signatureGenesets = gs;

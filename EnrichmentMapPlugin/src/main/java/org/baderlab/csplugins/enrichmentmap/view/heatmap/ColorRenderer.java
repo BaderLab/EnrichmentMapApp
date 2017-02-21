@@ -19,10 +19,6 @@ public class ColorRenderer implements TableCellRenderer {
 	
 	private Map<DataSet,DataSetColorRange> colorRanges = new HashMap<>();
 	
-	private Border unselectedBorder = null;
-	private Border selectedBorder = null;
-	private boolean isBordered = true;
-
 
 	public JLabel getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 		JLabel label = new JLabel();
@@ -32,37 +28,23 @@ public class ColorRenderer implements TableCellRenderer {
 		DataSet dataset = model.getDataSet(col);
 		
 		Transform transform = model.getTransform();
-		
-		DataSetColorRange range = colorRanges.computeIfAbsent(dataset, ds -> DataSetColorRange.create(ds, transform));
+		DataSetColorRange range = getRange(dataset, transform);
 		
 		if(value instanceof Double) {
 			Color color = getColor(range.getTheme(), range.getRange(), (Double)value);
 			label.setBackground(color);
+			Border border = BorderFactory.createMatteBorder(1, 1, 1, 1, isSelected ? table.getSelectionForeground() : color);
+			label.setBorder(border);
+			label.setToolTipText(value.toString());
 		}
 		
-		if(isBordered) {
-			label.setBorder(isSelected ? getSelectedBorder(table) : getUnselectedBorder(table));
-		}
-		
-		label.setToolTipText("Exp value: " + value);
 		return label;
 	}
 	
 	
-	private Border getSelectedBorder(JTable table) {
-		if(selectedBorder == null) {
-			selectedBorder = BorderFactory.createMatteBorder(0, 0, 0, 0, table.getSelectionBackground());
-		}
-		return selectedBorder;
+	public DataSetColorRange getRange(DataSet dataset, Transform transform) {
+		return colorRanges.computeIfAbsent(dataset, ds -> DataSetColorRange.create(ds, transform));
 	}
-	
-	private Border getUnselectedBorder(JTable table) {
-		if(unselectedBorder == null) {
-			unselectedBorder = BorderFactory.createMatteBorder(0, 0, 0, 0, table.getBackground());
-		}
-		return unselectedBorder;
-	}
-	
 	
 	private static Color getColor(ColorGradientTheme theme, ColorGradientRange range, Double measurement) {
 		if (theme == null || range == null || measurement == null)

@@ -56,6 +56,11 @@ public class HeatMapTableModel extends AbstractTableModel {
 		return transform;
 	}
 	
+	
+	public String getGene(int row) {
+		return genes.get(row);
+	}
+	
 	@Override
 	public int getRowCount() {
 		return genes.size();
