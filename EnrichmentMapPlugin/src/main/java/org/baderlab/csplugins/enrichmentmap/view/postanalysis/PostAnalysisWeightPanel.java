@@ -385,7 +385,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 	}	
 	
 	private void updateUniverseSize(String signature_dataSet) {
-		GeneExpressionMatrix expressionSets = map.getDataset(signature_dataSet).getExpressionSets();
+		GeneExpressionMatrix expressionSets = map.getDataSet(signature_dataSet).getExpressionSets();
 
 		universeGmt = map.getNumberOfGenes();
 		universeExpression = expressionSets.getExpressionUniverse();
@@ -411,7 +411,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 	void initialize(EnrichmentMap currentMap) {
 		this.map = currentMap;
 
-		Map<String, EMDataSet> datasetMap = map.getDatasets();
+		Map<String, EMDataSet> datasetMap = map.getDataSets();
 		String[] datasetArray = datasetMap.keySet().toArray(new String[datasetMap.size()]);
 		Arrays.sort(datasetArray);
 		this.datasetModel.removeAllElements();

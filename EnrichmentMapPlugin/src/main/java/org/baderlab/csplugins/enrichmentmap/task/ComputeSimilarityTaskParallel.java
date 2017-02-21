@@ -77,7 +77,7 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 		String edgeType = map.getParams().getEnrichmentEdgeType();
 		Map<SimilarityKey,GenesetSimilarity> similarities = new ConcurrentHashMap<>();
 		
-		Collection<EMDataSet> dataSets = map.getDatasetList();
+		Collection<EMDataSet> dataSets = map.getDataSetList();
 		
 		for(final String geneset1Name : names) {
 			// Compute similarities in batches, creating a Runnable for every similarity pair would create too many objects

@@ -684,7 +684,7 @@ public class EnrichmentMapParameters {
 	public void copyValuesFrom(EnrichmentMap map) {
 		EMCreationParameters params = map.getParams();
 		
-		for(Map.Entry<String,EMDataSet> entry : map.getDatasets().entrySet()) {
+		for(Map.Entry<String,EMDataSet> entry : map.getDataSets().entrySet()) {
 			EMDataSet dataset = entry.getValue();
 			DataSetFiles newDsFiles = new DataSetFiles();
 			newDsFiles.copy(dataset.getDataSetFiles());

@@ -31,7 +31,7 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 	 * of genesets make sure to filter by the specific dataset genes.
 	 */
 	public void filterGenesets(TaskMonitor taskMonitor) {
-		Map<String, EMDataSet> datasets = map.getDatasets();
+		Map<String, EMDataSet> datasets = map.getDataSets();
 		for(String k : datasets.keySet()) {
 			taskMonitor.setStatusMessage("Filtering Data Set: " + k);
 			EMDataSet current_set = datasets.get(k);

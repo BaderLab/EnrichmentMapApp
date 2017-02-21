@@ -274,18 +274,19 @@ public class EnrichmentMap {
 	}
 	
 	// MKTODO write a JUnit
-	public Map<String,Set<Integer>> unionAllGeneSetsOfInterest() {
+	public Map<String, Set<Integer>> unionAllGeneSetsOfInterest() {
 		Map<String, Set<Integer>> allGeneSets = new HashMap<>();
-		
-		for (EMDataSet ds : getDatasetList()) {
+
+		for (EMDataSet ds : getDataSetList()) {
 			Map<String, GeneSet> geneSets = ds.getGeneSetsOfInterest().getGeneSets();
+			
 			for (Map.Entry<String, GeneSet> entry : geneSets.entrySet()) {
 				String name = entry.getKey();
 				GeneSet gs = entry.getValue();
 				allGeneSets.computeIfAbsent(name, k -> new HashSet<>()).addAll(gs.getGenes());
 			}
 		}
-		
+
 		return allGeneSets;
 	}
 	
@@ -293,7 +294,7 @@ public class EnrichmentMap {
 	public Set<String> getAllGeneSetNames() {
 		Set<String> names = new HashSet<>();
 		
-		for (EMDataSet ds : getDatasetList()) {
+		for (EMDataSet ds : getDataSetList()) {
 			Map<String, GeneSet> geneSets = ds.getGeneSetsOfInterest().getGeneSets();
 			names.addAll(geneSets.keySet());
 		}
@@ -305,36 +306,37 @@ public class EnrichmentMap {
 		return globalGenesets;
 	}
 	
-	public Map<String, EMDataSet> getDatasets() {
+	public Map<String, EMDataSet> getDataSets() {
 		return dataSets;
 	}
 	
 	/**
 	 * Returns all the DataSets in a predictable order.
 	 */
-	public List<EMDataSet> getDatasetList() {
-		List<EMDataSet> datasetList = new ArrayList<>(dataSets.values());
-		datasetList.sort(Comparator.naturalOrder());
-		return datasetList;
+	public List<EMDataSet> getDataSetList() {
+		List<EMDataSet> list = new ArrayList<>(dataSets.values());
+		list.sort(Comparator.naturalOrder());
+		
+		return list;
 	}
 
-	public void setDatasets(Map<String, EMDataSet> datasets) {
-		this.dataSets = datasets;
+	public void setDataSets(Map<String, EMDataSet> dataSets) {
+		this.dataSets = dataSets;
 	}
 
 	public int getDataSetCount() {
 		return dataSets.size();
 	}
 	
-	public EMDataSet getDataset(String datasetname) {
-		return dataSets.get(datasetname);
+	public EMDataSet getDataSet(String dataSetName) {
+		return dataSets.get(dataSetName);
 	}
 	
 	/**
 	 * Returns all the DataSet names in a predictable order.
 	 */
-	public List<String> getDatasetNames() {
-		return getDatasetList().stream().map(EMDataSet::getName).collect(Collectors.toList());
+	public List<String> getDataSetNames() {
+		return getDataSetList().stream().map(EMDataSet::getName).collect(Collectors.toList());
 	}
 
 	public EMCreationParameters getParams() {
@@ -371,67 +373,70 @@ public class EnrichmentMap {
 	 * Each returned gene-set is contained all of the given DataSets.
 	 */
 	public static Set<Long> getNodesIntersection(Collection<EMDataSet> queryDatasets) {
-		if(queryDatasets.isEmpty())
+		if (queryDatasets.isEmpty())
 			return Collections.emptySet();
-		
+
 		Iterator<EMDataSet> iter = queryDatasets.iterator();
 		EMDataSet first = iter.next();
 		Set<Long> suids = new HashSet<>(first.getNodeSuids().values());
-		
-		while(iter.hasNext()) {
+
+		while (iter.hasNext()) {
 			EMDataSet dataset = iter.next();
 			suids.retainAll(dataset.getNodeSuids().values());
 		}
+
 		return suids;
 	}
 	
-	
-	
 	public Set<String> getAllRankNames() {
 		Set<String> allRankNames = new HashSet<>();
+		
 		//go through each Dataset
-		for(EMDataSet dataset : dataSets.values()) {
-			//there could be duplicate ranking names for two different datasets. Add the dataset to the ranks name
-			Set<String> all_names = dataset.getExpressionSets().getAllRanksNames();
-			for(String name : all_names) {
-				allRankNames.add(name + "-" + dataset.getName());
-			}
+		for (EMDataSet ds : dataSets.values()) {
+			// there could be duplicate ranking names for two different datasets. Add the dataset to the ranks name
+			Set<String> allNames = ds.getExpressionSets().getAllRanksNames();
 
+			for (String name : allNames)
+				allRankNames.add(name + "-" + ds.getName());
 		}
+		
 		return allRankNames;
 	}
 
 	public Map<String, Ranking> getAllRanks() {
 		Map<String, Ranking> allranks = new HashMap<>();
-		for(EMDataSet dataset : dataSets.values()) {
+		
+		for (EMDataSet dataset : dataSets.values())
 			allranks.putAll(dataset.getExpressionSets().getRanks());
-		}
+		
 		return allranks;
 	}
 
-	public Ranking getRanksByName(String ranks_name) {
-
-		//break the ranks file up by "-"
-		//check to see if the rank file is dataset specific
-		//needed for encoding the same ranking file name from two different dataset in the interface
+	public Ranking getRanksByName(String ranksName) {
+		// break the ranks file up by "-"
+		// check to see if the rank file is dataset specific
+		// needed for encoding the same ranking file name from two different dataset in the interface
 		String ds = "";
 		String rank = "";
-		if(ranks_name.split("-").length == 2) {
-			ds = ranks_name.split("-")[1];
-			rank = ranks_name.split("-")[0];
+		
+		if (ranksName.split("-").length == 2) {
+			ds = ranksName.split("-")[1];
+			rank = ranksName.split("-")[0];
 		}
 
-		for(Iterator<String> k = dataSets.keySet().iterator(); k.hasNext();) {
-			String current_dataset = k.next();
-			if(!ds.equalsIgnoreCase("") && !rank.equalsIgnoreCase("")) {
-				//check that this is the right dataset
-				if(ds.equalsIgnoreCase(current_dataset) && (dataSets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(rank)) {
-					return dataSets.get(current_dataset).getExpressionSets().getRanksByName(rank);
-				}
-			} else if((dataSets.get(current_dataset)).getExpressionSets().getAllRanksNames().contains(ranks_name)) {
-				return dataSets.get(current_dataset).getExpressionSets().getRanksByName(ranks_name);
+		for (Iterator<String> k = dataSets.keySet().iterator(); k.hasNext();) {
+			String nextDs = k.next();
+
+			if (!ds.equalsIgnoreCase("") && !rank.equalsIgnoreCase("")) {
+				// check that this is the right dataset
+				if (ds.equalsIgnoreCase(nextDs)
+						&& (dataSets.get(nextDs)).getExpressionSets().getAllRanksNames().contains(rank))
+					return dataSets.get(nextDs).getExpressionSets().getRanksByName(rank);
+			} else if ((dataSets.get(nextDs)).getExpressionSets().getAllRanksNames().contains(ranksName)) {
+				return dataSets.get(nextDs).getExpressionSets().getRanksByName(ranksName);
 			}
 		}
+		
 		return null;
 	}
 
@@ -441,12 +446,14 @@ public class EnrichmentMap {
 	 */
 	public Set<String> getAllGenesetTypes() {
 		//go through each dataset and get the genesets from each
-		Set<String> allGenesetTypes = new HashSet<>();
-		for(EMDataSet dataset : dataSets.values()) {
-			Set<String> genesetsTypes = dataset.getSetOfGeneSets().getGeneSetTypes();
-			allGenesetTypes.addAll(genesetsTypes);
+		Set<String> allTypes = new HashSet<>();
+		
+		for (EMDataSet ds : dataSets.values()) {
+			Set<String> types = ds.getSetOfGeneSets().getGeneSetTypes();
+			allTypes.addAll(types);
 		}
-		return allGenesetTypes;
+		
+		return allTypes;
 	}
 
 	public void setSignatureDataSets(Collection<EMSignatureDataSet> newValue) {

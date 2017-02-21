@@ -419,12 +419,12 @@ public class ParametersPanel extends JPanel {
 			s = s + "<b>Test Used:</b> Jaccard Overlap Combined Index (k constant = " + params.getCombinedConstant() + ")<br>";
 		}
 		
-		if (map.getDataset(LegacySupport.DATASET1) != null) {
+		if (map.getDataSet(LegacySupport.DATASET1) != null) {
 			s = s + "<b>Genesets File: </b><br>"
-					+ INDENT + shortenPathname(map.getDataset(LegacySupport.DATASET1).getDataSetFiles().getGMTFileName()) + "<br>";
+					+ INDENT + shortenPathname(map.getDataSet(LegacySupport.DATASET1).getDataSetFiles().getGMTFileName()) + "<br>";
 		
-			String enrichmentFileName1 = map.getDataset(LegacySupport.DATASET1).getDataSetFiles().getEnrichmentFileName1();
-			String enrichmentFileName2 = map.getDataset(LegacySupport.DATASET1).getDataSetFiles().getEnrichmentFileName2();
+			String enrichmentFileName1 = map.getDataSet(LegacySupport.DATASET1).getDataSetFiles().getEnrichmentFileName1();
+			String enrichmentFileName2 = map.getDataSet(LegacySupport.DATASET1).getDataSetFiles().getEnrichmentFileName2();
 		
 			if (enrichmentFileName1 != null || enrichmentFileName2 != null) {
 				s = s + "<b>Dataset 1 Data Files: </b><br>";
@@ -437,8 +437,8 @@ public class ParametersPanel extends JPanel {
 			}
 			
 			if (LegacySupport.isLegacyTwoDatasets(map)) {
-				enrichmentFileName1 = map.getDataset(LegacySupport.DATASET2).getDataSetFiles().getEnrichmentFileName1();
-				enrichmentFileName2 = map.getDataset(LegacySupport.DATASET2).getDataSetFiles().getEnrichmentFileName2();
+				enrichmentFileName1 = map.getDataSet(LegacySupport.DATASET2).getDataSetFiles().getEnrichmentFileName1();
+				enrichmentFileName2 = map.getDataSet(LegacySupport.DATASET2).getDataSetFiles().getEnrichmentFileName2();
 				
 				if (enrichmentFileName1 != null || enrichmentFileName2 != null) {
 					s = s + "<b>Dataset 2 Data Files: </b><br>";
@@ -451,7 +451,7 @@ public class ParametersPanel extends JPanel {
 				}
 			}
 			
-			s = s + "<b>Data file:</b>" + shortenPathname(map.getDataset(LegacySupport.DATASET1).getDataSetFiles().getExpressionFileName())
+			s = s + "<b>Data file:</b>" + shortenPathname(map.getDataSet(LegacySupport.DATASET1).getDataSetFiles().getExpressionFileName())
 			+ "<br>";
 			// TODO:fix second dataset viewing.
 			/*
@@ -459,15 +459,15 @@ public class ParametersPanel extends JPanel {
 			 * runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getExpressionFileName2()) + "<br>";
 			 */
 			
-			if (map.getDataset(LegacySupport.DATASET1) != null
-					&& map.getDataset(LegacySupport.DATASET1).getDataSetFiles().getGseaHtmlReportFile() != null) {
+			if (map.getDataSet(LegacySupport.DATASET1) != null
+					&& map.getDataSet(LegacySupport.DATASET1).getDataSetFiles().getGseaHtmlReportFile() != null) {
 				s = s + "<b>GSEA Report 1:</b>"
-						+ shortenPathname(map.getDataset(LegacySupport.DATASET1).getDataSetFiles().getGseaHtmlReportFile()) + "<br>";
+						+ shortenPathname(map.getDataSet(LegacySupport.DATASET1).getDataSetFiles().getGseaHtmlReportFile()) + "<br>";
 			}
-			if (map.getDataset(LegacySupport.DATASET2) != null
-					&& map.getDataset(LegacySupport.DATASET2).getDataSetFiles().getGseaHtmlReportFile() != null) {
+			if (map.getDataSet(LegacySupport.DATASET2) != null
+					&& map.getDataSet(LegacySupport.DATASET2).getDataSetFiles().getGseaHtmlReportFile() != null) {
 				s = s + "<b>GSEA Report 2:</b>"
-						+ shortenPathname(map.getDataset(LegacySupport.DATASET2).getDataSetFiles().getGseaHtmlReportFile()) + "<br>";
+						+ shortenPathname(map.getDataSet(LegacySupport.DATASET2).getDataSetFiles().getGseaHtmlReportFile()) + "<br>";
 			}
 		}
 
@@ -521,12 +521,12 @@ public class ParametersPanel extends JPanel {
 		final Color LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
 		final Color LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
 		
-		if (map.getDataset(LegacySupport.DATASET1) != null) {
+		if (map.getDataSet(LegacySupport.DATASET1) != null) {
 			LegendPanel nodeLegendPanel = new LegendPanel(
 					MAX_PHENOTYPE_1,
 					MAX_PHENOTYPE_2,
-					map.getDataset(LegacySupport.DATASET1).getEnrichments().getPhenotype1(),
-					map.getDataset(LegacySupport.DATASET1).getEnrichments().getPhenotype2());
+					map.getDataSet(LegacySupport.DATASET1).getEnrichments().getPhenotype1(),
+					map.getDataSet(LegacySupport.DATASET1).getEnrichments().getPhenotype2());
 			nodeLegendPanel.setToolTipText("Phenotype * (1-P_value)");
 		
 			hGroup.addComponent(nodeLegendPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
@@ -549,8 +549,8 @@ public class ParametersPanel extends JPanel {
 			LegendPanel nodeLegendPanel2 = new LegendPanel(
 					MAX_PHENOTYPE_1,
 					MAX_PHENOTYPE_2,
-					map.getDataset(LegacySupport.DATASET2).getEnrichments().getPhenotype1(),
-					map.getDataset(LegacySupport.DATASET2).getEnrichments().getPhenotype2());
+					map.getDataSet(LegacySupport.DATASET2).getEnrichments().getPhenotype1(),
+					map.getDataSet(LegacySupport.DATASET2).getEnrichments().getPhenotype2());
 			nodeLegendPanel2.setToolTipText("Phenotype * (1-P_value)");
 			
 			hGroup.addComponent(nodeLegendPanel2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
@@ -586,13 +586,13 @@ public class ParametersPanel extends JPanel {
 		ColumnDescriptor<String> colDescr = null;
 		
 		if (dataset == 1) {
-			if (map.getDataset(LegacySupport.DATASET1) != null) {
-				reportFile = map.getDataset(LegacySupport.DATASET1).getDataSetFiles().getGseaHtmlReportFile();
+			if (map.getDataSet(LegacySupport.DATASET1) != null) {
+				reportFile = map.getDataSet(LegacySupport.DATASET1).getDataSetFiles().getGseaHtmlReportFile();
 				colDescr = Columns.NET_REPORT1_DIR;
 			}
 		} else {
-			if (map.getDataset(LegacySupport.DATASET2) != null) {
-				reportFile = map.getDataset(LegacySupport.DATASET2).getDataSetFiles().getGseaHtmlReportFile();
+			if (map.getDataSet(LegacySupport.DATASET2) != null) {
+				reportFile = map.getDataSet(LegacySupport.DATASET2).getDataSetFiles().getGseaHtmlReportFile();
 				colDescr = Columns.NET_REPORT2_DIR;
 			}
 		}

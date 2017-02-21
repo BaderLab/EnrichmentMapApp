@@ -52,7 +52,7 @@ public class SetOfGenesetsTest {
 	@Test
 	public void testGSSetVar(){
 		
-		SetOfGeneSets gs_set = map.getDataset(LegacySupport.DATASET1).getSetOfGeneSets();
+		SetOfGeneSets gs_set = map.getDataSet(LegacySupport.DATASET1).getSetOfGeneSets();
 		
 		assertEquals("src/test/resources/org/baderlab/csplugins/enrichmentmap/model/Genesetstestfile.gmt", gs_set.getFilename());
 		
@@ -70,7 +70,7 @@ public class SetOfGenesetsTest {
 	@Test
 	public void testGSFilter(){
 		
-		SetOfGeneSets gs_set = map.getDataset(LegacySupport.DATASET1).getSetOfGeneSets();			
+		SetOfGeneSets gs_set = map.getDataSet(LegacySupport.DATASET1).getSetOfGeneSets();			
 		
 		//get the genes to hash so we can create our own dataset genes to filter by
 		

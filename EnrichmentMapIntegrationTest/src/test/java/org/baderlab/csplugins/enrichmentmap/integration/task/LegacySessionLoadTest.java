@@ -142,7 +142,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals("Geneset_Overlap", row.get(CyEdge.INTERACTION, String.class));
 		assertEquals(0.6097560975609756, EMStyleBuilder.Columns.EDGE_SIMILARITY_COEFF.get(row, prefix), 0.0);
 		
-		EMDataSet dataset = map.getDataset("Dataset 1");
+		EMDataSet dataset = map.getDataSet("Dataset 1");
 		assertNotNull(dataset);
 		assertSame(map, dataset.getMap());
 		assertEquals(Method.GSEA, dataset.getMethod());

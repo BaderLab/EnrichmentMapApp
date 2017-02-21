@@ -97,7 +97,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 
 		//create subset of genesets that contains only the genesets of interest with pvalue and qbalue less than values specified by the user.
 		//Go through each Dataset populating the Gene set of interest in each dataset object
-		Map<String, EMDataSet> datasets = map.getDatasets();
+		Map<String, EMDataSet> datasets = map.getDataSets();
 		
 		// count how many experiments (DataSets) contain the geneset
 		Optional<Integer> minExperiments = map.getParams().getMinExperiments();

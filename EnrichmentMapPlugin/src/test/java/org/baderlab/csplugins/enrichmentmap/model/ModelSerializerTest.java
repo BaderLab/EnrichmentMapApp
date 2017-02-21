@@ -86,7 +86,7 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertSetOfGeneSetsEquals(expected.getGlobalGenesets(), actual.getGlobalGenesets());
 		assertMapsEqual(ModelSerializerTest::assertSignatureDataSetsEquals, expected.getSignatureDataSets(), actual.getSignatureDataSets());
 //		assertMapsEqual(ModelSerializerTest::assertGenesetSimilarityEquals, expected.getGenesetSimilarity(), actual.getGenesetSimilarity());
-		assertMapsEqual(ModelSerializerTest::assertDataSetEquals, expected.getDatasets(), actual.getDatasets());
+		assertMapsEqual(ModelSerializerTest::assertDataSetEquals, expected.getDataSets(), actual.getDataSets());
 	}
 
 	private static void assertEMCreationParametersEquals(EMCreationParameters expected, EMCreationParameters actual) {

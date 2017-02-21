@@ -148,10 +148,10 @@ public class LoadDavidResultTest {
 		assertEquals(7, dataset.getGeneSetsOfInterest().getGeneSets().size());
 
 		// there should be 114 genes in the geneset "acetylation"
-		assertEquals(114, em.getDataset(LegacySupport.DATASET1).getSetOfGeneSets().getGeneSets().get("ACETYLATION").getGenes().size());
+		assertEquals(114, em.getDataSet(LegacySupport.DATASET1).getSetOfGeneSets().getGeneSets().get("ACETYLATION").getGenes().size());
 //		assertEquals(114, em.getAllGenesets().get("ACETYLATION").getGenes().size());
 
-		dataset2 = em.getDataset(LegacySupport.DATASET2);
+		dataset2 = em.getDataSet(LegacySupport.DATASET2);
 		// check the stats for dataset2
 		// check to see if the dataset loaded - there should be 263 genesets
 		assertEquals(263, dataset2.getSetOfGeneSets().getGeneSets().size());

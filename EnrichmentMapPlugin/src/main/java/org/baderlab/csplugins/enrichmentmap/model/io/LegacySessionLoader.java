@@ -131,7 +131,7 @@ public class LegacySessionLoader {
 						&& (!propFile.getName().contains(".expression2.txt"))) {
 					HashMap<String, String> props = params.getProps();
 					//if this a dataset specific file make sure there is a dataset object for it
-					if(!(parts.dataset == null) && em.getDataset(parts.dataset) == null && !parts.dataset.equalsIgnoreCase("signature"))
+					if(!(parts.dataset == null) && em.getDataSet(parts.dataset) == null && !parts.dataset.equalsIgnoreCase("signature"))
 						em.createDataSet(parts.dataset, method, params.getFiles().get(parts.dataset));
 					if(parts.type == null)
 						System.out.println("Sorry, unable to determine the type of the file: "+ propFile.getName());
@@ -161,7 +161,7 @@ public class LegacySessionLoader {
 						} else {
 							SetOfGeneSets gs = new SetOfGeneSets(parts.dataset, props);
 							gs.setGeneSets(gsMap);
-							em.getDatasets().get(parts.dataset).setSetOfGeneSets(gs);
+							em.getDataSets().get(parts.dataset).setSetOfGeneSets(gs);
 						}
 					}
 					
@@ -190,15 +190,15 @@ public class LegacySessionLoader {
 						int temp = 1;
 						
 						//check to see if this dataset has enrichment results already
-						if (parts.dataset != null && em.getDataset(parts.dataset).getEnrichments() != null) {
-							enrichments = em.getDataset(parts.dataset).getEnrichments();
+						if (parts.dataset != null && em.getDataSet(parts.dataset).getEnrichments() != null) {
+							enrichments = em.getDataSet(parts.dataset).getEnrichments();
 						} else if (parts.dataset == null){
-							enrichments = em.getDataset(LegacySupport.DATASET1).getEnrichments();
+							enrichments = em.getDataSet(LegacySupport.DATASET1).getEnrichments();
 							/*enrichments = new SetOfEnrichmentResults(EnrichmentMap.DATASET1,props);
                 			em.getDataset(EnrichmentMap.DATASET1).setEnrichments(enrichments);*/
 						} else {
 							enrichments = new SetOfEnrichmentResults(parts.dataset, props);
-							em.getDataset(parts.dataset).setEnrichments(enrichments);
+							em.getDataSet(parts.dataset).setEnrichments(enrichments);
 						}
 						
 						if (parts.type.equalsIgnoreCase("ENR") || propFile.getName().contains(".ENR1.txt")) {
@@ -215,13 +215,13 @@ public class LegacySessionLoader {
 					if (propFile.getName().contains(".RANKS1.txt") || propFile.getName().contains(".RANKS1Genes.txt")){
 						Ranking new_ranking;
 						//Check to see if there is already GSEARanking
-						if (em.getDataset(LegacySupport.DATASET1).getExpressionSets().getAllRanksNames()
+						if (em.getDataSet(LegacySupport.DATASET1).getExpressionSets().getAllRanksNames()
 								.contains(Ranking.GSEARanking)) {
-							new_ranking = em.getDataset(LegacySupport.DATASET1).getExpressionSets()
+							new_ranking = em.getDataSet(LegacySupport.DATASET1).getExpressionSets()
 									.getRanksByName(Ranking.GSEARanking);
 						} else {
 							new_ranking = new Ranking();
-							em.getDataset(LegacySupport.DATASET1).getExpressionSets().addRanks(Ranking.GSEARanking,
+							em.getDataSet(LegacySupport.DATASET1).getExpressionSets().addRanks(Ranking.GSEARanking,
 									new_ranking);
 						}
 						
@@ -260,26 +260,26 @@ public class LegacySessionLoader {
 						ranks.forEach(new_ranking::addRank);
 
 						if (parts.dataset != null)
-							em.getDataset(parts.dataset).getExpressionSets().addRanks(parts.ranks_name, new_ranking);
+							em.getDataSet(parts.dataset).getExpressionSets().addRanks(parts.ranks_name, new_ranking);
 						else
-							em.getDataset(LegacySupport.DATASET1).getExpressionSets().addRanks(parts.ranks_name,
+							em.getDataSet(LegacySupport.DATASET1).getExpressionSets().addRanks(parts.ranks_name,
 									new_ranking);
 					}
 					
 					//Deal with legacy issues                    
 					if (params.isTwoDatasets()) {
 						//make sure there is a Dataset2
-						if (!em.getDatasets().containsKey(LegacySupport.DATASET2))
+						if (!em.getDataSets().containsKey(LegacySupport.DATASET2))
 							em.createDataSet(LegacySupport.DATASET2, method, new DataSetFiles());
 						
 						if (propFile.getName().contains(".ENR2.txt") || propFile.getName().contains(".SubENR2.txt")) {
 							SetOfEnrichmentResults enrichments;
 							//check to see if this dataset has enrichment results already
-							if (em.getDataset(LegacySupport.DATASET2).getEnrichments() != null) {
-								enrichments = em.getDataset(LegacySupport.DATASET2).getEnrichments();
+							if (em.getDataSet(LegacySupport.DATASET2).getEnrichments() != null) {
+								enrichments = em.getDataSet(LegacySupport.DATASET2).getEnrichments();
 							} else {
 								enrichments = new SetOfEnrichmentResults(LegacySupport.DATASET2, props);
-								em.getDataset(LegacySupport.DATASET2).setEnrichments(enrichments);
+								em.getDataSet(LegacySupport.DATASET2).setEnrichments(enrichments);
 							}
 							
 							if (propFile.getName().contains(".ENR2.txt")) {
@@ -297,13 +297,13 @@ public class LegacySessionLoader {
 							Ranking new_ranking;
 							
 							// Check to see if there is already GSEARanking
-							if (em.getDataset(LegacySupport.DATASET2).getExpressionSets().getAllRanksNames()
+							if (em.getDataSet(LegacySupport.DATASET2).getExpressionSets().getAllRanksNames()
 									.contains(Ranking.GSEARanking)) {
-								new_ranking = em.getDataset(LegacySupport.DATASET2).getExpressionSets()
+								new_ranking = em.getDataSet(LegacySupport.DATASET2).getExpressionSets()
 										.getRanksByName(Ranking.GSEARanking);
 							} else {
 								new_ranking = new Ranking();
-								em.getDataset(LegacySupport.DATASET2).getExpressionSets().addRanks(Ranking.GSEARanking,
+								em.getDataSet(LegacySupport.DATASET2).getExpressionSets().addRanks(Ranking.GSEARanking,
 										new_ranking);
 							}
 							
@@ -330,8 +330,8 @@ public class LegacySessionLoader {
 				Map<String,String> props = params.getProps();
 
 				if (parts_exp.type != null && parts_exp.type.equalsIgnoreCase("expression")){
-					if(map.getDatasets().containsKey(parts_exp.dataset)){
-						EMDataSet ds = map.getDataset(parts_exp.dataset);
+					if(map.getDataSets().containsKey(parts_exp.dataset)){
+						EMDataSet ds = map.getDataSet(parts_exp.dataset);
 						ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds);
 						GeneExpressionMatrix matrix = expressionFile1.parse();
 						matrix.restoreProps(parts_exp.dataset, props);
@@ -339,22 +339,22 @@ public class LegacySessionLoader {
 				}
 				//Deal with legacy session files.
 				if (prop_file.getName().contains("expression1.txt")){                  
-					EMDataSet ds1 = map.getDataset(LegacySupport.DATASET1);
+					EMDataSet ds1 = map.getDataSet(LegacySupport.DATASET1);
 					ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds1);
 					expressionFile1.parse();
 
 				}
 				if (prop_file.getName().contains("expression2.txt")){                    
-					EMDataSet ds2 = map.getDataset(LegacySupport.DATASET2);
+					EMDataSet ds2 = map.getDataSet(LegacySupport.DATASET2);
 					ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(ds2);
 					expressionFile2.parse();
 					
 					//if there are two expression sets and there is a second set of genesets of interest then we
 					//are dealing with two distinct expression files.
-					if (map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getGeneSetsOfInterest() != null && !map.getDataset(LegacySupport.DATASET2).getGeneSetsOfInterest().getGeneSets().isEmpty() ){
+					if (map.getDataSet(LegacySupport.DATASET2) != null && map.getDataSet(LegacySupport.DATASET2).getGeneSetsOfInterest() != null && !map.getDataSet(LegacySupport.DATASET2).getGeneSetsOfInterest().getGeneSets().isEmpty() ){
 						map.setDistinctExpressionSets(true);
-						map.getDataset(LegacySupport.DATASET1).setDataSetGenes(new HashSet<Integer>((Set<Integer>)map.getDataset(LegacySupport.DATASET1).getExpressionSets().getGeneIds()));
-						map.getDataset(LegacySupport.DATASET2).setDataSetGenes(new HashSet<Integer>((Set<Integer>)map.getDataset(LegacySupport.DATASET2).getExpressionSets().getGeneIds()));
+						map.getDataSet(LegacySupport.DATASET1).setDataSetGenes(new HashSet<Integer>((Set<Integer>)map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getGeneIds()));
+						map.getDataSet(LegacySupport.DATASET2).setDataSetGenes(new HashSet<Integer>((Set<Integer>)map.getDataSet(LegacySupport.DATASET2).getExpressionSets().getGeneIds()));
 					}
 				}
 			}
@@ -372,9 +372,9 @@ public class LegacySessionLoader {
 				
 				//only initialize objects if there is a map for this network
 				if (map != null){
-					if(map.getDatasets().size() > 1) {
-						Set<Integer> dataset1_genes = map.getDatasets().get(LegacySupport.DATASET1).getDataSetGenes();
-						Set<Integer> dataset2_genes = map.getDatasets().get(LegacySupport.DATASET2).getDataSetGenes();
+					if(map.getDataSets().size() > 1) {
+						Set<Integer> dataset1_genes = map.getDataSets().get(LegacySupport.DATASET1).getDataSetGenes();
+						Set<Integer> dataset2_genes = map.getDataSets().get(LegacySupport.DATASET2).getDataSetGenes();
 						
 						if(!dataset1_genes.equals(dataset2_genes))
 							map.setDistinctExpressionSets(true);

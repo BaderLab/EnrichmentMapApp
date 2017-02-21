@@ -135,7 +135,7 @@ public class LoadBingoResultsTest {
 //		ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
 //		similarities.run(taskMonitor);
 
-        dataset = em.getDataset(LegacySupport.DATASET1);
+        dataset = em.getDataSet(LegacySupport.DATASET1);
 		//get the stats for the first dataset		
 		//check to see if the dataset loaded - there should be 74 genesets
 		assertEquals(74, dataset.getSetOfGeneSets().getGeneSets().size());
@@ -149,7 +149,7 @@ public class LoadBingoResultsTest {
 		assertEquals(446, dataset.getExpressionSets().getNumGenes());
 		assertEquals(446,dataset.getDataSetGenes().size());
 		
-		dataset2 = em.getDataset(LegacySupport.DATASET2);
+		dataset2 = em.getDataSet(LegacySupport.DATASET2);
 		//check the stats for dataset2
 		//check to see if the dataset loaded - there should be 74 genesets
 		assertEquals(87, dataset2.getSetOfGeneSets().getGeneSets().size());

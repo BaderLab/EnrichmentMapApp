@@ -37,7 +37,7 @@ public class EMStyleOptions {
 	}
 	
 	public Collection<EMDataSet> getDataSets() {
-		return map.getDatasetList().stream().filter(filter).collect(Collectors.toList());
+		return map.getDataSetList().stream().filter(filter).collect(Collectors.toList());
 	}
 	
 	public EnrichmentMap getEnrichmentMap() {

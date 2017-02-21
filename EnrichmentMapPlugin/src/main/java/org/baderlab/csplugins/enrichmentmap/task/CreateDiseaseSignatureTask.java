@@ -128,7 +128,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		this.map = map;
 		this.params = params;
 
-		EMDataSet dataset = map.getDataset(params.getSignatureDataSet());
+		EMDataSet dataset = map.getDataSet(params.getSignatureDataSet());
 		ranks = dataset.getExpressionSets().getRanks().get(params.getSignatureRankFile());
 
 		// we want genesets of interest that are not signature genesets put there by previous runs of post-analysis
@@ -434,7 +434,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 
 		// add the geneset of the signature node to the GenesetsOfInterest,
 		// as the Heatmap will grep it's data from there.
-		EMDataSet dataset = map.getDataset(params.getSignatureDataSet());
+		EMDataSet dataset = map.getDataSet(params.getSignatureDataSet());
 		Set<Integer> signatureGenesInDataSet = ImmutableSet.copyOf(Sets.intersection(sigGeneSet.getGenes(), dataset.getDataSetGenes()));
 		GeneSet geneSetInDataSet = new GeneSet(sigGeneSet.getName(), sigGeneSet.getDescription(), signatureGenesInDataSet);
 		dataset.getGeneSetsOfInterest().getGeneSets().put(hubName, geneSetInDataSet);

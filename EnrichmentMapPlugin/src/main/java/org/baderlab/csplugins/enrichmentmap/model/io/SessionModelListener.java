@@ -135,7 +135,7 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 			emManager.getAllEnrichmentMaps().forEach((suid, em) -> {
 				System.out.println("suid:" + suid);
 				System.out.println("datasets:");
-				em.getDatasetList().forEach(dataset -> System.out.println(dataset.getName()));
+				em.getDataSetList().forEach(dataset -> System.out.println(dataset.getName()));
 			});
 			System.out.println();
 		}
@@ -196,7 +196,6 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 		}
 		return null;
 	}
-	
 	
 	private CyTable deleteRedundantTables() {
 		for(CyTable table : tableManager.getAllTables(true)) {

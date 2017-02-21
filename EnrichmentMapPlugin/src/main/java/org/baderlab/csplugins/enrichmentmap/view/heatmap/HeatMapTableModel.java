@@ -36,7 +36,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		
 		// populate colToDataSet
 		int rangeFloor = 1; // because col 0 is gene name
-		List<EMDataSet> datasets = map.getDatasetList();
+		List<EMDataSet> datasets = map.getDataSetList();
 		colToDataSet.put(0, null);
 		for(EMDataSet dataset : datasets) {
 			GeneExpressionMatrix matrix = dataset.getExpressionSets();

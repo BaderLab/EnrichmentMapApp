@@ -462,7 +462,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		weightPanel.initialize(currentMap);
 		hypergomUniverseSize = currentMap.getNumberOfGenes();
 
-		Map<String, EMDataSet> dataSets = currentMap.getDatasets();
+		Map<String, EMDataSet> dataSets = currentMap.getDataSets();
 		EMDataSet ds = dataSets.get(weightPanel.getDataSet());
 		mannWhitRanks = new Ranking();
 		

@@ -52,7 +52,7 @@ public class ModelSerializer {
 		
 		try {
 			EnrichmentMap map = gson.fromJson(json, EnrichmentMap.class);
-			for(EMDataSet dataset : map.getDatasetList()) {
+			for(EMDataSet dataset : map.getDataSetList()) {
 				dataset.setParent(map);
 			}
 			return map;
