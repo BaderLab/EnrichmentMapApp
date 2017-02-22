@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap.view.heatmap;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
 import java.awt.Color;
 import java.awt.Component;

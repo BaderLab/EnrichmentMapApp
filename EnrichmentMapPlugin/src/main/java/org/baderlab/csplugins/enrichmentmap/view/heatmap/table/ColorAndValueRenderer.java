@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.heatmap;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
 import java.awt.Font;
 import java.text.DecimalFormat;

@@ -8,11 +8,11 @@ public class HeatMapParams {
 		LOG_TRANSFORM
 	}
 	
-	public static enum Sort {
-		RANKS, 
-		COLUMN, 
-		CLUSTER 
-	}
+//	public static enum Sort {
+//		RANKS, 
+//		COLUMN, 
+//		CLUSTER 
+//	}
 	
 	public static enum Operator {
 		UNION,
@@ -26,15 +26,15 @@ public class HeatMapParams {
 	}
 	
 	private final Transform transform;
-	private final Sort sort;
+//	private final Sort sort;
 	private final Operator operator;
 	private final DistanceMetric distanceMetric;
 	private final boolean showValues;
 	
 	
-	public HeatMapParams(Transform transform, Sort sort, Operator operator, DistanceMetric distanceMetric, boolean showValues) {
+	public HeatMapParams(Transform transform, /*Sort sort,*/ Operator operator, DistanceMetric distanceMetric, boolean showValues) {
 		this.transform = transform;
-		this.sort = sort;
+//		this.sort = sort;
 		this.operator = operator;
 		this.distanceMetric = distanceMetric;
 		this.showValues = showValues;
@@ -48,7 +48,7 @@ public class HeatMapParams {
 	
 	public static class Builder {
 		private Transform transform = Transform.AS_IS;
-		private Sort sort = Sort.RANKS;
+//		private Sort sort = Sort.RANKS;
 		private Operator operator = Operator.UNION;
 		private DistanceMetric distanceMetric = DistanceMetric.EUCLIDEAN;
 		private boolean showValues = false;
@@ -57,7 +57,7 @@ public class HeatMapParams {
 		
 		public Builder(HeatMapParams params) {
 			this.transform = params.transform;
-			this.sort = params.sort;
+//			this.sort = params.sort;
 			this.operator = params.operator;
 			this.distanceMetric = params.distanceMetric;
 			this.showValues = params.showValues;
@@ -66,9 +66,9 @@ public class HeatMapParams {
 		public void setTransform(Transform transform) {
 			this.transform = transform;
 		}
-		public void setSort(Sort sort) {
-			this.sort = sort;
-		}
+//		public void setSort(Sort sort) {
+//			this.sort = sort;
+//		}
 		public void setOperator(Operator operator) {
 			this.operator = operator;
 		}
@@ -80,7 +80,7 @@ public class HeatMapParams {
 		}
 		
 		public HeatMapParams build() {
-			return new HeatMapParams(transform, sort, operator, distanceMetric, showValues);
+			return new HeatMapParams(transform, /*sort,*/ operator, distanceMetric, showValues);
 		}
 	}
 
@@ -89,9 +89,9 @@ public class HeatMapParams {
 		return transform;
 	}
 
-	public Sort getSort() {
-		return sort;
-	}
+//	public Sort getSort() {
+//		return sort;
+//	}
 
 	public Operator getOperator() {
 		return operator;

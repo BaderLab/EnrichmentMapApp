@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.heatmap;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 
 
@@ -22,20 +23,28 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform
 @SuppressWarnings("serial")
 public class HeatMapTableModel extends AbstractTableModel {
 
-	private Transform transform;
+	/** Number of columns at the start that don't show expression data (ie. gene name etc..) */
+	public static final int DESC_COL_COUNT = 2; 
+	
+	
 	private final EnrichmentMap map;
 	private final List<String> genes;
+	
+	private Transform transform;
+	private Map<Integer,RankValue> ranking;
+	
 	private final int colCount;
-	
 	private final NavigableMap<Integer,DataSet> colToDataSet = new TreeMap<>();
+
 	
-	public HeatMapTableModel(EnrichmentMap map, List<String> genes, Transform transform) {
+	public HeatMapTableModel(EnrichmentMap map, Map<Integer,RankValue> ranking, List<String> genes, Transform transform) {
 		this.transform = transform;
 		this.map = map;
+		this.ranking = ranking;
 		this.genes = genes;
 		
 		// populate colToDataSet
-		int rangeFloor = 1; // because col 0 is gene name
+		int rangeFloor = DESC_COL_COUNT;
 		List<DataSet> datasets = map.getDatasetList();
 		colToDataSet.put(0, null);
 		for(DataSet dataset : datasets) {
@@ -52,6 +61,11 @@ public class HeatMapTableModel extends AbstractTableModel {
 		fireTableDataChanged();
 	}
 
+	public void setRanking(Map<Integer,RankValue> ranking) {
+		this.ranking = ranking;
+		fireTableDataChanged();
+	}
+	
 	public Transform getTransform() {
 		return transform;
 	}
@@ -75,6 +89,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 	public String getColumnName(int col) {
 		if(col == 0)
 			return "Gene";
+		if(col == 1)
+			return "Rank";
 		DataSet dataset = getDataSet(col);
 		int index = getIndex(col) + 2;
 		String[] columns = dataset.getExpressionSets().getColumnNames();
@@ -86,8 +102,13 @@ public class HeatMapTableModel extends AbstractTableModel {
 		String gene = genes.get(row);
 		if(col == 0)
 			return gene;
-		
 		int geneID = map.getHashFromGene(gene);
+		if(col == 1) {
+			if(ranking == null)
+				return null;
+			return ranking.get(geneID);
+		}
+		
 		DataSet dataset = getDataSet(col);
 		int index = getIndex(col);
 		Double[] vals = getExpression(dataset, geneID);
@@ -98,6 +119,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 	public Class<?> getColumnClass(int col) {
 		if(col == 0)
 			return String.class;
+		if(col == 1)
+			return RankValue.class;
 		else
 			return Double.class;
 	}

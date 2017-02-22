@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.heatmap;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
 import java.awt.Color;
 import java.util.HashMap;
@@ -11,6 +11,7 @@ import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.mskcc.colorgradient.ColorGradientRange;
 import org.mskcc.colorgradient.ColorGradientTheme;
