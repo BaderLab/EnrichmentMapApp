@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 import java.util.List;
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.GreatFilter;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -17,12 +17,12 @@ import com.google.common.collect.ImmutableSet;
 
 public class ParseGREATEnrichmentResults extends DatasetLineParser {
 
-	public ParseGREATEnrichmentResults(DataSet dataset) {
+	public ParseGREATEnrichmentResults(EMDataSet dataset) {
 		super(dataset);
 	}
 
 	@Override
-	public void parseLines(List<String> lines, DataSet dataset, TaskMonitor taskMonitor) {
+	public void parseLines(List<String> lines, EMDataSet dataset, TaskMonitor taskMonitor) {
 		if(taskMonitor == null)
 			taskMonitor = new NullTaskMonitor();
 		taskMonitor.setTitle("Parsing Enrichment Result file");
@@ -37,7 +37,7 @@ public class ParseGREATEnrichmentResults extends DatasetLineParser {
 		//If they specify both use the highest p-value and q-value from the above columns
 		GreatFilter filterType = dataset.getMap().getParams().getGreatFilter();
 
-		Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
+		Map<String, GeneSet> genesets = dataset.getSetOfGeneSets().getGeneSets();
 
 		EnrichmentMap map = dataset.getMap();
 		Map<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();

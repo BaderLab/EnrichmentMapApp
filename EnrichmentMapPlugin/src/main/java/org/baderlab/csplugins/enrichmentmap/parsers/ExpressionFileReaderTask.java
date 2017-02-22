@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
@@ -63,12 +63,12 @@ import org.cytoscape.work.TaskMonitor;
  */
 public class ExpressionFileReaderTask extends AbstractTask {
 
-	private final DataSet dataset;
+	private final EMDataSet dataset;
 
 	/**
 	 * @param dataset - dataset expression file is associated with
 	 */
-	public ExpressionFileReaderTask(DataSet dataset) {
+	public ExpressionFileReaderTask(EMDataSet dataset) {
 		this.dataset = dataset;
 	}
 
@@ -98,7 +98,7 @@ public class ExpressionFileReaderTask extends AbstractTask {
 
 		boolean twoColumns = false;
 
-		Set<Integer> datasetGenes = dataset.getDatasetGenes();
+		Set<Integer> datasetGenes = dataset.getDataSetGenes();
 //		Map<Integer,String> genes = dataset.getMap().getGenes();
 		EnrichmentMap map = dataset.getMap();
 

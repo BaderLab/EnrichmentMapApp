@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
@@ -52,7 +52,7 @@ public class ModelSerializer {
 		
 		try {
 			EnrichmentMap map = gson.fromJson(json, EnrichmentMap.class);
-			for(DataSet dataset : map.getDatasetList()) {
+			for(EMDataSet dataset : map.getDataSetList()) {
 				dataset.setParent(map);
 			}
 			return map;

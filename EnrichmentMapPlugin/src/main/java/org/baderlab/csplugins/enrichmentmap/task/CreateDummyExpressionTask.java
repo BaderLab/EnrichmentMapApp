@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import java.util.Map;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.cytoscape.work.AbstractTask;
@@ -15,9 +15,9 @@ import org.cytoscape.work.TaskMonitor;
  */
 public class CreateDummyExpressionTask extends AbstractTask {
 
-	private final DataSet dataset;
+	private final EMDataSet dataset;
 
-	public CreateDummyExpressionTask(DataSet dataset) {
+	public CreateDummyExpressionTask(EMDataSet dataset) {
 		this.dataset = dataset;
 	}
 
@@ -29,8 +29,8 @@ public class CreateDummyExpressionTask extends AbstractTask {
 		//HashMap<String, Integer> genes= dataset.getMap().getGenes();
 		Set<Integer> datasetGenes;
 
-		Map<String, Integer> genes = dataset.getMap().getGenesetsGenes(dataset.getSetofgenesets().getGenesets().values());
-		datasetGenes = dataset.getDatasetGenes();
+		Map<String, Integer> genes = dataset.getMap().getGeneSetsGenes(dataset.getSetOfGeneSets().getGeneSets().values());
+		datasetGenes = dataset.getDataSetGenes();
 
 		String[] titletokens = {"Name", "Description", "Dummy Expression"};
 

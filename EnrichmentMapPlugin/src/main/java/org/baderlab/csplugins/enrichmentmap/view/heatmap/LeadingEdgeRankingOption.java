@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
@@ -18,7 +18,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
 
 public class LeadingEdgeRankingOption implements RankingOption {
 	
-	private final DataSet dataset;
+	private final EMDataSet dataset;
 	private final String geneSetName;
 	
 	private double scoreAtMax;
@@ -26,7 +26,7 @@ public class LeadingEdgeRankingOption implements RankingOption {
 	private String ranksName = Ranking.GSEARanking; // MKTODO will this ever be different?
 	
 	
-	public LeadingEdgeRankingOption(DataSet dataset, String geneSetName) {
+	public LeadingEdgeRankingOption(EMDataSet dataset, String geneSetName) {
 		assert dataset.getMethod() == Method.GSEA;
 		this.dataset = dataset;
 		this.geneSetName = geneSetName;

@@ -12,9 +12,10 @@ import java.util.Scanner;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.CyActivator;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
@@ -63,19 +64,19 @@ public class LegacySessionLoader {
 	 *
 	 * @param pStateFileList - list of files associated with thie session
 	 */
+	@SuppressWarnings("unchecked")
 	public void loadSession(CySession session) {
-		Map<Long,EnrichmentMapParameters> paramsMap = new HashMap<>();
-		Map<Long,EnrichmentMap> enrichmentMapMap = new HashMap<>();
-		
+		Map<Long, EnrichmentMapParameters> paramsMap = new HashMap<>();
+		Map<Long, EnrichmentMap> enrichmentMapMap = new HashMap<>();
+
 		List<File> fileList = session.getAppFileListMap().get(CyActivator.APP_NAME);
 		
 		try {
 			//go through the prop files first to create the correct objects to be able to add other files to.
-			for(File prop_file : fileList) {
-				if(prop_file.getName().contains(".props")){
-
-					InputStream reader = streamUtil.getInputStream(prop_file.getAbsolutePath());       			
-					String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();                        
+			for (File prop_file : fileList) {
+				if (prop_file.getName().contains(".props")) {
+					InputStream reader = streamUtil.getInputStream(prop_file.getAbsolutePath());
+					String fullText = new Scanner(reader, "UTF-8").useDelimiter("\\A").next();              
 
 					//Given the file with all the parameters create a new parameter
 					EnrichmentMapParameters params = enrichmentMapParametersFactory.create(fullText);
@@ -92,20 +93,19 @@ public class LegacySessionLoader {
 					//the network name specified in the props file is different from the name of the props
 					//file then assume the name in the props file is wrong and set it to the file name (legacy issue)
 					//related to bug ticket #49
-					if(!props_name.equalsIgnoreCase(param_name)){
+					if (!props_name.equalsIgnoreCase(param_name))
 						networkName = props_name;
-					}
 
 					//after associated the properties with the network
 					//initialized each Dataset that we have files for
 					HashMap<String, DataSetFiles> files = params.getFiles();
-					for(Iterator<String> j = params.getFiles().keySet().iterator();j.hasNext();){
+
+					for (Iterator<String> j = params.getFiles().keySet().iterator(); j.hasNext();) {
 						String current_dataset = j.next();
 						Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
 						em.createDataSet(current_dataset, method, files.get(current_dataset));
 					}
 
-					
 					CyNetwork network = getNetworkByName(networkName);
 					Long suid = network.getSUID();
 					em.setNetworkID(suid);
@@ -114,10 +114,10 @@ public class LegacySessionLoader {
 				}
 			}
 			
-			//go through the rest of the files
-			for(File prop_file : fileList) {
-				FileNameParts parts = ParseFileName(prop_file);
-				if(parts == null || prop_file.getName().contains(".props"))
+			// go through the rest of the files
+			for (File propFile : fileList) {
+				FileNameParts parts = ParseFileName(propFile);
+				if (parts == null || propFile.getName().contains(".props"))
 					continue;
 
 				CyNetwork net = getNetworkByName(parts.name);
@@ -125,98 +125,108 @@ public class LegacySessionLoader {
 				EnrichmentMapParameters params = paramsMap.get(net.getSUID());
 				Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
 
-				if(em == null)
-					System.out.println("network for file" + prop_file.getName() + " does not exist.");
-				else if((!prop_file.getName().contains(".props")) && (!prop_file.getName().contains(".expression1.txt")) && (!prop_file.getName().contains(".expression2.txt"))){
-					HashMap<String,String> props = params.getProps();
+				if (em == null) {
+					System.out.println("network for file" + propFile.getName() + " does not exist.");
+				} else if ((!propFile.getName().contains(".props")) && (!propFile.getName().contains(".expression1.txt"))
+						&& (!propFile.getName().contains(".expression2.txt"))) {
+					HashMap<String, String> props = params.getProps();
 					//if this a dataset specific file make sure there is a dataset object for it
-					if(!(parts.dataset == null) && em.getDataset(parts.dataset) == null && !parts.dataset.equalsIgnoreCase("signature"))
+					if(!(parts.dataset == null) && em.getDataSet(parts.dataset) == null && !parts.dataset.equalsIgnoreCase("signature"))
 						em.createDataSet(parts.dataset, method, params.getFiles().get(parts.dataset));
 					if(parts.type == null)
-						System.out.println("Sorry, unable to determine the type of the file: "+ prop_file.getName());
+						System.out.println("Sorry, unable to determine the type of the file: "+ propFile.getName());
 
 					//read the file
-					InputStream reader = streamUtil.getInputStream(prop_file.getAbsolutePath());     			
+					InputStream reader = streamUtil.getInputStream(propFile.getAbsolutePath());     			
 					String fullText = new Scanner(reader,"UTF-8").useDelimiter("\\A").next();                        
 
-
 					//if the file is empty then skip it
-					if(fullText == null || fullText.equalsIgnoreCase(""))
+					if (fullText == null || fullText.equalsIgnoreCase(""))
 						continue;
 
-					if(prop_file.getName().contains(".gmt")){
-						if (prop_file.getName().contains(".signature.gmt"))
-							em.setSignatureGenesets((HashMap<String, GeneSet>)params.repopulateHashmap(fullText, 1));
-						//account for legacy session files
-						else if(prop_file.getName().contains(".set2.gmt")){
-							if(em.getAllGenesets().containsKey(LegacySupport.DATASET2)){
-								SetOfGeneSets gs = new SetOfGeneSets(LegacySupport.DATASET2,props);
-								gs.setGenesets((HashMap<String, GeneSet>) params.repopulateHashmap(fullText,1));
+					if (propFile.getName().contains(".gmt")) {
+						HashMap<String, GeneSet> gsMap =
+								(HashMap<String, GeneSet>) params.repopulateHashmap(fullText, 1);
+						
+						if (propFile.getName().contains(".signature.gmt")) {
+							Set<EMSignatureDataSet> sigDataSets = new HashSet<>();
+							gsMap.forEach((k, v) -> sigDataSets.add(new EMSignatureDataSet(k, v)));
+							em.setSignatureDataSets(sigDataSets);
+						} else if (propFile.getName().contains(".set2.gmt")) {
+							// account for legacy session files
+							if (em.getAllGeneSets().containsKey(LegacySupport.DATASET2)) {
+								SetOfGeneSets gs = new SetOfGeneSets(LegacySupport.DATASET2, props);
+								gs.setGeneSets(gsMap);
 							}
-						}else{
-							SetOfGeneSets gs = new SetOfGeneSets(parts.dataset,props);
-							gs.setGenesets((HashMap<String, GeneSet>)params.repopulateHashmap(fullText,1));
-							em.getDatasets().get(parts.dataset).setSetofgenesets(gs);
+						} else {
+							SetOfGeneSets gs = new SetOfGeneSets(parts.dataset, props);
+							gs.setGeneSets(gsMap);
+							em.getDataSets().get(parts.dataset).setSetOfGeneSets(gs);
 						}
 					}
-					if(prop_file.getName().contains(".genes.txt")){
-						HashMap<String, Integer> genes = params.repopulateHashmap(fullText,2);
+					
+					if (propFile.getName().contains(".genes.txt")) {
+						HashMap<String, Integer> genes = params.repopulateHashmap(fullText, 2);
 						genes.forEach(em::addGene);
+						
 						//ticket #188 - unable to open session files that have empty enrichment maps.
-						if(genes != null && !genes.isEmpty())
+						if (genes != null && !genes.isEmpty())
 							// Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
 							em.setNumberOfGenes( Math.max( em.getNumberOfGenes(), Collections.max(genes.values())+1 ));
 					}
-					if(prop_file.getName().contains(".hashkey2genes.txt")){
+					
+					if (propFile.getName().contains(".hashkey2genes.txt")) {
 						HashMap<Integer,String> hashkey2gene = params.repopulateHashmap(fullText,5);
 //						em.setHashkey2gene(hashkey2gene);
 						//ticket #188 - unable to open session files that have empty enrichment maps.
-						if(hashkey2gene != null && !hashkey2gene.isEmpty() )
+						if (hashkey2gene != null && !hashkey2gene.isEmpty() )
 							// Ticket #107 : restore also gene count (needed to determine the next free hash in case we do PostAnalysis with a restored session)
 							em.setNumberOfGenes( Math.max( em.getNumberOfGenes(), Collections.max(hashkey2gene.keySet())+1 ));
 					}
 
-
-
-					if((parts.type != null && (parts.type.equalsIgnoreCase("ENR") || (parts.type.equalsIgnoreCase("SubENR")))) 
-							|| prop_file.getName().contains(".ENR1.txt") || prop_file.getName().contains(".SubENR1.txt")){
+					if ((parts.type != null && (parts.type.equalsIgnoreCase("ENR") || (parts.type.equalsIgnoreCase("SubENR")))) 
+							|| propFile.getName().contains(".ENR1.txt") || propFile.getName().contains(".SubENR1.txt")){
 						SetOfEnrichmentResults enrichments;
 						int temp = 1;
+						
 						//check to see if this dataset has enrichment results already
-						if(parts.dataset != null && em.getDataset(parts.dataset).getEnrichments() != null)
-							enrichments = em.getDataset(parts.dataset).getEnrichments();
-						else	 if (parts.dataset == null){
-							enrichments = em.getDataset(LegacySupport.DATASET1).getEnrichments();
+						if (parts.dataset != null && em.getDataSet(parts.dataset).getEnrichments() != null) {
+							enrichments = em.getDataSet(parts.dataset).getEnrichments();
+						} else if (parts.dataset == null){
+							enrichments = em.getDataSet(LegacySupport.DATASET1).getEnrichments();
 							/*enrichments = new SetOfEnrichmentResults(EnrichmentMap.DATASET1,props);
                 			em.getDataset(EnrichmentMap.DATASET1).setEnrichments(enrichments);*/
+						} else {
+							enrichments = new SetOfEnrichmentResults(parts.dataset, props);
+							em.getDataSet(parts.dataset).setEnrichments(enrichments);
 						}
-						else	{
-							enrichments = new SetOfEnrichmentResults(parts.dataset,props);
-							em.getDataset(parts.dataset).setEnrichments(enrichments);
-						}
-						if(parts.type.equalsIgnoreCase("ENR") || prop_file.getName().contains(".ENR1.txt")){
-							if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
-								enrichments.setEnrichments(params.repopulateHashmap(fullText,3));
+						
+						if (parts.type.equalsIgnoreCase("ENR") || propFile.getName().contains(".ENR1.txt")) {
+							if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
+								enrichments.setEnrichments(params.repopulateHashmap(fullText, 3));
 							else
-								enrichments.setEnrichments(params.repopulateHashmap(fullText,4));
+								enrichments.setEnrichments(params.repopulateHashmap(fullText, 4));
 						}
 
 					}
 
 					//have to keep this method just in case old session files have ranks saved in this way
 					//it would only happen for sessions saved with version 0.8
-					if(prop_file.getName().contains(".RANKS1.txt") || prop_file.getName().contains(".RANKS1Genes.txt")){
+					if (propFile.getName().contains(".RANKS1.txt") || propFile.getName().contains(".RANKS1Genes.txt")){
 						Ranking new_ranking;
 						//Check to see if there is already GSEARanking
-						if(em.getDataset(LegacySupport.DATASET1).getExpressionSets().getAllRanksNames().contains(Ranking.GSEARanking))
-							new_ranking = em.getDataset(LegacySupport.DATASET1).getExpressionSets().getRanksByName(Ranking.GSEARanking);
-						else{
+						if (em.getDataSet(LegacySupport.DATASET1).getExpressionSets().getAllRanksNames()
+								.contains(Ranking.GSEARanking)) {
+							new_ranking = em.getDataSet(LegacySupport.DATASET1).getExpressionSets()
+									.getRanksByName(Ranking.GSEARanking);
+						} else {
 							new_ranking = new Ranking();
-							em.getDataset(LegacySupport.DATASET1).getExpressionSets().addRanks(Ranking.GSEARanking, new_ranking);                			
+							em.getDataSet(LegacySupport.DATASET1).getExpressionSets().addRanks(Ranking.GSEARanking,
+									new_ranking);
 						}
 						
-						if(prop_file.getName().contains(".RANKS1.txt")) {
-							Map<Integer,Rank> ranks = (Map<Integer,Rank>)params.repopulateHashmap(fullText,7);
+						if (propFile.getName().contains(".RANKS1.txt")) {
+							Map<Integer, Rank> ranks = (Map<Integer, Rank>) params.repopulateHashmap(fullText, 7);
 							ranks.forEach(new_ranking::addRank);
 						}
 //						if(prop_file.getName().contains(".RANKS1Genes.txt"))
@@ -225,78 +235,90 @@ public class LegacySessionLoader {
 //							new_ranking.setRanking(em.getParams().repopulateHashmap(fullText,6));
 					}
 
-					if(prop_file.getName().contains(".RANKS.txt")){
-						if(parts.ranks_name == null){
+					if (propFile.getName().contains(".RANKS.txt")) {
+						if (parts.ranks_name == null) {
 							//we need to get the name of this set of rankings
 							// network_name.ranking_name.ranks.txt --> split by "." and get 2
 
-							String[] file_name_tokens = (prop_file.getName()).split("\\.");
+							String[] file_name_tokens = (propFile.getName()).split("\\.");
 
 							if((file_name_tokens.length == 4) && (file_name_tokens[1].equals("Dataset 1 Ranking") || file_name_tokens[1].equals("Dataset 2 Ranking"))
-									|| (prop_file.getName().contains(Ranking.GSEARanking)))
+									|| (propFile.getName().contains(Ranking.GSEARanking)))
 								parts.ranks_name = Ranking.GSEARanking ;
 							
 							//this is an extra rank file for backwards compatability.  Ignore it.
-							else if((file_name_tokens.length == 4) && (file_name_tokens[1].equals("Dataset 1") || file_name_tokens[1].equals("Dataset 2")) && file_name_tokens[2].equals("RANKS"))
-									continue;
-							else
-								//file name is not structured properly --> default to file name
-								parts.ranks_name = prop_file.getName();
+							else if ((file_name_tokens.length == 4)
+									&& (file_name_tokens[1].equals("Dataset 1")
+											|| file_name_tokens[1].equals("Dataset 2"))
+									&& file_name_tokens[2].equals("RANKS"))
+								continue;
+							else //file name is not structured properly --> default to file name
+								parts.ranks_name = propFile.getName();
 						}
 						Ranking new_ranking = new Ranking();
 						Map<Integer,Rank> ranks = (Map<Integer,Rank>)params.repopulateHashmap(fullText,6);
 						ranks.forEach(new_ranking::addRank);
 
-						if(parts.dataset != null)
-							em.getDataset(parts.dataset).getExpressionSets().addRanks(parts.ranks_name,new_ranking);
+						if (parts.dataset != null)
+							em.getDataSet(parts.dataset).getExpressionSets().addRanks(parts.ranks_name, new_ranking);
 						else
-							em.getDataset(LegacySupport.DATASET1).getExpressionSets().addRanks(parts.ranks_name,new_ranking);
+							em.getDataSet(LegacySupport.DATASET1).getExpressionSets().addRanks(parts.ranks_name,
+									new_ranking);
 					}
+					
 					//Deal with legacy issues                    
-					if(params.isTwoDatasets()){
+					if (params.isTwoDatasets()) {
 						//make sure there is a Dataset2
-						if(!em.getDatasets().containsKey(LegacySupport.DATASET2))
+						if (!em.getDataSets().containsKey(LegacySupport.DATASET2))
 							em.createDataSet(LegacySupport.DATASET2, method, new DataSetFiles());
-						if( prop_file.getName().contains(".ENR2.txt") || prop_file.getName().contains(".SubENR2.txt")){
+						
+						if (propFile.getName().contains(".ENR2.txt") || propFile.getName().contains(".SubENR2.txt")) {
 							SetOfEnrichmentResults enrichments;
 							//check to see if this dataset has enrichment results already
-							if(em.getDataset(LegacySupport.DATASET2).getEnrichments() != null)
-								enrichments = em.getDataset(LegacySupport.DATASET2).getEnrichments();
-							else	{
-								enrichments = new SetOfEnrichmentResults(LegacySupport.DATASET2,props);
-								em.getDataset(LegacySupport.DATASET2).setEnrichments(enrichments);
+							if (em.getDataSet(LegacySupport.DATASET2).getEnrichments() != null) {
+								enrichments = em.getDataSet(LegacySupport.DATASET2).getEnrichments();
+							} else {
+								enrichments = new SetOfEnrichmentResults(LegacySupport.DATASET2, props);
+								em.getDataSet(LegacySupport.DATASET2).setEnrichments(enrichments);
 							}
-							if(prop_file.getName().contains(".ENR2.txt")){
-								if(params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
-									enrichments.setEnrichments(params.repopulateHashmap(fullText,3));
+							
+							if (propFile.getName().contains(".ENR2.txt")) {
+								if (params.getMethod().equalsIgnoreCase(EnrichmentMapParameters.method_GSEA))
+									enrichments.setEnrichments(params.repopulateHashmap(fullText, 3));
 								else
-									enrichments.setEnrichments(params.repopulateHashmap(fullText,4));
-							}  			
-						}                        
+									enrichments.setEnrichments(params.repopulateHashmap(fullText, 4));
+							}	
+						} 
+						
 						//have to keep this method just in case old session files have ranks saved in this way
 						//it would only happen for sessions saved with version 0.8
-						if(prop_file.getName().contains(".RANKS2.txt") || prop_file.getName().contains(".RANKS2Genes.txt")){
+						if (propFile.getName().contains(".RANKS2.txt")
+								|| propFile.getName().contains(".RANKS2Genes.txt")) {
 							Ranking new_ranking;
-							//Check to see if there is already GSEARanking
-							if(em.getDataset(LegacySupport.DATASET2).getExpressionSets().getAllRanksNames().contains(Ranking.GSEARanking))
-								new_ranking = em.getDataset(LegacySupport.DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking);
-							else{
+							
+							// Check to see if there is already GSEARanking
+							if (em.getDataSet(LegacySupport.DATASET2).getExpressionSets().getAllRanksNames()
+									.contains(Ranking.GSEARanking)) {
+								new_ranking = em.getDataSet(LegacySupport.DATASET2).getExpressionSets()
+										.getRanksByName(Ranking.GSEARanking);
+							} else {
 								new_ranking = new Ranking();
-								em.getDataset(LegacySupport.DATASET2).getExpressionSets().addRanks(Ranking.GSEARanking, new_ranking);                			
+								em.getDataSet(LegacySupport.DATASET2).getExpressionSets().addRanks(Ranking.GSEARanking,
+										new_ranking);
 							}
-							if(prop_file.getName().contains(".RANKS2.txt")) {
-								Map<Integer,Rank> ranks = (Map<Integer,Rank>)params.repopulateHashmap(fullText,6);
+							
+							if (propFile.getName().contains(".RANKS2.txt")) {
+								Map<Integer, Rank> ranks = (Map<Integer, Rank>) params.repopulateHashmap(fullText, 6);
 								ranks.forEach(new_ranking::addRank);
 							}
 						}
 					}
 				}
-
 			}
 
 			//load the expression files.  Load them last because they require
 			//info from the parameters
-			for(int i = 0; i < fileList.size(); i++){
+			for (int i = 0; i < fileList.size(); i++){
 				File prop_file = fileList.get(i);
 				FileNameParts parts_exp = ParseFileName(prop_file);
 				//unrecognized file
@@ -307,33 +329,33 @@ public class LegacySessionLoader {
 				EnrichmentMapParameters params = paramsMap.get(net.getSUID());
 				Map<String,String> props = params.getProps();
 
-				if(parts_exp.type != null && parts_exp.type.equalsIgnoreCase("expression")){
-					if(map.getDatasets().containsKey(parts_exp.dataset)){
-						DataSet ds = map.getDataset(parts_exp.dataset);
+				if (parts_exp.type != null && parts_exp.type.equalsIgnoreCase("expression")){
+					if(map.getDataSets().containsKey(parts_exp.dataset)){
+						EMDataSet ds = map.getDataSet(parts_exp.dataset);
 						ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds);
 						GeneExpressionMatrix matrix = expressionFile1.parse();
 						matrix.restoreProps(parts_exp.dataset, props);
 					}
 				}
 				//Deal with legacy session files.
-				if(prop_file.getName().contains("expression1.txt")){                  
-					DataSet ds1 = map.getDataset(LegacySupport.DATASET1);
+				if (prop_file.getName().contains("expression1.txt")){                  
+					EMDataSet ds1 = map.getDataSet(LegacySupport.DATASET1);
 					ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds1);
 					expressionFile1.parse();
 
 				}
-				if(prop_file.getName().contains("expression2.txt")){                    
-					DataSet ds2 = map.getDataset(LegacySupport.DATASET2);
+				if (prop_file.getName().contains("expression2.txt")){                    
+					EMDataSet ds2 = map.getDataSet(LegacySupport.DATASET2);
 					ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(ds2);
 					expressionFile2.parse();
+					
 					//if there are two expression sets and there is a second set of genesets of interest then we
 					//are dealing with two distinct expression files.
-					if( map.getDataset(LegacySupport.DATASET2) != null && map.getDataset(LegacySupport.DATASET2).getGenesetsOfInterest() != null && !map.getDataset(LegacySupport.DATASET2).getGenesetsOfInterest().getGenesets().isEmpty() ){
+					if (map.getDataSet(LegacySupport.DATASET2) != null && map.getDataSet(LegacySupport.DATASET2).getGeneSetsOfInterest() != null && !map.getDataSet(LegacySupport.DATASET2).getGeneSetsOfInterest().getGeneSets().isEmpty() ){
 						map.setDistinctExpressionSets(true);
-						map.getDataset(LegacySupport.DATASET1).setDatasetGenes(new HashSet<Integer>((Set<Integer>)map.getDataset(LegacySupport.DATASET1).getExpressionSets().getGeneIds()));
-						map.getDataset(LegacySupport.DATASET2).setDatasetGenes(new HashSet<Integer>((Set<Integer>)map.getDataset(LegacySupport.DATASET2).getExpressionSets().getGeneIds()));
+						map.getDataSet(LegacySupport.DATASET1).setDataSetGenes(new HashSet<Integer>((Set<Integer>)map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getGeneIds()));
+						map.getDataSet(LegacySupport.DATASET2).setDataSetGenes(new HashSet<Integer>((Set<Integer>)map.getDataSet(LegacySupport.DATASET2).getExpressionSets().getGeneIds()));
 					}
-
 				}
 			}
 
@@ -344,14 +366,15 @@ public class LegacySessionLoader {
 			//register the action listeners for all the networks.
 
 			//iterate over the networks
-			for(Iterator<Long> j = enrichmentMapMap.keySet().iterator(); j.hasNext();){
+			for (Iterator<Long> j = enrichmentMapMap.keySet().iterator(); j.hasNext();){
 				Long id = j.next();
 				EnrichmentMap map = enrichmentMapMap.get(id);
+				
 				//only initialize objects if there is a map for this network
-				if(map != null){
-					if(map.getDatasets().size() > 1) {
-						Set<Integer> dataset1_genes = map.getDatasets().get(LegacySupport.DATASET1).getDatasetGenes();
-						Set<Integer> dataset2_genes = map.getDatasets().get(LegacySupport.DATASET2).getDatasetGenes();
+				if (map != null){
+					if(map.getDataSets().size() > 1) {
+						Set<Integer> dataset1_genes = map.getDataSets().get(LegacySupport.DATASET1).getDataSetGenes();
+						Set<Integer> dataset2_genes = map.getDataSets().get(LegacySupport.DATASET2).getDataSetGenes();
 						
 						if(!dataset1_genes.equals(dataset2_genes))
 							map.setDistinctExpressionSets(true);
@@ -377,15 +400,14 @@ public class LegacySessionLoader {
 				}//end of if(map != null)
 			}
 			
-			
-			for(Iterator<Long> j = enrichmentMapMap.keySet().iterator(); j.hasNext();) {
+			for (Iterator<Long> j = enrichmentMapMap.keySet().iterator(); j.hasNext();) {
 				Long id = j.next();
 				CyNetwork currentNetwork = cyNetworkManager.getNetwork(id);
 				EnrichmentMap map = enrichmentMapMap.get(id);
 				map.setLegacy(true);
 				emManager.registerEnrichmentMap(map);
 				
-				if(!j.hasNext()) {
+				if (!j.hasNext()) {
 					//set the last network to be the one viewed and initialize the parameters panel
 					cyApplicationManager.setCurrentNetwork(currentNetwork);
 				}

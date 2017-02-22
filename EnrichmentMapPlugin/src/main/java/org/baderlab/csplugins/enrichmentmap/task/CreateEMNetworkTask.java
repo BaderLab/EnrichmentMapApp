@@ -8,9 +8,9 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -96,25 +96,25 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		return network.getSUID();
 	}
 	
-	private Map<String,CyNode> createNodes(CyNetwork network) {
+	private Map<String, CyNode> createNodes(CyNetwork network) {
 		// Keep track of nodes as we create them, key is geneset name
-		Map<String,CyNode> nodes = new HashMap<>();
+		Map<String, CyNode> nodes = new HashMap<>();
 		// Keep a running union of all the genes in each geneset across all datasets
-		Map<String,Set<Integer>> genesetGenes = new HashMap<>();
+		Map<String, Set<Integer>> genesetGenes = new HashMap<>();
 		
 		// Create nodes for all genesets of interest
-		for(DataSet dataset : map.getDatasetList()) {
-			Map<String,GeneSet> genesetsOfInterest = dataset.getGenesetsOfInterest().getGenesets();
-			Map<String,EnrichmentResult> enrichmentResults = dataset.getEnrichments().getEnrichments();
-			
-			for(String genesetName : genesetsOfInterest.keySet()) {
+		for (EMDataSet ds : map.getDataSetList()) {
+			Map<String, GeneSet> genesetsOfInterest = ds.getGeneSetsOfInterest().getGeneSets();
+			Map<String, EnrichmentResult> enrichmentResults = ds.getEnrichments().getEnrichments();
+
+			for (String genesetName : genesetsOfInterest.keySet()) {
 				GeneSet gs = genesetsOfInterest.get(genesetName);
-				
 				CyNode node = nodes.get(genesetName);
-				if(node == null) {
+				
+				if (node == null) {
 					node = network.addNode();
 					nodes.put(genesetName, node);
-					dataset.getNodeSuids().put(genesetName, node.getSUID());
+					ds.addNodeSuid(genesetName, node.getSUID());
 					genesetGenes.put(genesetName, new HashSet<>(gs.getGenes()));
 					
 					CyRow row = network.getRow(node);
@@ -123,18 +123,17 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 					Columns.NODE_NAME.set(row, prefix, null, genesetName); // MKTODO why is this column needed?
 					Columns.NODE_GS_DESCR.set(row, prefix, null, gs.getDescription());
 					Columns.NODE_GS_TYPE.set(row, prefix, null, Columns.NODE_GS_TYPE_ENRICHMENT);
-				}
-				else {
+				} else {
 					genesetGenes.get(genesetName).addAll(gs.getGenes());
 				}
 				
 				EnrichmentResult result = enrichmentResults.get(genesetName);
 				CyRow row = network.getRow(node);
-				
-				if(dataset.getMethod() == Method.GSEA)
-					setGSEAResultNodeAttributes(row, dataset.getName(), (GSEAResult)result);
+
+				if (ds.getMethod() == Method.GSEA)
+					setGSEAResultNodeAttributes(row, ds.getName(), (GSEAResult) result);
 				else
-					setGenericResultNodeAttributes(row, dataset.getName(), (GenericResult)result); 
+					setGenericResultNodeAttributes(row, ds.getName(), (GenericResult) result);
 			}
 		}
 		
@@ -197,7 +196,7 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		
 		EMCreationParameters params = map.getParams();
 		
-		for (String datasetName : map.getDatasetNames()) {
+		for (String datasetName : map.getDataSetNames()) {
 			Columns.NODE_PVALUE.createColumn(table, prefix, datasetName);
 			Columns.NODE_FDR_QVALUE.createColumn(table, prefix, datasetName);
 			Columns.NODE_FWER_QVALUE.createColumn(table, prefix, datasetName);

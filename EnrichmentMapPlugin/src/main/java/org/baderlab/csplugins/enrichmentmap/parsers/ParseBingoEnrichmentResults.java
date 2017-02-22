@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 import java.util.List;
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
@@ -15,12 +15,12 @@ import com.google.common.collect.ImmutableSet;
 
 public class ParseBingoEnrichmentResults extends DatasetLineParser {
 
-	public ParseBingoEnrichmentResults(DataSet dataset) {
+	public ParseBingoEnrichmentResults(EMDataSet dataset) {
 		super(dataset);
 	}
 
 	@Override
-	public void parseLines(List<String> lines, DataSet dataset, TaskMonitor taskMonitor) {
+	public void parseLines(List<String> lines, EMDataSet dataset, TaskMonitor taskMonitor) {
 		if(taskMonitor == null)
 			taskMonitor = new NullTaskMonitor();
 		taskMonitor.setTitle("Parsing Bingo Enrichment Result file");
@@ -44,7 +44,7 @@ public class ParseBingoEnrichmentResults extends DatasetLineParser {
 
 		// Column 8 is the geneset name
 		// Column 9 is the list of genes in this geneset -- therefore pre-filtered.
-		Map<String, GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
+		Map<String, GeneSet> genesets = dataset.getSetOfGeneSets().getGeneSets();
 
 		//get the genes (which should also be empty
 		EnrichmentMap map = dataset.getMap();

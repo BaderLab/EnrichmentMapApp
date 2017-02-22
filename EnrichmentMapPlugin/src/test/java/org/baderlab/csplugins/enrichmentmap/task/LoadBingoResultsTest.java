@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
@@ -43,7 +43,7 @@ public class LoadBingoResultsTest {
 		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
-		DataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Specialized, files);				
+		EMDataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Specialized, files);				
 		
 		ParseBingoEnrichmentResults enrichmentResultsFilesTask = new ParseBingoEnrichmentResults(dataset);
         enrichmentResultsFilesTask.run(taskMonitor); 
@@ -63,21 +63,21 @@ public class LoadBingoResultsTest {
 
 				
 		//check to see if the dataset loaded - there should be 74 genesets
-		assertEquals(74, dataset.getSetofgenesets().getGenesets().size());
+		assertEquals(74, dataset.getSetOfGeneSets().getGeneSets().size());
 		//there should also be 74 enrichments (the genesets are built from the bgo file)
 		assertEquals(74, dataset.getEnrichments().getEnrichments().size());
 		//there should be 11 genesets in the enrichments of interest
-		assertEquals(5, dataset.getGenesetsOfInterest().getGenesets().size());
+		assertEquals(5, dataset.getGeneSetsOfInterest().getGeneSets().size());
 		//there should be 6 edges
 		assertEquals(6, baton.supplier().get().size());
 		//there should be a total of 366 genes
 		assertEquals(446, em.getNumberOfGenes());
 		//there should be 43 genes in the geneset "nucleolus"
-		assertEquals(43, em.getAllGenesets().get("NUCLEOLUS").getGenes().size());
+		assertEquals(43, em.getAllGeneSets().get("NUCLEOLUS").getGenes().size());
 
 		//make sure the dummy expression has values for all the genes
 		assertEquals(446, dataset.getExpressionSets().getNumGenes());
-		assertEquals(446,dataset.getDatasetGenes().size()); 
+		assertEquals(446,dataset.getDataSetGenes().size()); 
 	}
 	
 	
@@ -104,14 +104,14 @@ public class LoadBingoResultsTest {
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
-		DataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Specialized, files);				
+		EMDataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Specialized, files);				
 		
 		ParseBingoEnrichmentResults  enrichmentResultsFilesTask = new ParseBingoEnrichmentResults(dataset);
         enrichmentResultsFilesTask.run(taskMonitor); 
 		
 		//Load second dataset
 		//create a dataset
-		DataSet dataset2 = em.createDataSet(LegacySupport.DATASET2, Method.Specialized, files2);						
+		EMDataSet dataset2 = em.createDataSet(LegacySupport.DATASET2, Method.Specialized, files2);						
 		//create a DatasetTask
 		
 		ParseBingoEnrichmentResults  enrichmentResultsFiles2Task = new ParseBingoEnrichmentResults(dataset2);
@@ -123,8 +123,8 @@ public class LoadBingoResultsTest {
 		CreateDummyExpressionTask dummyExpressionTask2 = new CreateDummyExpressionTask(dataset2);
 		dummyExpressionTask2.run(taskMonitor);
 		//check to see if the two datasets are distinct
-		if(!((dataset.getDatasetGenes().containsAll(dataset2.getDatasetGenes())) && 
-					(dataset2.getDatasetGenes().containsAll(dataset.getDatasetGenes()))))
+		if(!((dataset.getDataSetGenes().containsAll(dataset2.getDataSetGenes())) && 
+					(dataset2.getDataSetGenes().containsAll(dataset.getDataSetGenes()))))
 				em.setDistinctExpressionSets(true);	
 				
 		em.filterGenesets();
@@ -135,33 +135,33 @@ public class LoadBingoResultsTest {
 //		ComputeSimilarityTask similarities = new ComputeSimilarityTask(em);
 //		similarities.run(taskMonitor);
 
-        dataset = em.getDataset(LegacySupport.DATASET1);
+        dataset = em.getDataSet(LegacySupport.DATASET1);
 		//get the stats for the first dataset		
 		//check to see if the dataset loaded - there should be 74 genesets
-		assertEquals(74, dataset.getSetofgenesets().getGenesets().size());
+		assertEquals(74, dataset.getSetOfGeneSets().getGeneSets().size());
 		//there should also be 74 enrichments (the genesets are built from the bgo file)
 		assertEquals(74, dataset.getEnrichments().getEnrichments().size());
 		//there should be 11 genesets in the enrichments of interest
-		assertEquals(5, dataset.getGenesetsOfInterest().getGenesets().size());
+		assertEquals(5, dataset.getGeneSetsOfInterest().getGeneSets().size());
 		//there should be 43 genes in the geneset "nucleolus"
-		assertEquals(43, dataset.getSetofgenesets().getGenesets().get("NUCLEOLUS").getGenes().size());
+		assertEquals(43, dataset.getSetOfGeneSets().getGeneSets().get("NUCLEOLUS").getGenes().size());
 		//make sure the dummy expression has values for all the genes
 		assertEquals(446, dataset.getExpressionSets().getNumGenes());
-		assertEquals(446,dataset.getDatasetGenes().size());
+		assertEquals(446,dataset.getDataSetGenes().size());
 		
-		dataset2 = em.getDataset(LegacySupport.DATASET2);
+		dataset2 = em.getDataSet(LegacySupport.DATASET2);
 		//check the stats for dataset2
 		//check to see if the dataset loaded - there should be 74 genesets
-		assertEquals(87, dataset2.getSetofgenesets().getGenesets().size());
+		assertEquals(87, dataset2.getSetOfGeneSets().getGeneSets().size());
 		//there should also be 74 enrichments (the genesets are built from the bgo file)
 		assertEquals(87, dataset2.getEnrichments().getEnrichments().size());
 		//there should be 11 genesets in the enrichments of interest
-		assertEquals(2, dataset2.getGenesetsOfInterest().getGenesets().size());
+		assertEquals(2, dataset2.getGeneSetsOfInterest().getGeneSets().size());
 		//there should be 43 genes in the geneset "nucleolus"
-		assertEquals(318, dataset2.getSetofgenesets().getGenesets().get("INTRACELLULAR").getGenes().size());
+		assertEquals(318, dataset2.getSetOfGeneSets().getGeneSets().get("INTRACELLULAR").getGenes().size());
 		//make sure the dummy expression has values for all the genes
 		assertEquals(398, dataset2.getExpressionSets().getNumGenes());
-		assertEquals(398,dataset2.getDatasetGenes().size());
+		assertEquals(398,dataset2.getDataSetGenes().size());
 		
 		//there should be 20 edges (2 edges for every node because of the distinct expresison sets)
 		//assertEquals(24,em.getGenesetSimilarity().size());

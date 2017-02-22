@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -60,7 +60,6 @@ import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-
 
 /**
  * Flips column headers to vertical position

@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -70,14 +70,14 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 	
 	
 	private Map<SimilarityKey,GenesetSimilarity> startComputeSimilarities(TaskMonitor tm, ExecutorService executor, boolean distinct, boolean compound) {
-		Set<String> names = map.getAllGenesetNames();
+		Set<String> names = map.getAllGeneSetNames();
 		Map<String,Set<Integer>> unionedGenesets = compound ? map.unionAllGeneSetsOfInterest() : null;
 		
 		DiscreteTaskMonitor taskMonitor = discreteTaskMonitor(tm, names.size());
 		String edgeType = map.getParams().getEnrichmentEdgeType();
 		Map<SimilarityKey,GenesetSimilarity> similarities = new ConcurrentHashMap<>();
 		
-		Collection<DataSet> dataSets = map.getDatasetList();
+		Collection<EMDataSet> dataSets = map.getDataSetList();
 		
 		for(final String geneset1Name : names) {
 			// Compute similarities in batches, creating a Runnable for every similarity pair would create too many objects
@@ -88,11 +88,11 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 					
 					if(distinct) {
 						int i = 1;
-						for(DataSet dataset : dataSets) {
+						for(EMDataSet dataset : dataSets) {
 							SimilarityKey key = new SimilarityKey(geneset1Name, geneset2Name, edgeType, i++);
 							
 							if(!similarities.containsKey(key)) {
-								Map<String,GeneSet> genesets = dataset.getGenesetsOfInterest().getGenesets();
+								Map<String,GeneSet> genesets = dataset.getGeneSetsOfInterest().getGeneSets();
 								GeneSet geneset1 = genesets.get(geneset1Name);
 								GeneSet geneset2 = genesets.get(geneset2Name);
 								

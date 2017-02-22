@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;

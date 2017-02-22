@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
+package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.awt.Color;
 import java.util.HashMap;

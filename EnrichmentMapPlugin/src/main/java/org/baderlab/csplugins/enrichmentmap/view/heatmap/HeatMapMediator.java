@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
@@ -93,7 +93,7 @@ public class HeatMapMediator implements RowsSetListener {
 		List<RankingOption> options = new ArrayList<>();
 		options.add(new HierarchicalClusterRankingOption());
 		
-		for(DataSet dataset : map.getDatasetList()) {
+		for(EMDataSet dataset : map.getDataSetList()) {
 			if(nodes.size() == 1 && edges.isEmpty() && dataset.getMethod() == Method.GSEA && contains(dataset, network, nodes.get(0))) {
 				String name = network.getRow(nodes.get(0)).get(CyNetwork.NAME, String.class);
 				options.add(new LeadingEdgeRankingOption(dataset, name));
@@ -109,7 +109,7 @@ public class HeatMapMediator implements RowsSetListener {
 		return options;
 	}
 
-	private static boolean contains(CyNetwork network, DataSet dataset, List<CyNode> nodes, List<CyEdge> edges) {
+	private static boolean contains(CyNetwork network, EMDataSet dataset, List<CyNode> nodes, List<CyEdge> edges) {
 		for(CyNode node : nodes) {
 			if(contains(dataset, network, node))
 				return true;
@@ -121,9 +121,9 @@ public class HeatMapMediator implements RowsSetListener {
 		return false;
 	}
 	
-	private static boolean contains(DataSet dataset, CyNetwork network, CyNode node) {
+	private static boolean contains(EMDataSet dataset, CyNetwork network, CyNode node) {
 		String name = network.getRow(node).get(CyNetwork.NAME, String.class);
-		return dataset.getGenesetsOfInterest().getGeneSetByName(name) != null;
+		return dataset.getGeneSetsOfInterest().getGeneSetByName(name) != null;
 	}
 	
 	

@@ -60,13 +60,13 @@ public class LegacySupport {
 		if(map == null)
 			return false;
 		return  
-				(map.getDataSetCount() == 1 && map.getDataset(DATASET1) != null)
-			||  (map.getDataSetCount() == 2 && map.getDataset(DATASET1) != null && map.getDataset(DATASET2) != null);
+				(map.getDataSetCount() == 1 && map.getDataSet(DATASET1) != null)
+			||  (map.getDataSetCount() == 2 && map.getDataSet(DATASET1) != null && map.getDataSet(DATASET2) != null);
 	}
 	
 	public static boolean isLegacyTwoDatasets(EnrichmentMap map) {
 		if(map == null)
 			return false;
-		return map.getDataSetCount() == 2 && map.getDataset(DATASET1) != null && map.getDataset(DATASET2) != null;
+		return map.getDataSetCount() == 2 && map.getDataSet(DATASET1) != null && map.getDataSet(DATASET2) != null;
 	}
 }

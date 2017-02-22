@@ -45,7 +45,7 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.IOException;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolver;
 import org.baderlab.csplugins.enrichmentmap.task.CreateGMTEnrichmentMapTask;
 import org.cytoscape.work.AbstractTask;
@@ -69,10 +69,10 @@ public class DetermineEnrichmentResultFileReader {
 	//default Score at Max value
 	public static final Double DefaultScoreAtMax = -1000000.0;
 	
-	private final DataSet dataset;
+	private final EMDataSet dataset;
 	
 
-	public DetermineEnrichmentResultFileReader(DataSet dataset) {
+	public DetermineEnrichmentResultFileReader(EMDataSet dataset) {
 		this.dataset = dataset;
 	}
 

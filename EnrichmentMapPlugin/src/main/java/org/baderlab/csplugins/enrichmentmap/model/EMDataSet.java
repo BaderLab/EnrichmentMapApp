@@ -1,65 +1,55 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.awt.Color;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
-/*
- * An Enrichment Map Dataset consists of:
- * Set of Genesets
- * Set of Genes
- * Enrichments of those genesets
- * Expression of genes used to calculate the enrichment
+/**
+ * An Enrichment Map Data Set consists of:
+ * <ul><li>Set of Genesets</li>
+ * <li>Set of Genes</li>
+ * <li>Enrichments of those genesets</li>
+ * <li>Expression of genes used to calculate the enrichment</li></ul>
  */
-
-public class DataSet implements Comparable<DataSet> {
+public class EMDataSet extends AbstractDataSet {
 	
 	public static enum Method {
 		GSEA, Generic, Specialized
 	}
 	
-	//name of Dataset
-	private String name;
 	private Method method;
 
-	// The set of enrichments
-	//An enrichment result can either be an Generic or GSEA result.
+	/** The set of enrichments. An enrichment result can either be an Generic or GSEA result. */
 	private SetOfEnrichmentResults enrichments = new SetOfEnrichmentResults();
 
-	//The Expression
 	private GeneExpressionMatrix expressionSets = new GeneExpressionMatrix();
 	private boolean dummyExpressionData;
 	private Color color;
 
-	//Hashmap of all genesets in the geneset file (gmt file)
-	private SetOfGeneSets setofgenesets = new SetOfGeneSets();
-	private SetOfGeneSets genesetsOfInterest = new SetOfGeneSets();
-	private Map<String,Long> nodeSuids = new HashMap<>();
+	/** Hashmap of all genesets in the geneset file (gmt file). */
+	private SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
+	private SetOfGeneSets geneSetsOfInterest = new SetOfGeneSets();
 
-	//The set of genes in the analysis
-	//(there might be genes in the gmt file that are not in expression set)
-	private Set<Integer> datasetGenes = new HashSet<>();
+	/** The set of genes in the analysis (there might be genes in the gmt file that are not in expression set). */
+	private Set<Integer> dataSetGenes = new HashSet<>();
 
-	//Enrichment Map
-	//A dataset is associated with an Enrichment map.
 	//TODO: Can a dataset be associated to multiple Enrichment maps?
+	/** A Dataset is always associated with an Enrichment Map. */
 	private transient EnrichmentMap map;
 
-	//The list of files associated with this Dataset
-	private DataSetFiles datasetFiles;
+	/** The list of files associated with this Dataset. */
+	private DataSetFiles dataSetFiles;
 
-	protected DataSet(EnrichmentMap map, String name, Method method, DataSetFiles files) {
+	protected EMDataSet(EnrichmentMap map, String name, Method method, DataSetFiles files) {
+		super(name);
 		this.map = map;
-		this.name = name;
 		this.method = method;
 
 		//get the file name parameters for this map
 		//initialize all the filenames from the parameters for this dataset
 		if(name != null) {
-			this.datasetFiles = files;
-			this.setofgenesets.setFilename(files.getGMTFileName());
+			this.dataSetFiles = files;
+			this.setOfGeneSets.setFilename(files.getGMTFileName());
 			this.enrichments.setFilename1(files.getEnrichmentFileName1());
 			this.enrichments.setFilename2(files.getEnrichmentFileName2());
 			this.enrichments.setPhenotype1(files.getPhenotype1());
@@ -69,22 +59,8 @@ public class DataSet implements Comparable<DataSet> {
 		} else {
 			System.out.println("There are no files initialized for this Dataset, named:" + name + "\n");
 		}
-
 	}
 
-	@Override
-	public int compareTo(DataSet ds2) {
-		return this.getName().compareTo(ds2.getName());
-	}
-	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-	
 	public Method getMethod() {
 		return method;
 	}
@@ -121,36 +97,36 @@ public class DataSet implements Comparable<DataSet> {
 		return map;
 	}
 
-	public SetOfGeneSets getSetofgenesets() {
-		return setofgenesets;
+	public SetOfGeneSets getSetOfGeneSets() {
+		return setOfGeneSets;
 	}
 
-	public void setSetofgenesets(SetOfGeneSets setofgenesets) {
-		this.setofgenesets = setofgenesets;
+	public void setSetOfGeneSets(SetOfGeneSets setOfGeneSets) {
+		this.setOfGeneSets = setOfGeneSets;
 	}
 
-	public SetOfGeneSets getGenesetsOfInterest() {
-		return genesetsOfInterest;
+	public SetOfGeneSets getGeneSetsOfInterest() {
+		return geneSetsOfInterest;
 	}
 
-	public void setGenesetsOfInterest(SetOfGeneSets genesetsOfInterest) {
-		this.genesetsOfInterest = genesetsOfInterest;
+	public void setGeneSetsOfInterest(SetOfGeneSets geneSetsOfInterest) {
+		this.geneSetsOfInterest = geneSetsOfInterest;
 	}
 
-	public Set<Integer> getDatasetGenes() {
-		return datasetGenes;
+	public Set<Integer> getDataSetGenes() {
+		return dataSetGenes;
 	}
 
-	public void setDatasetGenes(Set<Integer> datasetGenes) {
-		this.datasetGenes = datasetGenes;
+	public void setDataSetGenes(Set<Integer> dataSetGenes) {
+		this.dataSetGenes = dataSetGenes;
 	}
 
-	public DataSetFiles getDatasetFiles() {
-		return datasetFiles;
+	public DataSetFiles getDataSetFiles() {
+		return dataSetFiles;
 	}
 
-	public void setDatasetFiles(DataSetFiles datasetFiles) {
-		this.datasetFiles = datasetFiles;
+	public void setDataSetFiles(DataSetFiles dataSetFiles) {
+		this.dataSetFiles = dataSetFiles;
 	}
 
 	public boolean isDummyExpressionData() {
@@ -161,16 +137,12 @@ public class DataSet implements Comparable<DataSet> {
 		this.dummyExpressionData = dummyExpressionData;
 	}
 
-	public Map<String,Long> getNodeSuids() {
-		return nodeSuids;
-	}
-	
 	@Override
 	public int hashCode() {
 		final int prime = 11;
 		int result = 5;
 		result = prime * result + ((method == null) ? 0 : method.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
 		return result;
 	}
 
@@ -182,13 +154,13 @@ public class DataSet implements Comparable<DataSet> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		DataSet other = (DataSet) obj;
+		EMDataSet other = (EMDataSet) obj;
 		if (method != other.method)
 			return false;
-		if (name == null) {
-			if (other.name != null)
+		if (getName() == null) {
+			if (other.getName() != null)
 				return false;
-		} else if (!name.equals(other.name)) {
+		} else if (!getName().equals(other.getName())) {
 			return false;
 		}
 		return true;
@@ -196,7 +168,7 @@ public class DataSet implements Comparable<DataSet> {
 
 	@Override
 	public String toString() {
-		return "DataSet [name=" + name + ", method=" + method + "]";
+		return "EMDataSet [name=" + getName() + ", method=" + method + "]";
 	}
 
 	public Color getColor() {

@@ -3,8 +3,8 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
@@ -22,9 +22,9 @@ public class CreateGMTEnrichmentMapTask extends AbstractTask {
 	private TaskMonitor taskMonitor = null;
 	private boolean interrupted = false;
 
-	private DataSet dataset;
+	private EMDataSet dataset;
 
-	public CreateGMTEnrichmentMapTask(DataSet dataset) {
+	public CreateGMTEnrichmentMapTask(EMDataSet dataset) {
 
 		this.dataset = dataset;
 
@@ -34,9 +34,9 @@ public class CreateGMTEnrichmentMapTask extends AbstractTask {
 		this.dataset.setMethod(Method.Generic);
 
 		//in this case all the genesets are of interest
-		this.dataset.setGenesetsOfInterest(this.dataset.getSetofgenesets());
+		this.dataset.setGeneSetsOfInterest(this.dataset.getSetOfGeneSets());
 
-		Map<String, GeneSet> current_sets = this.dataset.getSetofgenesets().getGenesets();
+		Map<String, GeneSet> current_sets = this.dataset.getSetOfGeneSets().getGeneSets();
 
 		//create an new Set of Enrichment Results                
 		SetOfEnrichmentResults setofenrichments = new SetOfEnrichmentResults();

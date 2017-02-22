@@ -3,12 +3,13 @@ package org.baderlab.csplugins.enrichmentmap.model.io;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.CyActivator;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
@@ -134,7 +135,7 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 			emManager.getAllEnrichmentMaps().forEach((suid, em) -> {
 				System.out.println("suid:" + suid);
 				System.out.println("datasets:");
-				em.getDatasetList().forEach(dataset -> System.out.println(dataset.getName()));
+				em.getDataSetList().forEach(dataset -> System.out.println(dataset.getName()));
 			});
 			System.out.println();
 		}
@@ -167,20 +168,25 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 	}
 	
 	private void updateNodeSuids(EnrichmentMap map, CySession session) {
-		for(DataSet dataset : map.getDatasetList()) {
-			Map<String,Long> nodes = dataset.getNodeSuids();
-			for(String key : nodes.keySet()) {
-				Long suid = nodes.get(key);
-				if(session != null) {
+		for (EMDataSet ds : map.getDataSetList()) {
+			Map<String, Long> oldSuids = ds.getNodeSuids();
+			Map<String, Long> newSuids = new HashMap<>();
+			
+			for (String key : oldSuids.keySet()) {
+				Long suid = oldSuids.get(key);
+				
+				if (session != null) {
 					// If we are loading from a session file then we need to re-map the ids
 					CyNode node = session.getObject(suid, CyNode.class);
 					suid = node.getSUID();
 				}
-				nodes.put(key, suid);
+				
+				newSuids.put(key, suid);
 			}
+			
+			ds.setNodeSuids(newSuids);
 		}
 	}
-	
 
 	private CyTable getPrivateTable() {
 		for(CyTable table : tableManager.getAllTables(true)) {
@@ -190,7 +196,6 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 		}
 		return null;
 	}
-	
 	
 	private CyTable deleteRedundantTables() {
 		for(CyTable table : tableManager.getAllTables(true)) {

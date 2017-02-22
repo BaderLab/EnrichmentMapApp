@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 import java.util.List;
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
@@ -11,12 +11,12 @@ import org.cytoscape.work.TaskMonitor;
 
 public class ParseGSEAEnrichmentResults extends DatasetLineParser {
 	
-	public ParseGSEAEnrichmentResults(DataSet dataset) {
+	public ParseGSEAEnrichmentResults(EMDataSet dataset) {
 		super(dataset);
 	}
 	
 	@Override
-	public void parseLines(List<String> lines, DataSet dataset, TaskMonitor taskMonitor) {
+	public void parseLines(List<String> lines, EMDataSet dataset, TaskMonitor taskMonitor) {
 		if(taskMonitor == null)
 			taskMonitor = new NullTaskMonitor();
 		taskMonitor.setTitle("Parsing Bingo Enrichment Result file");

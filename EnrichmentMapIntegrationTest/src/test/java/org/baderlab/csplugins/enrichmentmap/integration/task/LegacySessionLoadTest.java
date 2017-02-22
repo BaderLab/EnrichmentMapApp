@@ -17,8 +17,8 @@ import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.SessionFile;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet;
-import org.baderlab.csplugins.enrichmentmap.model.DataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.GreatFilter;
@@ -142,19 +142,19 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals("Geneset_Overlap", row.get(CyEdge.INTERACTION, String.class));
 		assertEquals(0.6097560975609756, EMStyleBuilder.Columns.EDGE_SIMILARITY_COEFF.get(row, prefix), 0.0);
 		
-		DataSet dataset = map.getDataset("Dataset 1");
+		EMDataSet dataset = map.getDataSet("Dataset 1");
 		assertNotNull(dataset);
 		assertSame(map, dataset.getMap());
 		assertEquals(Method.GSEA, dataset.getMethod());
-		assertEquals(12653, dataset.getDatasetGenes().size());
-		assertEquals(389, dataset.getGenesetsOfInterest().getGenesets().size());
+		assertEquals(12653, dataset.getDataSetGenes().size());
+		assertEquals(389, dataset.getGeneSetsOfInterest().getGeneSets().size());
 //		assertEquals(17259, dataset.getSetofgenesets().getGenesets().size()); // MKTODO why? what is this used for
-		assertEndsWith(dataset.getSetofgenesets().getFilename(), "Human_GO_AllPathways_no_GO_iea_April_15_2013_symbol.gmt");
+		assertEndsWith(dataset.getSetOfGeneSets().getFilename(), "Human_GO_AllPathways_no_GO_iea_April_15_2013_symbol.gmt");
 		for(long suid : dataset.getNodeSuids().values()) {
 			assertNotNull(network.getNode(suid));
 		}
 		
-		GeneSet geneset = dataset.getGenesetsOfInterest().getGenesets().get("NCRNA PROCESSING%GO%GO:0034470");
+		GeneSet geneset = dataset.getGeneSetsOfInterest().getGeneSets().get("NCRNA PROCESSING%GO%GO:0034470");
 		assertEquals(88, geneset.getGenes().size());
 		assertEquals("NCRNA PROCESSING%GO%GO:0034470", geneset.getName());
 		assertEquals("ncRNA processing", geneset.getDescription());
@@ -205,7 +205,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(1238, rank.getRank().intValue());
 		assertEquals(0.54488367, rank.getScore(), 0.0);
 		
-		DataSetFiles files = dataset.getDatasetFiles();
+		DataSetFiles files = dataset.getDataSetFiles();
 		assertEndsWith(files.getClassFile(), "ES_NT.cls");
 		assertEndsWith(files.getEnrichmentFileName1(), "gsea_report_for_ES12_1473194913081.xls");
 		assertEndsWith(files.getEnrichmentFileName2(), "gsea_report_for_NT12_1473194913081.xls");
