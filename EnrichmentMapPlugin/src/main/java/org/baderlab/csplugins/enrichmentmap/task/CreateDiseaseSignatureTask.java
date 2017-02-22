@@ -109,12 +109,12 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 	private double currentNodeYOffset;
 	
 	// Gene Populations:
-	private Set<Integer> EnrichmentGenes;
-	private Set<Integer> SignatureGenes;
+	private Set<Integer> enrichmentGenes;
+	private Set<Integer> signatureGenes;
 
 	// Ranks
 	private Ranking ranks;
-	private Map<String, GenesetSimilarity> genesetSimilarities;
+	private Map<String, GenesetSimilarity> geneSetSimilarities;
 
 	private CreateDiseaseSignatureTaskResult.Builder taskResult = new CreateDiseaseSignatureTaskResult.Builder();
 
@@ -140,24 +140,24 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		}
 		
 		signatureGeneSets = this.params.getSignatureGenesets().getGeneSets();
-		genesetSimilarities = new HashMap<>();
+		geneSetSimilarities = new HashMap<>();
 		selectedSignatureGeneSets = new HashMap<>();
 		
-		for (String geneset : params.getSelectedSignatureSetNames()) {
+		for (String geneset : params.getSelectedSignatureSetNames())
 			selectedSignatureGeneSets.put(geneset, signatureGeneSets.get(geneset));
-		}
 
 		// EnrichmentGenes: pool of all genes in Enrichment Gene Sets
 		// TODO: get enrichment map genes from enrichment map parameters now that they are computed there.
-		EnrichmentGenes = new HashSet<>();
-		for (GeneSet geneSet : enrichmentGeneSets.values()) {
-			EnrichmentGenes.addAll(geneSet.getGenes());
-		}
+		enrichmentGenes = new HashSet<>();
+		
+		for (GeneSet geneSet : enrichmentGeneSets.values())
+			enrichmentGenes.addAll(geneSet.getGenes());
+		
 		// SignatureGenes: pool of all genes in Signature Gene Sets
-		SignatureGenes = new HashSet<>();
-		for (GeneSet geneSet : signatureGeneSets.values()) {
-			SignatureGenes.addAll(geneSet.getGenes());
-		}
+		signatureGenes = new HashSet<>();
+		
+		for (GeneSet geneSet : signatureGeneSets.values())
+			signatureGenes.addAll(geneSet.getGenes());
 
 		this.interaction = getInteraction();
 	}
@@ -190,16 +190,16 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 			}
 
 			//get the node attribute and edge attribute tables
-			CyTable cyEdgeAttrs = createEdgeColumns(currentNetwork, "", prefix);
-			CyTable cyNodeAttrs = createNodeColumns(currentNetwork, "", prefix);
+			CyTable edgeTable = createEdgeColumns(currentNetwork, "", prefix);
+			CyTable nodeTable = createNodeColumns(currentNetwork, "", prefix);
 
 			// make a HashMap of all Nodes in the Network
-			Map<String, CyNode> nodesMap = createNodeMap(currentNetwork, cyNodeAttrs, prefix);
+			Map<String, CyNode> nodesMap = createNodeMap(currentNetwork, nodeTable, prefix);
 
 			// Common gene universe: Intersection of EnrichmentGenes and SignatureGenes
-			Set<Integer> geneUniverse = ImmutableSet.copyOf(EnrichmentGenes);
+			Set<Integer> geneUniverse = ImmutableSet.copyOf(enrichmentGenes);
 
-			Map<String, String> duplicateGenesets = new HashMap<>();
+			Map<String, String> duplicateGeneSets = new HashMap<>();
 
 			//iterate over selected Signature genesets
 			for (String hubName : selectedSignatureGeneSets.keySet()) {
@@ -209,7 +209,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 				// Check to see if the signature geneset shares the same name with an 
 				// enrichment geneset. If it does, give the signature geneset a unique name
 				if (enrichmentGeneSets.containsKey(hubName)) {
-					duplicateGenesets.put(hubName, "PA_" + hubName);
+					duplicateGeneSets.put(hubName, "PA_" + hubName);
 					hubName = "PA_" + hubName;
 				}
 
@@ -252,7 +252,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 					} else if (!nodesMap.containsKey(genesetName)) {
 						// skip if the Geneset is not in the Network
 					} else if (Columns.NODE_GS_TYPE
-							.get(cyNodeAttrs.getRow(nodesMap.get(genesetName).getSUID()), prefix, null)
+							.get(nodeTable.getRow(nodesMap.get(genesetName).getSUID()), prefix, null)
 							.equalsIgnoreCase(Columns.NODE_GS_TYPE_SIGNATURE)) {
 						// skip if the Geneset is a Signature Node from a previous analysis
 					/*
@@ -293,42 +293,42 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 									break;
 							}
 
-							genesetSimilarities.put(similarityKey, comparison);
+							geneSetSimilarities.put(similarityKey, comparison);
 						}
 					}
 				}
 
 				// Create Signature Hub Node
 				boolean created = createHubNode(hubName, currentNetwork, currentView, currentNodeYOffset, prefix,
-						cyEdgeAttrs, cyNodeAttrs, geneUniverse, sigGeneSet);
+						edgeTable, nodeTable, geneUniverse, sigDataSet);
 				
 				if (created)
 					currentNodeYOffset += currentNodeYIncrement;
 			}
 
 			// Update signature geneset map with new names of all signature genesets that have duplicates
-			for (String originalHubName : duplicateGenesets.keySet()) {
+			for (String originalHubName : duplicateGeneSets.keySet()) {
 				GeneSet geneset = selectedSignatureGeneSets.remove(originalHubName);
-				selectedSignatureGeneSets.put(duplicateGenesets.get(originalHubName), geneset);
+				selectedSignatureGeneSets.put(duplicateGeneSets.get(originalHubName), geneset);
 			}
 			
-			duplicateGenesets.clear();
+			duplicateGeneSets.clear();
 
 			// Create Signature Hub Edges
-			for (String edgeName : genesetSimilarities.keySet()) {
+			for (String edgeName : geneSetSimilarities.keySet()) {
 				if (cancelled)
 					throw new InterruptedException();
 
-				if (!genesetSimilarities.get(edgeName).getInteractionType().equals(interaction))
+				if (!geneSetSimilarities.get(edgeName).getInteractionType().equals(interaction))
 					// skip if it's not a signature edge from the same dataset
 					continue;
-				if (!(this.selectedSignatureGeneSets.containsKey(genesetSimilarities.get(edgeName).getGeneset1Name())
-						|| this.selectedSignatureGeneSets.containsKey(genesetSimilarities.get(edgeName).getGeneset2Name())))
+				if (!(this.selectedSignatureGeneSets.containsKey(geneSetSimilarities.get(edgeName).getGeneset1Name())
+						|| this.selectedSignatureGeneSets.containsKey(geneSetSimilarities.get(edgeName).getGeneset2Name())))
 					// skip if not either of the adjacent nodes is a SelectedSignatureGenesets of the current analysis (fixes Bug #44)
 					continue;
 
 				boolean passedCutoff = passesCutoff(edgeName);
-				createEdge(edgeName, currentNetwork, currentView, prefix, cyEdgeAttrs, cyNodeAttrs, passedCutoff);
+				createEdge(edgeName, currentNetwork, currentView, prefix, edgeTable, nodeTable, passedCutoff);
 			}
 
 			widthFunctionProvider.get().setEdgeWidths(currentNetwork, prefix, taskMonitor);
@@ -338,7 +338,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 	}
 
 	private boolean passesCutoff(String edgeName) {
-		GenesetSimilarity similarity = genesetSimilarities.get(edgeName);
+		GenesetSimilarity similarity = geneSetSimilarities.get(edgeName);
 		PostAnalysisFilterParameters filterParams = params.getRankTestParameters();
 
 		switch (filterParams.getType()) {
@@ -382,11 +382,11 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 			CyTable edgeTable,
 			CyTable nodeTable,
 			Set<Integer> geneUniverse,
-			GeneSet sigGeneSet
+			EMSignatureDataSet sigDataSet
 	) {
 		boolean created = false;
 		
-		// test for existing node first
+		// Test for existing node first
 		CyNode hubNode = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME, hubName);
 		
 		if (hubNode == null) {
@@ -394,7 +394,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 			taskResult.addNewNode(hubNode);
 			created = true;
 		}
-
+		
 		network.getRow(hubNode).set(CyNetwork.NAME, hubName);
 		// flush events to make sure view has been created.
 		eventHelper.flushPayloadEvents();
@@ -412,6 +412,8 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		CyRow row = nodeTable.getRow(hubNode.getSUID());
 		Columns.NODE_FORMATTED_NAME.set(row, prefix, null, formattedLabel);
 
+		GeneSet sigGeneSet = sigDataSet.getGeneSet();
+		
 		List<String> geneList = sigGeneSet.getGenes().stream()
 				.map(map::getGeneFromHashKey)
 				.filter(Objects::nonNull)
@@ -432,12 +434,12 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		Columns.NODE_NAME.set(row, prefix, null, sigGeneSet.getName());
 		Columns.NODE_GS_SIZE.set(row, prefix, null, sigGeneSet.getGenes().size());
 
-		// add the geneset of the signature node to the GenesetsOfInterest,
+		// Add the geneset of the signature node to the GenesetsOfInterest,
 		// as the Heatmap will grep it's data from there.
-		EMDataSet dataset = map.getDataSet(params.getSignatureDataSet());
-		Set<Integer> signatureGenesInDataSet = ImmutableSet.copyOf(Sets.intersection(sigGeneSet.getGenes(), dataset.getDataSetGenes()));
-		GeneSet geneSetInDataSet = new GeneSet(sigGeneSet.getName(), sigGeneSet.getDescription(), signatureGenesInDataSet);
-		dataset.getGeneSetsOfInterest().getGeneSets().put(hubName, geneSetInDataSet);
+		EMDataSet dataSet = map.getDataSet(params.getSignatureDataSet());
+		Set<Integer> sigGenesInDataSet = ImmutableSet.copyOf(Sets.intersection(sigGeneSet.getGenes(), dataSet.getDataSetGenes()));
+		GeneSet geneSetInDataSet = new GeneSet(sigGeneSet.getName(), sigGeneSet.getDescription(), sigGenesInDataSet);
+		dataSet.getGeneSetsOfInterest().getGeneSets().put(hubName, geneSetInDataSet);
 
 		return created;
 	}
@@ -449,21 +451,20 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 	 */
 	private void createEdge(String edgeName, CyNetwork network, CyNetworkView netView, String prefix, CyTable edgeTable,
 			CyTable nodeTable, boolean passedCutoff) {
-
 		CyEdge edge = NetworkUtil.getEdgeWithValue(network, edgeTable, CyNetwork.NAME, edgeName);
-		GenesetSimilarity genesetSimilarity = genesetSimilarities.get(edgeName);
+		GenesetSimilarity genesetSimilarity = geneSetSimilarities.get(edgeName);
 
 		if (edge == null) {
 			if (passedCutoff) {
-				CyNode hub_node = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME,
+				CyNode hubNode = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME,
 						genesetSimilarity.getGeneset1Name());
-				CyNode gene_set = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME,
+				CyNode geneSet = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME,
 						genesetSimilarity.getGeneset2Name());
 
-				if (hub_node == null || gene_set == null)
+				if (hubNode == null || geneSet == null)
 					return;
 
-				edge = network.addEdge(hub_node, gene_set, false);
+				edge = network.addEdge(hubNode, geneSet, false);
 				taskResult.addNewEdge(edge);
 			} else {
 				return; // edge does not exist and does not pass cutoff, do nothing

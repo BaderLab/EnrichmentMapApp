@@ -260,8 +260,8 @@ public class EnrichmentMap {
 		Map<String, GeneSet> allGeneSets = new HashMap<>();
 		
 		for (EMDataSet ds : dataSets.values()) {
-			Map<String, GeneSet> genesets = ds.getGeneSetsOfInterest().getGeneSets();
-			allGeneSets.putAll(genesets);
+			Map<String, GeneSet> geneSets = ds.getGeneSetsOfInterest().getGeneSets();
+			allGeneSets.putAll(geneSets);
 		}
 		
 		// if there are post analysis genesets, add them to the set of all genesets
@@ -280,11 +280,9 @@ public class EnrichmentMap {
 		for (EMDataSet ds : getDataSetList()) {
 			Map<String, GeneSet> geneSets = ds.getGeneSetsOfInterest().getGeneSets();
 			
-			for (Map.Entry<String, GeneSet> entry : geneSets.entrySet()) {
-				String name = entry.getKey();
-				GeneSet gs = entry.getValue();
+			geneSets.forEach((name, gs) -> {
 				allGeneSets.computeIfAbsent(name, k -> new HashSet<>()).addAll(gs.getGenes());
-			}
+			});
 		}
 
 		return allGeneSets;

@@ -47,7 +47,7 @@ public class EMDataSet extends AbstractDataSet {
 
 		//get the file name parameters for this map
 		//initialize all the filenames from the parameters for this dataset
-		if(name != null) {
+		if (name != null) {
 			this.dataSetFiles = files;
 			this.setOfGeneSets.setFilename(files.getGMTFileName());
 			this.enrichments.setFilename1(files.getEnrichmentFileName1());
