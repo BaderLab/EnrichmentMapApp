@@ -219,9 +219,6 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 				// the genes that are in this signature gene set as well as in the Universe of Enrichment-GMT Genes.    
 				Set<Integer> sigGenesInUniverse = Sets.intersection(sigGenes, geneUniverse);
 
-				EMSignatureDataSet sigDataSet = new EMSignatureDataSet(hubName, sigGeneSet);
-				emManager.getEnrichmentMap(currentNetwork.getSUID()).addSignatureDataSet(sigDataSet);
-
 				// iterate over Enrichment Genesets
 				for (String genesetName : enrichmentGeneSets.keySet()) {
 					// Calculate Percentage.  This must be a value between 0..100.
@@ -298,6 +295,9 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 					}
 				}
 
+				EMSignatureDataSet sigDataSet = new EMSignatureDataSet(hubName, sigGeneSet);
+				emManager.getEnrichmentMap(currentNetwork.getSUID()).addSignatureDataSet(sigDataSet);
+				
 				// Create Signature Hub Node
 				boolean created = createHubNode(hubName, currentNetwork, currentView, currentNodeYOffset, prefix,
 						edgeTable, nodeTable, geneUniverse, sigDataSet);
@@ -392,6 +392,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		if (hubNode == null) {
 			hubNode = network.addNode();
 			taskResult.addNewNode(hubNode);
+			sigDataSet.addNodeSuid(hubName, hubNode.getSUID());
 			created = true;
 		}
 		

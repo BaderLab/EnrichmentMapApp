@@ -556,28 +556,26 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			boolean show = true;
 			CyRow row = network.getRow(n);
 			
-			// Skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)
-			if (table.getColumn(prefix + NODE_GS_TYPE) != null
+			if (!dataSetNodes.contains(n.getSUID())) {
+				show = false;
+			} else if (table.getColumn(prefix + NODE_GS_TYPE) != null
 					&& NODE_GS_TYPE_ENRICHMENT.equalsIgnoreCase(row.get(prefix + NODE_GS_TYPE, String.class))) {
-				if (!dataSetNodes.contains(n.getSUID())) {
-					show = false;
-				} else {
-					for (String colName : columnNames) {
-						if (table.getColumn(colName) == null)
-							continue; // Ignore this column name (maybe the user deleted it)
-						
-						Double value = row.get(colName, Double.class);
-			
-						// Possible that there isn't a cutoff value for this geneset
-						if (value == null)
-							continue;
-			
-						if (value >= minCutoff && value <= maxCutoff) {
-							show = true;
-							break;
-						} else {
-							show = false;
-						}
+				// Skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)...
+				for (String colName : columnNames) {
+					if (table.getColumn(colName) == null)
+						continue; // Ignore this column name (maybe the user deleted it)
+
+					Double value = row.get(colName, Double.class);
+
+					// Possible that there isn't a cutoff value for this geneset
+					if (value == null)
+						continue;
+
+					if (value >= minCutoff && value <= maxCutoff) {
+						show = true;
+						break;
+					} else {
+						show = false;
 					}
 				}
 			}
