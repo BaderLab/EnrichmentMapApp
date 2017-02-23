@@ -8,8 +8,10 @@ public abstract class AbstractDataSet implements Comparable<AbstractDataSet> {
 
 	private final String name;
 	private final Map<String, Long> nodeSuids = new HashMap<>();
+	/** EnrichmentMap only creates nodes for these genes. */
+	private SetOfGeneSets geneSetsOfInterest = new SetOfGeneSets();
 	
-	private final transient Collator collator = Collator.getInstance();
+	private static final Collator collator = Collator.getInstance();
 	private final Object lock = new Object();
 	
 	protected AbstractDataSet(String name) {
@@ -45,6 +47,14 @@ public abstract class AbstractDataSet implements Comparable<AbstractDataSet> {
 		}
 	}
 	
+	public SetOfGeneSets getGeneSetsOfInterest() {
+		return geneSetsOfInterest;
+	}
+
+	public void setGeneSetsOfInterest(SetOfGeneSets geneSetsOfInterest) {
+		this.geneSetsOfInterest = geneSetsOfInterest;
+	}
+		
 	@Override
 	public int compareTo(AbstractDataSet other) {
 		return collator.compare(getName(), other.getName());

@@ -75,8 +75,6 @@ public class PostAnalysisParameters {
 	private final int universeSize;
 	private final String attributePrefix;
 	
-	
-	
 	private PostAnalysisParameters(AnalysisType analysisType, PostAnalysisFilterParameters filterParameters,
 			PostAnalysisFilterParameters rankTestParameters, String signatureGMTFileName, SetOfGeneSets signatureGenesets,
 			Collection<String> selectedSignatureSetNames, double currentNodePlacementYOffset, String signatureRankFile,
@@ -113,7 +111,7 @@ public class PostAnalysisParameters {
 
 	// MKTODO should be just one list of selected gene sets
 	// Right now it stores all the gene sets that were loaded, and a list of the ones that were selected
-	public SetOfGeneSets getSignatureGenesets() {
+	public SetOfGeneSets getSignatureGeneSets() {
 		return signatureGenesets;
 	}
 
@@ -122,7 +120,7 @@ public class PostAnalysisParameters {
 	}
 	
 	
-	public double getCurrentNodePlacementY_Offset() {
+	public double getCurrentNodePlacementYOffset() {
 		return currentNodePlacementYOffset;
 	}
 
@@ -142,9 +140,6 @@ public class PostAnalysisParameters {
 		return attributePrefix;
 	}
 
-	
-
-	
 	public static class Builder {
 		
 		private AnalysisType analysisType;
@@ -158,7 +153,6 @@ public class PostAnalysisParameters {
 		private String signatureDataSet;
 		private int universeSize;
 		private String attributePrefix;
-		
 		
 		public Builder() {
 			// defaults
@@ -289,5 +283,4 @@ public class PostAnalysisParameters {
 			return "Signature GMT file can not be found \n";
 		return "";
 	}
-
 }

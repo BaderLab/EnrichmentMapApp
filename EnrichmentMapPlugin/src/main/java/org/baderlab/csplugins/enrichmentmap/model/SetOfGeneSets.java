@@ -20,11 +20,15 @@ public class SetOfGeneSets {
 
 	//filename
 	private String filename;
-
-	public SetOfGeneSets() {
-		name = "";
+	
+	public SetOfGeneSets(String name) {
+		this.name = name;
 		filename = "";
 		geneSets = new HashMap<>();
+	}
+	
+	public SetOfGeneSets() {
+		this("");
 	}
 
 	/**
@@ -73,10 +77,16 @@ public class SetOfGeneSets {
 		return geneSets;
 	}
 
-	public void setGeneSets(HashMap<String, GeneSet> genesets) {
-		this.geneSets = genesets;
+	public void setGeneSets(HashMap<String, GeneSet> geneSets) {
+		this.geneSets = geneSets;
 	}
 
+	public void addGeneSet(String key, GeneSet geneSet) {
+		synchronized (geneSet) {
+			geneSets.put(key, geneSet);
+		}
+	}
+	
 	public String getFilename() {
 		return filename;
 	}

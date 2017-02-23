@@ -139,7 +139,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 				enrichmentGeneSets.put(gs.getKey(), gs.getValue());
 		}
 		
-		signatureGeneSets = this.params.getSignatureGenesets().getGeneSets();
+		signatureGeneSets = this.params.getSignatureGeneSets().getGeneSets();
 		geneSetSimilarities = new HashMap<>();
 		selectedSignatureGeneSets = new HashMap<>();
 		
@@ -189,6 +189,10 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 				params = PostAnalysisParameters.Builder.from(params).setAttributePrefix(prefix).build();
 			}
 
+			// TODO: check for unique Signature Data Set name -- user can use the same GMT file multiple times, etc
+			EMSignatureDataSet sigDataSet = new EMSignatureDataSet(params.getSignatureGeneSets().getName());
+			emManager.getEnrichmentMap(currentNetwork.getSUID()).addSignatureDataSet(sigDataSet);
+			
 			//get the node attribute and edge attribute tables
 			CyTable edgeTable = createEdgeColumns(currentNetwork, "", prefix);
 			CyTable nodeTable = createNodeColumns(currentNetwork, "", prefix);
@@ -201,10 +205,11 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 
 			Map<String, String> duplicateGeneSets = new HashMap<>();
 
-			//iterate over selected Signature genesets
+			// Iterate over selected Signature genesets
 			for (String hubName : selectedSignatureGeneSets.keySet()) {
 				// get the Signature Genes, restrict them to the Gene-Universe and add them to the Parameters
-				GeneSet sigGeneSet = selectedSignatureGeneSets.get(hubName);
+				final GeneSet sigGeneSet = selectedSignatureGeneSets.get(hubName);
+				sigDataSet.getGeneSetsOfInterest().addGeneSet(hubName, sigGeneSet);
 
 				// Check to see if the signature geneset shares the same name with an 
 				// enrichment geneset. If it does, give the signature geneset a unique name
@@ -295,12 +300,9 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 					}
 				}
 
-				EMSignatureDataSet sigDataSet = new EMSignatureDataSet(hubName, sigGeneSet);
-				emManager.getEnrichmentMap(currentNetwork.getSUID()).addSignatureDataSet(sigDataSet);
-				
 				// Create Signature Hub Node
 				boolean created = createHubNode(hubName, currentNetwork, currentView, currentNodeYOffset, prefix,
-						edgeTable, nodeTable, geneUniverse, sigDataSet);
+						edgeTable, nodeTable, geneUniverse, sigDataSet, sigGeneSet);
 				
 				if (created)
 					currentNodeYOffset += currentNodeYIncrement;
@@ -382,7 +384,8 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 			CyTable edgeTable,
 			CyTable nodeTable,
 			Set<Integer> geneUniverse,
-			EMSignatureDataSet sigDataSet
+			EMSignatureDataSet sigDataSet,
+			GeneSet sigGeneSet
 	) {
 		boolean created = false;
 		
@@ -413,8 +416,6 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		CyRow row = nodeTable.getRow(hubNode.getSUID());
 		Columns.NODE_FORMATTED_NAME.set(row, prefix, null, formattedLabel);
 
-		GeneSet sigGeneSet = sigDataSet.getGeneSet();
-		
 		List<String> geneList = sigGeneSet.getGenes().stream()
 				.map(map::getGeneFromHashKey)
 				.filter(Objects::nonNull)

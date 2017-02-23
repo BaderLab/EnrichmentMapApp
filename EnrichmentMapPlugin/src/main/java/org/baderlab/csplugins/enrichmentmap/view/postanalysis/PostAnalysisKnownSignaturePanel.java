@@ -7,6 +7,7 @@ import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.Set;
 
 import javax.swing.GroupLayout;
@@ -19,6 +20,7 @@ import javax.swing.JPanel;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
@@ -128,10 +130,11 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 	public boolean isReady() {
 		String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
 
-		if(filePath == null || PostAnalysisInputPanel.checkFile(filePath).equals(Color.RED)) {
-			String message = "SigGMT file name not valid.\n";
+		if (!EnrichmentMapParameters.checkFile(filePath)) {
+			String message = "Signature GMT file name not valid.\n";
 			knownSignatureGMTFileNameTextField.setForeground(Color.RED);
 			JOptionPane.showMessageDialog(application.getJFrame(), message, "Post Analysis Known Signature", JOptionPane.WARNING_MESSAGE);
+			
 			return false;
 		}
 
@@ -140,7 +143,8 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		// Use the synchronousTaskManager so that this blocks
 		
 		FilterMetric filterMetric = new FilterMetric.None();
-		LoadSignatureSetsActionListener loadAction = loadSignatureSetsActionListenerFactory.create(filePath, filterMetric);
+		LoadSignatureSetsActionListener loadAction =
+				loadSignatureSetsActionListenerFactory.create(new File(filePath), filterMetric);
 		
 		loadAction.setGeneSetCallback(gs -> {
 			this.signatureGenesets = gs;

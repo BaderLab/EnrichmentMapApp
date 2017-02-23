@@ -64,6 +64,7 @@ import javax.swing.JScrollPane;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.FileChooserFilter;
@@ -296,6 +297,10 @@ public class PostAnalysisInputPanel extends JPanel {
 		return valid ? Optional.of(value.doubleValue()) : Optional.empty();
 	}
 
+	/**
+	 * @deprecated Use {@link EnrichmentMapParameters#checkFile(String)} instead
+	 */
+	@Deprecated
 	protected static Color checkFile(String filename) {
 		// TODO Don't use color as a boolean!
 		// check to see if the files exist and are readable.

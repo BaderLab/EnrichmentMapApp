@@ -2,22 +2,15 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 public class EMSignatureDataSet extends AbstractDataSet {
 
-	private final GeneSet geneSet;
-	
-	public EMSignatureDataSet(String name, GeneSet geneSet) {
+	public EMSignatureDataSet(String name) {
 		super(name);
-		this.geneSet = geneSet;
-	}
-	
-	public GeneSet getGeneSet() {
-		return geneSet;
 	}
 	
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 3;
-		result = prime * result + ((geneSet == null) ? 0 : geneSet.hashCode());
+		final int prime = 11;
+		int result = 7;
+		result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
 		return result;
 	}
 
@@ -30,10 +23,10 @@ public class EMSignatureDataSet extends AbstractDataSet {
 		if (getClass() != obj.getClass())
 			return false;
 		EMSignatureDataSet other = (EMSignatureDataSet) obj;
-		if (geneSet == null) {
-			if (other.geneSet != null)
+		if (getName() == null) {
+			if (other.getName() != null)
 				return false;
-		} else if (!geneSet.equals(other.geneSet))
+		} else if (!getName().equals(other.getName()))
 			return false;
 		return true;
 	}

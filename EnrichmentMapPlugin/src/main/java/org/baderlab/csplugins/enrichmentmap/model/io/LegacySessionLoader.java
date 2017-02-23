@@ -149,9 +149,12 @@ public class LegacySessionLoader {
 								(HashMap<String, GeneSet>) params.repopulateHashmap(fullText, 1);
 						
 						if (propFile.getName().contains(".signature.gmt")) {
-							Set<EMSignatureDataSet> sigDataSets = new HashSet<>();
-							gsMap.forEach((k, v) -> sigDataSets.add(new EMSignatureDataSet(k, v)));
-							em.setSignatureDataSets(sigDataSets);
+							EMSignatureDataSet sigDataSet =
+									new EMSignatureDataSet(propFile.getName().replace(".signature.gmt", ""));
+							em.addSignatureDataSet(sigDataSet);
+							SetOfGeneSets sigGeneSets = sigDataSet.getGeneSetsOfInterest();
+							
+							gsMap.forEach((k, v) -> sigGeneSets.addGeneSet(k, v));
 						} else if (propFile.getName().contains(".set2.gmt")) {
 							// account for legacy session files
 							if (em.getAllGeneSets().containsKey(LegacySupport.DATASET2)) {

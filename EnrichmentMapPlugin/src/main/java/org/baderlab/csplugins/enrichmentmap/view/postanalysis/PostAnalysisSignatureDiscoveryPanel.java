@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
@@ -336,7 +338,15 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 			String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
 
 			if (filePath == null || PostAnalysisInputPanel.checkFile(filePath).equals(Color.RED)) {
-				String message = "SigGMT file name not valid.\n";
+				String message = "Signature GMT file name not valid.\n";
+				signatureDiscoveryGMTFileNameTextField.setForeground(Color.RED);
+				JOptionPane.showMessageDialog(application.getJFrame(), message, "Post Analysis Known Signature",
+						JOptionPane.WARNING_MESSAGE);
+				return;
+			}
+			
+			if (!EnrichmentMapParameters.checkFile(filePath)) {
+				String message = "Signature GMT does not exist.\n";
 				signatureDiscoveryGMTFileNameTextField.setForeground(Color.RED);
 				JOptionPane.showMessageDialog(application.getJFrame(), message, "Post Analysis Known Signature",
 						JOptionPane.WARNING_MESSAGE);
@@ -344,7 +354,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 			}
 
 			FilterMetric filterMetric = createFilterMetric();
-			LoadSignatureSetsActionListener action = loadSignatureSetsActionListenerFactory.create(filePath, filterMetric);
+			LoadSignatureSetsActionListener action = loadSignatureSetsActionListenerFactory.create(new File(filePath), filterMetric);
 
 			action.setGeneSetCallback(gs -> {
 				this.signatureGenesets = gs;

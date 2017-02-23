@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -10,7 +11,6 @@ import javax.swing.JOptionPane;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Sync;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.task.FilterSignatureGSTask;
@@ -33,7 +33,7 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 	@Inject private @Sync TaskManager<?,?> taskManager;
 	@Inject private EnrichmentMapManager emManager;
 	
-	private final String fileName;
+	private final File file;
 	private final FilterMetric filterMetric;
 	
 	private Consumer<SetOfGeneSets> geneSetCallback = x -> {};
@@ -41,12 +41,12 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 	
 	
 	public interface Factory {
-		LoadSignatureSetsActionListener create(String fileName, FilterMetric filterMetric);
+		LoadSignatureSetsActionListener create(File file, FilterMetric filterMetric);
 	}
 	
 	@Inject
-	public LoadSignatureSetsActionListener(@Assisted String fileName, @Assisted FilterMetric filterMetric) {
-		this.fileName = fileName;
+	public LoadSignatureSetsActionListener(@Assisted File file, @Assisted FilterMetric filterMetric) {
+		this.file = file;
 		this.filterMetric = filterMetric;
 	}
 	
@@ -71,11 +71,9 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 		// make sure that the minimum information is set in the current set of parameters
 		EnrichmentMap currentMap = emManager.getEnrichmentMap(applicationManager.getCurrentNetwork().getSUID());
 
-		String errors = checkGMTfiles(fileName);
-		if (errors.isEmpty()) {
-
+		if (file.canRead()) {
 			// MKTODO warning LoadSignatureGMTFilesTask is side-effecting, it pulls the loaded genes into the EnrichmentMap object
-			LoadSignatureGMTFilesTask loadGMTs = new LoadSignatureGMTFilesTask(fileName, currentMap, filterMetric);
+			LoadSignatureGMTFilesTask loadGMTs = new LoadSignatureGMTFilesTask(file, currentMap, filterMetric);
 
 			TaskObserver taskObserver = new ResultTaskObserver() {
 				private SetOfGeneSets resultGeneSets;
@@ -98,13 +96,12 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 			
 			taskManager.execute(loadGMTs.createTaskIterator(), taskObserver);
 		} else {
-			JOptionPane.showMessageDialog(application.getJFrame(), errors, "Invalid Input", JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(
+					application.getJFrame(),
+					"Signature GMT file name not valid.\n",
+					"Invalid File",
+					JOptionPane.WARNING_MESSAGE
+			);
 		}
-	}
-
-	private static String checkGMTfiles(String signatureGMTFileName) {
-		if(signatureGMTFileName == null || signatureGMTFileName.isEmpty() || !EnrichmentMapParameters.checkFile(signatureGMTFileName))
-			return "Signature GMT file can not be found \n";
-		return "";
 	}
 }

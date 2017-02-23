@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,9 +17,9 @@ import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
@@ -151,7 +152,8 @@ public abstract class BaseNetworkTest {
 		
 		// Load the gene-sets from the file
 		SerialTestTaskManager testTaskManager = new SerialTestTaskManager();
-		LoadSignatureSetsActionListener loader = loadSignatureSetsActionListenerFactory.create(builder.getSignatureGMTFileName(), new FilterMetric.None());
+		File file = new File(builder.getSignatureGMTFileName());
+		LoadSignatureSetsActionListener loader = loadSignatureSetsActionListenerFactory.create(file, new FilterMetric.None());
 		loader.setTaskManager(testTaskManager);
 		
 		loader.setGeneSetCallback(builder::setSignatureGenesets);

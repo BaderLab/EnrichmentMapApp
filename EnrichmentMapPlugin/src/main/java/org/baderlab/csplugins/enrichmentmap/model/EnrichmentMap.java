@@ -231,7 +231,7 @@ public class EnrichmentMap {
 			
 			if (signatureDataSets != null) {
 				for (EMSignatureDataSet sds : signatureDataSets.values())
-					allGeneSets.put(sds.getName(), sds.getGeneSet());
+					allGeneSets.putAll(sds.getGeneSetsOfInterest().getGeneSets());
 			}
 		}
 		
@@ -259,15 +259,13 @@ public class EnrichmentMap {
 		//go through each dataset and get the genesets from each
 		Map<String, GeneSet> allGeneSets = new HashMap<>();
 		
-		for (EMDataSet ds : dataSets.values()) {
-			Map<String, GeneSet> geneSets = ds.getGeneSetsOfInterest().getGeneSets();
-			allGeneSets.putAll(geneSets);
-		}
+		for (EMDataSet ds : dataSets.values())
+			allGeneSets.putAll(ds.getGeneSetsOfInterest().getGeneSets());
 		
 		// if there are post analysis genesets, add them to the set of all genesets
 		if (signatureDataSets != null) {
 			for (EMSignatureDataSet sds : signatureDataSets.values())
-				allGeneSets.put(sds.getName(), sds.getGeneSet());
+				allGeneSets.putAll(sds.getGeneSetsOfInterest().getGeneSets());
 		}
 		
 		return allGeneSets;

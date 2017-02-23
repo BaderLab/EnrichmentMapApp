@@ -25,33 +25,29 @@ public class CreateGMTEnrichmentMapTask extends AbstractTask {
 	private EMDataSet dataset;
 
 	public CreateGMTEnrichmentMapTask(EMDataSet dataset) {
-
 		this.dataset = dataset;
-
 	}
 
 	public void buildEnrichmentMap() {
-		this.dataset.setMethod(Method.Generic);
+		dataset.setMethod(Method.Generic);
+		// in this case all the genesets are of interest
+		dataset.setGeneSetsOfInterest(dataset.getSetOfGeneSets());
 
-		//in this case all the genesets are of interest
-		this.dataset.setGeneSetsOfInterest(this.dataset.getSetOfGeneSets());
+		Map<String, GeneSet> currentSets = dataset.getSetOfGeneSets().getGeneSets();
 
-		Map<String, GeneSet> current_sets = this.dataset.getSetOfGeneSets().getGeneSets();
+		// create an new Set of Enrichment Results                
+		SetOfEnrichmentResults setOfEnrichments = new SetOfEnrichmentResults();
+		Map<String, EnrichmentResult> currentEnrichments = setOfEnrichments.getEnrichments();
 
-		//create an new Set of Enrichment Results                
-		SetOfEnrichmentResults setofenrichments = new SetOfEnrichmentResults();
-
-		Map<String, EnrichmentResult> currentEnrichments = setofenrichments.getEnrichments();
-
-		//need also to put all genesets into enrichment results
-		for(Iterator i = current_sets.keySet().iterator(); i.hasNext();) {
-			String geneset1_name = i.next().toString();
-			GeneSet current = (GeneSet) current_sets.get(geneset1_name);
-			GenericResult temp_result = new GenericResult(current.getName(), current.getDescription(), 0.01, current.getGenes().size());
-			currentEnrichments.put(current.getName(), temp_result);
+		// need also to put all genesets into enrichment results
+		for (Iterator<String> i = currentSets.keySet().iterator(); i.hasNext();) {
+			String geneset1Name = i.next();
+			GeneSet gs = currentSets.get(geneset1Name);
+			GenericResult tempResult = new GenericResult(gs.getName(), gs.getDescription(), 0.01, gs.getGenes().size());
+			currentEnrichments.put(gs.getName(), tempResult);
 		}
-		this.dataset.setEnrichments(setofenrichments);
-
+		
+		dataset.setEnrichments(setOfEnrichments);
 	}
 
 	/**

@@ -828,18 +828,18 @@ public class EnrichmentMapParameters {
 	 * @return boolean - true if file is readable, false if it is not.
 	 */
 	public static boolean checkFile(String filename) {
-		//check to see if the files exist and are readable.
-		//if the file is unreadable change the color of the font to red
-		//otherwise the font should be black.
-		if(filename != null) {
+		// Check to see if the files exist and are readable.
+		// If the file is unreadable change the color of the font to red
+		// otherwise the font should be black.
+		if (filename != null) {
 			File tempfile = new File(filename);
-			if(!tempfile.canRead())
+			
+			if (!tempfile.canRead())
 				return false;
 		}
+		
 		return true;
 	}
-
-	
 
 	/**
 	 * go through Hashmap and print all the objects

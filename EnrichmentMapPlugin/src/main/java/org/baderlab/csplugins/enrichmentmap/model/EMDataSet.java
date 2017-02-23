@@ -28,8 +28,6 @@ public class EMDataSet extends AbstractDataSet {
 
 	/** Hashmap of all genesets in the geneset file (gmt file). It only holds temporary data used during analysis. */
 	private SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
-	/** EnrichmentMap only creates nodes for these genes. */
-	private SetOfGeneSets geneSetsOfInterest = new SetOfGeneSets();
 
 	/** The set of genes in the analysis (there might be genes in the gmt file that are not in expression set). */
 	private Set<Integer> dataSetGenes = new HashSet<>();
@@ -104,14 +102,6 @@ public class EMDataSet extends AbstractDataSet {
 
 	public void setSetOfGeneSets(SetOfGeneSets setOfGeneSets) {
 		this.setOfGeneSets = setOfGeneSets;
-	}
-
-	public SetOfGeneSets getGeneSetsOfInterest() {
-		return geneSetsOfInterest;
-	}
-
-	public void setGeneSetsOfInterest(SetOfGeneSets geneSetsOfInterest) {
-		this.geneSetsOfInterest = geneSetsOfInterest;
 	}
 
 	public Set<Integer> getDataSetGenes() {
