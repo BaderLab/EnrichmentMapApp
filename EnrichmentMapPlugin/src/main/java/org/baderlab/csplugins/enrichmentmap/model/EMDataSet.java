@@ -26,8 +26,9 @@ public class EMDataSet extends AbstractDataSet {
 	private boolean dummyExpressionData;
 	private Color color;
 
-	/** Hashmap of all genesets in the geneset file (gmt file). */
+	/** Hashmap of all genesets in the geneset file (gmt file). It only holds temporary data used during analysis. */
 	private SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
+	/** EnrichmentMap only creates nodes for these genes. */
 	private SetOfGeneSets geneSetsOfInterest = new SetOfGeneSets();
 
 	/** The set of genes in the analysis (there might be genes in the gmt file that are not in expression set). */

@@ -21,18 +21,10 @@ public class SetOfGeneSets {
 	//filename
 	private String filename;
 
-	//Total universe size (without filtering)
-	private int totalUniverseSize;
-
-	//Genesets can have multiple sources.  
-	//Keep a list of all the different types of genesets that are contained in this set of genesets.
-	private Set<String> geneSetTypes = new HashSet<String>();
-
 	public SetOfGeneSets() {
 		name = "";
 		filename = "";
 		geneSets = new HashMap<>();
-		totalUniverseSize = 0;
 	}
 
 	/**
@@ -45,16 +37,6 @@ public class SetOfGeneSets {
 		
 		if (props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%filename"))
 			this.filename = props.get(ds + "%" + this.getClass().getSimpleName() + "%filename");
-		
-		if (props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%genesets")) {
-			String genesettypes_set = props.get(ds + "%" + this.getClass().getSimpleName() + "%GenesetTypes");
-			genesettypes_set.replace("[", "");
-			genesettypes_set.replace("]", "");
-			String[] tokens = genesettypes_set.split("\\,");
-		
-			for (int i = 0; i < tokens.length; i++)
-				this.geneSetTypes.add(tokens[i]);
-		}
 	}
 
 	/**
@@ -103,19 +85,6 @@ public class SetOfGeneSets {
 		this.filename = filename;
 	}
 
-	public void setGeneSetTypes(HashSet<String> types) {
-		this.geneSetTypes = types;
-	}
-
-	public Set<String> getGeneSetTypes() {
-		return this.geneSetTypes;
-	}
-
-	public void addGeneSetType(String type) {
-		if (!geneSetTypes.contains(type))
-			geneSetTypes.add(type);
-	}
-
 	public GeneSet getGeneSetByName(String name) {
 		if (geneSets != null) {
 			if (geneSets.containsKey(name))
@@ -127,6 +96,5 @@ public class SetOfGeneSets {
 
 	public void clear() {
 		geneSets.clear();
-		geneSetTypes.clear();
 	}
 }

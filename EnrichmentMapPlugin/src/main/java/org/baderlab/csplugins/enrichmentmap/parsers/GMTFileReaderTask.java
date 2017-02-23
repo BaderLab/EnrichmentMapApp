@@ -91,7 +91,6 @@ public class GMTFileReaderTask extends AbstractTask {
 		parse();
 	}
 	
-	
 	public void parse() throws IOException, InterruptedException {
 		try(BufferedReader reader = new BufferedReader(new FileReader(gmtFileName))) {
 		    for(String line; (line = reader.readLine()) != null;) {
@@ -102,13 +101,10 @@ public class GMTFileReaderTask extends AbstractTask {
 		    	if(gs != null && setOfgenesets != null) {
 		    		Map<String, GeneSet> genesets = setOfgenesets.getGeneSets();
 					genesets.put(gs.getName(), gs);
-					//add the geneset type to the list of types
-					gs.getSource().ifPresent(setOfgenesets::addGeneSetType);
 		    	}
 		    }
 		}
 	}
-
 
 	private static GeneSet readGeneSet(EnrichmentMap map, String line) {
 		String[] tokens = line.split("\t");

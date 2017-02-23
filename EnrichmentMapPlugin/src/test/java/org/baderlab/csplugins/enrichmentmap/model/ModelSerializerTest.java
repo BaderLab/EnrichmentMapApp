@@ -140,7 +140,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 	private static void assertSetOfGeneSetsEquals(SetOfGeneSets expected, SetOfGeneSets actual) {
 		assertEquals(expected.getName(), actual.getName());
 		assertEquals(expected.getFilename(), actual.getFilename());
-		assertEquals(expected.getGeneSetTypes(), actual.getGeneSetTypes());
 		assertMapsEqual(ModelSerializerTest::assertGeneSetEquals, expected.getGeneSets(), actual.getGeneSets());
 	}
 	

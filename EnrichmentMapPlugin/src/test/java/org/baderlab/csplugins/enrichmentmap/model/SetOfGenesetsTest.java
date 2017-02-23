@@ -1,7 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.util.HashSet;
@@ -58,13 +57,6 @@ public class SetOfGenesetsTest {
 		
 		//make sure there are 5 genesets
 		assertEquals(6, gs_set.getGeneSets().size());
-		
-		//check that there is 1 source
-		assertEquals(1,gs_set.getGeneSetTypes().size());
-		//check that the source is Reactome
-		assertTrue(gs_set.getGeneSetTypes().contains("Reactome".toUpperCase()));			
-		
-		
 	}
 	
 	@Test

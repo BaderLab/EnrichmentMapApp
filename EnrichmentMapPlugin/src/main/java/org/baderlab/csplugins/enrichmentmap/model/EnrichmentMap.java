@@ -438,22 +438,6 @@ public class EnrichmentMap {
 		return null;
 	}
 
-	/*
-	 * Return a hash of all different type of genesets from all the datasets
-	 * regardless of which dataset it comes from
-	 */
-	public Set<String> getAllGenesetTypes() {
-		//go through each dataset and get the genesets from each
-		Set<String> allTypes = new HashSet<>();
-		
-		for (EMDataSet ds : dataSets.values()) {
-			Set<String> types = ds.getSetOfGeneSets().getGeneSetTypes();
-			allTypes.addAll(types);
-		}
-		
-		return allTypes;
-	}
-
 	public void setSignatureDataSets(Collection<EMSignatureDataSet> newValue) {
 		synchronized (lock) {
 			signatureDataSets.clear();
