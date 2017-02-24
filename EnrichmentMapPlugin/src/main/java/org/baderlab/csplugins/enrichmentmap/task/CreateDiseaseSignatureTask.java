@@ -66,6 +66,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
+import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
 import org.cytoscape.application.CyApplicationManager;
@@ -189,9 +190,10 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 				params = PostAnalysisParameters.Builder.from(params).setAttributePrefix(prefix).build();
 			}
 
-			// TODO: check for unique Signature Data Set name -- user can use the same GMT file multiple times, etc
-			EMSignatureDataSet sigDataSet = new EMSignatureDataSet(params.getSignatureGeneSets().getName());
-			emManager.getEnrichmentMap(currentNetwork.getSUID()).addSignatureDataSet(sigDataSet);
+			String sdsName = NamingUtil.getUniqueName(params.getSignatureGeneSets().getName(),
+					map.getSignatureDataSets().keySet());
+			EMSignatureDataSet sigDataSet = new EMSignatureDataSet(sdsName);
+			map.addSignatureDataSet(sigDataSet);
 			
 			//get the node attribute and edge attribute tables
 			CyTable edgeTable = createEdgeColumns(currentNetwork, "", prefix);

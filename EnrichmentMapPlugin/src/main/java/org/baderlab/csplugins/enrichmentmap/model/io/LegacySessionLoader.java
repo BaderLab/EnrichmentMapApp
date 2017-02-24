@@ -28,6 +28,7 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask;
+import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyNetwork;
@@ -149,8 +150,10 @@ public class LegacySessionLoader {
 								(HashMap<String, GeneSet>) params.repopulateHashmap(fullText, 1);
 						
 						if (propFile.getName().contains(".signature.gmt")) {
-							EMSignatureDataSet sigDataSet =
-									new EMSignatureDataSet(propFile.getName().replace(".signature.gmt", ""));
+							// TODO Find a better way to serialize EMSignatureDataSet
+							String sdsName = propFile.getName().replace(".signature.gmt", "");
+							sdsName = NamingUtil.getUniqueName(sdsName, em.getSignatureDataSets().keySet());
+							EMSignatureDataSet sigDataSet = new EMSignatureDataSet(sdsName);
 							em.addSignatureDataSet(sigDataSet);
 							SetOfGeneSets sigGeneSets = sigDataSet.getGeneSetsOfInterest();
 							
