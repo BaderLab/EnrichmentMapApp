@@ -20,8 +20,8 @@ import java.awt.Dimension;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -56,8 +56,6 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
@@ -65,9 +63,6 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorGradient;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
-import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
-import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListModel;
-import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListPanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CytoPanelComponent2;
@@ -427,7 +422,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JLabel chartColorsLabel = new JLabel("Chart Colors:");
 		private JLabel dsFilterLabel = new JLabel("Data Sets:");
 		
-		private CheckboxListPanel<AbstractDataSet> checkboxListPanel;
+		private DataSetSelector dataSetSelector;
 		private JCheckBox publicationReadyCheck;
 		private JButton setEdgeWidthButton;
 		private JButton resetStyleButton;
@@ -478,53 +473,26 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			update();
 		}
 		
-		List<AbstractDataSet> getSelectedDataSets() {
-			return getCheckboxListPanel().getSelectedDataItems();
+		Set<AbstractDataSet> getSelectedDataSets() {
+			return getDataSetSelector().getSelectedItems();
 		}
 		
 		void update() {
-			updateDataSetList();
+			updateDataSetSelector();
 			updateChartCombos();
 		}
 		
-		void updateDataSetList() {
-			// Save the current datasets selection
-			Map<AbstractDataSet, Boolean> dataSetSelection = new HashMap<>();
-			CheckboxListModel<AbstractDataSet> model = getCheckboxListPanel().getModel();
-			
-			for (int i = 0; i < model.getSize(); i++) {
-				CheckboxData<AbstractDataSet> cd = model.get(i);
-				dataSetSelection.put(cd.getData(), cd.isSelected());
-			}
-			
-			// Clear the list and add the new datasets
-			model.clear();
+		void updateDataSetSelector() {
 			EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
 			
-			if (map != null) {
-				// Restore the previous selection:
-				// First, the "source" data sets...
-				for (EMDataSet ds : map.getDataSetList()) {
-					Boolean selected = dataSetSelection.get(ds);
-					selected = selected != null ? selected : Boolean.TRUE; // The datasets are selected by default!
-					
-					model.addElement(new CheckboxData<>(ds.getName(), ds, selected));
-				}
-				
-				// Then, the signature gene sets, if any...
-				List<EMSignatureDataSet> sdsList = new ArrayList<>(map.getSignatureDataSets().values());
-				sdsList.sort(Comparator.naturalOrder());
-				
-				for (EMSignatureDataSet sds : sdsList) {
-					Boolean selected = dataSetSelection.get(sds);
-					selected = selected != null ? selected : Boolean.TRUE; // The datasets are selected by default!
-					
-					model.addElement(new CheckboxData<>(sds.getName(), sds, selected));
-				}
-			}
+			List<AbstractDataSet> newItems = new ArrayList<>();
+			newItems.addAll(map.getDataSetList());
+			newItems.addAll(map.getSignatureSetList());
+			
+			getDataSetSelector().update(newItems);
 		}
 		
-		void updateChartDataCombo(List<CheckboxData<AbstractDataSet>> dataSets) {
+		void updateChartDataCombo(Collection<AbstractDataSet> dataSets) {
 			boolean b1 = getChartDataCombo().isEnabled();
 			boolean b2 = dataSets != null && dataSets.size() > 1; // Can't have charts with less than 2 columns!
 			
@@ -778,19 +746,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return similaritySliderPanel;
 		}
 		
-		CheckboxListPanel<AbstractDataSet> getCheckboxListPanel() {
-			if (checkboxListPanel == null) {
-				checkboxListPanel = new CheckboxListPanel<>(true, false);
-				
-				JButton addButton = checkboxListPanel.getAddButton();
-				addButton.setText(" " + IconManager.ICON_PLUS + " ");
-				addButton.setFont(iconManager.getIconFont(11.0f));
-				addButton.setToolTipText("Add Signature Gene Sets...");
+		DataSetSelector getDataSetSelector() {
+			if (dataSetSelector == null) {
+				dataSetSelector = new DataSetSelector(serviceRegistrar);
 			}
-			
-			return checkboxListPanel;
+
+			return dataSetSelector;
 		}
-		
+
 		public JComboBox<ChartData> getChartDataCombo() {
 			if (chartDataCombo == null) {
 				chartDataCombo = new JComboBox<ChartData>();
@@ -865,11 +828,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	   		
 	   		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
 	   				.addComponent(dsFilterLabel)
-	   				.addComponent(getCheckboxListPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+	   				.addComponent(getDataSetSelector(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 	   		);
 	   		layout.setVerticalGroup(layout.createSequentialGroup()
 	   				.addComponent(dsFilterLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	   				.addComponent(getCheckboxListPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+	   				.addComponent(getDataSetSelector(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 	   		);
 			
 			if (LookAndFeelUtil.isAquaLAF())

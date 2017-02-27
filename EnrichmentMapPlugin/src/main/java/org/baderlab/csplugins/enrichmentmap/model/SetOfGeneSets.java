@@ -103,6 +103,13 @@ public class SetOfGeneSets {
 		
 		return null;
 	}
+	
+	/**
+	 * @return The number of gene sets in this set
+	 */
+	public int size() {
+		return geneSets.size();
+	}
 
 	public void clear() {
 		geneSets.clear();

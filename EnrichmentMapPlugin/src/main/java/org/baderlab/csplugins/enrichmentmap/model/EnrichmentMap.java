@@ -451,6 +451,13 @@ public class EnrichmentMap {
 		return new HashMap<>(signatureDataSets);
 	}
 	
+	public List<EMSignatureDataSet> getSignatureSetList() {
+		List<EMSignatureDataSet> list = new ArrayList<>(signatureDataSets.values());
+		list.sort(Comparator.naturalOrder());
+		
+		return list;
+	}
+	
 	public void addSignatureDataSet(EMSignatureDataSet sigDataSet) {
 		synchronized (lock) {
 			signatureDataSets.put(sigDataSet.getName(), sigDataSet);

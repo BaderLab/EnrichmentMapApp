@@ -56,7 +56,6 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewCont
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
-import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -192,7 +191,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	public void updateDataSetList(CyNetworkView netView) {
-		getControlPanel().getViewControlPanel(netView).updateDataSetList();
+		getControlPanel().getViewControlPanel(netView).updateDataSetSelector();
 	}
 	
 	public EMStyleOptions createStyleOptions(CyNetworkView netView) {
@@ -292,9 +291,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 						sSliderPanel.addPropertyChangeListener("value",
 								evt -> filterNodesAndEdges(viewPanel, map, netView));
 
-					viewPanel.getCheckboxListPanel().addPropertyChangeListener("selectedData", evt -> {
+					viewPanel.getDataSetSelector().addPropertyChangeListener("selectedData", evt -> {
 						if (!updating) {
-							viewPanel.updateChartDataCombo(viewPanel.getCheckboxListPanel().getSelectedData());
+							viewPanel.updateChartDataCombo(viewPanel.getDataSetSelector().getSelectedItems());
 							
 							filterNodesAndEdges(viewPanel, map, netView);
 							ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
@@ -305,7 +304,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 								netView.updateView();
 						}
 					});
-					viewPanel.getCheckboxListPanel().setAddButtonCallback(model -> {
+					
+					viewPanel.getDataSetSelector().getAddButton().addActionListener(evt -> {
 						postAnalysisPanelMediatorProvider.get().showDialog(viewPanel, netView);
 					});
 					
@@ -352,7 +352,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 						showEdgeWidthDialog();
 					});
 					
-					viewPanel.updateChartDataCombo(viewPanel.getCheckboxListPanel().getSelectedData());
+					viewPanel.updateChartDataCombo(viewPanel.getDataSetSelector().getSelectedItems());
 				}
 			}
 		});
@@ -440,7 +440,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	private EMStyleOptions createStyleOptions(EnrichmentMap map, EMViewControlPanel viewPanel) {
-		Set<AbstractDataSet> dataSets = ImmutableSet.copyOf(viewPanel.getCheckboxListPanel().getSelectedDataItems());
+		Set<AbstractDataSet> dataSets = ImmutableSet.copyOf(viewPanel.getDataSetSelector().getSelectedItems());
 		boolean publicationReady = viewPanel.getPublicationReadyCheck().isSelected();
 		boolean postAnalysis = !map.getSignatureDataSets().isEmpty();
 		EMStyleOptions options =
@@ -451,7 +451,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	private CyCustomGraphics2<?> createChart(EMViewControlPanel viewPanel, EMStyleOptions options) {
 		CyCustomGraphics2<?> chart = null;
-		List<CheckboxData<AbstractDataSet>> selectedData = viewPanel.getCheckboxListPanel().getSelectedData();
+		Set<AbstractDataSet> selectedData = viewPanel.getDataSetSelector().getSelectedItems();
 		
 		if (selectedData != null && selectedData.size() > 1) {
 			ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
@@ -663,7 +663,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			Set<CyEdge> filteredInEdges = Collections.emptySet();
 			
 			EMCreationParameters params = map.getParams();
-			List<AbstractDataSet> selectedDataSets = viewPanel.getSelectedDataSets();
+			Set<AbstractDataSet> selectedDataSets = viewPanel.getSelectedDataSets();
 			Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(selectedDataSets);
 			
 			// Only p or q value, but not both!
@@ -769,7 +769,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				timer.stop();
 		}
 
-		private Set<String> getFilteredColumnNames(Set<String> columnNames, List<AbstractDataSet> dataSets) {
+		private Set<String> getFilteredColumnNames(Set<String> columnNames, Collection<AbstractDataSet> dataSets) {
 			Set<String> filteredNames = new HashSet<>();
 			
 			for (String name : columnNames) {
