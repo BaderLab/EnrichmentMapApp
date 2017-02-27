@@ -77,6 +77,8 @@ import com.google.inject.assistedinject.Assisted;
 @SuppressWarnings("serial")
 public class PostAnalysisInputPanel extends JPanel {
     
+	public static final String GMT_INSTRUCTION = "Please select the Gene Set file (.gmt)...";
+	
 	// tool tips
 	protected static final String gmt_instruction = "Please select the Gene Set file (.gmt)...";
 	protected static final String siggmt_instruction = "Please select the Signature Gene Set file (.gmt)...";
