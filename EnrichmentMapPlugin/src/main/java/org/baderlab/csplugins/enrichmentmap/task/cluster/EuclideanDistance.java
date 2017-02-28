@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap.task.distance;
+package org.baderlab.csplugins.enrichmentmap.task.cluster;
 
 import org.baderlab.csplugins.brainlib.DistanceMetric;
 
