@@ -5,9 +5,9 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -28,6 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -47,8 +48,8 @@ public class DataSetSelector extends JPanel {
 	
 	private static final String[] HEARDER_NAMES = new String[]{ "", "", "Name", "" };
 	
-	private static final int SELECTED_COL_IDX = 0;
-	private static final int TYPE_COL_IDX = 1;
+	private static final int TYPE_COL_IDX = 0;
+	private static final int SELECTED_COL_IDX = 1;
 	private static final int NAME_COL_IDX = 2;
 	private static final int GENES_COL_IDX = 3;
 	
@@ -155,12 +156,17 @@ public class DataSetSelector extends JPanel {
 		};
 		getTable().setModel(model);
 		
-		getTable().getColumnModel().getColumn(SELECTED_COL_IDX).setMaxWidth(24);
-		getTable().getColumnModel().getColumn(TYPE_COL_IDX).setMaxWidth(24);
+		JCheckBox tmpField = new JCheckBox();
+		
+		if (isAquaLAF())
+			tmpField.putClientProperty("JComponent.sizeVariant", "small");
+		
+		getTable().getColumnModel().getColumn(TYPE_COL_IDX).setMaxWidth(12);
+		getTable().getColumnModel().getColumn(SELECTED_COL_IDX).setMaxWidth(tmpField.getPreferredSize().width);
 		getTable().getColumnModel().getColumn(GENES_COL_IDX).setMaxWidth(48);
 		
-		getTable().getColumnModel().getColumn(SELECTED_COL_IDX).setResizable(false);
 		getTable().getColumnModel().getColumn(TYPE_COL_IDX).setResizable(false);
+		getTable().getColumnModel().getColumn(SELECTED_COL_IDX).setResizable(false);
 	}
 	
 	private void updateSelectionButtons() {
@@ -197,6 +203,14 @@ public class DataSetSelector extends JPanel {
 			};
 			table.setTableHeader(null);
 			table.setShowGrid(false);
+			
+			JTextField tmpField = new JTextField();
+					
+			if (isAquaLAF())
+				tmpField.putClientProperty("JComponent.sizeVariant", "small");
+			
+			table.setRowHeight(Math.max(table.getRowHeight(), tmpField.getPreferredSize().height - 4));
+			table.setIntercellSpacing(new Dimension(0, 1));
 			
 			table.getSelectionModel().addListSelectionListener(e -> {
 				if (!e.getValueIsAdjusting()) {
@@ -339,14 +353,12 @@ public class DataSetSelector extends JPanel {
 	private class DefaultSelectorTableCellRenderer extends DefaultTableCellRenderer {
 		
 		final Font defFont;
-		final Font selectionFont;
 		final Font iconFont;
 		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 		
 		DefaultSelectorTableCellRenderer() {
 			defFont = getFont().deriveFont(LookAndFeelUtil.getSmallFontSize());
-			selectionFont = iconManager.getIconFont(12.0f);
-			iconFont = iconManager.getIconFont(16.0f);
+			iconFont = iconManager.getIconFont(12.0f);
 		}
 		
 		@Override
@@ -363,12 +375,8 @@ public class DataSetSelector extends JPanel {
 			setBackground(isSelected ? UIManager.getColor("Table.selectionBackground") : bg);
 			setBorder(CELL_BORDER);
 			
-			if (column == SELECTED_COL_IDX  && value instanceof Boolean) {
-				setFont(selectionFont);
-				setHorizontalAlignment(JLabel.CENTER);
-				setText((boolean)value ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O);
-			} else if (column == TYPE_COL_IDX) {
-				setHorizontalAlignment(JLabel.CENTER);
+			if (column == TYPE_COL_IDX) {
+				setHorizontalAlignment(JLabel.RIGHT);
 
 				if (value instanceof EMSignatureDataSet) {
 					setFont(iconFont);
@@ -392,16 +400,11 @@ public class DataSetSelector extends JPanel {
 		}
 	}
 	
-	private class CheckBoxTableCellRenderer implements TableCellRenderer {
-		
-		final JPanel panel;
-		final JCheckBox chk;
+	private class CheckBoxTableCellRenderer extends JCheckBox implements TableCellRenderer {
 		
 		CheckBoxTableCellRenderer() {
-			chk = new JCheckBox();
-			chk.putClientProperty("JComponent.sizeVariant", "mini"); // Aqua LAF only
-			panel = new JPanel(new BorderLayout());
-			panel.add(chk, BorderLayout.WEST);
+			if (isAquaLAF())
+				putClientProperty("JComponent.sizeVariant", "small");
 		}
 
 		@Override
@@ -409,13 +412,11 @@ public class DataSetSelector extends JPanel {
 				boolean hasFocus, int row, int column) {
 			final Color bg = UIManager.getColor("Table.background");
 			
-			chk.setSelected((boolean)value);
-			chk.setToolTipText((boolean)value ? "Show" : "Hide");
-			chk.setBackground(isSelected ? UIManager.getColor("Table.selectionBackground") : bg);
-			panel.setBackground(isSelected ? UIManager.getColor("Table.selectionBackground") : bg);
-			panel.setBorder(CELL_BORDER);
+			setSelected((boolean)value);
+			setToolTipText((boolean)value ? "Show" : "Hide");
+			setBackground(isSelected ? UIManager.getColor("Table.selectionBackground") : bg);
 			
-			return panel;
+			return this;
 		}
 	}
 }

@@ -15,9 +15,9 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_L
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.DIAMOND;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.ELLIPSE;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.RECTANGLE;
-import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.TRIANGLE;
 
 import java.awt.Color;
 import java.awt.Paint;
@@ -262,7 +262,7 @@ public class EMStyleBuilder {
 		DiscreteMapping<String, NodeShape> nodeShape = (DiscreteMapping<String, NodeShape>) dmFactory
 				.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_SHAPE);
 		nodeShape.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, hasChart ? RECTANGLE : ELLIPSE);
-		nodeShape.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, TRIANGLE);
+		nodeShape.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, DIAMOND);
 		vs.addVisualMappingFunction(nodeShape);
 	}
 	
