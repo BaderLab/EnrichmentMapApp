@@ -463,6 +463,12 @@ public class EnrichmentMap {
 			signatureDataSets.put(sigDataSet.getName(), sigDataSet);
 		}
 	}
+	
+	public void removeSignatureDataSet(EMSignatureDataSet sigDataSet) {
+		synchronized (lock) {
+			signatureDataSets.remove(sigDataSet.getName());
+		}
+	}
 
 	public void setDistinctExpressionSets(boolean d) {
 		this.isDistinctExpressionSets = d;

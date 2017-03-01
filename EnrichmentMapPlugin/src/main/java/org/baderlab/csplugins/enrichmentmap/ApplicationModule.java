@@ -12,6 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMViewTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HierarchicalClusterRankingOption;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisKnownSignaturePanel;
@@ -60,6 +61,7 @@ class FactoryModule extends AbstractModule {
 		// Factories using AssistedInject
 		installFactory(PostAnalysisInputPanel.Factory.class);
 		installFactory(CreateDiseaseSignatureTask.Factory.class);
+		installFactory(RemoveSignatureDataSetsTask.Factory.class);
 		installFactory(LoadSignatureSetsActionListener.Factory.class);
 		installFactory(PostAnalysisKnownSignaturePanel.Factory.class);
 		installFactory(PostAnalysisSignatureDiscoveryPanel.Factory.class);

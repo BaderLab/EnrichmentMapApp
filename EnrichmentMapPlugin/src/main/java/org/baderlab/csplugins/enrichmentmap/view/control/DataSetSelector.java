@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.view.control;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
+import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Color;
@@ -35,8 +36,10 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -58,11 +61,12 @@ public class DataSetSelector extends JPanel {
 	private JTable table;
 	private JScrollPane tableScrollPane;
 	private JButton addButton;
+	private JButton removeButton;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
 	
 	private final Set<AbstractDataSet> items;
-	private final Map<AbstractDataSet, Boolean> selectedItems;
+	private final Map<AbstractDataSet, Boolean> checkedItems;
 	private List<Integer> previousSelectedRows;
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -70,7 +74,7 @@ public class DataSetSelector extends JPanel {
 	public DataSetSelector(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		this.items = new LinkedHashSet<>();
-		this.selectedItems = new HashMap<>();
+		this.checkedItems = new HashMap<>();
 		
 		init();
 	}
@@ -78,7 +82,7 @@ public class DataSetSelector extends JPanel {
 	public void update(final Collection<AbstractDataSet> newItems) {
 		Map<AbstractDataSet, Boolean> oldSelectedItems = new HashMap<>();
 		items.clear();
-		selectedItems.clear();
+		checkedItems.clear();
 		
 		if (newItems != null) {
 			for (AbstractDataSet ds : newItems) {
@@ -86,26 +90,40 @@ public class DataSetSelector extends JPanel {
 				
 				boolean selected = !oldSelectedItems.containsKey(ds) // New items are selected by default!
 						|| oldSelectedItems.get(ds) == Boolean.TRUE;
-				selectedItems.put(ds, selected);
+				checkedItems.put(ds, selected);
 			}
 		}
 		
 		updateTable();
 		updateSelectionButtons();
+		updateRemoveButton();
 	}
 
-	public Set<AbstractDataSet> getSelectedItems() {
+	public Set<AbstractDataSet> getCheckedItems() {
 		Set<AbstractDataSet> set = new HashSet<>();
 		
-		selectedItems.forEach((ds, selected) -> {
-			if (selected == Boolean.TRUE)
+		checkedItems.forEach((ds, checked) -> {
+			if (checked == Boolean.TRUE)
 				set.add(ds);
 		});
 		
 		return set;
 	}
 	
+	public Set<AbstractDataSet> getSelectedItems() {
+		Set<AbstractDataSet> set = new HashSet<>();
+		int[] selectedRows = getTable().getSelectedRows();
+		
+		for (int r : selectedRows) {
+			AbstractDataSet ds = (AbstractDataSet) table.getModel().getValueAt(r, NAME_COL_IDX);
+			set.add(ds);
+		}
+		
+		return set;
+	}
+	
 	private void init() {
+		LookAndFeelUtil.equalizeSize(getAddButton(), getRemoveButton());
 		LookAndFeelUtil.equalizeSize(getSelectAllButton(), getSelectNoneButton());
 		
 		final GroupLayout layout = new GroupLayout(this);
@@ -117,6 +135,7 @@ public class DataSetSelector extends JPanel {
 				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getRemoveButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addGap(20,  20, Short.MAX_VALUE)
 						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -126,6 +145,7 @@ public class DataSetSelector extends JPanel {
    				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    				.addGroup(layout.createParallelGroup(CENTER, false)
 						.addComponent(getAddButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(getRemoveButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(getSelectAllButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(getSelectNoneButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    				)
@@ -140,7 +160,7 @@ public class DataSetSelector extends JPanel {
 		int i = 0;
 		
 		for (AbstractDataSet ds : items) {
-			data[i][SELECTED_COL_IDX] = selectedItems.get(ds);
+			data[i][SELECTED_COL_IDX] = checkedItems.get(ds);
 			data[i][TYPE_COL_IDX] = ds;
 			data[i][NAME_COL_IDX] = ds;
 			data[i][GENES_COL_IDX] = ds.getGeneSetsOfInterest().size();
@@ -157,11 +177,9 @@ public class DataSetSelector extends JPanel {
 		getTable().setModel(model);
 		
 		JCheckBox tmpField = new JCheckBox();
+		makeSmall(tmpField);
 		
-		if (isAquaLAF())
-			tmpField.putClientProperty("JComponent.sizeVariant", "small");
-		
-		getTable().getColumnModel().getColumn(TYPE_COL_IDX).setMaxWidth(12);
+		getTable().getColumnModel().getColumn(TYPE_COL_IDX).setMaxWidth(20);
 		getTable().getColumnModel().getColumn(SELECTED_COL_IDX).setMaxWidth(tmpField.getPreferredSize().width);
 		getTable().getColumnModel().getColumn(GENES_COL_IDX).setMaxWidth(48);
 		
@@ -170,23 +188,44 @@ public class DataSetSelector extends JPanel {
 	}
 	
 	private void updateSelectionButtons() {
-		final int rowCount = table.getRowCount();
-		boolean hasUnselected = false;
-		boolean hasSelected = false;
+		final int rowCount = getTable().getRowCount();
+		TableModel model = getTable().getModel();
+		boolean hasUnchecked = false;
+		boolean hasChecked = false;
 		
 		for (int i = 0; i < rowCount; i++) {
-			final boolean selected = (boolean) table.getModel().getValueAt(i, SELECTED_COL_IDX);
+			final boolean checked = (boolean) model.getValueAt(i, SELECTED_COL_IDX);
 			
-			if (!hasUnselected)
-				hasUnselected = !selected;
-			if (!hasSelected)
-				hasSelected = selected;
-			if (hasUnselected && hasSelected)
+			if (!hasUnchecked)
+				hasUnchecked = !checked;
+			if (!hasChecked)
+				hasChecked = checked;
+			if (hasUnchecked && hasChecked)
 				break;
 		}
 		
-		getSelectAllButton().setEnabled(hasUnselected);
-		getSelectNoneButton().setEnabled(hasSelected);
+		getSelectAllButton().setEnabled(hasUnchecked);
+		getSelectNoneButton().setEnabled(hasChecked);
+	}
+	
+	private void updateRemoveButton() {
+		boolean onlySignatureSelected = true;
+		int[] selectedRows = getTable().getSelectedRows();
+		
+		if (selectedRows.length > 0) {
+			for (int r : selectedRows) {
+				AbstractDataSet ds = (AbstractDataSet) table.getModel().getValueAt(r, NAME_COL_IDX);
+				
+				if (ds instanceof EMSignatureDataSet == false) {
+					onlySignatureSelected = false;
+					break;
+				}
+			}
+		} else {
+			 onlySignatureSelected = false;
+		}
+		
+		getRemoveButton().setEnabled(onlySignatureSelected);
 	}
 	
 	private JTable getTable() {
@@ -205,15 +244,14 @@ public class DataSetSelector extends JPanel {
 			table.setShowGrid(false);
 			
 			JTextField tmpField = new JTextField();
-					
-			if (isAquaLAF())
-				tmpField.putClientProperty("JComponent.sizeVariant", "small");
+			makeSmall(tmpField);	
 			
 			table.setRowHeight(Math.max(table.getRowHeight(), tmpField.getPreferredSize().height - 4));
 			table.setIntercellSpacing(new Dimension(0, 1));
 			
 			table.getSelectionModel().addListSelectionListener(e -> {
 				if (!e.getValueIsAdjusting()) {
+					updateRemoveButton();
 					// Workaround for preventing a click on the check-box in a selected row
 					// from changing the selection when multiple table rows are already selected
 					if (table.getSelectedRowCount() > 0)
@@ -241,7 +279,7 @@ public class DataSetSelector extends JPanel {
 					    		table.addRowSelectionInterval(i, i);
 					    }
 						
-						toggleSelection(row);
+						toggleChecked(row);
 					}
 				}
 			});
@@ -275,27 +313,39 @@ public class DataSetSelector extends JPanel {
 			addButton = new JButton(" " + IconManager.ICON_PLUS + " ");
 			addButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(11.0f));
 			addButton.setToolTipText("Add Signature Gene Sets...");
+			makeSmall(addButton);
 			
-			if (isAquaLAF()) {
+			if (isAquaLAF())
 				addButton.putClientProperty("JButton.buttonType", "gradient");
-				addButton.putClientProperty("JComponent.sizeVariant", "small");
-			}
 		}
 		
 		return addButton;
+	}
+	
+	JButton getRemoveButton() {
+		if (removeButton == null) {
+			removeButton = new JButton(IconManager.ICON_TRASH_O);
+			removeButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
+			removeButton.setToolTipText("Remove Signature Gene Sets");
+			makeSmall(removeButton);
+			
+			if (isAquaLAF())
+				removeButton.putClientProperty("JButton.buttonType", "gradient");
+		}
+		
+		return removeButton;
 	}
 	
 	JButton getSelectAllButton() {
 		if (selectAllButton == null) {
 			selectAllButton = new JButton("Select All");
 			selectAllButton.addActionListener(evt -> {
-				setSelectedToAllRows(true);
+				setCheckedToAllRows(true);
 			});
+			makeSmall(selectAllButton);
 			
-			if (isAquaLAF()) {
+			if (isAquaLAF())
 				selectAllButton.putClientProperty("JButton.buttonType", "gradient");
-				selectAllButton.putClientProperty("JComponent.sizeVariant", "small");
-			}
 		}
 		
 		return selectAllButton;
@@ -305,48 +355,47 @@ public class DataSetSelector extends JPanel {
 		if (selectNoneButton == null) {
 			selectNoneButton = new JButton("Select None");
 			selectNoneButton.addActionListener(evt -> {
-				setSelectedToAllRows(false);
+				setCheckedToAllRows(false);
 			});
+			makeSmall(selectNoneButton);
 			
-			if (isAquaLAF()) {
+			if (isAquaLAF())
 				selectNoneButton.putClientProperty("JButton.buttonType", "gradient");
-				selectNoneButton.putClientProperty("JComponent.sizeVariant", "small");
-			}
 		}
 		
 		return selectNoneButton;
 	}
 	
-	private void setSelectedToAllRows(final boolean selected) {
-		final Set<AbstractDataSet> oldValue = getSelectedItems();
+	private void setCheckedToAllRows(final boolean checked) {
+		final Set<AbstractDataSet> oldValue = getCheckedItems();
 		final int rowCount = getTable().getRowCount();
 		
 		for (int i = 0; i < rowCount; i++) {
-			getTable().setValueAt(selected, i, SELECTED_COL_IDX);
+			getTable().setValueAt(checked, i, SELECTED_COL_IDX);
 			AbstractDataSet ds = (AbstractDataSet) getTable().getValueAt(i, NAME_COL_IDX);
-			selectedItems.put(ds, selected);
+			checkedItems.put(ds, checked);
 		}
 		
 		getTable().repaint();
 		updateSelectionButtons();
-		firePropertyChange("selectedData", oldValue, getSelectedItems());
+		firePropertyChange("selectedData", oldValue, getCheckedItems());
 	}
 	
-	private void toggleSelection(final int row) {
-		final Set<AbstractDataSet> oldValue = getSelectedItems();
-		final boolean selected = (boolean) getTable().getValueAt(row, SELECTED_COL_IDX);
-		final int[] selectedRows = getTable().getSelectedRows();
+	private void toggleChecked(final int row) {
+		final Set<AbstractDataSet> oldValue = getCheckedItems();
+		final boolean checked = (boolean) getTable().getValueAt(row, SELECTED_COL_IDX);
+		final int[] checkedRows = getTable().getSelectedRows();
 		
-		if (selectedRows != null) {
-			for (int i : selectedRows) {
+		if (checkedRows != null) {
+			for (int i : checkedRows) {
 				AbstractDataSet ds = (AbstractDataSet) getTable().getValueAt(i, NAME_COL_IDX);
-				getTable().setValueAt(!selected, i, SELECTED_COL_IDX);
-				selectedItems.put(ds, !selected);
+				getTable().setValueAt(!checked, i, SELECTED_COL_IDX);
+				checkedItems.put(ds, !checked);
 			}
 			
 			getTable().repaint();
 			updateSelectionButtons();
-			firePropertyChange("selectedData", oldValue, getSelectedItems());
+			firePropertyChange("selectedData", oldValue, getCheckedItems());
 		}
 	}
 	
@@ -376,15 +425,23 @@ public class DataSetSelector extends JPanel {
 			setBorder(CELL_BORDER);
 			
 			if (column == TYPE_COL_IDX) {
-				setHorizontalAlignment(JLabel.RIGHT);
+				setHorizontalAlignment(JLabel.CENTER);
 
 				if (value instanceof EMSignatureDataSet) {
 					setFont(iconFont);
-					setText(IconManager.ICON_STAR);
+					setText(IconManager.ICON_STAR_O);
 					setForeground(EMStyleBuilder.Colors.SIG_NODE_BORDER_COLOR);
+					setBackground(EMStyleBuilder.Colors.SIG_NODE_COLOR);
 					setToolTipText("Signature Gene Sets");
-				} else {
+				} else if (value instanceof EMDataSet) {
 					setToolTipText("Data Set");
+					
+					if (((EMDataSet)value).getColor() != null) {
+						setFont(iconFont);
+						setText(IconManager.ICON_FILE_O);
+						setForeground(EMStyleBuilder.Colors.DEF_NODE_BORDER_COLOR);
+						setBackground(EMStyleBuilder.Colors.DEF_NODE_COLOR);
+					}
 				}
 			} else if (column == NAME_COL_IDX) {
 				setHorizontalAlignment(JLabel.LEFT);
@@ -403,8 +460,7 @@ public class DataSetSelector extends JPanel {
 	private class CheckBoxTableCellRenderer extends JCheckBox implements TableCellRenderer {
 		
 		CheckBoxTableCellRenderer() {
-			if (isAquaLAF())
-				putClientProperty("JComponent.sizeVariant", "small");
+			makeSmall(this);
 		}
 
 		@Override

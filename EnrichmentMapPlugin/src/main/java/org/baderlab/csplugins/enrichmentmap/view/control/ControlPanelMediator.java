@@ -41,6 +41,7 @@ import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
@@ -52,6 +53,7 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.NullCustomGraphics;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
+import org.baderlab.csplugins.enrichmentmap.task.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
@@ -84,7 +86,10 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.common.collect.ImmutableSet;
@@ -127,6 +132,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private CyNetworkManager networkManager;
 	@Inject private RenderingEngineManager renderingEngineManager;
 	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
+	@Inject private RemoveSignatureDataSetsTask.Factory removeDataSetsTaskFactory;
 	@Inject private DialogTaskManager dialogTaskManager;
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private ChartFactoryManager chartFactoryManager;
@@ -293,7 +299,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 
 					viewPanel.getDataSetSelector().addPropertyChangeListener("selectedData", evt -> {
 						if (!updating) {
-							viewPanel.updateChartDataCombo(viewPanel.getDataSetSelector().getSelectedItems());
+							viewPanel.updateChartDataCombo(viewPanel.getDataSetSelector().getCheckedItems());
 							
 							filterNodesAndEdges(viewPanel, map, netView);
 							ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
@@ -307,6 +313,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					
 					viewPanel.getDataSetSelector().getAddButton().addActionListener(evt -> {
 						postAnalysisPanelMediatorProvider.get().showDialog(viewPanel, netView);
+					});
+					viewPanel.getDataSetSelector().getRemoveButton().addActionListener(evt -> {
+						removeSignatureDataSets(map, viewPanel);
 					});
 					
 					viewPanel.getChartDataCombo().addItemListener(evt -> {
@@ -352,7 +361,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 						showEdgeWidthDialog();
 					});
 					
-					viewPanel.updateChartDataCombo(viewPanel.getDataSetSelector().getSelectedItems());
+					viewPanel.updateChartDataCombo(viewPanel.getDataSetSelector().getCheckedItems());
 				}
 			}
 		});
@@ -428,6 +437,31 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		return view != null ? emManager.getEnrichmentMap(view.getModel().getSUID()) : null;
 	}
 	
+	private void removeSignatureDataSets(EnrichmentMap map, EMViewControlPanel viewPanel) {
+		Set<EMSignatureDataSet> dataSets = viewPanel.getSelectedSignatureDataSets();
+		
+		if (!dataSets.isEmpty()) {
+			if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(
+					getControlPanel(),
+					"Are you sure you want to remove the selected Signature Gene Sets\nand associated nodes?",
+					"Remove Signature Gene Sets",
+					JOptionPane.YES_NO_OPTION
+			))
+				return;
+			
+			RemoveSignatureDataSetsTask task = removeDataSetsTaskFactory.create(dataSets , map);
+			dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
+				@Override
+				public void taskFinished(ObservableTask task) {
+				}
+				@Override
+				public void allFinished(FinishStatus finishStatus) {
+					viewPanel.updateDataSetSelector();
+				}
+			});
+		}
+	}
+	
 	private void updateVisualStyle(EnrichmentMap map, EMViewControlPanel viewPanel) {
 		EMStyleOptions options = createStyleOptions(map, viewPanel);
 		CyCustomGraphics2<?> chart = createChart(viewPanel, options);
@@ -440,7 +474,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	private EMStyleOptions createStyleOptions(EnrichmentMap map, EMViewControlPanel viewPanel) {
-		Set<AbstractDataSet> dataSets = ImmutableSet.copyOf(viewPanel.getDataSetSelector().getSelectedItems());
+		Set<AbstractDataSet> dataSets = ImmutableSet.copyOf(viewPanel.getDataSetSelector().getCheckedItems());
 		boolean publicationReady = viewPanel.getPublicationReadyCheck().isSelected();
 		boolean postAnalysis = !map.getSignatureDataSets().isEmpty();
 		EMStyleOptions options =
@@ -451,9 +485,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	private CyCustomGraphics2<?> createChart(EMViewControlPanel viewPanel, EMStyleOptions options) {
 		CyCustomGraphics2<?> chart = null;
-		Set<AbstractDataSet> selectedData = viewPanel.getDataSetSelector().getSelectedItems();
+		Set<AbstractDataSet> dataSets = viewPanel.getDataSetSelector().getCheckedItems();
 		
-		if (selectedData != null && selectedData.size() > 1) {
+		if (dataSets != null && dataSets.size() > 1) {
 			ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
 			ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
 			ColorScheme colorScheme = (ColorScheme) viewPanel.getChartColorsCombo().getSelectedItem();
@@ -512,7 +546,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			dialog.setVisible(true);
 		} else {
 			JOptionPane.showMessageDialog(
-					swingApplication.getJFrame(),
+					getControlPanel(),
 					"Please add signature gene sets first.",
 					"EnrichmentMap Edge Width",
 					JOptionPane.WARNING_MESSAGE
@@ -663,7 +697,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			Set<CyEdge> filteredInEdges = Collections.emptySet();
 			
 			EMCreationParameters params = map.getParams();
-			Set<AbstractDataSet> selectedDataSets = viewPanel.getSelectedDataSets();
+			Set<AbstractDataSet> selectedDataSets = viewPanel.getCheckedDataSets();
 			Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(selectedDataSets);
 			
 			// Only p or q value, but not both!

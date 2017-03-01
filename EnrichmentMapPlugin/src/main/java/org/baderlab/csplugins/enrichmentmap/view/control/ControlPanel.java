@@ -56,6 +56,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
@@ -473,8 +474,18 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			update();
 		}
 		
-		Set<AbstractDataSet> getSelectedDataSets() {
-			return getDataSetSelector().getSelectedItems();
+		Set<AbstractDataSet> getCheckedDataSets() {
+			return getDataSetSelector().getCheckedItems();
+		}
+		
+		@SuppressWarnings("unchecked")
+		Set<EMSignatureDataSet> getSelectedSignatureDataSets() {
+			final Set<?> dataSets = getDataSetSelector().getSelectedItems();
+			Set<EMSignatureDataSet> sigDataSets = (Set<EMSignatureDataSet>) dataSets.stream()
+					.filter(ds -> ds instanceof EMSignatureDataSet)
+					.collect(Collectors.toSet());
+			
+			return sigDataSets;
 		}
 		
 		void update() {

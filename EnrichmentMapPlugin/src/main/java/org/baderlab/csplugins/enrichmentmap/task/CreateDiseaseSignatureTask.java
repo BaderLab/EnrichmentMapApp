@@ -57,7 +57,6 @@ import java.util.stream.Collectors;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
@@ -96,7 +95,6 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 	
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private CyEventHelper eventHelper;
-	@Inject private EnrichmentMapManager emManager;
 	@Inject private Provider<WidthFunction> widthFunctionProvider;
 
 	private PostAnalysisParameters params;
@@ -160,7 +158,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		for (GeneSet geneSet : signatureGeneSets.values())
 			signatureGenes.addAll(geneSet.getGenes());
 
-		this.interaction = getInteraction();
+		interaction = getInteraction();
 	}
 
 	private String getInteraction() {
