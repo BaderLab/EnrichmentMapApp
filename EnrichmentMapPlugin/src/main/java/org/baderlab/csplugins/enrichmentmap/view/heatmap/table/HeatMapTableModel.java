@@ -110,7 +110,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		
 		EMDataSet dataset = getDataSet(col);
 		int index = getIndex(col);
-		Double[] vals = getExpression(dataset, geneID);
+		double[] vals = getExpression(dataset, geneID);
 		return vals[index];
 	}
 	
@@ -134,17 +134,16 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	private static int getNumCols(GeneExpressionMatrix matrix) {
-		// ugh! so ugly
-		return matrix.getExpressionMatrix().values().iterator().next().getExpression().length;
+		return matrix.getNumConditions() - 2;
 	}
 
 	
-	private Double[] getExpression(EMDataSet dataset, int geneID) {
+	private double[] getExpression(EMDataSet dataset, int geneID) {
 		GeneExpressionMatrix matrix = dataset.getExpressionSets();
 		Map<Integer,GeneExpression> expressions = matrix.getExpressionMatrix();
 		GeneExpression row = expressions.get(geneID);
 		
-		Double[] values = null;
+		double[] values = null;
 		if(row != null) {
 			switch(transform) {
 				case ROW_NORMALIZE:  values = row.rowNormalize();    break;
@@ -153,7 +152,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 			}
 		}
 		if(values == null) {
-			values = new Double[matrix.getNumConditions() - 2];
+			values = new double[matrix.getNumConditions() - 2];
 			Arrays.fill(values, Double.NaN);
 		}
 		return values;

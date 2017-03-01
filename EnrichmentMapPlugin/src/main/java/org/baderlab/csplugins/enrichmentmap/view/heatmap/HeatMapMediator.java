@@ -36,6 +36,7 @@ public class HeatMapMediator implements RowsSetListener {
 
 	@Inject private Provider<HeatMapPanel> panelProvider;
 	@Inject private EnrichmentMapManager emManager;
+	@Inject private HierarchicalClusterRankingOption.Factory clusterRankOptionFactory;
 	
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CySwingApplication swingApplication;
@@ -82,16 +83,16 @@ public class HeatMapMediator implements RowsSetListener {
 				// For now we are only supporting UNION of genes across selected genesets
 				// May also want to support INTERSECTION in the future
 				Set<String> allGenes = unionGenesets(network, selectedNodes, selectedEdges, prefix);
-				List<RankingOption> rankOptions = getRankOptions(map, network, selectedNodes, selectedEdges);
+				List<RankingOption> rankOptions = getRankOptions(map, network, allGenes, selectedNodes, selectedEdges);
 				
 				panelProvider.get().update(map, rankOptions, allGenes);
 			}
 		}
 	}
 	
-	private static List<RankingOption> getRankOptions(EnrichmentMap map, CyNetwork network, List<CyNode> nodes, List<CyEdge> edges) {
+	private List<RankingOption> getRankOptions(EnrichmentMap map, CyNetwork network, Set<String> allGenes, List<CyNode> nodes, List<CyEdge> edges) {
 		List<RankingOption> options = new ArrayList<>();
-		options.add(new HierarchicalClusterRankingOption());
+		options.add(clusterRankOptionFactory.create(map, allGenes));
 		
 		for(EMDataSet dataset : map.getDataSetList()) {
 			if(nodes.size() == 1 && edges.isEmpty() && dataset.getMethod() == Method.GSEA && contains(dataset, network, nodes.get(0))) {

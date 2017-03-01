@@ -182,7 +182,7 @@ public class GeneExpressionMatrix {
 		if(currentMatrix != null) {
 			//go through the expression matrix
 			for(Iterator<Integer> i = currentMatrix.keySet().iterator(); i.hasNext();) {
-				Double[] currentRow = ((GeneExpression) currentMatrix.get(i.next())).getExpression();
+				double[] currentRow = ((GeneExpression) currentMatrix.get(i.next())).getExpression();
 				for(int j = 0; j < currentRow.length; j++) {
 					if(max < currentRow[j])
 						max = currentRow[j];
@@ -207,7 +207,7 @@ public class GeneExpressionMatrix {
 		//go through the expression matrix
 		if(currentMatrix != null) {
 			for(Iterator<Integer> i = currentMatrix.keySet().iterator(); i.hasNext();) {
-				Double[] currentRow = ((GeneExpression) currentMatrix.get(i.next())).getExpression();
+				double[] currentRow = ((GeneExpression) currentMatrix.get(i.next())).getExpression();
 				for(int j = 0; j < currentRow.length; j++) {
 					if(min > currentRow[j])
 						min = currentRow[j];
@@ -241,7 +241,7 @@ public class GeneExpressionMatrix {
 			String Name = currentexpression.getName();
 			String description = currentexpression.getDescription();
 			GeneExpression norm_row = new GeneExpression(Name, description);
-			Double[] currentexpression_row_normalized = currentexpression.rowNormalize();
+			double[] currentexpression_row_normalized = currentexpression.rowNormalize();
 			norm_row.setExpression(currentexpression_row_normalized);
 
 			expressionMatrix_rowNormalized.put(key, norm_row);

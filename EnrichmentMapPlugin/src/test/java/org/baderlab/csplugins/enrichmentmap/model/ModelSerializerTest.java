@@ -223,8 +223,7 @@ public class ModelSerializerTest extends BaseNetworkTest {
 	private static void assertGeneExpressionEquals(GeneExpression expected, GeneExpression actual) {
 		assertEquals(expected.getName(), actual.getName());
 		assertEquals(expected.getDescription(), actual.getDescription());
-		assertArrayEquals(expected.getExpression(), actual.getExpression());
-		assertArrayEquals(expected.getRow(), actual.getRow());
+		assertArrayEquals(expected.getExpression(), actual.getExpression(), 0.0);
 	}
 	
 	private static <K,V> void assertMapsEqual(BiConsumer<V,V> valueAsserter, Map<K,V> expected, Map<K,V> actual) {

@@ -59,8 +59,8 @@ public class PearsonCorrelation extends DistanceMetric {
 		///            throw new RuntimeException("Non expression values passed to PearsonCorrelation");
 		//        }
 
-		Double[] x = (Double[]) expr1;
-		Double[] y = (Double[]) expr2;
+		double[] x = (double[]) expr1;
+		double[] y = (double[]) expr2;
 
 		double result = 0;
 		double sum_x = 0;

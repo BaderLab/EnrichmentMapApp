@@ -55,8 +55,8 @@ public class CosineDistance extends DistanceMetric {
 	 */
 	public double calc(Object expr1, Object expr2) {
 
-		Double[] vectorA = (Double[]) expr1;
-		Double[] vectorB = (Double[]) expr2;
+		double[] vectorA = (double[]) expr1;
+		double[] vectorB = (double[]) expr2;
 
 		double result = 0.0;
 

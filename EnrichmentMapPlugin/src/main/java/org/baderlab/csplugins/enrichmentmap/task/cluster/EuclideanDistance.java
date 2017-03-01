@@ -55,8 +55,9 @@ public class EuclideanDistance extends DistanceMetric {
 	 */
 	public double calc(Object expr1, Object expr2) {
 
-		Double[] vectorA = (Double[]) expr1;
-		Double[] vectorB = (Double[]) expr2;
+		double[] vectorA = (double[]) expr1;
+		double[] vectorB = (double[]) expr2;
+		
 		//euclidean distance: Sqrt(Sum( (x[i]-y[i])^2 ))
 		double distance = 0.0;
 		for(int j = 0; j < vectorA.length; j++) {

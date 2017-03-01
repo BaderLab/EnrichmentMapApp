@@ -12,6 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMViewTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HierarchicalClusterRankingOption;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisSignatureDiscoveryPanel;
@@ -40,6 +41,7 @@ public class ApplicationModule extends AbstractModule {
 		install(new FactoryModule());
 	}
 	
+	/** For tests */
 	public static Module createFactoryModule() {
 		return new FactoryModule();
 	}
@@ -62,11 +64,11 @@ class FactoryModule extends AbstractModule {
 		installFactory(PostAnalysisKnownSignaturePanel.Factory.class);
 		installFactory(PostAnalysisSignatureDiscoveryPanel.Factory.class);
 		installFactory(EnrichmentMapParameters.Factory.class);
-//		installFactory(UpdateHeatMapTask.Factory.class);
 		installFactory(CreateEnrichmentMapTaskFactory.Factory.class);
 		installFactory(CreateEMNetworkTask.Factory.class);
 		installFactory(CreateEMViewTask.Factory.class);
 		installFactory(ApplyEMStyleTask.Factory.class);
+		installFactory(HierarchicalClusterRankingOption.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {
