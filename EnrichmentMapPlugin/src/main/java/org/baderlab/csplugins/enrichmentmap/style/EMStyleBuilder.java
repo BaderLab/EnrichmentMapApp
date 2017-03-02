@@ -120,9 +120,9 @@ public class EMStyleBuilder {
 		public static final Color SIG_NODE_COLOR = new Color(253, 219, 199);
 
 		// See http://colorbrewer2.org/?type=qualitative&scheme=Dark2&n=8#type=qualitative&scheme=Dark2&n=8
-		private static final Color EDGE_COLOR_SIG = new Color(231,41,138);
-		private static final Color EDGE_COLOR_COMPOUND = new Color(27,158,119);
-		private static final Color[] EDGE_COLORS_DISTINCT = 
+		public static final Color SIG_EDGE_COLOR = new Color(231,41,138);
+		public static final Color COMPOUND_EDGE_COLOR = new Color(27,158,119);
+		private static final Color[] DISTINCT_EDGE_COLORS = 
 			{new Color(217,95,2), new Color(117,112,179), new Color(231,41,138), new Color(102,166,30), 
 			 new Color(230,171,2), new Color(166,118,29), new Color(102,102,102)};
 	
@@ -202,11 +202,11 @@ public class EMStyleBuilder {
 		String prefix = options.getAttributePrefix();
 		String col = Columns.EDGE_DATASET.with(prefix, null);
 		DiscreteMapping<String, Paint> edgePaint = (DiscreteMapping<String,Paint>) dmFactory.createVisualMappingFunction(col, String.class, vp);
-		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.EDGE_COLOR_COMPOUND);
-		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, Colors.EDGE_COLOR_SIG);
+		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.COMPOUND_EDGE_COLOR);
+		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, Colors.SIG_EDGE_COLOR);
 		int i = 0;
 		for(EMDataSet dataSet : options.getDataSets()) {
-			Color color = Colors.EDGE_COLORS_DISTINCT[i++ % Colors.EDGE_COLORS_DISTINCT.length];
+			Color color = Colors.DISTINCT_EDGE_COLORS[i++ % Colors.DISTINCT_EDGE_COLORS.length];
 			edgePaint.putMapValue(dataSet.getName(), color);
 			dataSet.setColor(color);
 		}

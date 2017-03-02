@@ -43,8 +43,6 @@ public class RemoveSignatureDataSetsTask extends AbstractTask implements Observa
 		if (network == null)
 			throw new IllegalStateException("The Network with SUID " + map.getNetworkID() + " does not exist.");
 		
-		// TODO Undo option
-		
 		dataSets.forEach(ds -> {
 			// TODO Delete associated columns?
 			// Delete hub-nodes

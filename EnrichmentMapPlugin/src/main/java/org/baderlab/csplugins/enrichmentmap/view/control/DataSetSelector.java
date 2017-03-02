@@ -12,8 +12,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -41,6 +41,7 @@ import javax.swing.table.TableModel;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -51,8 +52,8 @@ public class DataSetSelector extends JPanel {
 	
 	private static final String[] HEARDER_NAMES = new String[]{ "", "", "Name", "" };
 	
-	private static final int TYPE_COL_IDX = 0;
-	private static final int SELECTED_COL_IDX = 1;
+	private static final int SELECTED_COL_IDX = 0;
+	private static final int TYPE_COL_IDX = 1;
 	private static final int NAME_COL_IDX = 2;
 	private static final int GENES_COL_IDX = 3;
 	
@@ -65,13 +66,16 @@ public class DataSetSelector extends JPanel {
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
 	
+	private final EnrichmentMap map;
+	
 	private final Set<AbstractDataSet> items;
 	private final Map<AbstractDataSet, Boolean> checkedItems;
 	private List<Integer> previousSelectedRows;
 	
 	private final CyServiceRegistrar serviceRegistrar;
-	
-	public DataSetSelector(final CyServiceRegistrar serviceRegistrar) {
+
+	public DataSetSelector(final EnrichmentMap map, final CyServiceRegistrar serviceRegistrar) {
+		this.map = map;
 		this.serviceRegistrar = serviceRegistrar;
 		this.items = new LinkedHashSet<>();
 		this.checkedItems = new HashMap<>();
@@ -79,17 +83,21 @@ public class DataSetSelector extends JPanel {
 		init();
 	}
 
-	public void update(final Collection<AbstractDataSet> newItems) {
-		Map<AbstractDataSet, Boolean> oldSelectedItems = new HashMap<>();
+	public void update() {
+		Map<AbstractDataSet, Boolean> oldCheckedItems = new HashMap<>(checkedItems);
 		items.clear();
 		checkedItems.clear();
+		
+		List<AbstractDataSet> newItems = new ArrayList<>();
+		newItems.addAll(map.getDataSetList());
+		newItems.addAll(map.getSignatureSetList());
 		
 		if (newItems != null) {
 			for (AbstractDataSet ds : newItems) {
 				items.add(ds);
 				
-				boolean selected = !oldSelectedItems.containsKey(ds) // New items are selected by default!
-						|| oldSelectedItems.get(ds) == Boolean.TRUE;
+				boolean selected = !oldCheckedItems.containsKey(ds) // New items are selected by default!
+						|| oldCheckedItems.get(ds) == Boolean.TRUE;
 				checkedItems.put(ds, selected);
 			}
 		}
@@ -179,7 +187,7 @@ public class DataSetSelector extends JPanel {
 		JCheckBox tmpField = new JCheckBox();
 		makeSmall(tmpField);
 		
-		getTable().getColumnModel().getColumn(TYPE_COL_IDX).setMaxWidth(20);
+		getTable().getColumnModel().getColumn(TYPE_COL_IDX).setMaxWidth(16);
 		getTable().getColumnModel().getColumn(SELECTED_COL_IDX).setMaxWidth(tmpField.getPreferredSize().width);
 		getTable().getColumnModel().getColumn(GENES_COL_IDX).setMaxWidth(48);
 		
@@ -429,18 +437,26 @@ public class DataSetSelector extends JPanel {
 
 				if (value instanceof EMSignatureDataSet) {
 					setFont(iconFont);
-					setText(IconManager.ICON_STAR_O);
-					setForeground(EMStyleBuilder.Colors.SIG_NODE_BORDER_COLOR);
-					setBackground(EMStyleBuilder.Colors.SIG_NODE_COLOR);
+					setText(IconManager.ICON_STAR);
 					setToolTipText("Signature Gene Sets");
+					setForeground(EMStyleBuilder.Colors.SIG_EDGE_COLOR);
 				} else if (value instanceof EMDataSet) {
 					setToolTipText("Data Set");
 					
-					if (((EMDataSet)value).getColor() != null) {
+					EMDataSet ds = (EMDataSet)value;
+					
+					if (ds.getColor() != null) {
 						setFont(iconFont);
-						setText(IconManager.ICON_FILE_O);
-						setForeground(EMStyleBuilder.Colors.DEF_NODE_BORDER_COLOR);
-						setBackground(EMStyleBuilder.Colors.DEF_NODE_COLOR);
+						setText(IconManager.ICON_FILE);
+						
+						final Color c;
+						
+						if (map != null && map.getParams().getCreateDistinctEdges() && map.isDistinctExpressionSets())
+							c = ds.getColor();
+						else
+							c = EMStyleBuilder.Colors.COMPOUND_EDGE_COLOR;
+						
+						setForeground(c);
 					}
 				}
 			} else if (column == NAME_COL_IDX) {

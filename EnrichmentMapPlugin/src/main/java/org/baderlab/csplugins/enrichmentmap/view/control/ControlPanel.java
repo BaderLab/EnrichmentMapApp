@@ -479,13 +479,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		}
 		
 		void updateDataSetSelector() {
-			EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
-			
-			List<AbstractDataSet> newItems = new ArrayList<>();
-			newItems.addAll(map.getDataSetList());
-			newItems.addAll(map.getSignatureSetList());
-			
-			getDataSetSelector().update(newItems);
+			getDataSetSelector().update();
 		}
 		
 		void updateChartDataCombo(Collection<AbstractDataSet> dataSets) {
@@ -540,6 +534,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return networkView;
 		}
 		
+		private EnrichmentMap getEnrichmentMap() {
+			return emManager.getEnrichmentMap(networkView.getModel().getSUID());
+		}
+		
 		private JPanel createFilterPanel() {
 			final JPanel panel = new JPanel();
 			panel.setBorder(LookAndFeelUtil.createTitledBorder("Filter"));
@@ -554,7 +552,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			layout.setHorizontalGroup(hGroup);
 			layout.setVerticalGroup(vGroup);
 			
-			EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
+			EnrichmentMap map = getEnrichmentMap();
 			
 			if (map != null) {
 				EMCreationParameters params = map.getParams();
@@ -744,7 +742,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		DataSetSelector getDataSetSelector() {
 			if (dataSetSelector == null) {
-				dataSetSelector = new DataSetSelector(serviceRegistrar);
+				dataSetSelector = new DataSetSelector(getEnrichmentMap(), serviceRegistrar);
 			}
 
 			return dataSetSelector;
@@ -757,7 +755,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				chartDataCombo.addItem(ChartData.NES_VALUE);
 				chartDataCombo.addItem(ChartData.P_VALUE);
 				
-				EnrichmentMap map = emManager.getEnrichmentMap(networkView.getModel().getSUID());
+				EnrichmentMap map = getEnrichmentMap();
 				
 				if (map != null) {
 					EMCreationParameters params = map.getParams();
