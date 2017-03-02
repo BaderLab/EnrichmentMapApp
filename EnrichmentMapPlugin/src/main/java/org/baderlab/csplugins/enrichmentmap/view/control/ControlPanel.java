@@ -17,6 +17,7 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
@@ -47,7 +49,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 
@@ -97,7 +98,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	private final NullViewControlPanel nullViewCtrlPanel = new NullViewControlPanel();
 	private JComboBox<CyNetworkView> emViewCombo;
 	private JButton createEmButton;
-	private JToggleButton openLegendsButton;
 	private JButton optionsButton;
 	private JButton aboutButton;
 	private JButton closePanelButton;
@@ -144,8 +144,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		setMinimumSize(new Dimension(390, 400));
 		setPreferredSize(new Dimension(390, 600));
 		
-		LookAndFeelUtil.equalizeSize(getOpenLegendsButton(), getCreateEmButton(), getOptionsButton());
-		
 		JButton helpButton = SwingUtil.createOnlineHelpButton(EnrichmentMapBuildProperties.USER_MANUAL_URL,
 				"Online Manual...", serviceRegistrar);
 		
@@ -159,8 +157,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
    		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
    				.addGroup(layout.createSequentialGroup()
    						.addComponent(getEmViewCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   						.addPreferredGap(ComponentPlacement.RELATED)
    						.addComponent(getCreateEmButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   						.addComponent(getOpenLegendsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addPreferredGap(ComponentPlacement.RELATED)
    						.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
 				.addComponent(getCtrlPanelsContainer(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -175,7 +174,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
    				.addGroup(layout.createParallelGroup(CENTER, false)
    						.addComponent(getEmViewCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getCreateEmButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   						.addComponent(getOpenLegendsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    				.addComponent(getCtrlPanelsContainer(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -216,41 +214,17 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	JButton getCreateEmButton() {
 		if (createEmButton == null) {
 			createEmButton = new JButton(IconManager.ICON_PLUS);
-			createEmButton.setFont(iconManager.getIconFont(13.0f));
-			
-			if (LookAndFeelUtil.isAquaLAF()) {
-				createEmButton.putClientProperty("JButton.buttonType", "gradient");
-				createEmButton.putClientProperty("JComponent.sizeVariant", "small");
-			}
+			styleHeaderButton(createEmButton, iconManager.getIconFont(16.0f));
 		}
 		
 		return createEmButton;
 	}
 	
-	JToggleButton getOpenLegendsButton() {
-		if (openLegendsButton == null) {
-			openLegendsButton = new JToggleButton(IconManager.ICON_LIST_ALT);
-			openLegendsButton.setFont(iconManager.getIconFont(14.0f));
-			openLegendsButton.setToolTipText("Show Legend...");
-			
-			if (LookAndFeelUtil.isAquaLAF()) {
-				openLegendsButton.putClientProperty("JButton.buttonType", "gradient");
-				openLegendsButton.putClientProperty("JComponent.sizeVariant", "small");
-			}
-		}
-		
-		return openLegendsButton;
-	}
-	
 	JButton getOptionsButton() {
 		if (optionsButton == null) {
 			optionsButton = new JButton(ICON_COG);
-			optionsButton.setFont(iconManager.getIconFont(18.0f));
 			optionsButton.setToolTipText("Options...");
-			optionsButton.setBorderPainted(false);
-			optionsButton.setContentAreaFilled(false);
-			optionsButton.setFocusPainted(false);
-			optionsButton.setBorder(BorderFactory.createEmptyBorder());
+			styleHeaderButton(optionsButton, iconManager.getIconFont(18.0f));
 		}
 		
 		return optionsButton;
@@ -364,6 +338,17 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	EMViewControlPanel getViewControlPanel(CyNetworkView netView) {
 		return emViewCtrlPanels.get(netView.getSUID());
+	}
+	
+	private void styleHeaderButton(final AbstractButton btn, final Font font) {
+		btn.setFont(font);
+		btn.setBorder(null);
+		btn.setContentAreaFilled(false);
+		btn.setBorderPainted(false);
+		
+		int h = getEmViewCombo().getPreferredSize().height;
+		btn.setMinimumSize(new Dimension(h, h));
+		btn.setPreferredSize(new Dimension(h, h));
 	}
 	
 	class EMViewControlPanel extends JPanel {

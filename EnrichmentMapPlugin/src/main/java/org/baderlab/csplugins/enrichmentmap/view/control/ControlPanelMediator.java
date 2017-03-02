@@ -16,8 +16,6 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_V
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -386,34 +384,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			getOptionsMenu().show(ctrlPanel.getOptionsButton(), 0, ctrlPanel.getOptionsButton().getHeight());
 		});
 		
-		ctrlPanel.getOpenLegendsButton().addActionListener(evt -> {
-			if (parametersPanelMediatorProvider.get().getDialog().isVisible()) {
-				parametersPanelMediatorProvider.get().hideDialog();
-			} else {
-				EnrichmentMap map = getCurrentMap();
-				parametersPanelMediatorProvider.get().showDialog(map);
-			}
-		});
-		
-		parametersPanelMediatorProvider.get().getDialog().addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowOpened(WindowEvent e) {
-				updateButton();
-			}
-			@Override
-			public void windowClosed(WindowEvent we) {
-				updateButton();
-			}
-			private void updateButton() {
-				ctrlPanel.getOpenLegendsButton().setSelected(
-						parametersPanelMediatorProvider.get().getDialog().isVisible());
-			}
-		});
-		
 		ctrlPanel.getClosePanelButton().addActionListener(evt -> {
 			closeControlPanel();
 		});
-		
 		
 		ctrlPanel.update(applicationManager.getCurrentNetworkView());
 	}
@@ -664,6 +637,22 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	private JPopupMenu getOptionsMenu() {
 		final JPopupMenu menu = new JPopupMenu();
+		
+		{
+			final JMenuItem mi = new JCheckBoxMenuItem("Show Legend");
+			mi.addActionListener(evt -> {
+				if (parametersPanelMediatorProvider.get().getDialog().isVisible()) {
+					parametersPanelMediatorProvider.get().hideDialog();
+				} else {
+					EnrichmentMap map = getCurrentMap();
+					parametersPanelMediatorProvider.get().showDialog(map);
+				}
+			});
+			mi.setSelected(parametersPanelMediatorProvider.get().getDialog().isVisible());
+			menu.add(mi);
+		}
+		
+		menu.addSeparator();
 		
 		for (FilterMode mode : FilterMode.values()) {
 			final JMenuItem mi = new JCheckBoxMenuItem(mode.toString());
