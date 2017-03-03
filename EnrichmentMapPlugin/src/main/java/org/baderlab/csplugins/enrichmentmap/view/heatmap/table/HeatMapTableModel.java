@@ -27,13 +27,12 @@ public class HeatMapTableModel extends AbstractTableModel {
 	
 	
 	private final EnrichmentMap map;
-	private final List<String> genes;
-	
-	private Transform transform;
-	private Map<Integer,RankValue> ranking;
-	
 	private final int colCount;
 	private final NavigableMap<Integer,EMDataSet> colToDataSet = new TreeMap<>();
+	
+	private List<String> genes;
+	private Transform transform;
+	private Map<Integer,RankValue> ranking;
 
 	
 	public HeatMapTableModel(EnrichmentMap map, Map<Integer,RankValue> ranking, List<String> genes, Transform transform) {
@@ -62,6 +61,11 @@ public class HeatMapTableModel extends AbstractTableModel {
 
 	public void setRanking(Map<Integer,RankValue> ranking) {
 		this.ranking = ranking;
+		fireTableDataChanged();
+	}
+	
+	public void setGenes(List<String> genes) {
+		this.genes = genes;
 		fireTableDataChanged();
 	}
 	

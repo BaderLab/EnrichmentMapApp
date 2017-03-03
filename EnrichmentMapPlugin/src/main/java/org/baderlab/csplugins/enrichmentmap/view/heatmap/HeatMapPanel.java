@@ -12,13 +12,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -39,6 +39,8 @@ import javax.swing.table.TableColumnModel;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColorAndValueRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColorRenderer;
@@ -78,16 +80,35 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 	private JScrollPane scrollPane;
 	private SettingsPopupPanel settingsPanel;
 	private JComboBox<ComboItem<Transform>> normCombo;
+	private JComboBox<ComboItem<Operator>> operatorCombo;
 	private JComboBox<RankingOption> rankOptionCombo;
+	
 	private ActionListener rankOptionActionListener;
+	private ActionListener normActionListener;
+	private ActionListener operatorActionListener;
+	
+	private ClusterRankingOption clusterRankOption = null;
+	private List<String> unionGenes;
+	private List<String> interGenes;
+	
+	private Runnable heatMapParamsChangeListener;
+	
+	
+	public void setHeatMapParamsChangeListener(Runnable listener) {
+		this.heatMapParamsChangeListener = listener;
+	}
+	
+	public void fireHeatMapParamsChangedEvent() {
+		if(heatMapParamsChangeListener != null)
+			heatMapParamsChangeListener.run();
+	}
 	
 	
 	@AfterInjection
 	private void createContents() {
-		// MKTODO get the HeatMapParameters from the EnrichmentMapManager
-		HeatMapParams params = HeatMapParams.defaults();
-		settingsPanel = new SettingsPopupPanel(params);
-		settingsPanel.setShowValuesListener(this::updateTableCellRenderer);
+		settingsPanel = new SettingsPopupPanel();
+		settingsPanel.setShowValuesConsumer(this::updateSetting_ShowValues);
+		settingsPanel.setDistanceConsumer(this::updateSetting_Distance);
 		
 		JPanel toolbarPanel = createToolbarPanel();
 		JPanel expressionPanel = createTablePanel();
@@ -99,36 +120,35 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	private JPanel createToolbarPanel() {
-		JLabel title = new JLabel(" Expression Data");
 		legendHolder = new JPanel(new BorderLayout());
 		legendHolder.setOpaque(false);
+		
+		JLabel operatorLabel = new JLabel("Genes:");
+		operatorCombo = new JComboBox<>();
 		JLabel normLabel = new JLabel("Normalize:");
 		normCombo = new JComboBox<>();
-		JLabel sortLabel = new JLabel("Ranks:");
+		JLabel sortLabel = new JLabel("Sort:");
 		rankOptionCombo = new JComboBox<>();
-//		JButton sortDirectionButton = createSortDirectionButton();
 		
-		SwingUtil.makeSmall(title, normLabel, normCombo, sortLabel, rankOptionCombo);
+		SwingUtil.makeSmall(operatorLabel, operatorCombo, normLabel, normCombo, sortLabel, rankOptionCombo);
+		
+		operatorCombo.addItem(new ComboItem<>(Operator.UNION, "Union"));
+		operatorCombo.addItem(new ComboItem<>(Operator.INTERSECTION, "Intersection"));
+		operatorCombo.setSelectedItem(ComboItem.of(Operator.UNION));
 		
 		normCombo.addItem(new ComboItem<>(Transform.AS_IS, "None"));
-		normCombo.addItem(new ComboItem<>(Transform.ROW_NORMALIZE, "Row Normalize"));
-		normCombo.addItem(new ComboItem<>(Transform.LOG_TRANSFORM, "Log Transform"));
+		normCombo.addItem(new ComboItem<>(Transform.ROW_NORMALIZE, "Row"));
+		normCombo.addItem(new ComboItem<>(Transform.LOG_TRANSFORM, "Log"));
 		normCombo.setSelectedItem(ComboItem.of(Transform.AS_IS));
 		
-		normCombo.addActionListener(e -> {
-			Transform t = normCombo.getItemAt(normCombo.getSelectedIndex()).getValue();
-			updateTransform(t);
-		});
-		
-		rankOptionCombo.addActionListener(rankOptionActionListener = e -> {
-			RankingOption ro = rankOptionCombo.getItemAt(rankOptionCombo.getSelectedIndex());
-			updateRankOption(ro);
-		});
+		operatorCombo.addActionListener(operatorActionListener = e -> updateSetting_Operator(getOperator()));
+		normCombo.addActionListener(normActionListener = e -> updateSetting_Transform(getTransform()));
+		rankOptionCombo.addActionListener(rankOptionActionListener = e -> updateSetting_RankOption(getRankingOption()));
 		
 		JButton gearButton = createIconButton(IconManager.ICON_GEAR, "Settings");
 		JButton menuButton = createIconButton(IconManager.ICON_EXTERNAL_LINK, "Export");
 		LookAndFeelUtil.equalizeSize(gearButton, menuButton);
-		gearButton.addActionListener(this::showSettings);
+		gearButton.addActionListener(this::showSettingsPopup);
 		menuButton.addActionListener(this::showMenu);
 		
 		JPanel panel = new JPanel();
@@ -138,28 +158,28 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-			.addComponent(title)
-			.addGap(10)
 			.addComponent(legendHolder, 180, 180, 180)
 			.addGap(0, 0, Short.MAX_VALUE)
+			.addComponent(operatorLabel)
+			.addComponent(operatorCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addGap(5)
 			.addComponent(normLabel)
 			.addComponent(normCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			.addGap(10)
+			.addGap(5)
 			.addComponent(sortLabel)
 			.addComponent(rankOptionCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-//			.addComponent(sortDirectionButton)
-			.addGap(10)
+			.addGap(5)
 			.addComponent(gearButton)
 			.addComponent(menuButton)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
-			.addComponent(title)
 			.addComponent(legendHolder)
+			.addComponent(operatorLabel)
+			.addComponent(operatorCombo)
 			.addComponent(normLabel)
 			.addComponent(normCombo)
 			.addComponent(sortLabel)
 			.addComponent(rankOptionCombo)
-//			.addComponent(sortDirectionButton)
 			.addComponent(gearButton)
 			.addComponent(menuButton)
 		);
@@ -185,7 +205,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 				Point p = e.getPoint();
 				int row = table.rowAtPoint(p);
 				int col = table.columnAtPoint(p);
-				updateLegend(row, col);
+				renderLegend(row, col);
 			}
 		});
 		
@@ -196,7 +216,22 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	
-	private void updateLegend(int row, int col) {
+	private void createTableHeader(int width) {
+		HeatMapTableModel tableModel = (HeatMapTableModel)table.getModel();
+		TableColumnModel columnModel = table.getColumnModel();
+		
+		int colCount = tableModel.getColumnCount();
+		ColumnHeaderVerticalRenderer vertRenderer = new ColumnHeaderVerticalRenderer();
+		for(int i = HeatMapTableModel.DESC_COL_COUNT; i < colCount; i++) {
+			TableColumn column = columnModel.getColumn(i);
+			column.setHeaderRenderer(vertRenderer);
+			column.setPreferredWidth(width);
+		}
+		
+	}
+	
+	
+	private void renderLegend(int row, int col) {
 		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
 		Object value = tableModel.getValueAt(row, col);
 		
@@ -211,6 +246,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 			legendHolder.revalidate();
 		}
 	}
+	
 	
 	private static JPanel createExpressionLegendPanel(DataSetColorRange range) {
 		JPanel panel = new JPanel();
@@ -253,75 +289,120 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	
-	private JButton createSortDirectionButton() {
-		JButton sortButton = new JButton(IconManager.ICON_CARET_UP);
-		sortButton.setFont(iconManager.getIconFont(10.0f));
-		sortButton.setToolTipText("Sort direction...");
-		sortButton.setBorderPainted(false);
-		sortButton.setContentAreaFilled(false);
-		sortButton.setFocusPainted(false);
-		sortButton.setBorder(BorderFactory.createEmptyBorder());
-		return sortButton;
+	public Operator getOperator() {
+		return operatorCombo.getItemAt(operatorCombo.getSelectedIndex()).getValue();
+	}
+	
+	public Transform getTransform() {
+		return normCombo.getItemAt(normCombo.getSelectedIndex()).getValue();
+	}
+	
+	public RankingOption getRankingOption() {
+		return rankOptionCombo.getItemAt(rankOptionCombo.getSelectedIndex());
 	}
 	
 	
-	public void update(EnrichmentMap map, List<RankingOption> rankOptions, Set<String> genes) {
-		List<String> geneList = new ArrayList<>(genes);
-		geneList.sort(Comparator.naturalOrder());
+	public void reset() {
+		reset(null, null, null, null, null, null);
+		clusterRankOption = null;
+		unionGenes = Collections.emptyList();
+		interGenes = Collections.emptyList();
 		
+	}
+	
+	public void reset(EnrichmentMap map, HeatMapParams params, ClusterRankingOption clusterRankOption, List<RankingOption> moreRankOptions, Set<String> union, Set<String> intersection) {
+		this.clusterRankOption = clusterRankOption;
+		
+		unionGenes = new ArrayList<>(union);
+		unionGenes.sort(Comparator.naturalOrder());
+		interGenes = new ArrayList<>(intersection);
+		interGenes.sort(Comparator.naturalOrder());
+		
+		// Don't fire update events while resetting the panel.
+		Runnable listenerTemp = heatMapParamsChangeListener;
+		heatMapParamsChangeListener = null;
+		
+		// Update Combo Boxes
+		operatorCombo.removeActionListener(operatorActionListener);
 		rankOptionCombo.removeActionListener(rankOptionActionListener);
+		normCombo.removeActionListener(normActionListener);
+		
+		operatorCombo.setSelectedItem(ComboItem.of(params.getOperator()));
+		normCombo.setSelectedItem(ComboItem.of(params.getTransform()));
+		
 		rankOptionCombo.removeAllItems();
 		rankOptionCombo.addItem(RankingOption.none());
-		rankOptions.forEach(rankOptionCombo::addItem);
+		rankOptionCombo.addItem(clusterRankOption);
+		moreRankOptions.forEach(rankOptionCombo::addItem);
+		rankOptionCombo.setSelectedIndex(params.getSortIndex());
+
+		operatorCombo.addActionListener(operatorActionListener);
 		rankOptionCombo.addActionListener(rankOptionActionListener);
-		rankOptionCombo.setSelectedIndex(0);
+		normCombo.addActionListener(normActionListener);
 		
-		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, geneList, Transform.AS_IS);
+		settingsPanel.update(params);
+		
+		List<String> genesToUse = params.getOperator() == Operator.UNION ? unionGenes : interGenes;
+		
+		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, genesToUse, params.getTransform());
 		table.setModel(tableModel);
-		updateTableCellRenderer(settingsPanel.isShowValues());
+		updateSetting_ShowValues(settingsPanel.isShowValues());
 		createTableHeader(COLUMN_WIDTH_COLOR);
+		
+		// Re-compute the ranking
+		rankOptionActionListener.actionPerformed(null);
+		
+		heatMapParamsChangeListener = listenerTemp;
 	}
 	
-	private void updateTransform(Transform t) {
+	private List<String> getGenes(Operator operator) {
+		switch(operator) {
+			case UNION: default: return unionGenes;
+			case INTERSECTION:   return interGenes;
+		}
+	}
+	
+	
+	private void updateSetting_Distance(Distance distance) {
+		clusterRankOption.setDistance(distance);
+		if(rankOptionCombo.getSelectedItem() == clusterRankOption) {
+			updateSetting_RankOption(clusterRankOption);
+		}
+	}
+	
+	private void updateSetting_Operator(Operator oper) {
 		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
-		updateTableCellRenderer(settingsPanel.isShowValues()); // clear cached data used by the ColorRenderer
-		tableModel.setTransform(t);
+		tableModel.setGenes(getGenes(oper));
 	}
 	
-	private void updateRankOption(RankingOption rankOption) {
-//		rankOptionCombo.setEnabled(false);
-		CompletableFuture<Map<Integer,RankValue>> rankingFuture = rankOption.computeRanking();
+	private void updateSetting_RankOption(RankingOption rankOption) {
+		//rankOptionCombo.setEnabled(false);
+		List<String> genes = getGenes(getOperator());
+		CompletableFuture<Map<Integer,RankValue>> rankingFuture = rankOption.computeRanking(genes);
 		if(rankingFuture != null) {
 			rankingFuture.whenComplete((ranking, ex) -> {
 				HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
 				tableModel.setRanking(ranking);
-	//			rankOptionCombo.setEnabled(true);
+				//rankOptionCombo.setEnabled(true);
 			});
 		}
 	}
 	
-	private void createTableHeader(int width) {
-		HeatMapTableModel tableModel = (HeatMapTableModel)table.getModel();
-		TableColumnModel columnModel = table.getColumnModel();
-		
-		int colCount = tableModel.getColumnCount();
-		ColumnHeaderVerticalRenderer vertRenderer = new ColumnHeaderVerticalRenderer();
-		for(int i = HeatMapTableModel.DESC_COL_COUNT; i < colCount; i++) {
-			TableColumn column = columnModel.getColumn(i);
-			column.setHeaderRenderer(vertRenderer);
-			column.setPreferredWidth(width);
-		}
-		
-	}
-	
-	private void updateTableCellRenderer(boolean showValues) {
+	private void updateSetting_ShowValues(boolean showValues) {
 		table.setDefaultRenderer(Double.class, showValues ? new ColorAndValueRenderer() : new ColorRenderer());
 		table.setDefaultRenderer(RankValue.class, new RankValueRenderer());
 		createTableHeader(showValues ? COLUMN_WIDTH_VALUE : COLUMN_WIDTH_COLOR);
 		table.revalidate();
 	}
-
-	private void showSettings(ActionEvent event) {
+	
+	private void updateSetting_Transform(Transform transform) {
+		updateSetting_ShowValues(settingsPanel.isShowValues()); // clear cached data used by the ColorRenderer
+		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
+		tableModel.setTransform(transform);
+	}
+	
+	
+	private void showSettingsPopup(ActionEvent event) {
 		JPopupMenu menu = new JPopupMenu();
 		menu.add(settingsPanel);
 		menu.addMouseListener(new MouseAdapter() {
@@ -337,14 +418,15 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private void showMenu(ActionEvent event)  {
 		JPopupMenu menu = new JPopupMenu();
-		menu.add(txtActionProvider.get());
-		menu.add(pdfActionProvider.get());
+		ExportTXTAction txtAction = txtActionProvider.get();
+		ExportPDFAction pdfAction = pdfActionProvider.get();
+		txtAction.setEnabled(false); // TEMPORARY
+		pdfAction.setEnabled(false); // TEMPORARY
+		menu.add(txtAction);
+		menu.add(pdfAction);
 		Component c = (Component) event.getSource();
 		menu.show(c, 0, c.getHeight());
 	}
-	
-	
-	
 	
 	
 	@Override
@@ -354,7 +436,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 
 	@Override
 	public String getTitle() {
-		return "EnrichmentMap: Expression Viewer";
+		return "Heat Map";
 	}
 
 	@Override
@@ -373,4 +455,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 	public Component getComponent() {
 		return this;
 	}
+	
+	
+	
 }

@@ -47,16 +47,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
 import org.cytoscape.view.model.CyNetworkView;
 
 import com.google.inject.Singleton;
 
 
 @Singleton
-public class EnrichmentMapManager /*implements SetCurrentNetworkListener*/ {
+public class EnrichmentMapManager {
 		
 	private Map<Long, EnrichmentMap> enrichmentMaps = new HashMap<>();
-	
+	private Map<Long, HeatMapParams> heatMapParams = new HashMap<>();
 
 	/**
 	 * Registers a newly created Network.
@@ -69,10 +70,6 @@ public class EnrichmentMapManager /*implements SetCurrentNetworkListener*/ {
 		return Collections.unmodifiableMap(enrichmentMaps);
 	}
 
-	/**
-	 * @param id The CyNetwork SUID.
-	 * @return
-	 */
 	public EnrichmentMap getEnrichmentMap(Long networkId) {
 		return enrichmentMaps.get(networkId);
 	}
@@ -81,14 +78,6 @@ public class EnrichmentMapManager /*implements SetCurrentNetworkListener*/ {
 		return enrichmentMaps.remove(networkId);
 	}
 	
-	public void reset() {
-		enrichmentMaps.clear();
-	}
-	
-	/**
-	 * Returns true if the network with the identifier networkID an
-	 * EnrichmentMap.<br> (and therefore an instance EnrichmentMapParameters is present)
-	 */
 	public boolean isEnrichmentMap(Long networkId) {
 		return enrichmentMaps.containsKey(networkId);
 	}
@@ -96,4 +85,20 @@ public class EnrichmentMapManager /*implements SetCurrentNetworkListener*/ {
 	public boolean isEnrichmentMap(CyNetworkView networkView) {
 		return isEnrichmentMap(networkView.getModel().getSUID());
 	}
+	
+	
+	public void registerHeatMapParams(Long networkId, HeatMapParams params) {
+		heatMapParams.put(networkId, params);
+	}
+	
+	public HeatMapParams getHeatMapParams(Long networkId) {
+		return heatMapParams.get(networkId);
+	}
+	
+	
+	public void reset() {
+		enrichmentMaps.clear();
+		heatMapParams.clear();
+	}
+	
 }

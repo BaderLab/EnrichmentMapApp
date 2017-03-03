@@ -27,6 +27,6 @@ public class OpenEnrichmentMapAction extends AbstractCyAction {
 	@Override
 	public synchronized void actionPerformed(ActionEvent e) {
 		controlPanelMediatorProvider.get().showControlPanel();
-		expressionViewerMediatorProvider.get().showExpressionViewerPanel();
+		expressionViewerMediatorProvider.get().showHeatMapPanel();
 	}
 }

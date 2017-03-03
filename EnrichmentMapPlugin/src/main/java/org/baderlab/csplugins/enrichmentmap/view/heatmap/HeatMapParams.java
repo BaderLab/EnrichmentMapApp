@@ -1,5 +1,10 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
+import org.baderlab.csplugins.brainlib.DistanceMetric;
+import org.baderlab.csplugins.enrichmentmap.task.cluster.CosineDistance;
+import org.baderlab.csplugins.enrichmentmap.task.cluster.EuclideanDistance;
+import org.baderlab.csplugins.enrichmentmap.task.cluster.PearsonCorrelation;
+
 public class HeatMapParams {
 	
 	public static enum Transform {
@@ -8,36 +13,39 @@ public class HeatMapParams {
 		LOG_TRANSFORM
 	}
 	
-//	public static enum Sort {
-//		RANKS, 
-//		COLUMN, 
-//		CLUSTER 
-//	}
-	
 	public static enum Operator {
 		UNION,
 		INTERSECTION
 	}
 	
-	public static enum DistanceMetric {
+	public static enum Distance {
 		COSINE,
 		EUCLIDEAN,
-		PEARSON
+		PEARSON;
+		
+		public DistanceMetric getMetric() {
+			switch(this) {
+				default:
+				case COSINE:    return new CosineDistance();
+				case EUCLIDEAN: return new EuclideanDistance();
+				case PEARSON:   return new PearsonCorrelation();
+			}
+		}
 	}
 	
 	private final Transform transform;
-//	private final Sort sort;
 	private final Operator operator;
-	private final DistanceMetric distanceMetric;
+	private final Distance distanceMetric;
 	private final boolean showValues;
+	private final int sortIndex; // combo index 
 	
 	
-	public HeatMapParams(Transform transform, /*Sort sort,*/ Operator operator, DistanceMetric distanceMetric, boolean showValues) {
+	public HeatMapParams(Transform transform, Operator operator, int sortIndex, Distance distanceMetric, boolean showValues) {
 		this.transform = transform;
-//		this.sort = sort;
 		this.operator = operator;
 		this.distanceMetric = distanceMetric;
 		this.showValues = showValues;
+		this.sortIndex = sortIndex;
 	}
 	
 	
@@ -48,39 +56,39 @@ public class HeatMapParams {
 	
 	public static class Builder {
 		private Transform transform = Transform.AS_IS;
-//		private Sort sort = Sort.RANKS;
 		private Operator operator = Operator.UNION;
-		private DistanceMetric distanceMetric = DistanceMetric.EUCLIDEAN;
+		private Distance distanceMetric = Distance.EUCLIDEAN;
 		private boolean showValues = false;
+		private int sortIndex = 0;
 		
 		public Builder() { }
 		
 		public Builder(HeatMapParams params) {
 			this.transform = params.transform;
-//			this.sort = params.sort;
 			this.operator = params.operator;
 			this.distanceMetric = params.distanceMetric;
 			this.showValues = params.showValues;
+			this.sortIndex = params.sortIndex;
 		}
 		
 		public void setTransform(Transform transform) {
 			this.transform = transform;
 		}
-//		public void setSort(Sort sort) {
-//			this.sort = sort;
-//		}
 		public void setOperator(Operator operator) {
 			this.operator = operator;
 		}
-		public void setDistanceMetric(DistanceMetric distanceMetric) {
+		public void setDistanceMetric(Distance distanceMetric) {
 			this.distanceMetric = distanceMetric;
 		}
 		public void setShowValues(boolean showValues) {
 			this.showValues = showValues;
 		}
+		public void setSortIndex(int sortIndex) {
+			this.sortIndex = sortIndex;
+		}
 		
 		public HeatMapParams build() {
-			return new HeatMapParams(transform, /*sort,*/ operator, distanceMetric, showValues);
+			return new HeatMapParams(transform, operator, sortIndex, distanceMetric, showValues);
 		}
 	}
 
@@ -89,15 +97,15 @@ public class HeatMapParams {
 		return transform;
 	}
 
-//	public Sort getSort() {
-//		return sort;
-//	}
-
+	public int getSortIndex() {
+		return sortIndex;
+	}
+	
 	public Operator getOperator() {
 		return operator;
 	}
 
-	public DistanceMetric getDistanceMetric() {
+	public Distance getDistanceMetric() {
 		return distanceMetric;
 	}
 

@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class LeadingEdgeRankingOption implements RankingOption {
 	
 	
 	@Override
-	public CompletableFuture<Map<Integer,RankValue>> computeRanking() {
+	public CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<String> genes) {
 		initializeLeadingEdge();
 		
 		int topRank = getTopRank();

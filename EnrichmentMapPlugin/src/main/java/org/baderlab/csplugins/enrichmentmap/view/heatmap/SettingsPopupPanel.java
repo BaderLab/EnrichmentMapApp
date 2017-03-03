@@ -1,18 +1,17 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.awt.GridLayout;
+import java.awt.event.ActionListener;
 import java.util.function.Consumer;
 
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.DistanceMetric;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -20,132 +19,122 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 
 public class SettingsPopupPanel extends JPanel {
 	
-	// MKTODO these might not need to be fields
-	private JRadioButton unionRadio;
-	private JRadioButton interRadio;
-	
 	private JRadioButton cosineRadio;
 	private JRadioButton euclideanRadio;
 	private JRadioButton pearsonRadio;
 	
 	private JCheckBox showValuesCheck;
 	
-//	private Consumer<Operator> operatorListener;
-//	private Consumer<DistanceMetric> distanceListener;
-	private Consumer<Boolean> showValuesListener;
+	private Consumer<Boolean> showValuesConsumer;
+	private Consumer<Distance> distanceConsumer;
+	
+	private ActionListener cosineListener;
+	private ActionListener euclideanListener;
+	private ActionListener pearsonListener;
+	private ActionListener showValuesListener;
 	
 	
-	public SettingsPopupPanel(HeatMapParams params) {
+	public SettingsPopupPanel() {
 		createContents();
-		setInitialValues(params);
 		setOpaque(false);
 	}
 	
 
-	public void setShowValuesListener(Consumer<Boolean> showValuesListener) {
-		this.showValuesListener = showValuesListener;
+	public void setShowValuesConsumer(Consumer<Boolean> showValuesConsumer) {
+		this.showValuesConsumer = showValuesConsumer;
 	}
+	
+	public void setDistanceConsumer(Consumer<Distance> dmConsumer) {
+		this.distanceConsumer = dmConsumer;
+	}
+	
 	
 	/**
 	 * Cannot use JComboBox on a JPopupMenu because of a bug in swing: 
 	 * http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4799266
 	 */
-	private void createContents() {
-		JLabel genesLabel = new JLabel(" Genes:");
-		unionRadio = new JRadioButton("Union of selected gene sets");
-		interRadio = new JRadioButton("Intersection of selected gene sets");
-		JPanel genesRadioPanel = createButtonPanel(unionRadio, interRadio);
-		
-		JLabel distanceLabel = new JLabel(" Distance Metric:");
+	private void createContents() {		
+		JLabel distanceLabel = new JLabel("  Hierarchical Cluster - Distance Metric  ");
 		cosineRadio = new JRadioButton("Cosine");
 		euclideanRadio = new JRadioButton("Euclidean");
 		pearsonRadio = new JRadioButton("Pearson Correlation");
 		JPanel distanceRadioPanel = createButtonPanel(cosineRadio, euclideanRadio, pearsonRadio);
 				
-		JLabel valuesLabel = new JLabel(" Show Values:");
-		showValuesCheck = new JCheckBox();
-		showValuesCheck.addActionListener(e -> {
-			if(showValuesListener != null) {
-				showValuesListener.accept(showValuesCheck.isSelected());
+		showValuesCheck = new JCheckBox("Show Values");
+		showValuesCheck.addActionListener(showValuesListener = e -> {
+			if(showValuesConsumer != null) {
+				showValuesConsumer.accept(showValuesCheck.isSelected());
 			}
 		});
 		
-		SwingUtil.makeSmall(genesLabel, distanceLabel, valuesLabel, showValuesCheck);
+		cosineRadio.addActionListener(cosineListener = dmListenerFor(Distance.COSINE));
+		euclideanRadio.addActionListener(euclideanListener = dmListenerFor(Distance.EUCLIDEAN));
+		pearsonRadio.addActionListener(pearsonListener = dmListenerFor(Distance.PEARSON));
+		
+		SwingUtil.makeSmall(distanceLabel, showValuesCheck);
 		
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
-		layout.setHorizontalGroup(layout.createSequentialGroup()
-			.addGroup(layout.createParallelGroup()
-				.addComponent(genesLabel)
-				.addComponent(distanceLabel)
-				.addComponent(valuesLabel)
-			)
-			.addGroup(layout.createParallelGroup()
-				.addComponent(genesRadioPanel)
-				.addComponent(distanceRadioPanel)
-				.addComponent(showValuesCheck)
-			)
+		layout.setHorizontalGroup(layout.createParallelGroup()
+			.addComponent(showValuesCheck)
+			.addComponent(distanceLabel)
+			.addComponent(distanceRadioPanel)
 		);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(genesLabel)
-				.addComponent(genesRadioPanel)
-			)
+			.addGap(5)
+			.addComponent(showValuesCheck)
 			.addGap(10)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(distanceLabel)
-				.addComponent(distanceRadioPanel)
-			)
-			.addGap(10)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(valuesLabel)
-				.addComponent(showValuesCheck)
-			)
+			.addComponent(distanceLabel)
+			.addComponent(distanceRadioPanel)
+			.addGap(5)
 		);
 	}
 	
 	
-	private void setInitialValues(HeatMapParams params) {
-		switch(params.getOperator()) {
-			case UNION:        unionRadio.setSelected(true); break;
-			case INTERSECTION: interRadio.setSelected(true); break;
-		}
+	private <T> ActionListener dmListenerFor(Distance dm) {
+		return e -> {
+			if(distanceConsumer != null) {
+				distanceConsumer.accept(dm);
+			}
+		};
+	}
+	
+	
+	public void update(HeatMapParams params) {
+		cosineRadio.removeActionListener(cosineListener);
+		euclideanRadio.removeActionListener(euclideanListener);
+		pearsonRadio.removeActionListener(pearsonListener);
+		showValuesCheck.removeActionListener(showValuesListener);
+		
 		switch(params.getDistanceMetric()) {
-			case COSINE:    cosineRadio.setSelected(true); break;
+			case COSINE:    cosineRadio.setSelected(true);    break;
 			case EUCLIDEAN: euclideanRadio.setSelected(true); break;
-			case PEARSON:   pearsonRadio.setSelected(true); break;
+			case PEARSON:   pearsonRadio.setSelected(true);   break;
 		}
 		showValuesCheck.setSelected(params.isShowValues());
+		
+		cosineRadio.addActionListener(cosineListener);
+		euclideanRadio.addActionListener(euclideanListener);
+		pearsonRadio.addActionListener(pearsonListener);
+		showValuesCheck.addActionListener(showValuesListener);
 	}
 	
 	
-	public Operator getOperator() {
-		return unionRadio.isSelected() ? Operator.UNION : Operator.INTERSECTION;
-	}
-	
-	public DistanceMetric getDistanceMetric() {
+	public Distance getDistanceMetric() {
 		if(cosineRadio.isSelected())
-			return DistanceMetric.COSINE;
+			return Distance.COSINE;
 		if(euclideanRadio.isSelected())
-			return DistanceMetric.EUCLIDEAN;
-		return DistanceMetric.PEARSON;
+			return Distance.EUCLIDEAN;
+		return Distance.PEARSON;
 	}
 	
 	public boolean isShowValues() {
 		return showValuesCheck.isSelected();
 	}
-	
-//	public HeatMapParams get() {
-//		HeatMapParams.Builder builder = new HeatMapParams.Builder(params);
-//		builder.setOperator(getOperator());
-//		builder.setDistanceMetric(getDistanceMetric());
-//		builder.setShowValues(isShowValues());
-//		return builder.build();
-//	}
 	
 	private static JPanel createButtonPanel(JRadioButton ... buttons) {
 		JPanel panel = new JPanel(new GridLayout(buttons.length, 1));

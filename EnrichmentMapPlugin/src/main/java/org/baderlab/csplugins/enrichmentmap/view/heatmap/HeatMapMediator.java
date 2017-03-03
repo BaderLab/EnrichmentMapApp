@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,28 +37,32 @@ public class HeatMapMediator implements RowsSetListener {
 
 	@Inject private Provider<HeatMapPanel> panelProvider;
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private HierarchicalClusterRankingOption.Factory clusterRankOptionFactory;
+	@Inject private ClusterRankingOption.Factory clusterRankOptionFactory;
 	
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CySwingApplication swingApplication;
 	@Inject private CyApplicationManager applicationManager;
 	
+	private HeatMapPanel heatMapPanel = null;
 	
-	public void showExpressionViewerPanel() {
-		CytoPanelComponent panel = null;
+	
+	public void showHeatMapPanel() {
 		try {
-			panel = serviceRegistrar.getService(CytoPanelComponent.class, "(id=" + HeatMapPanel.ID + ")");
+			heatMapPanel = (HeatMapPanel) serviceRegistrar.getService(CytoPanelComponent.class, "(id=" + HeatMapPanel.ID + ")");
 		} catch (Exception ex) { }
 		
-		if(panel == null) {
-			panel = panelProvider.get();
+		if(heatMapPanel == null) {
+			heatMapPanel = panelProvider.get();
+//			heatMapPanel.setHeatMapParamsChangeListener(() -> {
+//				
+//			});
 			Properties props = new Properties();
 			props.setProperty("id", HeatMapPanel.ID);
-			serviceRegistrar.registerService(panel, CytoPanelComponent.class, props);
+			serviceRegistrar.registerService(heatMapPanel, CytoPanelComponent.class, props);
 		}
 		
 		// Bring panel to front
-		CytoPanel cytoPanel = swingApplication.getCytoPanel(panel.getCytoPanelName());
+		CytoPanel cytoPanel = swingApplication.getCytoPanel(heatMapPanel.getCytoPanelName());
 		int index = cytoPanel.indexOfComponent(HeatMapPanel.ID);
 		if(index >= 0)
 			cytoPanel.setSelectedIndex(index);
@@ -69,31 +74,55 @@ public class HeatMapMediator implements RowsSetListener {
 		// MKTODO If this has bad performance then add a reconciler timer delay.
 		// Cytoscape selection events can come in sets of 1-4 events.
 		
-		CyNetwork network = applicationManager.getCurrentNetwork();
-
-		// only handle event if it is a selected node
-		if(network != null && (e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable())) {
-			final EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
-			if(map != null) {
-				List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
-				List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
+		if(e.containsColumn(CyNetwork.SELECTED)) {
+			CyNetwork network = applicationManager.getCurrentNetwork();
+			// only handle event if it is a selected node
+			if(network != null && (e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable())) {
 				
-				String prefix = map.getParams().getAttributePrefix();
+				HeatMapParams params = emManager.getHeatMapParams(network.getSUID());
+				if(params == null) {
+					params = HeatMapParams.defaults();
+					emManager.registerHeatMapParams(network.getSUID(), params);
+				}
 				
-				// For now we are only supporting UNION of genes across selected genesets
-				// May also want to support INTERSECTION in the future
-				Set<String> allGenes = unionGenesets(network, selectedNodes, selectedEdges, prefix);
-				List<RankingOption> rankOptions = getRankOptions(map, network, allGenes, selectedNodes, selectedEdges);
-				
-				panelProvider.get().update(map, rankOptions, allGenes);
+				updateHeatMap(params);
 			}
 		}
 	}
 	
-	private List<RankingOption> getRankOptions(EnrichmentMap map, CyNetwork network, Set<String> allGenes, List<CyNode> nodes, List<CyEdge> edges) {
-		List<RankingOption> options = new ArrayList<>();
-		options.add(clusterRankOptionFactory.create(map, allGenes));
+//	private void heatMapParamsChanged() {
+//		HeatMapParams params = heatMapPanel.buildParams();
+////		CyNetwork network = applicationManager.getCurrentNetwork();
+//		emManager.registerHeatMapParams(network.getSUID(), params);
+//	}
+	
+	
+	private void updateHeatMap(HeatMapParams params) {
+		if(heatMapPanel == null)
+			return;
 		
+		CyNetwork network = applicationManager.getCurrentNetwork();
+		final EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
+		if(map != null) {
+			List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
+			List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
+			
+			String prefix = map.getParams().getAttributePrefix();
+			
+			Set<String> union = unionGenesets(network, selectedNodes, selectedEdges, prefix);
+			Set<String> inter = intersectionGenesets(network, selectedNodes, selectedEdges, prefix);
+			
+			ClusterRankingOption clusterRankOption = clusterRankOptionFactory.create(map);
+			List<RankingOption> rankOptions = getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
+			
+			
+			heatMapPanel.reset(map, params, clusterRankOption, rankOptions, union, inter);
+		}
+	}
+	
+	
+	private List<RankingOption> getDataSetRankOptions(EnrichmentMap map, CyNetwork network, List<CyNode> nodes, List<CyEdge> edges) {
+		List<RankingOption> options = new ArrayList<>();
 		for(EMDataSet dataset : map.getDataSetList()) {
 			if(nodes.size() == 1 && edges.isEmpty() && dataset.getMethod() == Method.GSEA && contains(dataset, network, nodes.get(0))) {
 				String name = network.getRow(nodes.get(0)).get(CyNetwork.NAME, String.class);
@@ -129,17 +158,37 @@ public class HeatMapMediator implements RowsSetListener {
 	
 	
 	private static Set<String> unionGenesets(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
-		Set<String> allGenes = new HashSet<>();
+		Set<String> union = new HashSet<>();
 		for(CyNode node : nodes) {
-			allGenes.addAll(getGenes(network, node, prefix));
+			union.addAll(getGenes(network, node, prefix));
 		}
 		for(CyEdge edge : edges) {
-			allGenes.addAll(getGenes(network, edge.getSource(), prefix));
-			allGenes.addAll(getGenes(network, edge.getTarget(), prefix));
+			union.addAll(getGenes(network, edge.getSource(), prefix));
+			union.addAll(getGenes(network, edge.getTarget(), prefix));
 		}
-		return allGenes;
+		return union;
 	}
 	
+	
+	private static Set<String> intersectionGenesets(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
+		Set<String> inter = null;
+		for(CyNode node : nodes) {
+			Collection<String> genes = getGenes(network, node, prefix);
+			if(inter == null)
+				inter = new HashSet<>(genes);
+			else
+				inter.retainAll(genes);
+		}
+		for(CyEdge edge : edges) {
+			Collection<String> genes = getGenes(network, edge.getSource(), prefix);
+			if(inter == null)
+				inter = new HashSet<>(genes);
+			else
+				inter.retainAll(genes);
+			inter.retainAll(getGenes(network, edge.getTarget(), prefix));
+		}
+		return inter == null ? Collections.emptySet() : inter;
+	}
 	
 	private static Collection<String> getGenes(CyNetwork network, CyNode node, String prefix) {
 		CyRow row = network.getRow(node);
