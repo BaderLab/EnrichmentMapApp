@@ -124,7 +124,7 @@ public class SettingsPopupPanel extends JPanel {
 	}
 	
 	
-	public Distance getDistanceMetric() {
+	public Distance getDistance() {
 		if(cosineRadio.isSelected())
 			return Distance.COSINE;
 		if(euclideanRadio.isSelected())

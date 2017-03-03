@@ -71,20 +71,25 @@ public class HeatMapParams {
 			this.sortIndex = params.sortIndex;
 		}
 		
-		public void setTransform(Transform transform) {
+		public Builder setTransform(Transform transform) {
 			this.transform = transform;
+			return this;
 		}
-		public void setOperator(Operator operator) {
+		public Builder setOperator(Operator operator) {
 			this.operator = operator;
+			return this;
 		}
-		public void setDistanceMetric(Distance distanceMetric) {
+		public Builder setDistanceMetric(Distance distanceMetric) {
 			this.distanceMetric = distanceMetric;
+			return this;
 		}
-		public void setShowValues(boolean showValues) {
+		public Builder setShowValues(boolean showValues) {
 			this.showValues = showValues;
+			return this;
 		}
-		public void setSortIndex(int sortIndex) {
+		public Builder setSortIndex(int sortIndex) {
 			this.sortIndex = sortIndex;
+			return this;
 		}
 		
 		public HeatMapParams build() {
@@ -113,4 +118,12 @@ public class HeatMapParams {
 		return showValues;
 	}
 
+
+	@Override
+	public String toString() {
+		return "HeatMapParams [transform=" + transform + ", operator=" + operator + ", distanceMetric=" + distanceMetric
+				+ ", showValues=" + showValues + ", sortIndex=" + sortIndex + "]";
+	}
+
+	
 }

@@ -16,6 +16,8 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -27,15 +29,16 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
-public class HeatMapMediator implements RowsSetListener {
+public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewListener {
 
-	@Inject private Provider<HeatMapPanel> panelProvider;
+	@Inject private Provider<HeatMapParentPanel> panelProvider;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private ClusterRankingOption.Factory clusterRankOptionFactory;
 	
@@ -43,27 +46,25 @@ public class HeatMapMediator implements RowsSetListener {
 	@Inject private CySwingApplication swingApplication;
 	@Inject private CyApplicationManager applicationManager;
 	
-	private HeatMapPanel heatMapPanel = null;
+	private HeatMapParentPanel heatMapPanel = null;
 	
 	
 	public void showHeatMapPanel() {
 		try {
-			heatMapPanel = (HeatMapPanel) serviceRegistrar.getService(CytoPanelComponent.class, "(id=" + HeatMapPanel.ID + ")");
+			heatMapPanel = (HeatMapParentPanel) serviceRegistrar.getService(CytoPanelComponent.class, "(id=" + HeatMapParentPanel.ID + ")");
 		} catch (Exception ex) { }
 		
 		if(heatMapPanel == null) {
 			heatMapPanel = panelProvider.get();
-//			heatMapPanel.setHeatMapParamsChangeListener(() -> {
-//				
-//			});
+			heatMapPanel.setHeatMapParamsChangeListener(this::heatMapParamsChanged);
 			Properties props = new Properties();
-			props.setProperty("id", HeatMapPanel.ID);
+			props.setProperty("id", HeatMapParentPanel.ID);
 			serviceRegistrar.registerService(heatMapPanel, CytoPanelComponent.class, props);
 		}
 		
 		// Bring panel to front
 		CytoPanel cytoPanel = swingApplication.getCytoPanel(heatMapPanel.getCytoPanelName());
-		int index = cytoPanel.indexOfComponent(HeatMapPanel.ID);
+		int index = cytoPanel.indexOfComponent(HeatMapParentPanel.ID);
 		if(index >= 0)
 			cytoPanel.setSelectedIndex(index);
 	}
@@ -73,35 +74,48 @@ public class HeatMapMediator implements RowsSetListener {
 	public void handleEvent(RowsSetEvent e) {
 		// MKTODO If this has bad performance then add a reconciler timer delay.
 		// Cytoscape selection events can come in sets of 1-4 events.
-		
 		if(e.containsColumn(CyNetwork.SELECTED)) {
-			CyNetwork network = applicationManager.getCurrentNetwork();
-			// only handle event if it is a selected node
-			if(network != null && (e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable())) {
-				
-				HeatMapParams params = emManager.getHeatMapParams(network.getSUID());
-				if(params == null) {
-					params = HeatMapParams.defaults();
-					emManager.registerHeatMapParams(network.getSUID(), params);
+			CyNetworkView networkView = applicationManager.getCurrentNetworkView();
+			if(networkView != null) {
+				CyNetwork network = networkView.getModel();
+				// only handle event if it is a selected node
+				if(e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable()) {
+					updateHeatMap(networkView);
 				}
-				
-				updateHeatMap(params);
 			}
 		}
 	}
 	
-//	private void heatMapParamsChanged() {
-//		HeatMapParams params = heatMapPanel.buildParams();
-////		CyNetwork network = applicationManager.getCurrentNetwork();
-//		emManager.registerHeatMapParams(network.getSUID(), params);
-//	}
+	@Override
+	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		CyNetworkView networkView = e.getNetworkView();
+		if(networkView != null && emManager.isEnrichmentMap(networkView)) {
+			updateHeatMap(networkView);
+		} else {
+			heatMapPanel.showEmptyView();
+		}
+	}
+	
+	private void heatMapParamsChanged(HeatMapParams params) {
+		System.out.println("HeatMapMediator.heatMapParamsChanged(): " + params);
+		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
+		if(networkView != null) {
+			emManager.registerHeatMapParams(networkView.getModel().getSUID(), params);
+		}
+	}
 	
 	
-	private void updateHeatMap(HeatMapParams params) {
+	private void updateHeatMap(CyNetworkView networkView) {
 		if(heatMapPanel == null)
 			return;
 		
-		CyNetwork network = applicationManager.getCurrentNetwork();
+		CyNetwork network = networkView.getModel();
+		HeatMapParams params = emManager.getHeatMapParams(network.getSUID());
+		if(params == null) {
+			params = HeatMapParams.defaults();
+			emManager.registerHeatMapParams(network.getSUID(), params);
+		}
+		
 		final EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
 		if(map != null) {
 			List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
@@ -115,8 +129,7 @@ public class HeatMapMediator implements RowsSetListener {
 			ClusterRankingOption clusterRankOption = clusterRankOptionFactory.create(map);
 			List<RankingOption> rankOptions = getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
 			
-			
-			heatMapPanel.reset(map, params, clusterRankOption, rankOptions, union, inter);
+			heatMapPanel.selectGenes(map, params, clusterRankOption, rankOptions, union, inter);
 		}
 	}
 	

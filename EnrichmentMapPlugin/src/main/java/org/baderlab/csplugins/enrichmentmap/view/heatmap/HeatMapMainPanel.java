@@ -10,9 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +21,6 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -51,22 +47,17 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValueRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
-import org.cytoscape.application.swing.CytoPanelComponent2;
-import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.mskcc.colorgradient.ColorGradientWidget;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.google.inject.Singleton;
+import com.google.inject.assistedinject.Assisted;
 
-@Singleton
 @SuppressWarnings("serial")
-public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
+public class HeatMapMainPanel extends JPanel {
 
-	public static final String ID = "enrichmentmap.view.ExpressionViewerPanel";
-	
 	private static final int COLUMN_WIDTH_COLOR = 10;
 	private static final int COLUMN_WIDTH_VALUE = 50;
 	
@@ -91,16 +82,22 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 	private List<String> unionGenes;
 	private List<String> interGenes;
 	
-	private Runnable heatMapParamsChangeListener;
+	private final HeatMapParentPanel parent;
+	private boolean isResetting = false;
 	
-	
-	public void setHeatMapParamsChangeListener(Runnable listener) {
-		this.heatMapParamsChangeListener = listener;
+	public interface Factory {
+		HeatMapMainPanel create(HeatMapParentPanel parent);
 	}
 	
-	public void fireHeatMapParamsChangedEvent() {
-		if(heatMapParamsChangeListener != null)
-			heatMapParamsChangeListener.run();
+	
+	@Inject
+	public HeatMapMainPanel(@Assisted HeatMapParentPanel parent) {
+		this.parent = parent;
+	}
+	
+	private void settingChanged() {
+		if(!isResetting)
+			parent.settingsChanged(buildParams());
 	}
 	
 	
@@ -301,16 +298,31 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		return rankOptionCombo.getItemAt(rankOptionCombo.getSelectedIndex());
 	}
 	
-	
-	public void reset() {
-		reset(null, null, null, null, null, null);
-		clusterRankOption = null;
-		unionGenes = Collections.emptyList();
-		interGenes = Collections.emptyList();
-		
+	public boolean isShowValues() {
+		return settingsPanel.isShowValues();
 	}
 	
+	public Distance getDistance() {
+		return settingsPanel.getDistance();
+	}
+	
+	public int getRankingIndex() {
+		return rankOptionCombo.getSelectedIndex();
+	}
+	
+	public HeatMapParams buildParams() {
+		return new HeatMapParams.Builder()
+				.setDistanceMetric(getDistance())
+				.setOperator(getOperator())
+				.setShowValues(isShowValues())
+				.setSortIndex(getRankingIndex())
+				.setTransform(getTransform())
+				.build();
+	}
+	
+	
 	public void reset(EnrichmentMap map, HeatMapParams params, ClusterRankingOption clusterRankOption, List<RankingOption> moreRankOptions, Set<String> union, Set<String> intersection) {
+		isResetting = true;
 		this.clusterRankOption = clusterRankOption;
 		
 		unionGenes = new ArrayList<>(union);
@@ -318,16 +330,16 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		interGenes = new ArrayList<>(intersection);
 		interGenes.sort(Comparator.naturalOrder());
 		
-		// Don't fire update events while resetting the panel.
-		Runnable listenerTemp = heatMapParamsChangeListener;
-		heatMapParamsChangeListener = null;
-		
 		// Update Combo Boxes
 		operatorCombo.removeActionListener(operatorActionListener);
 		rankOptionCombo.removeActionListener(rankOptionActionListener);
 		normCombo.removeActionListener(normActionListener);
 		
+		operatorCombo.removeAllItems();
+		operatorCombo.addItem(new ComboItem<>(Operator.UNION, "Union (" + union.size() + ")"));
+		operatorCombo.addItem(new ComboItem<>(Operator.INTERSECTION, "Intersection (" + intersection.size() + ")"));
 		operatorCombo.setSelectedItem(ComboItem.of(params.getOperator()));
+		
 		normCombo.setSelectedItem(ComboItem.of(params.getTransform()));
 		
 		rankOptionCombo.removeAllItems();
@@ -336,10 +348,6 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		moreRankOptions.forEach(rankOptionCombo::addItem);
 		rankOptionCombo.setSelectedIndex(params.getSortIndex());
 
-		operatorCombo.addActionListener(operatorActionListener);
-		rankOptionCombo.addActionListener(rankOptionActionListener);
-		normCombo.addActionListener(normActionListener);
-		
 		settingsPanel.update(params);
 		
 		List<String> genesToUse = params.getOperator() == Operator.UNION ? unionGenes : interGenes;
@@ -352,7 +360,11 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		// Re-compute the ranking
 		rankOptionActionListener.actionPerformed(null);
 		
-		heatMapParamsChangeListener = listenerTemp;
+		operatorCombo.addActionListener(operatorActionListener);
+		rankOptionCombo.addActionListener(rankOptionActionListener);
+		normCombo.addActionListener(normActionListener);
+		
+		isResetting = false;
 	}
 	
 	private List<String> getGenes(Operator operator) {
@@ -368,11 +380,13 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		if(rankOptionCombo.getSelectedItem() == clusterRankOption) {
 			updateSetting_RankOption(clusterRankOption);
 		}
+		settingChanged();
 	}
 	
 	private void updateSetting_Operator(Operator oper) {
 		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
 		tableModel.setGenes(getGenes(oper));
+		settingChanged();
 	}
 	
 	private void updateSetting_RankOption(RankingOption rankOption) {
@@ -386,6 +400,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 				//rankOptionCombo.setEnabled(true);
 			});
 		}
+		settingChanged();
 	}
 	
 	private void updateSetting_ShowValues(boolean showValues) {
@@ -393,12 +408,14 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		table.setDefaultRenderer(RankValue.class, new RankValueRenderer());
 		createTableHeader(showValues ? COLUMN_WIDTH_VALUE : COLUMN_WIDTH_COLOR);
 		table.revalidate();
+		settingChanged();
 	}
 	
 	private void updateSetting_Transform(Transform transform) {
 		updateSetting_ShowValues(settingsPanel.isShowValues()); // clear cached data used by the ColorRenderer
 		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
 		tableModel.setTransform(transform);
+		settingChanged();
 	}
 	
 	
@@ -427,35 +444,5 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		Component c = (Component) event.getSource();
 		menu.show(c, 0, c.getHeight());
 	}
-	
-	
-	@Override
-	public CytoPanelName getCytoPanelName() {
-		return CytoPanelName.SOUTH;
-	}
-
-	@Override
-	public String getTitle() {
-		return "Heat Map";
-	}
-
-	@Override
-	public Icon getIcon() {
-		String path = "org/baderlab/csplugins/enrichmentmap/view/enrichmentmap_logo_notext_small.png";
-		URL url = getClass().getClassLoader().getResource(path);
-		return url == null ? null : new ImageIcon(url);
-	}
-
-	@Override
-	public String getIdentifier() {
-		return ID;
-	}
-
-	@Override
-	public Component getComponent() {
-		return this;
-	}
-	
-	
 	
 }

@@ -32,7 +32,7 @@ public class CreateDummyExpressionTask extends AbstractTask {
 		Map<String, Integer> genes = dataset.getMap().getGeneSetsGenes(dataset.getSetOfGeneSets().getGeneSets().values());
 		datasetGenes = dataset.getDataSetGenes();
 
-		String[] titletokens = {"Name", "Description", "Dummy Expression"};
+		String[] titletokens = {"Name", "Description", "Dummy"};
 
 		GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
 		expressionMatrix.setColumnNames(titletokens);
