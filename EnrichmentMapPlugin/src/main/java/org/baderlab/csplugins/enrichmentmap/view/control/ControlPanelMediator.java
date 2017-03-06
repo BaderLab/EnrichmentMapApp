@@ -53,7 +53,7 @@ import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
-import org.baderlab.csplugins.enrichmentmap.view.parameters.ParametersPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.parameters.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
@@ -117,7 +117,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 
 	@Inject private Provider<ControlPanel> controlPanelProvider;
-	@Inject private Provider<ParametersPanelMediator> parametersPanelMediatorProvider;
+	@Inject private Provider<LegendPanelMediator> legendPanelMediatorProvider;
 	@Inject private Provider<PostAnalysisPanelMediator> postAnalysisPanelMediatorProvider;
 	@Inject private Provider<EdgeWidthDialog> dialogProvider;
 	@Inject private EnrichmentMapManager emManager;
@@ -641,14 +641,14 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		{
 			final JMenuItem mi = new JCheckBoxMenuItem("Show Legend");
 			mi.addActionListener(evt -> {
-				if (parametersPanelMediatorProvider.get().getDialog().isVisible()) {
-					parametersPanelMediatorProvider.get().hideDialog();
+				if (legendPanelMediatorProvider.get().getDialog().isVisible()) {
+					legendPanelMediatorProvider.get().hideDialog();
 				} else {
 					EnrichmentMap map = getCurrentMap();
-					parametersPanelMediatorProvider.get().showDialog(map);
+					legendPanelMediatorProvider.get().showDialog(map);
 				}
 			});
-			mi.setSelected(parametersPanelMediatorProvider.get().getDialog().isVisible());
+			mi.setSelected(legendPanelMediatorProvider.get().getDialog().isVisible());
 			menu.add(mi);
 		}
 		

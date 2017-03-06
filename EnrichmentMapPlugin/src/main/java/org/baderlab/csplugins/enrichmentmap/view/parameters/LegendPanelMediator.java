@@ -27,10 +27,10 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
-public class ParametersPanelMediator implements SetCurrentNetworkViewListener {
+public class LegendPanelMediator implements SetCurrentNetworkViewListener {
 
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private Provider<ParametersPanel> parametersPanelProvider;
+	@Inject private Provider<LegendPanel> parametersPanelProvider;
 	
 	@Inject private CySwingApplication swingApplication;
 	

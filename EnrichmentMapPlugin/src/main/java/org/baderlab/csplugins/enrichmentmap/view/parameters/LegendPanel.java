@@ -43,129 +43,415 @@
 
 package org.baderlab.csplugins.enrichmentmap.view.parameters;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
+import static org.cytoscape.util.swing.LookAndFeelUtil.createTitledBorder;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.net.URL;
 
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
-/**
- * Created by
- * User: risserlin
- * Date: Feb 5, 2009
- * Time: 3:55:52 PM
- * <p>
- * enrichment map legend panel
- */
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
+/**
+ * Right hand information Panel containing files uploaded and legends
+ */
+@Singleton
 @SuppressWarnings("serial")
 public class LegendPanel extends JPanel {
 
-	private static final int WIDTH = 150;
-	private static final int HEIGHT = 36;
+	@Inject private CyApplicationManager applicationManager;
 	
-    private final Color minColor;
-    private final Color maxColor;
-    private final String phenotype1;
-    private final String phenotype2;
+	private JPanel nodeLegendPanel;
+	private JPanel edgeLegendPanel;
+	private BasicCollapsiblePanel propertiesPanel;
+	private JTextPane infoPane;
+	
+	public LegendPanel() {
+		setLayout(new BorderLayout());
+	}
+	
+	/**
+	 * Update parameters panel based on given enrichment map parameters
+	 */
+	 void update(EnrichmentMap map) {
+		EMCreationParameters params = map != null ? map.getParams() : null;
 
-	public LegendPanel(Color minColor, Color maxColor, String phenotype1, String phenotype2) {
-        this.minColor = minColor;
-        this.maxColor = maxColor;
-        this.phenotype1 = phenotype1;
-        this.phenotype2 = phenotype2;
-        
-        setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        setOpaque(false);
-    }
-
-	@Override
-	public void paint(Graphics g) {
-		final int w = getWidth();
-		final int h = getHeight();
+		removeAll();
 		
-		if (w <= 0 || h <= 0)
-			return;
-		
-		Graphics2D g2d = (Graphics2D) g;
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		
-		float ww = w / 5.f;
-		float hPad = ww / 2.f; // To center the legend horizontally
-        
-        Point2D.Float p1 = new Point2D.Float(hPad, 0.f);  //Gradient line start
-        Point2D.Float p2 = new Point2D.Float(hPad + ww, 0.f);  //Gradient line end
-
-        //empty white box
-        Point2D.Float p3 = new Point2D.Float(hPad + ww, 0.f);  //Gradient line start
-
-        Point2D.Float p5 = new Point2D.Float(hPad + 2 * ww, 0.f);  //Gradient line start
-
-        Point2D.Float p7 = new Point2D.Float(hPad + 3 * ww, 0.f);  //Gradient line start
-        Point2D.Float p8 = new Point2D.Float(hPad + 4 * ww, 0.f);  //Gradient line end
-        
-        float w1 = 30;
-        float w2 = 30;
-        float hh = h / 2;
-        
-        // Need to create two gradients, one one for the max and one for the min
-        GradientPaint g1 = new GradientPaint(p1, minColor, p2, Color.WHITE, false); //Acyclic gradient
-        GradientPaint g2 = new GradientPaint(p7, Color.WHITE, p8, maxColor, false); //Acyclic gradient
-        Rectangle2D.Float rect1 = new Rectangle2D.Float(p1.x , p1.y, w1, hh);
-        Rectangle2D.Float rect2 = new Rectangle2D.Float(p3.x , p3.y, w2, hh);
-        Rectangle2D.Float rect3 = new Rectangle2D.Float(p5.x , p5.y, w2, hh);
-        Rectangle2D.Float rect4 = new Rectangle2D.Float(p7.x , p7.y, w1, hh);
-
-        g2d.setFont(getLabelFont());
-        float tyOffset = hh + h / 3.f; // Text y offset
-        
-		if (minColor != Color.WHITE) {
-			g2d.setPaint(g1);
-			g2d.fill(rect1);
-			g2d.setPaint(Color.WHITE);
-			g2d.draw(rect1);
-
-			// make a white block
-			g2d.setPaint(Color.WHITE);
-			g2d.fill(rect2);
-			g2d.draw(rect2);
-
-			g2d.setPaint(getLabelForeground());
-			g2d.drawString(phenotype1, p1.x, p1.y + tyOffset);
+		if (params == null) {
+			JLabel infoLabel = new JLabel("No EnrichmentMap View selected");
+			infoLabel.setEnabled(false);
+			infoLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			infoLabel.setHorizontalAlignment(JLabel.CENTER);
+			infoLabel.setVerticalAlignment(JLabel.CENTER);
+			infoLabel.setBorder(new EmptyBorder(120, 40, 120, 40));
+			
+			add(infoLabel, BorderLayout.CENTER);
 		} else {
-			g2d.setPaint(getLabelForeground());
-			g2d.drawString(phenotype1, p5.x, p5.y + tyOffset);
+			getInfoPane().setText(getInfoText(map));
+			
+			JPanel panel = new JPanel();
+			final GroupLayout layout = new GroupLayout(panel);
+			panel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(!isAquaLAF());
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addComponent(getNodeLegendPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getEdgeLegendPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getPropertiesPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(getNodeLegendPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getEdgeLegendPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getPropertiesPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			
+			JScrollPane scrollPane = new JScrollPane(panel);
+			add(scrollPane, BorderLayout.CENTER);
 		}
 
-        // Make a white block
-        g2d.setPaint(Color.WHITE);
-        g2d.fill(rect3);
-        g2d.draw(rect3);
-
-		g2d.setPaint(g2);
-		g2d.fill(rect4);
-		g2d.setPaint(Color.WHITE);
-		g2d.draw(rect4);
-
-		g2d.setPaint(getLabelForeground());
-		g2d.drawString(phenotype2, p7.x, p7.y + tyOffset);
+		
+		revalidate();
+	}
+	 
+	private JPanel getNodeLegendPanel() {
+		if (nodeLegendPanel == null) {
+			nodeLegendPanel = new JPanel();
+			nodeLegendPanel.setBorder(createTitledBorder("Nodes (Gene Sets)"));
+			
+			final GroupLayout layout = new GroupLayout(nodeLegendPanel);
+			nodeLegendPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(!isAquaLAF());
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+			);
+			
+			if (isAquaLAF())
+				nodeLegendPanel.setOpaque(false);
+		}
+		
+		return nodeLegendPanel;
+	}
+	
+	private JPanel getEdgeLegendPanel() {
+		if (edgeLegendPanel == null) {
+			edgeLegendPanel = new JPanel();
+			edgeLegendPanel.setBorder(createTitledBorder("Edges (Similarity Between Gene Sets)"));
+			
+			final GroupLayout layout = new GroupLayout(edgeLegendPanel);
+			edgeLegendPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(!isAquaLAF());
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+//					.addComponent(legendsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+//					.addComponent(openReport1Button, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//					.addComponent(openReport2Button, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//					.addComponent(currentParamsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+//					.addComponent(legendsPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//					.addComponent(openReport1Button, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//					.addComponent(openReport2Button, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+//					.addComponent(currentParamsPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			
+			if (isAquaLAF())
+				edgeLegendPanel.setOpaque(false);
+		}
+		
+		return edgeLegendPanel;
+	}
+	
+	private BasicCollapsiblePanel getPropertiesPanel() {
+		if (propertiesPanel == null) {
+			JScrollPane scrollPane = new JScrollPane(getInfoPane(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+					JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			Dimension d = new Dimension(300, 100);
+			scrollPane.setPreferredSize(d);
+			makeSmall(scrollPane);
+			
+			propertiesPanel = new BasicCollapsiblePanel("Properties");
+			propertiesPanel.setCollapsed(true);
+			propertiesPanel.getContentPane().setLayout(new BorderLayout());
+			propertiesPanel.getContentPane().add(scrollPane, BorderLayout.CENTER);
+			
+			if (isAquaLAF())
+				propertiesPanel.setOpaque(false);
+		}
+		
+		return propertiesPanel;
+	}
+	
+	private JTextPane getInfoPane() {
+		if (infoPane == null) {
+			infoPane = new JTextPane();
+			infoPane.setEditable(false);
+			infoPane.setContentType("text/html");
+			makeSmall(infoPane);
+		}
+		
+		return infoPane;
 	}
 
-	private static Font getLabelFont() {
-		return UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize());
+	/**
+	 * Get the files and parameters corresponding to the current enrichment map
+	 */
+	private String getInfoText(EnrichmentMap map) {
+		EMCreationParameters params = map.getParams();
+		
+		final String INDENT = "&nbsp;&nbsp;&nbsp;&nbsp;";
+		
+		String s = "<html><font size='-2' face='sans-serif'>";
+
+		s = s + "<b>P-value Cut-off:</b> " + params.getPvalue() + "<br>";
+		s = s + "<b>FDR Q-value Cut-off:</b> " + params.getQvalue() + "<br>";
+
+		if (params.getSimilarityMetric() == SimilarityMetric.JACCARD) {
+			s = s + "<b>Jaccard Cut-off:</b> " + params.getSimilarityCutoff() + "<br>";
+			s = s + "<b>Test used:</b> Jaccard Index<br>";
+		} else if (params.getSimilarityMetric() == SimilarityMetric.OVERLAP) {
+			s = s + "<b>Overlap Cut-off:</b> " + params.getSimilarityCutoff() + "<br>";
+			s = s + "<b>Test Used:</b> Overlap Index<br>";
+		} else if (params.getSimilarityMetric() == SimilarityMetric.COMBINED) {
+			s = s + "<b>Jaccard Overlap Combined Cut-off:</b> " + params.getSimilarityCutoff() + "<br>";
+			s = s + "<b>Test Used:</b> Jaccard Overlap Combined Index (k constant = " + params.getCombinedConstant() + ")<br>";
+		}
+		
+		for (EMDataSet ds : map.getDataSetList()) {
+			s = s + "<b>Data Sets</h4><b>";
+			s = s + "<b>" + ds.getName() + "</b><br>";
+			s = s + "<b>Gene Sets File: </b><br>"
+					+ INDENT + shortenPathname(ds.getDataSetFiles().getGMTFileName()) + "<br>";
+		
+			String enrichmentFileName1 = ds.getDataSetFiles().getEnrichmentFileName1();
+			String enrichmentFileName2 = ds.getDataSetFiles().getEnrichmentFileName2();
+		
+			if (enrichmentFileName1 != null || enrichmentFileName2 != null) {
+				s = s + "<b>Data Files: </b><br>";
+				
+				if (enrichmentFileName1 != null)
+					s = s + INDENT + shortenPathname(enrichmentFileName1) + "<br>";
+				
+				if (enrichmentFileName2 != null)
+					s = s + INDENT + shortenPathname(enrichmentFileName2) + "<br>";
+			}
+			
+//			if (LegacySupport.isLegacyTwoDatasets(map)) {
+//				enrichmentFileName1 = map.getDataSet(LegacySupport.DATASET2).getDataSetFiles().getEnrichmentFileName1();
+//				enrichmentFileName2 = map.getDataSet(LegacySupport.DATASET2).getDataSetFiles().getEnrichmentFileName2();
+//				
+//				if (enrichmentFileName1 != null || enrichmentFileName2 != null) {
+//					s = s + "<b>Dataset 2 Data Files: </b><br>";
+//					
+//					if (enrichmentFileName1 != null)
+//						s = s + INDENT + shortenPathname(enrichmentFileName1) + "<br>";
+//					
+//					if (enrichmentFileName2 != null)
+//						s = s + INDENT + shortenPathname(enrichmentFileName2) + "<br>";
+//				}
+//			}
+			
+			s = s + "<b>Data file:</b>" + shortenPathname(ds.getDataSetFiles().getExpressionFileName()) + "<br>";
+			// TODO:fix second dataset viewing.
+			/*
+			 * if(params.isData2() && params.getEM().getExpression(LegacySupport.DATASET2) != null)
+			 * runInfoText = runInfoText + "<b>Data file 2:</b>" + shortenPathname(params.getExpressionFileName2()) + "<br>";
+			 */
+			
+			if (ds != null && ds.getDataSetFiles().getGseaHtmlReportFile() != null)
+				s = s + "<b>GSEA Report 1:</b>" + shortenPathname(ds.getDataSetFiles().getGseaHtmlReportFile()) + "<br>";
+			
+//			if (map.getDataSet(LegacySupport.DATASET2) != null
+//					&& map.getDataSet(LegacySupport.DATASET2).getDataSetFiles().getGseaHtmlReportFile() != null) {
+//				s = s + "<b>GSEA Report 2:</b>"
+//						+ shortenPathname(map.getDataSet(LegacySupport.DATASET2).getDataSetFiles().getGseaHtmlReportFile()) + "<br>";
+//			}
+		}
+
+		s = s + "</font></html>";
+		
+		return s;
 	}
 
-	private static Color getLabelForeground() {
-		return UIManager.getColor("Label.foreground");
+	/**
+	 * Create the legend - contains the enrichment score colour mapper and diagram where the colours are
+	 */
+	private JPanel createLegendPanel(EMCreationParameters params, EnrichmentMap map) {
+		JPanel panel = new JPanel();
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		ParallelGroup hGroup = layout.createParallelGroup(Alignment.CENTER, false);
+		SequentialGroup vGroup = layout.createSequentialGroup();
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGap(0, 0, Short.MAX_VALUE)
+				.addGroup(hGroup)
+				.addGap(0, 0, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(vGroup);
+		
+		// represent the node color as an png/gif instead of using java to generate the representation
+		URL nodeIconURL = this.getClass().getResource("node_color_small.png");
+		
+		if (nodeIconURL != null) {
+			ImageIcon nodeIcon;
+			nodeIcon = new ImageIcon(nodeIconURL);
+			JLabel nodeColorLabel = new JLabel(nodeIcon);
+			
+			hGroup.addComponent(nodeColorLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			vGroup.addComponent(nodeColorLabel).addPreferredGap(ComponentPlacement.RELATED);
+		}
+		
+		// TODO These colors are no longer used
+		/* See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=9 */
+		final Color MAX_PHENOTYPE_1 = new Color(178, 24, 43);
+		final Color LIGHTER_PHENOTYPE_1 = new Color(214, 96, 77);
+		final Color LIGHTEST_PHENOTYPE_1 = new Color(244, 165, 130);
+		final Color OVER_COLOR = new Color(247, 247, 247);
+		final Color MAX_PHENOTYPE_2 = new Color(33, 102, 172);
+		final Color LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
+		final Color LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
+		
+		if (map.getDataSet(LegacySupport.DATASET1) != null) {
+			ColorLegendPanel nodeLegendPanel = new ColorLegendPanel(
+					MAX_PHENOTYPE_1,
+					MAX_PHENOTYPE_2,
+					map.getDataSet(LegacySupport.DATASET1).getEnrichments().getPhenotype1(),
+					map.getDataSet(LegacySupport.DATASET1).getEnrichments().getPhenotype2());
+			nodeLegendPanel.setToolTipText("Phenotype * (1-P_value)");
+		
+			hGroup.addComponent(nodeLegendPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			vGroup.addComponent(nodeLegendPanel).addPreferredGap(ComponentPlacement.UNRELATED);
+		}
+
+		// If there are two datasets then we need to define the node border legend as well.
+		if (LegacySupport.isLegacyTwoDatasets(map)) {
+			// represent the node border color as an png/gif instead of using java to generate the representation
+			URL nodeborderIconURL = this.getClass().getResource("node_border_color_small.png");
+
+			if (nodeborderIconURL != null) {
+				ImageIcon nodeBorderIcon = new ImageIcon(nodeborderIconURL);
+				JLabel nodeBorderColorLabel = new JLabel(nodeBorderIcon);
+				
+				hGroup.addComponent(nodeBorderColorLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+				vGroup.addComponent(nodeBorderColorLabel).addPreferredGap(ComponentPlacement.RELATED);
+			}
+
+			ColorLegendPanel nodeLegendPanel2 = new ColorLegendPanel(
+					MAX_PHENOTYPE_1,
+					MAX_PHENOTYPE_2,
+					map.getDataSet(LegacySupport.DATASET2).getEnrichments().getPhenotype1(),
+					map.getDataSet(LegacySupport.DATASET2).getEnrichments().getPhenotype2());
+			nodeLegendPanel2.setToolTipText("Phenotype * (1-P_value)");
+			
+			hGroup.addComponent(nodeLegendPanel2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			vGroup.addComponent(nodeLegendPanel2).addPreferredGap(ComponentPlacement.UNRELATED);
+		}
+
+		return panel;
+	}
+	
+	/**
+	 * Shorten path name to only contain the parent directory
+	 */
+	private String shortenPathname(String pathname) {
+		if (pathname != null) {
+			String[] tokens = pathname.split("\\" + File.separator);
+
+			int numTokens = tokens.length;
+			final String newPathname;
+			
+			if (numTokens >= 2)
+				newPathname = "..." + File.separator + tokens[numTokens - 2] + File.separator + tokens[numTokens - 1];
+			else
+				newPathname = pathname;
+
+			return newPathname;
+		}
+		
+		return "";
+	}
+
+	private String resolveGseaReportFilePath(EnrichmentMap map, int dataset) {
+		String reportFile = null;
+		ColumnDescriptor<String> colDescr = null;
+		
+		if (dataset == 1) {
+			if (map.getDataSet(LegacySupport.DATASET1) != null) {
+				reportFile = map.getDataSet(LegacySupport.DATASET1).getDataSetFiles().getGseaHtmlReportFile();
+				colDescr = Columns.NET_REPORT1_DIR;
+			}
+		} else {
+			if (map.getDataSet(LegacySupport.DATASET2) != null) {
+				reportFile = map.getDataSet(LegacySupport.DATASET2).getDataSetFiles().getGseaHtmlReportFile();
+				colDescr = Columns.NET_REPORT2_DIR;
+			}
+		}
+
+		// Try the path that is stored in the params:
+		if (reportFile != null && new File(reportFile).canRead()) {
+			return reportFile;
+		} else if (colDescr != null) {
+			// if not, try from Network attributes:
+			CyNetwork network = applicationManager.getCurrentNetwork();
+			CyTable networkTable = network.getDefaultNetworkTable();
+			String tryPath = colDescr.get(networkTable.getRow(network.getSUID()));
+
+			String tryReportFile = tryPath + File.separator + "index.html";
+			
+			if (new File(tryReportFile).canRead()) {
+				return tryReportFile;
+			} else { // we found nothing
+				if (reportFile == null || reportFile.equalsIgnoreCase("null"))
+					return null;
+				else
+					return reportFile;
+			}
+		} else {
+			return null;
+		}
 	}
 }
