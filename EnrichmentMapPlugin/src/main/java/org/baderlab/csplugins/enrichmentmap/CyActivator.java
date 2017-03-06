@@ -12,6 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
+import org.baderlab.csplugins.enrichmentmap.view.parameters.LegendPanelMediator;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
@@ -66,7 +67,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Don't load UI services if running headless
 		boolean headless = injector.getInstance(Key.get(Boolean.class, Headless.class));
-		if(!headless) {
+		
+		if (!headless) {
 			// register actions
 			registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class), new Properties());
 				
@@ -77,6 +79,10 @@ public class CyActivator extends AbstractCyActivator {
 			// UI Mediators
 			ControlPanelMediator controlPanelMediator = injector.getInstance(ControlPanelMediator.class);
 			registerAllServices(bc, controlPanelMediator, new Properties());
+			
+			LegendPanelMediator legendPanelMediator = injector.getInstance(LegendPanelMediator.class);
+			registerAllServices(bc, legendPanelMediator, new Properties());
+			
 			HeatMapMediator expressionViewerMediator = injector.getInstance(HeatMapMediator.class);
 			registerAllServices(bc, expressionViewerMediator, new Properties());
 		}
@@ -87,14 +93,12 @@ public class CyActivator extends AbstractCyActivator {
 		Em21Handler.removeVersion21(bc, injector.getInstance(CyApplicationConfiguration.class));
 	}
 	
-	
 	@Override
 	public void shutDown() {
 		// If the App gets updated or restarted we need to save all the data first
-		if(injector != null) {
+		if (injector != null) {
 			SessionModelListener sessionListener = injector.getInstance(SessionModelListener.class);
 			sessionListener.saveModel();
 		}
 	}
-	
 }
