@@ -1,7 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,12 +9,10 @@ import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
-import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
@@ -97,54 +94,41 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 	}
 	
 	private Map<String, CyNode> createNodes(CyNetwork network) {
-		// Keep track of nodes as we create them, key is geneset name
-		Map<String, CyNode> nodes = new HashMap<>();
-		// Keep a running union of all the genes in each geneset across all datasets
-		Map<String, Set<Integer>> genesetGenes = new HashMap<>();
+		Map<String,CyNode> nodes = new HashMap<>();
 		
-		// Create nodes for all genesets of interest
-		for (EMDataSet ds : map.getDataSetList()) {
-			Map<String, GeneSet> genesetsOfInterest = ds.getGeneSetsOfInterest().getGeneSets();
-			Map<String, EnrichmentResult> enrichmentResults = ds.getEnrichments().getEnrichments();
-
-			for (String genesetName : genesetsOfInterest.keySet()) {
-				GeneSet gs = genesetsOfInterest.get(genesetName);
-				CyNode node = nodes.get(genesetName);
-				
-				if (node == null) {
-					node = network.addNode();
-					nodes.put(genesetName, node);
-					ds.addNodeSuid(genesetName, node.getSUID());
-					genesetGenes.put(genesetName, new HashSet<>(gs.getGenes()));
-					
-					CyRow row = network.getRow(node);
-					row.set(CyNetwork.NAME, genesetName);
-					Columns.NODE_FORMATTED_NAME.set(row, prefix, null, formatLabel(genesetName));
-					Columns.NODE_NAME.set(row, prefix, null, genesetName); // MKTODO why is this column needed?
-					Columns.NODE_GS_DESCR.set(row, prefix, null, gs.getDescription());
-					Columns.NODE_GS_TYPE.set(row, prefix, null, Columns.NODE_GS_TYPE_ENRICHMENT);
-				} else {
-					genesetGenes.get(genesetName).addAll(gs.getGenes());
-				}
-				
-				EnrichmentResult result = enrichmentResults.get(genesetName);
-				CyRow row = network.getRow(node);
-
-				if (ds.getMethod() == Method.GSEA)
-					setGSEAResultNodeAttributes(row, ds.getName(), (GSEAResult) result);
-				else
-					setGenericResultNodeAttributes(row, ds.getName(), (GenericResult) result);
-			}
-		}
+		Map<String,Set<Integer>> geneSets = map.unionAllGeneSetsOfInterest();
 		
-		// Set the GENES attribute
-		genesetGenes.forEach((genesetName, geneIds) -> {
-			CyNode node = nodes.get(genesetName);
+		for(String genesetName : geneSets.keySet()) {
+			CyNode node = network.addNode();
+			nodes.put(genesetName, node);
+			
+			// Set common attributes
 			CyRow row = network.getRow(node);
+			row.set(CyNetwork.NAME, genesetName);
+			Columns.NODE_FORMATTED_NAME.set(row, prefix, null, formatLabel(genesetName));
+			Columns.NODE_NAME.set(row, prefix, null, genesetName); // MKTODO why is this column needed?
+			Columns.NODE_GS_DESCR.set(row, prefix, null, map.findGeneSetDescription(genesetName));
+			Columns.NODE_GS_TYPE.set(row, prefix, null, Columns.NODE_GS_TYPE_ENRICHMENT);
+			Set<Integer> geneIds = geneSets.get(genesetName);
 			List<String> genes = geneIds.stream().map(map::getGeneFromHashKey).collect(Collectors.toList());
 			Columns.NODE_GENES.set(row, prefix, null, genes);
 			Columns.NODE_GS_SIZE.set(row, prefix, null, genes.size());
-		});
+			
+			// Set attributes specific to each dataset
+			for(EMDataSet ds : map.getDataSetList()) {
+				if(ds.getGeneSetsOfInterest().getGeneSets().containsKey(genesetName))
+					ds.addNodeSuid(genesetName, node.getSUID());
+				
+				Map<String, EnrichmentResult> enrichmentResults = ds.getEnrichments().getEnrichments();
+				EnrichmentResult result = enrichmentResults.get(genesetName);
+				
+				// if result is null it will fail both instanceof checks
+				if(result instanceof GSEAResult)
+					setGSEAResultNodeAttributes(row, ds.getName(), (GSEAResult) result);
+				else if(result instanceof GenericResult)
+					setGenericResultNodeAttributes(row, ds.getName(), (GenericResult) result);
+			}
+		}
 		
 		return nodes;
 	}

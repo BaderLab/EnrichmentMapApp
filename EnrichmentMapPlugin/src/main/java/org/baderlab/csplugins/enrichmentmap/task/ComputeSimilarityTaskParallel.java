@@ -11,9 +11,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
@@ -70,7 +70,7 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 	
 	
 	private Map<SimilarityKey,GenesetSimilarity> startComputeSimilarities(TaskMonitor tm, ExecutorService executor, boolean distinct, boolean compound) {
-		Set<String> names = map.getAllGeneSetNames();
+		Set<String> names = map.getAllGeneSetOfInterestNames();
 		Map<String,Set<Integer>> unionedGenesets = compound ? map.unionAllGeneSetsOfInterest() : null;
 		
 		DiscreteTaskMonitor taskMonitor = discreteTaskMonitor(tm, names.size());

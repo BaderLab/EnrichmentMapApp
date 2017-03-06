@@ -47,7 +47,7 @@ public class Protocol1Test extends BaseIntegrationTest {
 	   	CyNetwork generatedNetwork = assertAndGetOnlyNetwork();
 		CyNetwork expectedNetwork  = importNetworkFromFile(PATH, "protocol_1_expected.xgmml");
 		
-		Set<String> columnsToIgnore = ImmutableSet.of("EM1_ENR_SET", "EM1_ENRICHMENT_SET");
+		Set<String> columnsToIgnore = ImmutableSet.of("EM1_ENR_SET", "EM1_ENRICHMENT_SET", "EM1_Data Set");
 		assertNetworksEqual(expectedNetwork, generatedNetwork, columnsToIgnore);
 	}
 }

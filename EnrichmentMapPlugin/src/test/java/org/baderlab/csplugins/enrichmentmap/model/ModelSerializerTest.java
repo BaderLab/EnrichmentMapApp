@@ -72,7 +72,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 	    
 	    // If we serialize, then deserialize, we should get back what we started with
 	    String json = ModelSerializer.serialize(expectedEM);
-	    System.out.println(json.length());
 	    EnrichmentMap roundTripEM = ModelSerializer.deserialize(json);
 	    
 	    assertEnrichmentMapEquals(expectedEM, roundTripEM);

@@ -287,7 +287,7 @@ public class EnrichmentMap {
 	}
 	
 	// MKTODO write a JUnit
-	public Set<String> getAllGeneSetNames() {
+	public Set<String> getAllGeneSetOfInterestNames() {
 		Set<String> names = new HashSet<>();
 		
 		for (EMDataSet ds : getDataSetList()) {
@@ -296,6 +296,18 @@ public class EnrichmentMap {
 		}
 		
 		return names;
+	}
+	
+	public String findGeneSetDescription(String genesetName) {
+		GeneSet gs = globalGenesets.getGeneSets().get(genesetName);
+		if(gs != null)
+			return gs.getDescription();
+		for(EMDataSet ds : dataSets.values()) {
+			gs = ds.getGeneSetsOfInterest().getGeneSets().get(genesetName);
+			if(gs != null)
+				return gs.getDescription();
+		}
+		return null;
 	}
 
 	public SetOfGeneSets getGlobalGenesets() {
