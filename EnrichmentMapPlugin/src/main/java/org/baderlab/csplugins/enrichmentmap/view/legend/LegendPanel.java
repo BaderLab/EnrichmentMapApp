@@ -52,8 +52,14 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Paint;
 import java.io.File;
 import java.net.URL;
+import java.text.Collator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -62,6 +68,7 @@ import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -78,6 +85,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Colors;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
@@ -89,8 +97,10 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -120,6 +130,8 @@ public class LegendPanel extends JPanel {
 	private JLabel nodeShapeDesc1 = new JLabel("Gene Set");
 	private JLabel nodeShapeDesc2 = new JLabel("Signature Set");
 	
+	private JPanel edgeColorPanel;
+	
 	private JTextPane infoPane;
 	
 	public LegendPanel() {
@@ -137,9 +149,9 @@ public class LegendPanel extends JPanel {
 	 * Update parameters panel based on given enrichment map parameters
 	 */
 	void update(EnrichmentMap map, CyNetworkView view) {
-		EMCreationParameters params = map != null ? map.getParams() : null;
-
 		removeAll();
+		
+		EMCreationParameters params = map != null ? map.getParams() : null;
 
 		if (params == null) {
 			JLabel infoLabel = new JLabel("No EnrichmentMap View selected");
@@ -151,7 +163,8 @@ public class LegendPanel extends JPanel {
 
 			add(infoLabel, BorderLayout.CENTER);
 		} else {
-			updateNodeShapeLegend(map, view);
+			updateNodeShapePanel(map, view);
+			updateEdgeColorPanel(map, view);
 			updateInfoPanel(map);
 
 			JPanel panel = new JPanel();
@@ -174,11 +187,10 @@ public class LegendPanel extends JPanel {
 			add(scrollPane, BorderLayout.CENTER);
 		}
 
-		
 		revalidate();
 	}
 
-	private void updateNodeShapeLegend(EnrichmentMap map, CyNetworkView view) {
+	private void updateNodeShapePanel(EnrichmentMap map, CyNetworkView view) {
 		JPanel p = getNodeShapePanel();
 		VisualStyle style = view != null ? visualMappingManager.getVisualStyle(view) : null;
 		
@@ -199,7 +211,80 @@ public class LegendPanel extends JPanel {
 		
 		p.revalidate();
 	}
-	 
+	
+	private void updateEdgeColorPanel(EnrichmentMap map, CyNetworkView view) {
+		JPanel p = getEdgeColorPanel();
+		VisualStyle style = view != null ? visualMappingManager.getVisualStyle(view) : null;
+		
+		JComponent[][] entries = null;
+		
+		if (map != null) {
+			Dimension iconSize = new Dimension(LEGEND_ICON_SIZE, LEGEND_ICON_SIZE / 2);
+			
+			if (map.getParams().getCreateDistinctEdges() && map.isDistinctExpressionSets()) {
+				VisualMappingFunction<?, Paint> mf =
+						style.getVisualMappingFunction(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+				
+				if (mf instanceof DiscreteMapping) {
+					DiscreteMapping<?, Paint> dm = (DiscreteMapping<?, Paint>) mf;
+					final Collator collator = Collator.getInstance();
+					
+					Map<Object, Paint> dmMap = new TreeMap<>((Object o1, Object o2) -> {
+						return collator.compare("" + o1, "" + o2);
+					});
+					dmMap.putAll(dm.getAll());
+					dmMap.remove(Columns.EDGE_DATASET_VALUE_COMPOUND);
+					
+					if (!map.hasSignatureDataSets())
+						dmMap.remove(Columns.EDGE_DATASET_VALUE_SIG);
+					
+					if (dmMap.size() > 0) {
+						entries = new JComponent[dmMap.size()][2];
+						int i = 0;
+						
+						for (Entry<?, Paint> e : dmMap.entrySet()) {
+							Color color = null;
+							
+							if (e.getValue() instanceof Color)
+								color = (Color) e.getValue();
+								
+							JLabel iconLabel = createColorLabel(color, iconSize);
+							JLabel descLabel = new JLabel("" + e.getKey());
+							
+							if (Columns.EDGE_DATASET_VALUE_SIG.equals(e.getKey()))
+								descLabel.setFont(descLabel.getFont().deriveFont(Font.ITALIC));
+							
+							entries[i++] = new JComponent[]{ iconLabel, descLabel };
+						}
+					}
+				}
+			}
+			
+			if (entries == null) {
+				int rows = map.hasSignatureDataSets() ? 2 : 1;
+				entries = new JComponent[rows][2];
+				
+				{
+					JLabel iconLabel = createColorLabel(Colors.COMPOUND_EDGE_COLOR, iconSize);
+					JLabel descLabel = new JLabel(Columns.EDGE_DATASET_VALUE_COMPOUND);
+					descLabel.setFont(descLabel.getFont().deriveFont(Font.ITALIC));
+					
+					entries[0] = new JComponent[]{ iconLabel, descLabel };
+				}
+				
+				if (rows == 2) {
+					JLabel iconLabel = createColorLabel(Colors.SIG_EDGE_COLOR, iconSize);
+					JLabel descLabel = new JLabel(Columns.EDGE_DATASET_VALUE_SIG);
+					descLabel.setFont(descLabel.getFont().deriveFont(Font.ITALIC));
+					
+					entries[1] = new JComponent[]{ iconLabel, descLabel };
+				}
+			}
+		}
+		
+		updateStyleLegendPanel(entries, p);
+	}
+
 	private void updateInfoPanel(EnrichmentMap map) {
 		getInfoPane().setText(getInfoText(map));
 	}
@@ -239,8 +324,10 @@ public class LegendPanel extends JPanel {
 			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addComponent(getEdgeColorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(getEdgeColorPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
 			if (isAquaLAF())
@@ -272,14 +359,9 @@ public class LegendPanel extends JPanel {
 	
 	private JPanel getNodeShapePanel() {
 		if (nodeShapePanel == null) {
-			nodeShapePanel = new JPanel();
-			nodeShapePanel.setBorder(DEF_LEGEND_BORDER);
-			nodeShapePanel.setBackground(DEF_LEGEND_BG);
+			nodeShapePanel = createStyleLegendPanel(null);
 			
-			final GroupLayout layout = new GroupLayout(nodeShapePanel);
-			nodeShapePanel.setLayout(layout);
-			layout.setAutoCreateContainerGaps(true);
-			layout.setAutoCreateGaps(true);
+			GroupLayout layout = (GroupLayout) nodeShapePanel.getLayout();
 
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addComponent(nodeShapeIcon1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -297,6 +379,68 @@ public class LegendPanel extends JPanel {
 		}
 		
 		return nodeShapePanel;
+	}
+	
+	private JPanel getEdgeColorPanel() {
+		if (edgeColorPanel == null) {
+			edgeColorPanel = createStyleLegendPanel(null);
+		}
+		
+		return edgeColorPanel;
+	}
+
+	private JPanel createStyleLegendPanel(JComponent[][] entries) {
+		JPanel p = new JPanel();
+		p.setBorder(DEF_LEGEND_BORDER);
+		p.setBackground(DEF_LEGEND_BG);
+		
+		updateStyleLegendPanel(entries, p);
+		
+		return p;
+	}
+
+	private void updateStyleLegendPanel(JComponent[][] entries, JPanel p) {
+		p.removeAll();
+		
+		GroupLayout layout = new GroupLayout(p);
+		p.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		if (entries != null) {
+			ParallelGroup hGroup = layout.createParallelGroup(Alignment.LEADING, true);
+			SequentialGroup vGroup = layout.createSequentialGroup();
+			
+			layout.setHorizontalGroup(hGroup);
+			layout.setVerticalGroup(vGroup);
+			
+			for (JComponent[] row : entries) {
+				makeSmall(row[0], row[1]);
+				
+				hGroup.addGroup(layout.createSequentialGroup()
+						.addComponent(row[0], PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(row[1], PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				);
+				vGroup.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(row[0])
+						.addComponent(row[1])
+				);
+			}
+		}
+		
+		p.revalidate();
+	}
+	
+	private JLabel createColorLabel(Color color, Dimension size) {
+		JLabel iconLabel = new JLabel();
+		iconLabel.setOpaque(color != null);
+		iconLabel.setPreferredSize(size);
+		iconLabel.setMinimumSize(size);
+		
+		if (color != null)
+			iconLabel.setBackground(color);
+		
+		return iconLabel;
 	}
 	
 	private JTextPane getInfoPane() {
