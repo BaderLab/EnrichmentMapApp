@@ -42,7 +42,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
-import org.baderlab.csplugins.enrichmentmap.view.EnrichmentMapInputPanel;
+import org.baderlab.csplugins.enrichmentmap.view.util.Messages;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -273,7 +273,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
     private JPanel createSignatureDiscoveryGMTPanel() {
     	signatureDiscoveryGMTFileNameTextField = new JFormattedTextField();
     	signatureDiscoveryGMTFileNameTextField.setColumns(15);
-    	signatureDiscoveryGMTFileNameTextField.setToolTipText(EnrichmentMapInputPanel.gmt_instruction);
+    	signatureDiscoveryGMTFileNameTextField.setToolTipText(Messages.GMT_INSTRUCTION);
         
 		final Color textFieldForeground = signatureDiscoveryGMTFileNameTextField.getForeground();
 		signatureDiscoveryGMTFileNameTextField.addPropertyChangeListener("value", (PropertyChangeEvent e) -> {
@@ -282,7 +282,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		});
 
 		JButton selectSigGMTFileButton = new JButton("Browse...");
-		selectSigGMTFileButton.setToolTipText(EnrichmentMapInputPanel.gmt_instruction);
+		selectSigGMTFileButton.setToolTipText(Messages.GMT_INSTRUCTION);
 		selectSigGMTFileButton.setActionCommand("Signature Discovery");
 		selectSigGMTFileButton.addActionListener((ActionEvent evt) -> {
 			parentPanel.chooseGMTFile(signatureDiscoveryGMTFileNameTextField);

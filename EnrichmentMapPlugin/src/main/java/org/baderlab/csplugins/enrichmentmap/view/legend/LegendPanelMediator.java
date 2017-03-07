@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.parameters;
+package org.baderlab.csplugins.enrichmentmap.view.legend;
 
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDTAndWait;

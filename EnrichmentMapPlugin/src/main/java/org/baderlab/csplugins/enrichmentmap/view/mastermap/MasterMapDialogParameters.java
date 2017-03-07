@@ -18,15 +18,12 @@ import com.google.inject.Provider;
 
 public class MasterMapDialogParameters implements CardDialogParameters {
 
-	@Inject private Provider<GSEASimpleDialogPage> gseaSimpleDialogPageProvider;
-//	@Inject private Provider<GenericOneExpressionPage> genericSimmpleDialogPageProvider;
 	@Inject private Provider<MixedFormatDialogPage> mixedFormatDialogPage;
 	
 	@Override
 	public List<CardDialogPage> getPages() {
 		return Arrays.asList(
-			mixedFormatDialogPage.get(),
-			gseaSimpleDialogPageProvider.get()
+			mixedFormatDialogPage.get()
 		);
 	}
 	
@@ -57,5 +54,4 @@ public class MasterMapDialogParameters implements CardDialogParameters {
 		Image scaled = original.getImage().getScaledInstance(80, 49, Image.SCALE_SMOOTH);
 		return new ImageIcon(scaled);
 	}
-
 }

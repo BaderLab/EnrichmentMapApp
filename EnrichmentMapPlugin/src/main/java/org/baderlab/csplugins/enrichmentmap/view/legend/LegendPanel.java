@@ -41,7 +41,7 @@
 // $LastChangedBy$
 // $HeadURL$
 
-package org.baderlab.csplugins.enrichmentmap.view.parameters;
+package org.baderlab.csplugins.enrichmentmap.view.legend;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
@@ -158,7 +158,7 @@ public class LegendPanel extends JPanel {
 			final GroupLayout layout = new GroupLayout(panel);
 			panel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
-			layout.setAutoCreateGaps(!isAquaLAF());
+			layout.setAutoCreateGaps(true);
 
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 					.addComponent(getNodeLegendPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)

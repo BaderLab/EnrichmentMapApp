@@ -53,7 +53,7 @@ import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
-import org.baderlab.csplugins.enrichmentmap.view.parameters.LegendPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;

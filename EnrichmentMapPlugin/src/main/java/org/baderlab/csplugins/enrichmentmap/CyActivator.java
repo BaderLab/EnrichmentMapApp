@@ -12,7 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
-import org.baderlab.csplugins.enrichmentmap.view.parameters.LegendPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
