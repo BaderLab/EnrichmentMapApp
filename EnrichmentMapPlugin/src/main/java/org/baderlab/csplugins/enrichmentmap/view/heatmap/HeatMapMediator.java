@@ -97,7 +97,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	}
 	
 	private void heatMapParamsChanged(HeatMapParams params) {
-		System.out.println("HeatMapMediator.heatMapParamsChanged(): " + params);
 		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
 		if(networkView != null) {
 			emManager.registerHeatMapParams(networkView.getModel().getSUID(), params);

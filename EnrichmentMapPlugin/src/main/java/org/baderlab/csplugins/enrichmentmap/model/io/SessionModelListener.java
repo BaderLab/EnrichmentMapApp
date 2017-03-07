@@ -14,6 +14,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -61,6 +62,7 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 	
 	@Inject private Provider<LegacySessionLoader> legacySessionLoaderProvider;
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
+	@Inject private Provider<HeatMapMediator> heatMapMediatorProvider;
 	@Inject private EnrichmentMapManager emManager;
 	
 	@Inject private @Headless boolean headless;
@@ -123,9 +125,11 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 		
 		if(!headless) {
 			ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
+			HeatMapMediator heatMapMediator = heatMapMediatorProvider.get();
 			controlPanelMediator.reset();
 			if(sessionHasEM) {
 				controlPanelMediator.showControlPanel();
+				heatMapMediator.showHeatMapPanel();
 			}
 		}
 		

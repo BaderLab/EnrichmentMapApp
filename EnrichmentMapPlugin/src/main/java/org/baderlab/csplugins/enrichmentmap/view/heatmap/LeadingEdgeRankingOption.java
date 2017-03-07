@@ -24,7 +24,7 @@ public class LeadingEdgeRankingOption implements RankingOption {
 	
 	private double scoreAtMax;
 	private int rankAtMax;
-	private String ranksName = Ranking.GSEARanking; // MKTODO will this ever be different?
+	private final String ranksName = Ranking.GSEARanking; // MKTODO will this ever be different?
 	
 	
 	public LeadingEdgeRankingOption(EMDataSet dataset, String geneSetName) {
@@ -35,9 +35,17 @@ public class LeadingEdgeRankingOption implements RankingOption {
 	
 	@Override
 	public String toString() {
-		return dataset.getName() + " - GSEA Ranking";
+		String name = dataset.getName();
+		return abbreviate(name, 25) + " - GSEA Ranks";
 	}
 	
+	private static String abbreviate(String s, int maxLength) {
+		s = String.valueOf(s); // null check
+		if(s.length() > maxLength) {
+			s = s.substring(0, maxLength) + "...";
+		}
+		return s;
+	}
 	
 	@Override
 	public CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<String> genes) {

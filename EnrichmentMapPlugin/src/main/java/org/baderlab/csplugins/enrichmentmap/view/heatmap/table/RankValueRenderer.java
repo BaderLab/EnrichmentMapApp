@@ -16,7 +16,8 @@ public class RankValueRenderer extends DefaultTableCellRenderer {
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 		if(value instanceof RankValue) {
 			RankValue rankValue = (RankValue) value;
-			JLabel label = new JLabel(String.valueOf(rankValue.getRank().getRank()));
+			JLabel label = new JLabel();
+//			label.setText(String.valueOf(rankValue.getRank().getRank()));
 			
 			if (rankValue.isSignificant()) {
 				label.setBackground(Color.YELLOW);

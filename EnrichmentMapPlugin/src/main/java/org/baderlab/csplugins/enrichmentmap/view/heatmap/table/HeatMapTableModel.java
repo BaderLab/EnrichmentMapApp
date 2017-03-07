@@ -93,7 +93,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		if(col == 0)
 			return "Gene";
 		if(col == 1)
-			return "Rank";
+			return "Sort";
 		EMDataSet dataset = getDataSet(col);
 		int index = getIndex(col) + 2;
 		String[] columns = dataset.getExpressionSets().getColumnNames();
@@ -102,6 +102,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 
 	@Override
 	public Object getValueAt(int row, int col) {
+		if(row < 0)
+			return null; // Why is it passing -1?
 		String gene = genes.get(row);
 		if(col == 0)
 			return gene;
