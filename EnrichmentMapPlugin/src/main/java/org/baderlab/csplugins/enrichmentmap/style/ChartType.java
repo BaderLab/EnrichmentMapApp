@@ -65,6 +65,19 @@ public enum ChartType {
 		return properties;
 	}
 	
+	public static ChartType toChartType(String chartName) {
+		chartName = chartName != null ? chartName.toLowerCase() : "";
+		
+		if (chartName.startsWith("pie"))
+			return PIE;
+		if (chartName.startsWith("bar"))
+			return HEAT_STRIPS;
+		if (chartName.startsWith("line"))
+			return LINE;
+		
+		return null;
+	}
+	
 	@Override
 	public String toString() {
 		return label;

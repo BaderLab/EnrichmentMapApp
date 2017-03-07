@@ -58,8 +58,12 @@ public class EMStyleBuilder {
 	private final static Double MIN_NODE_SIZE = 20.0;
 	private final static Double MAX_NODE_SIZE = 60.0;
 	
+	public static final double DEF_NODE_BORDER_WIDTH = 1.0;
+	
 	public final static Integer DEF_EDGE_TRANSPARENCY = 140;
 	public final static Integer FILTERED_OUT_EDGE_TRANSPARENCY = 10;
+	
+	private static final NodeShape SIGNATURE_NODE_SHAPE = DIAMOND;
 	
 	public static class Columns {
 		// Common attributes that apply to the entire network
@@ -122,9 +126,10 @@ public class EMStyleBuilder {
 		// See http://colorbrewer2.org/?type=qualitative&scheme=Dark2&n=8#type=qualitative&scheme=Dark2&n=8
 		public static final Color SIG_EDGE_COLOR = new Color(231,41,138);
 		public static final Color COMPOUND_EDGE_COLOR = new Color(27,158,119);
-		private static final Color[] DISTINCT_EDGE_COLORS = 
-			{new Color(217,95,2), new Color(117,112,179), new Color(231,41,138), new Color(102,166,30), 
-			 new Color(230,171,2), new Color(166,118,29), new Color(102,102,102)};
+		private static final Color[] DISTINCT_EDGE_COLORS = {
+				new Color(217,95,2), new Color(117,112,179), new Color(231,41,138), new Color(102,166,30), 
+				new Color(230,171,2), new Color(166,118,29), new Color(102,102,102)
+		};
 	
 		public static final Color LIGHT_GREY = new Color(190, 190, 190);
 		private static final Color BG_COLOR = Color.WHITE;
@@ -142,6 +147,18 @@ public class EMStyleBuilder {
 		return prefix + DEFAULT_NAME_SUFFIX;
 	}
 	
+	public static NodeShape getGeneSetNodeShape(VisualStyle style) {
+		return style.getDefaultValue(BasicVisualLexicon.NODE_SHAPE);
+	}
+	
+	public static NodeShape getSignatureNodeShape(VisualStyle style) {
+		return SIGNATURE_NODE_SHAPE;
+	}
+	
+	public static NodeShape getDefaultNodeShape(ChartType chartType) {
+		return chartType == null || chartType == ChartType.PIE ? ELLIPSE : RECTANGLE;
+	}
+	
 	public void updateProperties(VisualStyle vs, EMStyleOptions options, CyCustomGraphics2<?> chart) {
 		eventHelper.silenceEventSource(vs);
 		
@@ -153,14 +170,14 @@ public class EMStyleBuilder {
 			setEdgePaint(vs, options);
 			setEdgeWidth(vs, options);
 	 		
-			String chartName = chart != null ? chart.getDisplayName().toLowerCase() : null;
-			boolean hasChart = chartName != null && !chartName.startsWith("ring") && !chartName.startsWith("pie");
+			String chartName = chart != null ? chart.getDisplayName() : null;
+			ChartType chartType = ChartType.toChartType(chartName);
 			
-			setNodeDefaults(vs, options, hasChart);
-			setNodeShapes(vs, options, hasChart);
-			setNodeSize(vs, options, hasChart);
-			setNodeBorderColors(vs, options, hasChart);
-			setNodeColors(vs, options, hasChart);
+			setNodeDefaults(vs, options, chartType);
+			setNodeShapes(vs, options, chartType);
+			setNodeSize(vs, options, chartType);
+			setNodeBorderColors(vs, options);
+			setNodeColors(vs, options);
 			setNodeLabels(vs, options);
 			setNodeChart(vs, chart);
 			
@@ -243,30 +260,30 @@ public class EMStyleBuilder {
 		}
 	}
 	
-	private void setNodeDefaults(VisualStyle vs, EMStyleOptions options, boolean hasChart) {
+	private void setNodeDefaults(VisualStyle vs, EMStyleOptions options, ChartType chartType) {
 		// Set the default node appearance
 		vs.setDefaultValue(NODE_FILL_COLOR, Colors.DEF_NODE_COLOR);
 		vs.setDefaultValue(NODE_BORDER_PAINT, Colors.DEF_NODE_BORDER_COLOR);
-		vs.setDefaultValue(NODE_SHAPE, hasChart ? RECTANGLE : ELLIPSE);
-		vs.setDefaultValue(NODE_SIZE, hasChart ? (MAX_NODE_SIZE + MIN_NODE_SIZE) / 2 : MIN_NODE_SIZE);
-		vs.setDefaultValue(NODE_BORDER_WIDTH, 1.0);
+		vs.setDefaultValue(NODE_SHAPE, getDefaultNodeShape(chartType));
+		vs.setDefaultValue(NODE_SIZE, chartType == ChartType.PIE ? MIN_NODE_SIZE : (MAX_NODE_SIZE + MIN_NODE_SIZE) / 2);
+		vs.setDefaultValue(NODE_BORDER_WIDTH, DEF_NODE_BORDER_WIDTH);
 		vs.setDefaultValue(NODE_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
 		vs.setDefaultValue(NODE_BORDER_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
 		vs.setDefaultValue(NODE_LABEL_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
 	}
 	
-	private void setNodeShapes(VisualStyle vs, EMStyleOptions options, boolean hasChart) {
+	private void setNodeShapes(VisualStyle vs, EMStyleOptions options, ChartType chartType) {
 		String prefix = options.getAttributePrefix();
 		
 		// Add mapping function for node shape
 		DiscreteMapping<String, NodeShape> nodeShape = (DiscreteMapping<String, NodeShape>) dmFactory
 				.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_SHAPE);
-		nodeShape.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, hasChart ? RECTANGLE : ELLIPSE);
-		nodeShape.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, DIAMOND);
+		nodeShape.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, getDefaultNodeShape(chartType));
+		nodeShape.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, SIGNATURE_NODE_SHAPE);
 		vs.addVisualMappingFunction(nodeShape);
 	}
 	
-	private void setNodeBorderColors(VisualStyle vs, EMStyleOptions options, boolean hasChart) {
+	private void setNodeBorderColors(VisualStyle vs, EMStyleOptions options) {
 		String prefix = options.getAttributePrefix();
 		
 		// Add mapping function for node border color
@@ -277,7 +294,7 @@ public class EMStyleBuilder {
 		vs.addVisualMappingFunction(nodePaint);
 	}
 	
-	private void setNodeColors(VisualStyle vs, EMStyleOptions options, boolean hasChart) {
+	private void setNodeColors(VisualStyle vs, EMStyleOptions options) {
 		String prefix = options.getAttributePrefix();
 		
 		// Add mapping function for node fill color
@@ -295,8 +312,8 @@ public class EMStyleBuilder {
 		vs.addVisualMappingFunction(nodeLabel);
 	}
 	
-	private void setNodeSize(VisualStyle vs, EMStyleOptions options, boolean hasChart) {
-		if (hasChart) {
+	private void setNodeSize(VisualStyle vs, EMStyleOptions options, ChartType chartType) {
+		if (chartType == ChartType.PIE) {
 			vs.removeVisualMappingFunction(NODE_SIZE);
 		} else {
 			String prefix = options.getAttributePrefix();

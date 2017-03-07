@@ -404,8 +404,12 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		applicationManager.setCurrentNetworkView(netView);
 	}
 	
+	private CyNetworkView getCurrentEMView() {
+		return (CyNetworkView) getControlPanel().getEmViewCombo().getSelectedItem();
+	}
+	
 	private EnrichmentMap getCurrentMap() {
-		CyNetworkView view  = (CyNetworkView) getControlPanel().getEmViewCombo().getSelectedItem();
+		CyNetworkView view = getCurrentEMView();
 		
 		return view != null ? emManager.getEnrichmentMap(view.getModel().getSUID()) : null;
 	}
@@ -449,7 +453,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	private EMStyleOptions createStyleOptions(EnrichmentMap map, EMViewControlPanel viewPanel) {
 		Set<AbstractDataSet> dataSets = ImmutableSet.copyOf(viewPanel.getDataSetSelector().getCheckedItems());
 		boolean publicationReady = viewPanel.getPublicationReadyCheck().isSelected();
-		boolean postAnalysis = !map.getSignatureDataSets().isEmpty();
+		boolean postAnalysis = map.hasSignatureDataSets();
 		EMStyleOptions options =
 				new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, postAnalysis, publicationReady);
 
@@ -645,7 +649,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					legendPanelMediatorProvider.get().hideDialog();
 				} else {
 					EnrichmentMap map = getCurrentMap();
-					legendPanelMediatorProvider.get().showDialog(map);
+					legendPanelMediatorProvider.get().showDialog(map, getCurrentEMView());
 				}
 			});
 			mi.setSelected(legendPanelMediatorProvider.get().getDialog().isVisible());

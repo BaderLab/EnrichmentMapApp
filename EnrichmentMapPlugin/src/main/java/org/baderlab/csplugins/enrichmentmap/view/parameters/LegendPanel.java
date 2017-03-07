@@ -46,7 +46,7 @@ package org.baderlab.csplugins.enrichmentmap.view.parameters;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
-import static org.cytoscape.util.swing.LookAndFeelUtil.createTitledBorder;
+import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
@@ -55,10 +55,12 @@ import java.awt.Dimension;
 import java.io.File;
 import java.net.URL;
 
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -66,6 +68,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
@@ -74,12 +77,20 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -91,25 +102,45 @@ import com.google.inject.Singleton;
 @SuppressWarnings("serial")
 public class LegendPanel extends JPanel {
 
-	@Inject private CyApplicationManager applicationManager;
+	private static final int LEGEND_ICON_SIZE = 18;
 	
-	private JPanel nodeLegendPanel;
-	private JPanel edgeLegendPanel;
+	private final Border DEF_LEGEND_BORDER = BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"));
+	private final Color DEF_LEGEND_BG = Color.WHITE;
+	
+	@Inject private CyApplicationManager applicationManager;
+	@Inject private VisualMappingManager visualMappingManager;
+	
+	private BasicCollapsiblePanel nodeLegendPanel;
+	private BasicCollapsiblePanel edgeLegendPanel;
 	private BasicCollapsiblePanel propertiesPanel;
+	
+	private JPanel nodeShapePanel;
+	private JLabel nodeShapeIcon1 = new JLabel();
+	private JLabel nodeShapeIcon2 = new JLabel();
+	private JLabel nodeShapeDesc1 = new JLabel("Gene Set");
+	private JLabel nodeShapeDesc2 = new JLabel("Signature Set");
+	
 	private JTextPane infoPane;
 	
 	public LegendPanel() {
 		setLayout(new BorderLayout());
+		
+		Border iconBorder = BorderFactory.createEmptyBorder(4, 4, 4, 4);
+		nodeShapeIcon1.setBorder(iconBorder);
+		nodeShapeIcon2.setBorder(iconBorder);
+		
+		makeSmall(nodeShapeDesc1, nodeShapeDesc2);
+		equalizeSize(nodeShapeDesc1, nodeShapeDesc2);
 	}
 	
 	/**
 	 * Update parameters panel based on given enrichment map parameters
 	 */
-	 void update(EnrichmentMap map) {
+	void update(EnrichmentMap map, CyNetworkView view) {
 		EMCreationParameters params = map != null ? map.getParams() : null;
 
 		removeAll();
-		
+
 		if (params == null) {
 			JLabel infoLabel = new JLabel("No EnrichmentMap View selected");
 			infoLabel.setEnabled(false);
@@ -117,22 +148,22 @@ public class LegendPanel extends JPanel {
 			infoLabel.setHorizontalAlignment(JLabel.CENTER);
 			infoLabel.setVerticalAlignment(JLabel.CENTER);
 			infoLabel.setBorder(new EmptyBorder(120, 40, 120, 40));
-			
+
 			add(infoLabel, BorderLayout.CENTER);
 		} else {
-			getInfoPane().setText(getInfoText(map));
-			
+			updateNodeShapeLegend(map, view);
+			updateInfoPanel(map);
+
 			JPanel panel = new JPanel();
 			final GroupLayout layout = new GroupLayout(panel);
 			panel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(!isAquaLAF());
-			
+
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 					.addComponent(getNodeLegendPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getEdgeLegendPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getPropertiesPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-			);
+					.addComponent(getPropertiesPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE));
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getNodeLegendPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getEdgeLegendPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -146,20 +177,48 @@ public class LegendPanel extends JPanel {
 		
 		revalidate();
 	}
-	 
-	private JPanel getNodeLegendPanel() {
-		if (nodeLegendPanel == null) {
-			nodeLegendPanel = new JPanel();
-			nodeLegendPanel.setBorder(createTitledBorder("Nodes (Gene Sets)"));
+
+	private void updateNodeShapeLegend(EnrichmentMap map, CyNetworkView view) {
+		JPanel p = getNodeShapePanel();
+		VisualStyle style = view != null ? visualMappingManager.getVisualStyle(view) : null;
+		
+		nodeShapeIcon1.setVisible(style != null);
+		nodeShapeDesc1.setVisible(style != null);
+		nodeShapeIcon2.setVisible(style != null && map.hasSignatureDataSets());
+		nodeShapeDesc2.setVisible(style != null && map.hasSignatureDataSets());
+		
+		if (style != null) {
+			NodeShape shape = EMStyleBuilder.getGeneSetNodeShape(style);
+			nodeShapeIcon1.setIcon(getIcon(BasicVisualLexicon.NODE_SHAPE, shape));
 			
-			final GroupLayout layout = new GroupLayout(nodeLegendPanel);
-			nodeLegendPanel.setLayout(layout);
-			layout.setAutoCreateContainerGaps(true);
-			layout.setAutoCreateGaps(!isAquaLAF());
+			if (map.hasSignatureDataSets()) {
+				shape = EMStyleBuilder.getSignatureNodeShape(style);
+				nodeShapeIcon2.setIcon(getIcon(BasicVisualLexicon.NODE_SHAPE, shape));
+			}
+		}
+		
+		p.revalidate();
+	}
+	 
+	private void updateInfoPanel(EnrichmentMap map) {
+		getInfoPane().setText(getInfoText(map));
+	}
+	 
+	private BasicCollapsiblePanel getNodeLegendPanel() {
+		if (nodeLegendPanel == null) {
+			nodeLegendPanel = new BasicCollapsiblePanel("Nodes (Gene Sets)");
+			nodeLegendPanel.setCollapsed(false);
+			
+			final GroupLayout layout = new GroupLayout(nodeLegendPanel.getContentPane());
+			nodeLegendPanel.getContentPane().setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addComponent(getNodeShapePanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(getNodeShapePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
 			if (isAquaLAF())
@@ -169,27 +228,19 @@ public class LegendPanel extends JPanel {
 		return nodeLegendPanel;
 	}
 	
-	private JPanel getEdgeLegendPanel() {
+	private BasicCollapsiblePanel getEdgeLegendPanel() {
 		if (edgeLegendPanel == null) {
-			edgeLegendPanel = new JPanel();
-			edgeLegendPanel.setBorder(createTitledBorder("Edges (Similarity Between Gene Sets)"));
+			edgeLegendPanel = new BasicCollapsiblePanel("Edges (Similarity Between Gene Sets)");
+			edgeLegendPanel.setCollapsed(false);
 			
-			final GroupLayout layout = new GroupLayout(edgeLegendPanel);
-			edgeLegendPanel.setLayout(layout);
-			layout.setAutoCreateContainerGaps(true);
-			layout.setAutoCreateGaps(!isAquaLAF());
+			final GroupLayout layout = new GroupLayout(edgeLegendPanel.getContentPane());
+			edgeLegendPanel.getContentPane().setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
-//					.addComponent(legendsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-//					.addComponent(openReport1Button, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-//					.addComponent(openReport2Button, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-//					.addComponent(currentParamsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-//					.addComponent(legendsPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-//					.addComponent(openReport1Button, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-//					.addComponent(openReport2Button, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-//					.addComponent(currentParamsPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
 			if (isAquaLAF())
@@ -217,6 +268,35 @@ public class LegendPanel extends JPanel {
 		}
 		
 		return propertiesPanel;
+	}
+	
+	private JPanel getNodeShapePanel() {
+		if (nodeShapePanel == null) {
+			nodeShapePanel = new JPanel();
+			nodeShapePanel.setBorder(DEF_LEGEND_BORDER);
+			nodeShapePanel.setBackground(DEF_LEGEND_BG);
+			
+			final GroupLayout layout = new GroupLayout(nodeShapePanel);
+			nodeShapePanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(nodeShapeIcon1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(nodeShapeDesc1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(nodeShapeIcon2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(nodeShapeDesc2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+					.addComponent(nodeShapeIcon1)
+					.addComponent(nodeShapeDesc1)
+					.addComponent(nodeShapeIcon2)
+					.addComponent(nodeShapeDesc2)
+			);
+		}
+		
+		return nodeShapePanel;
 	}
 	
 	private JTextPane getInfoPane() {
@@ -453,5 +533,16 @@ public class LegendPanel extends JPanel {
 		} else {
 			return null;
 		}
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private Icon getIcon(VisualProperty<?> vp, Object value) {
+		if (value == null)
+			return null;
+		
+		RenderingEngine<CyNetwork> engine = applicationManager.getCurrentRenderingEngine();
+		Icon icon = engine.createIcon((VisualProperty)vp, value, LEGEND_ICON_SIZE, LEGEND_ICON_SIZE);
+		
+		return icon;
 	}
 }

@@ -36,9 +36,9 @@ public class LegendPanelMediator implements SetCurrentNetworkViewListener {
 	
 	private JDialog dialog;
 	
-	public void showDialog(EnrichmentMap map) {
+	public void showDialog(EnrichmentMap map, CyNetworkView view) {
 		invokeOnEDT(() -> {
-			updateUI(map);
+			updateUI(map, view);
 			
 			if (dialog != null) {
 				dialog.pack();
@@ -67,7 +67,7 @@ public class LegendPanelMediator implements SetCurrentNetworkViewListener {
 		
 		invokeOnEDT(() -> {
 			if (dialog != null && dialog.isVisible())
-				updateUI(map);
+				updateUI(map, view);
 		});
 	}
 	
@@ -96,9 +96,9 @@ public class LegendPanelMediator implements SetCurrentNetworkViewListener {
 		});
 	}
 
-	private void updateUI(EnrichmentMap map) {
+	private void updateUI(EnrichmentMap map, CyNetworkView view) {
 		invokeOnEDT(() -> {
-			parametersPanelProvider.get().update(map);
+			parametersPanelProvider.get().update(map, view);
 		});
 	}
 }

@@ -463,6 +463,10 @@ public class EnrichmentMap {
 		return new HashMap<>(signatureDataSets);
 	}
 	
+	public boolean hasSignatureDataSets() {
+		return !signatureDataSets.isEmpty();
+	}
+	
 	public List<EMSignatureDataSet> getSignatureSetList() {
 		List<EMSignatureDataSet> list = new ArrayList<>(signatureDataSets.values());
 		list.sort(Comparator.naturalOrder());
