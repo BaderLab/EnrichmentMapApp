@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 
 public class GSEAResolver {
 
@@ -270,13 +270,16 @@ public class GSEAResolver {
 	
 	
 	private static boolean containsFileEndingWith(Path p, String suffix) throws IOException {
-		return Files.find(p, 1, (path, attributes) -> {
-			return path.getFileName().toString().endsWith(suffix);
-		}).limit(1).count() > 0;
+		return getFileEndingWith(p, suffix).isPresent();
 	}
 	
-	
 	private static Optional<Path> getFileEndingWith(Path p, String suffix) throws IOException {
-		return Files.find(p, 1, (path, attrs) -> path.getFileName().endsWith(suffix)).findFirst();
+		return Files.find(p, 1, (path, attrs) ->
+			endsWithIgnoreCase(path.getFileName().toString(), suffix)
+		).findFirst();
+	}
+	
+	private static boolean endsWithIgnoreCase(String s, String suffix) {
+		return s.regionMatches(true, s.length()-suffix.length(), suffix, 0, suffix.length());
 	}
 }
