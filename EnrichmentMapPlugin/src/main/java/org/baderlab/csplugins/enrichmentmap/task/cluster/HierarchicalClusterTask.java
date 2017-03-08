@@ -13,7 +13,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
-import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
 import org.cytoscape.work.AbstractTask;
@@ -99,11 +98,8 @@ public class HierarchicalClusterTask extends AbstractTask implements ObservableT
         
         int[] order = clusterResult.getLeafOrder();
         for(int i = 0; i < order.length; i++) {
-            String name = names.get(order[i]);
             Integer geneId = labels.get(order[i]);
-            
-            Rank rank = new Rank(name, 0.0, i);
-            ranks.put(geneId, new RankValue(rank, false));
+            ranks.put(geneId, new RankValue(i+1, false));
         }
         
         tm.setStatusMessage("");

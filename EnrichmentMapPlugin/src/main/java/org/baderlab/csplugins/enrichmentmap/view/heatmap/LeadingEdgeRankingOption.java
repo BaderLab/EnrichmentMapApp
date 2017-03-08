@@ -2,13 +2,17 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
@@ -36,7 +40,7 @@ public class LeadingEdgeRankingOption implements RankingOption {
 	@Override
 	public String toString() {
 		String name = dataset.getName();
-		return abbreviate(name, 25) + " - GSEA Ranks";
+		return "GSEA Ranks: " + abbreviate(name, 25);
 	}
 	
 	private static String abbreviate(String s, int maxLength) {
@@ -93,10 +97,23 @@ public class LeadingEdgeRankingOption implements RankingOption {
 				significant = true;
 
 			List<Integer> keys = rank2keys.get(ranksSubset[m]);
-
+			
 			for(Integer key : keys) {
-				result.put(key, new RankValue(currentRanks.get(key), significant));
+				result.put(key, new RankValue(currentRanks.get(key).getRank(), significant));
 			}
+		}
+		
+		// Remove genes that we don't need
+		EnrichmentMap em = dataset.getMap();
+		Set<Integer> currentGenes = genes.stream().map(em::getHashFromGene).collect(Collectors.toSet());
+		result.keySet().retainAll(currentGenes);
+		
+		List<RankValue> rankValueList = new ArrayList<>(result.values());
+		rankValueList.sort(Comparator.comparing(RankValue::getRank).reversed());
+		
+		// Normalize the ranks so they are of the form 1,2,3,4...
+		for(int i = 0; i < rankValueList.size(); i++) {
+			rankValueList.get(i).setRank(i+1);
 		}
 		
 		return CompletableFuture.completedFuture(result);

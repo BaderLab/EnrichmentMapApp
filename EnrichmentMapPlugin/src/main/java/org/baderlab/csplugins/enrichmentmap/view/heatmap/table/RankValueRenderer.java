@@ -12,18 +12,23 @@ import javax.swing.table.DefaultTableCellRenderer;
 @SuppressWarnings("serial")
 public class RankValueRenderer extends DefaultTableCellRenderer {
 
+	private static final Color SIGNIFICANT_COLOR = new Color(229, 245, 249);
+	
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 		if(value instanceof RankValue) {
 			RankValue rankValue = (RankValue) value;
+			Integer rank = rankValue.getRank();
+			
 			JLabel label = new JLabel();
-//			label.setText(String.valueOf(rankValue.getRank().getRank()));
+			if(rank != null) {
+				label.setText(String.valueOf(rank));
+			}
 			
 			if (rankValue.isSignificant()) {
-				label.setBackground(Color.YELLOW);
+				label.setBackground(SIGNIFICANT_COLOR);
 				label.setOpaque(true);
-				label.setFont(new Font((UIManager.getFont("TableHeader.font")).getName(), Font.BOLD,
-						(UIManager.getFont("TableHeader.font")).getSize() + 2));
+				label.setFont(new Font((UIManager.getFont("TableHeader.font")).getName(), Font.BOLD, (UIManager.getFont("TableHeader.font")).getSize() + 2));
 			} else {
 				label.setBackground(this.getBackground());
 				label.setForeground(UIManager.getColor("TableHeader.foreground"));

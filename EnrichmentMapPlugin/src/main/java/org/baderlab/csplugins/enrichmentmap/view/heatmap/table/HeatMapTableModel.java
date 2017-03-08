@@ -24,7 +24,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 
 	/** Number of columns at the start that don't show expression data (ie. gene name etc..) */
 	public static final int DESC_COL_COUNT = 2; 
-	
+	public static final int GENE_COL = 0;
+	public static final int RANK_COL = 1;
 	
 	private final EnrichmentMap map;
 	private final int colCount;
@@ -90,10 +91,11 @@ public class HeatMapTableModel extends AbstractTableModel {
 	
 	@Override
 	public String getColumnName(int col) {
-		if(col == 0)
+		if(col == GENE_COL)
 			return "Gene";
-		if(col == 1)
-			return "Sort";
+		if(col == RANK_COL)
+			return "Ranks";
+		
 		EMDataSet dataset = getDataSet(col);
 		int index = getIndex(col) + 2;
 		String[] columns = dataset.getExpressionSets().getColumnNames();
@@ -105,14 +107,13 @@ public class HeatMapTableModel extends AbstractTableModel {
 		if(row < 0)
 			return null; // Why is it passing -1?
 		String gene = genes.get(row);
-		if(col == 0)
+		if(col == GENE_COL)
 			return gene;
 		int geneID = map.getHashFromGene(gene);
-		if(col == 1) {
-			if(ranking == null)
-				return null;
-			return ranking.get(geneID);
-		}
+		
+		// Use empty RankValue objects for missing genes instead of nulls so that they sort last (see RankValue.compareTo()).
+		if(col == RANK_COL)
+			return (ranking == null) ? RankValue.EMPTY : ranking.getOrDefault(geneID, RankValue.EMPTY);
 		
 		EMDataSet dataset = getDataSet(col);
 		int index = getIndex(col);
@@ -122,9 +123,9 @@ public class HeatMapTableModel extends AbstractTableModel {
 	
 	@Override
 	public Class<?> getColumnClass(int col) {
-		if(col == 0)
+		if(col == GENE_COL)
 			return String.class;
-		if(col == 1)
+		if(col == RANK_COL)
 			return RankValue.class;
 		else
 			return Double.class;

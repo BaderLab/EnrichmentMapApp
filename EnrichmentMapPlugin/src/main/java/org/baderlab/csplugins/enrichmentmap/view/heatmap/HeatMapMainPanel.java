@@ -125,7 +125,7 @@ public class HeatMapMainPanel extends JPanel {
 		operatorCombo = new JComboBox<>();
 		JLabel normLabel = new JLabel("Normalize:");
 		normCombo = new JComboBox<>();
-		JLabel sortLabel = new JLabel("Sort:");
+		JLabel sortLabel = new JLabel("Ranks:");
 		rankOptionCombo = new JComboBox<>();
 		
 		SwingUtil.makeSmall(operatorLabel, operatorCombo, normLabel, normCombo, sortLabel, rankOptionCombo);
@@ -197,7 +197,7 @@ public class HeatMapMainPanel extends JPanel {
 		table.setCellSelectionEnabled(true);
 		table.setAutoCreateRowSorter(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		
+
 		table.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -356,6 +356,7 @@ public class HeatMapMainPanel extends JPanel {
 		
 		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, genesToUse, params.getTransform());
 		table.setModel(tableModel);
+		
 		updateSetting_ShowValues(settingsPanel.isShowValues());
 		createTableHeader(COLUMN_WIDTH_COLOR);
 		
