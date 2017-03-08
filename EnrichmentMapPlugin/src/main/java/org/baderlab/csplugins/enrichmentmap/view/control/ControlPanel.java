@@ -21,7 +21,6 @@ import java.awt.Font;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +56,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -482,9 +482,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			getDataSetSelector().update();
 		}
 		
-		void updateChartDataCombo(Collection<AbstractDataSet> dataSets) {
+		void updateChartDataCombo() {
+			long dsCount = getDataSetSelector().getCheckedItems()
+					.stream()
+					.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets in charts
+					.count();
+			
 			boolean b1 = getChartDataCombo().isEnabled();
-			boolean b2 = dataSets != null && dataSets.size() > 1; // Can't have charts with less than 2 columns!
+			boolean b2 = dsCount > 1; // Can't have charts with less than 2 columns!
 			
 			if (b1 != b2) {
 				getChartDataCombo().setEnabled(b2);

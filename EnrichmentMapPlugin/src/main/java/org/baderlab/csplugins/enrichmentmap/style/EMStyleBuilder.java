@@ -21,11 +21,14 @@ import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.R
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
+import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNode;
@@ -215,18 +218,27 @@ public class EMStyleBuilder {
 		vs.addVisualMappingFunction(edgeStrokePaint);
 	}
 	
-	private DiscreteMapping<String,Paint> createEdgeColorMapping(EMStyleOptions options, VisualProperty<Paint> vp) {
+	private DiscreteMapping<String, Paint> createEdgeColorMapping(EMStyleOptions options, VisualProperty<Paint> vp) {
 		String prefix = options.getAttributePrefix();
 		String col = Columns.EDGE_DATASET.with(prefix, null);
-		DiscreteMapping<String, Paint> edgePaint = (DiscreteMapping<String,Paint>) dmFactory.createVisualMappingFunction(col, String.class, vp);
+		
+		DiscreteMapping<String, Paint> edgePaint = (DiscreteMapping<String, Paint>) dmFactory
+				.createVisualMappingFunction(col, String.class, vp);
+		
 		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.COMPOUND_EDGE_COLOR);
 		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, Colors.SIG_EDGE_COLOR);
+		
 		int i = 0;
-		for(EMDataSet dataSet : options.getDataSets()) {
-			Color color = Colors.DISTINCT_EDGE_COLORS[i++ % Colors.DISTINCT_EDGE_COLORS.length];
-			edgePaint.putMapValue(dataSet.getName(), color);
-			dataSet.setColor(color);
+		
+		// Do not use the filtered data sets here, because we don't want edge colours changing when filtering
+		for (AbstractDataSet ds : options.getEnrichmentMap().getDataSetList()) {
+			if (ds instanceof EMDataSet) {
+				Color color = Colors.DISTINCT_EDGE_COLORS[i++ % Colors.DISTINCT_EDGE_COLORS.length];
+				edgePaint.putMapValue(ds.getName(), color);
+				((EMDataSet) ds).setColor(color);
+			}
 		}
+		
 		return edgePaint;
 	}
 	
