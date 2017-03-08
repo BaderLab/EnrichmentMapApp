@@ -35,7 +35,9 @@ public class ColorRenderer implements TableCellRenderer {
 			label.setBackground(color);
 			Border border = BorderFactory.createMatteBorder(1, 1, 1, 1, isSelected ? table.getSelectionForeground() : color);
 			label.setBorder(border);
-			label.setToolTipText(value.toString());
+			
+			if(Double.isFinite((Double)value))
+				label.setToolTipText(value.toString());
 		}
 		
 		return label;

@@ -15,12 +15,14 @@ public class ColorAndValueRenderer extends ColorRenderer {
 	@Override
 	public JLabel getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 		JLabel label = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-		if(value instanceof Double) {
+		
+		if(value instanceof Double && Double.isFinite((Double)value)) {
 			String text = format.format((Double)value);
 			label.setText(text);
 			label.setFont(new Font((UIManager.getFont("TableHeader.font")).getName(), Font.PLAIN, (UIManager.getFont("TableHeader.font")).getSize()-2));
       	   	label.setHorizontalAlignment(SwingConstants.RIGHT);
 		}
+		
 		return label;
 	}
 

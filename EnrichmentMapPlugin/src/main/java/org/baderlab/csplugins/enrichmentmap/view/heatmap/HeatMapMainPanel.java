@@ -358,7 +358,7 @@ public class HeatMapMainPanel extends JPanel {
 		table.setModel(tableModel);
 		
 		updateSetting_ShowValues(settingsPanel.isShowValues());
-		createTableHeader(COLUMN_WIDTH_COLOR);
+		createTableHeader(params.isShowValues() ? COLUMN_WIDTH_VALUE : COLUMN_WIDTH_COLOR);
 		
 		// Re-compute the ranking
 		rankOptionActionListener.actionPerformed(null);
