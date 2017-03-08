@@ -198,7 +198,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
 		viewPanel.updateDataSetSelector();
 		
-		legendPanelMediatorProvider.get().updateDialog(netView);
+		legendPanelMediatorProvider.get().updateDialog(getFilteredDataSets(viewPanel), netView);
 	}
 	
 	public EMStyleOptions createStyleOptions(CyNetworkView netView) {
@@ -218,6 +218,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		if (getControlPanel().isDisplayable())
 			setCurrentNetworkView(e.getNetworkView());
+		
+		EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(e.getNetworkView());
+		legendPanelMediatorProvider.get().updateDialog(getFilteredDataSets(viewPanel), e.getNetworkView());
 	}
 	
 	@Override
@@ -417,6 +420,18 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		return view != null ? emManager.getEnrichmentMap(view.getModel().getSUID()) : null;
 	}
 	
+	@SuppressWarnings("unchecked")
+	private Set<EMDataSet> getFilteredDataSets(EMViewControlPanel viewPanel) {
+		if (viewPanel == null)
+			return Collections.emptySet();
+		
+		Set<?> dataSets = viewPanel.getCheckedDataSets().stream()
+				.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets
+				.collect(Collectors.toSet());
+		
+		return (Set<EMDataSet>) dataSets;
+	}
+	
 	private void removeSignatureDataSets(EnrichmentMap map, EMViewControlPanel viewPanel) {
 		Set<EMSignatureDataSet> dataSets = viewPanel.getSelectedSignatureDataSets();
 		
@@ -437,7 +452,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				@Override
 				public void allFinished(FinishStatus finishStatus) {
 					viewPanel.updateDataSetSelector();
-					legendPanelMediatorProvider.get().updateDialog(viewPanel.getNetworkView());
+					legendPanelMediatorProvider.get().updateDialog(getFilteredDataSets(viewPanel),
+							viewPanel.getNetworkView());
 				}
 			});
 		}
@@ -457,7 +473,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			}
 			@Override
 			public void allFinished(FinishStatus finishStatus) {
-				legendPanelMediatorProvider.get().updateDialog(options.getNetworkView());
+				EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(options.getNetworkView());
+				legendPanelMediatorProvider.get().updateDialog(getFilteredDataSets(viewPanel), options.getNetworkView());
 			}
 		});
 	}
@@ -660,7 +677,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				if (legendPanelMediatorProvider.get().getDialog().isVisible()) {
 					legendPanelMediatorProvider.get().hideDialog();
 				} else {
-					legendPanelMediatorProvider.get().showDialog(getCurrentEMView());
+					CyNetworkView netView = getCurrentEMView();
+					EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
+					legendPanelMediatorProvider.get().showDialog(getFilteredDataSets(viewPanel), netView);
 				}
 			});
 			mi.setSelected(legendPanelMediatorProvider.get().getDialog().isVisible());

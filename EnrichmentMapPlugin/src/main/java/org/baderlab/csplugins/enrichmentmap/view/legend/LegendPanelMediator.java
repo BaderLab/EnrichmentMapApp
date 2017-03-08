@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.util.Collection;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -14,8 +15,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
@@ -25,16 +25,16 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
-public class LegendPanelMediator implements SetCurrentNetworkViewListener {
+public class LegendPanelMediator {
 
 	@Inject private Provider<LegendPanel> parametersPanelProvider;
 	@Inject private CySwingApplication swingApplication;
 	
 	private JDialog dialog;
 	
-	public void showDialog(CyNetworkView view) {
+	public void showDialog(Collection<EMDataSet> filteredDataSets, CyNetworkView view) {
 		invokeOnEDT(() -> {
-			updateDialog(view, false);
+			updateDialog(filteredDataSets, view, false);
 			
 			if (dialog != null) {
 				dialog.pack();
@@ -54,20 +54,8 @@ public class LegendPanelMediator implements SetCurrentNetworkViewListener {
 		return dialog;
 	}
 	
-	public void updateDialog(CyNetworkView view) {
-		updateDialog(view, true);
-	}
-	
-	@Override
-	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		CyNetworkView view = e.getNetworkView();
-		
-		// TODO Get cutoffs and other params associated with the NetView
-		
-		invokeOnEDT(() -> {
-			if (dialog != null && dialog.isVisible())
-				updateDialog(view);
-		});
+	public void updateDialog(Collection<EMDataSet> filteredDataSets, CyNetworkView view) {
+		updateDialog(filteredDataSets, view, true);
 	}
 	
 	@AfterInjection
@@ -95,12 +83,12 @@ public class LegendPanelMediator implements SetCurrentNetworkViewListener {
 		});
 	}
 	
-	private void updateDialog(CyNetworkView view, boolean onlyIfVisible) {
+	private void updateDialog(Collection<EMDataSet> filteredDataSets, CyNetworkView view, boolean onlyIfVisible) {
 		if (onlyIfVisible && !dialog.isVisible())
 			return;
 		
 		invokeOnEDT(() -> {
-			parametersPanelProvider.get().update(view);
+			parametersPanelProvider.get().update(filteredDataSets, view);
 		});
 	}
 }

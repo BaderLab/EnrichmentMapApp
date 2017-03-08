@@ -332,12 +332,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			cardLayout.show(getCtrlPanelsContainer(), nullViewCtrlPanel.getName());
 		} else {
 			EMViewControlPanel p = getViewControlPanel(netView);
-			cardLayout.show(getCtrlPanelsContainer(), p.getName());
+			
+			if (p != null)
+				cardLayout.show(getCtrlPanelsContainer(), p.getName());
 		}
 	}
 	
 	EMViewControlPanel getViewControlPanel(CyNetworkView netView) {
-		return emViewCtrlPanels.get(netView.getSUID());
+		return netView != null ? emViewCtrlPanels.get(netView.getSUID()) : null;
 	}
 	
 	private void styleHeaderButton(final AbstractButton btn, final Font font) {
