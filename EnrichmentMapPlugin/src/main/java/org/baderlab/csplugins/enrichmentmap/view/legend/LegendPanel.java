@@ -82,6 +82,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
@@ -117,6 +118,7 @@ public class LegendPanel extends JPanel {
 	private final Border DEF_LEGEND_BORDER = BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"));
 	private final Color DEF_LEGEND_BG = Color.WHITE;
 	
+	@Inject private EnrichmentMapManager emManager;
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private VisualMappingManager visualMappingManager;
 	
@@ -148,9 +150,10 @@ public class LegendPanel extends JPanel {
 	/**
 	 * Update parameters panel based on given enrichment map parameters
 	 */
-	void update(EnrichmentMap map, CyNetworkView view) {
+	void update(CyNetworkView view) {
 		removeAll();
 		
+		EnrichmentMap map = view != null ? emManager.getEnrichmentMap(view.getModel().getSUID()) : null;
 		EMCreationParameters params = map != null ? map.getParams() : null;
 
 		if (params == null) {

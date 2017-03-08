@@ -195,7 +195,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	public void updateDataSetList(CyNetworkView netView) {
-		getControlPanel().getViewControlPanel(netView).updateDataSetSelector();
+		EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
+		viewPanel.updateDataSetSelector();
+		
+		legendPanelMediatorProvider.get().updateDialog(netView);
 	}
 	
 	public EMStyleOptions createStyleOptions(CyNetworkView netView) {
@@ -434,6 +437,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				@Override
 				public void allFinished(FinishStatus finishStatus) {
 					viewPanel.updateDataSetSelector();
+					legendPanelMediatorProvider.get().updateDialog(viewPanel.getNetworkView());
 				}
 			});
 		}
@@ -447,7 +451,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 
 	private void applyVisualStyle(EMStyleOptions options, CyCustomGraphics2<?> chart) {
 		ApplyEMStyleTask task = applyStyleTaskFactory.create(options, chart);
-		dialogTaskManager.execute(new TaskIterator(task));
+		dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
+			@Override
+			public void taskFinished(ObservableTask task) {
+			}
+			@Override
+			public void allFinished(FinishStatus finishStatus) {
+				legendPanelMediatorProvider.get().updateDialog(options.getNetworkView());
+			}
+		});
 	}
 	
 	private EMStyleOptions createStyleOptions(EnrichmentMap map, EMViewControlPanel viewPanel) {
@@ -648,8 +660,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				if (legendPanelMediatorProvider.get().getDialog().isVisible()) {
 					legendPanelMediatorProvider.get().hideDialog();
 				} else {
-					EnrichmentMap map = getCurrentMap();
-					legendPanelMediatorProvider.get().showDialog(map, getCurrentEMView());
+					legendPanelMediatorProvider.get().showDialog(getCurrentEMView());
 				}
 			});
 			mi.setSelected(legendPanelMediatorProvider.get().getDialog().isVisible());

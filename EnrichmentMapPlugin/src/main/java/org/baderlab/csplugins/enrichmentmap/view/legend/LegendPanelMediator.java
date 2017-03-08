@@ -14,8 +14,6 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -29,16 +27,14 @@ import com.google.inject.Singleton;
 @Singleton
 public class LegendPanelMediator implements SetCurrentNetworkViewListener {
 
-	@Inject private EnrichmentMapManager emManager;
 	@Inject private Provider<LegendPanel> parametersPanelProvider;
-	
 	@Inject private CySwingApplication swingApplication;
 	
 	private JDialog dialog;
 	
-	public void showDialog(EnrichmentMap map, CyNetworkView view) {
+	public void showDialog(CyNetworkView view) {
 		invokeOnEDT(() -> {
-			updateUI(map, view);
+			updateDialog(view, false);
 			
 			if (dialog != null) {
 				dialog.pack();
@@ -58,16 +54,19 @@ public class LegendPanelMediator implements SetCurrentNetworkViewListener {
 		return dialog;
 	}
 	
+	public void updateDialog(CyNetworkView view) {
+		updateDialog(view, true);
+	}
+	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		CyNetworkView view = e.getNetworkView();
-		EnrichmentMap map = view != null ? emManager.getEnrichmentMap(view.getModel().getSUID()) : null;
 		
 		// TODO Get cutoffs and other params associated with the NetView
 		
 		invokeOnEDT(() -> {
 			if (dialog != null && dialog.isVisible())
-				updateUI(map, view);
+				updateDialog(view);
 		});
 	}
 	
@@ -95,10 +94,13 @@ public class LegendPanelMediator implements SetCurrentNetworkViewListener {
 			dialog.setLocationRelativeTo(swingApplication.getJFrame());
 		});
 	}
-
-	private void updateUI(EnrichmentMap map, CyNetworkView view) {
+	
+	private void updateDialog(CyNetworkView view, boolean onlyIfVisible) {
+		if (onlyIfVisible && !dialog.isVisible())
+			return;
+		
 		invokeOnEDT(() -> {
-			parametersPanelProvider.get().update(map, view);
+			parametersPanelProvider.get().update(view);
 		});
 	}
 }
