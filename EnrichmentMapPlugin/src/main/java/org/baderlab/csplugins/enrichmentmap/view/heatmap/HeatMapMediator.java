@@ -138,12 +138,12 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		for(EMDataSet dataset : map.getDataSetList()) {
 			if(nodes.size() == 1 && edges.isEmpty() && dataset.getMethod() == Method.GSEA && contains(dataset, network, nodes.get(0))) {
 				String name = network.getRow(nodes.get(0)).get(CyNetwork.NAME, String.class);
-				options.add(new LeadingEdgeRankingOption(dataset, name));
+				options.add(new GSEALeadingEdgeRankingOption(dataset, name));
 			}
 			else if(contains(network, dataset, nodes, edges)) {
 				Map<String,Ranking> ranks = dataset.getExpressionSets().getRanks();
 				ranks.forEach((name, ranking) -> {
-					options.add(RankingOption.fromExisting(name, ranking));
+					options.add(new BasicRankingOption(ranking, dataset, name));
 				});
 			}
 		}
@@ -151,6 +151,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		return options;
 	}
 
+	
 	private static boolean contains(CyNetwork network, EMDataSet dataset, List<CyNode> nodes, List<CyEdge> edges) {
 		for(CyNode node : nodes) {
 			if(contains(dataset, network, node))

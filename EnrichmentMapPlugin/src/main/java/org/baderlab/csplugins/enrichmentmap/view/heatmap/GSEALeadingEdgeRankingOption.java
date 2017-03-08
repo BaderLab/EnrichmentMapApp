@@ -2,7 +2,6 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +19,12 @@ import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 
-public class LeadingEdgeRankingOption implements RankingOption {
+/**
+ * The leading edge can only be computed if a single gene-set is selected.
+ */
+public class GSEALeadingEdgeRankingOption implements RankingOption {
 	
 	private final EMDataSet dataset;
 	private final String geneSetName;
@@ -31,7 +34,7 @@ public class LeadingEdgeRankingOption implements RankingOption {
 	private final String ranksName = Ranking.GSEARanking; // MKTODO will this ever be different?
 	
 	
-	public LeadingEdgeRankingOption(EMDataSet dataset, String geneSetName) {
+	public GSEALeadingEdgeRankingOption(EMDataSet dataset, String geneSetName) {
 		assert dataset.getMethod() == Method.GSEA;
 		this.dataset = dataset;
 		this.geneSetName = geneSetName;
@@ -40,15 +43,7 @@ public class LeadingEdgeRankingOption implements RankingOption {
 	@Override
 	public String toString() {
 		String name = dataset.getName();
-		return "GSEA Ranks: " + abbreviate(name, 25);
-	}
-	
-	private static String abbreviate(String s, int maxLength) {
-		s = String.valueOf(s); // null check
-		if(s.length() > maxLength) {
-			s = s.substring(0, maxLength) + "...";
-		}
-		return s;
+		return "GSEA Ranks: " + SwingUtil.abbreviate(name, 25);
 	}
 	
 	@Override
@@ -108,13 +103,7 @@ public class LeadingEdgeRankingOption implements RankingOption {
 		Set<Integer> currentGenes = genes.stream().map(em::getHashFromGene).collect(Collectors.toSet());
 		result.keySet().retainAll(currentGenes);
 		
-		List<RankValue> rankValueList = new ArrayList<>(result.values());
-		rankValueList.sort(Comparator.comparing(RankValue::getRank).reversed());
-		
-		// Normalize the ranks so they are of the form 1,2,3,4...
-		for(int i = 0; i < rankValueList.size(); i++) {
-			rankValueList.get(i).setRank(i+1);
-		}
+		BasicRankingOption.normalizeRanks(result);
 		
 		return CompletableFuture.completedFuture(result);
 	}

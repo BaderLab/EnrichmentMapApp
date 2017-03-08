@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
 
 public interface RankingOption {
@@ -17,19 +16,6 @@ public interface RankingOption {
 	 * @return Map where keys are geneIDs and value is the rank.
 	 */
 	CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<String> genes);
-	
-	
-	public static RankingOption fromExisting(String name, Ranking ranking) {
-		
-		return new RankingOption() {
-			public String toString() {
-				return name;
-			}
-			public CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<String> genes) {
-				return CompletableFuture.completedFuture(RankValue.createBasic(ranking));
-			}
-		};
-	}
 	
 	
 	public static RankingOption none() {

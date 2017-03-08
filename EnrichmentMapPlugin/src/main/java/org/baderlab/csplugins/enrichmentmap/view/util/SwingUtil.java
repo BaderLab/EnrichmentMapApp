@@ -39,6 +39,15 @@ public class SwingUtil {
 
 	private SwingUtil() {}
 	
+	
+	public static String abbreviate(String s, int maxLength) {
+		s = String.valueOf(s); // null check
+		if(s.length() > maxLength) {
+			s = s.substring(0, maxLength) + "...";
+		}
+		return s;
+	}
+	
 	/**
 	 * recurse up the parents until you find an instance of JFrame or JDialog
 	 */

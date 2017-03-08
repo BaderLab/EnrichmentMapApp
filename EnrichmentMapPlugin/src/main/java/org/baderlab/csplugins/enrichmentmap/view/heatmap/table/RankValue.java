@@ -1,11 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.baderlab.csplugins.enrichmentmap.model.Rank;
-import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 
 /**
  * This is a wrapper object for a "rank" that is computed by a RankingOption.
@@ -49,17 +44,5 @@ public class RankValue implements Comparable<RankValue> {
 	}
 	
 	private static final Comparator<Integer> rankComparator = Comparator.nullsLast(Comparator.naturalOrder());
-	
-	
-	/**
-	 * Factory method to create a map of GeneID -> RankValue from a model Ranking object.
-	 */
-	public static Map<Integer,RankValue> createBasic(Ranking ranking) {
-		Map<Integer,RankValue> basic = new HashMap<>();
-		for(Map.Entry<Integer,Rank> entry : ranking.getRanking().entrySet()) {
-			basic.put(entry.getKey(), new RankValue(entry.getValue().getRank(), true));
-		}
-		return basic;
-	}
 	
 }
