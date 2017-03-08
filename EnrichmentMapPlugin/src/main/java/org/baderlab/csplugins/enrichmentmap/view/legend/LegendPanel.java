@@ -126,6 +126,8 @@ public class LegendPanel extends JPanel {
 	private BasicCollapsiblePanel edgeLegendPanel;
 	private BasicCollapsiblePanel propertiesPanel;
 	
+	private JPanel nodeColorPanel;
+	
 	private JPanel nodeShapePanel;
 	private JLabel nodeShapeIcon1 = new JLabel();
 	private JLabel nodeShapeIcon2 = new JLabel();
@@ -291,7 +293,7 @@ public class LegendPanel extends JPanel {
 	private void updateInfoPanel(EnrichmentMap map) {
 		getInfoPane().setText(getInfoText(map));
 	}
-	 
+	
 	private BasicCollapsiblePanel getNodeLegendPanel() {
 		if (nodeLegendPanel == null) {
 			nodeLegendPanel = new BasicCollapsiblePanel("Nodes (Gene Sets)");
@@ -303,9 +305,11 @@ public class LegendPanel extends JPanel {
 			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addComponent(getNodeColorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getNodeShapePanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(getNodeColorPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getNodeShapePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
@@ -360,18 +364,43 @@ public class LegendPanel extends JPanel {
 		return propertiesPanel;
 	}
 	
+	private JPanel getNodeColorPanel() {
+		if (nodeColorPanel == null) {
+			nodeColorPanel = createStyleLegendPanel(null);
+			nodeColorPanel.setToolTipText("Node Fill Color");
+			
+			ColorLegendPanel clp = new ColorLegendPanel(Colors.MAX_PHENOTYPE_1, Colors.MAX_PHENOTYPE_2, "Up", "Down");
+			
+			GroupLayout layout = (GroupLayout) nodeColorPanel.getLayout();
+
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addComponent(clp, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 0, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+					.addComponent(clp)
+			);
+		}
+		
+		return nodeColorPanel;
+	}
+	
 	private JPanel getNodeShapePanel() {
 		if (nodeShapePanel == null) {
 			nodeShapePanel = createStyleLegendPanel(null);
+			nodeShapePanel.setToolTipText("Node Shape");
 			
 			GroupLayout layout = (GroupLayout) nodeShapePanel.getLayout();
 
 			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
 					.addComponent(nodeShapeIcon1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(nodeShapeDesc1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(nodeShapeIcon2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(nodeShapeDesc2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 0, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
 					.addComponent(nodeShapeIcon1)
@@ -387,6 +416,7 @@ public class LegendPanel extends JPanel {
 	private JPanel getEdgeColorPanel() {
 		if (edgeColorPanel == null) {
 			edgeColorPanel = createStyleLegendPanel(null);
+			edgeColorPanel.setToolTipText("Edge Stroke Color");
 		}
 		
 		return edgeColorPanel;

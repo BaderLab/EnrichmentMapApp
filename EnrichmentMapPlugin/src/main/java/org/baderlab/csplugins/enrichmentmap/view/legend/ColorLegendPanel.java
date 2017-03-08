@@ -133,12 +133,10 @@ public class ColorLegendPanel extends JPanel {
 			g2d.setPaint(g1);
 			g2d.fill(rect1);
 			g2d.setPaint(Color.WHITE);
-			g2d.draw(rect1);
 
 			// make a white block
 			g2d.setPaint(Color.WHITE);
 			g2d.fill(rect2);
-			g2d.draw(rect2);
 
 			g2d.setPaint(getLabelForeground());
 			g2d.drawString(phenotype1, p1.x, p1.y + tyOffset);
@@ -150,12 +148,13 @@ public class ColorLegendPanel extends JPanel {
         // Make a white block
         g2d.setPaint(Color.WHITE);
         g2d.fill(rect3);
-        g2d.draw(rect3);
 
 		g2d.setPaint(g2);
 		g2d.fill(rect4);
-		g2d.setPaint(Color.WHITE);
-		g2d.draw(rect4);
+		
+		// Border
+		g2d.setPaint(UIManager.getColor("Separator.foreground"));
+		g2d.draw(new Rectangle2D.Float(p1.x , p1.y, (2 * w1 + 2 * w2), hh));
 
 		g2d.setPaint(getLabelForeground());
 		g2d.drawString(phenotype2, p7.x, p7.y + tyOffset);
