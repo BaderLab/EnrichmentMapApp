@@ -22,6 +22,7 @@ import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.R
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
@@ -31,7 +32,10 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -133,6 +137,15 @@ public class EMStyleBuilder {
 				new Color(217,95,2), new Color(117,112,179), new Color(231,41,138), new Color(102,166,30), 
 				new Color(230,171,2), new Color(166,118,29), new Color(102,102,102)
 		};
+		
+		/* See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=9 */
+		public static final Color MAX_PHENOTYPE_1 = new Color(178, 24, 43);
+		public static final Color LIGHTER_PHENOTYPE_1 = new Color(214, 96, 77);
+		public static final Color LIGHTEST_PHENOTYPE_1 = new Color(244, 165, 130);
+		public static final Color OVER_COLOR = new Color(247, 247, 247);
+		public static final Color MAX_PHENOTYPE_2 = new Color(33, 102, 172);
+		public static final Color LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
+		public static final Color LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
 	
 		public static final Color LIGHT_GREY = new Color(190, 190, 190);
 		private static final Color BG_COLOR = Color.WHITE;
@@ -308,13 +321,80 @@ public class EMStyleBuilder {
 	
 	private void setNodeColors(VisualStyle vs, EMStyleOptions options) {
 		String prefix = options.getAttributePrefix();
+		List<AbstractDataSet> dataSets = options.getDataSets()
+				.stream()
+				.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets in charts
+				.collect(Collectors.toList());
 		
-		// Add mapping function for node fill color
-		DiscreteMapping<String, Paint> nodePaint = (DiscreteMapping<String, Paint>) dmFactory
-				.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_FILL_COLOR);
-		nodePaint.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_COLOR);
-		nodePaint.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, Colors.SIG_NODE_COLOR);
-		vs.addVisualMappingFunction(nodePaint);
+		if (dataSets.size() == 1) {
+			// Only 1 Data Set? Use node colour instead of charts...
+			EMDataSet ds = (EMDataSet) dataSets.iterator().next();
+			
+			// Create boundary conditions
+			BoundaryRangeValues<Paint> bv3a = new BoundaryRangeValues<>(
+					Colors.MAX_PHENOTYPE_2, Colors.MAX_PHENOTYPE_2, Colors.MAX_PHENOTYPE_2);
+			BoundaryRangeValues<Paint> bv3b = new BoundaryRangeValues<>(
+					Colors.LIGHTER_PHENOTYPE_2, Colors.LIGHTER_PHENOTYPE_2, Colors.MAX_PHENOTYPE_2);
+			BoundaryRangeValues<Paint> bv3c = new BoundaryRangeValues<>(
+					Colors.LIGHTEST_PHENOTYPE_2, Colors.LIGHTEST_PHENOTYPE_2, Colors.LIGHTER_PHENOTYPE_2);
+			BoundaryRangeValues<Paint> bv3d = new BoundaryRangeValues<>(
+					Colors.LIGHTEST_PHENOTYPE_2, Colors.OVER_COLOR, Colors.OVER_COLOR);
+			BoundaryRangeValues<Paint> bv3e = new BoundaryRangeValues<>(
+					Colors.OVER_COLOR, Colors.OVER_COLOR, Colors.OVER_COLOR);
+			BoundaryRangeValues<Paint> bv3f = new BoundaryRangeValues<>(
+					Colors.OVER_COLOR, Colors.OVER_COLOR, Colors.LIGHTEST_PHENOTYPE_1);
+			BoundaryRangeValues<Paint> bv3g = new BoundaryRangeValues<>(
+					Colors.LIGHTEST_PHENOTYPE_1, Colors.LIGHTEST_PHENOTYPE_1, Colors.LIGHTER_PHENOTYPE_1);
+			BoundaryRangeValues<Paint> bv3h = new BoundaryRangeValues<>(
+					Colors.LIGHTER_PHENOTYPE_1, Colors.LIGHTER_PHENOTYPE_1, Colors.MAX_PHENOTYPE_1);
+			BoundaryRangeValues<Paint> bv3i = new BoundaryRangeValues<>(
+					Colors.MAX_PHENOTYPE_1, Colors.MAX_PHENOTYPE_1, Colors.MAX_PHENOTYPE_1);
+	
+			// Continuous Mapping - set node colour based on the sign of the ES score of the dataset
+			ContinuousMapping<Double, Paint> cm = (ContinuousMapping<Double, Paint>) cmFactory
+					.createVisualMappingFunction(Columns.NODE_COLOURING.with(prefix, ds.getName()), Double.class,
+							BasicVisualLexicon.NODE_FILL_COLOR);
+	
+			// Set the attribute point values associated with the boundary values
+			cm.addPoint(-1.0, bv3a);
+			cm.addPoint(-0.995, bv3b);
+			cm.addPoint(-0.95, bv3c);
+			cm.addPoint(-0.9, bv3d);
+			cm.addPoint(0.0, bv3e);
+			cm.addPoint(0.9, bv3f);
+			cm.addPoint(0.95, bv3g);
+			cm.addPoint(0.995, bv3h);
+			cm.addPoint(1.0, bv3i);
+	
+			vs.addVisualMappingFunction(cm);
+			
+			// Then we need to use bypass to colour the hub nodes (signature genesets)
+			List<EMSignatureDataSet> signatureDataSets = options.getEnrichmentMap().getSignatureSetList();
+			CyNetworkView netView = options.getNetworkView();
+			CyNetwork net = netView.getModel();
+			
+			for (EMSignatureDataSet sds : signatureDataSets) {
+				for (Long suid : sds.getNodeSuids().values()) {
+					CyNode node = net.getNode(suid);
+					
+					if (node != null) {
+						View<CyNode> nv = netView.getNodeView(node);
+						
+						if (nv != null)
+							nv.setLockedValue(NODE_FILL_COLOR, Colors.SIG_NODE_COLOR);
+					}
+				}
+			}
+		} else {
+			// 2 or more Data Sets? Use simple node colours and charts...
+			// Add mapping function for node fill color
+			DiscreteMapping<String, Paint> dm = (DiscreteMapping<String, Paint>) dmFactory.createVisualMappingFunction(
+					Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_FILL_COLOR);
+			dm.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_COLOR);
+			dm.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, Colors.SIG_NODE_COLOR);
+			
+			vs.addVisualMappingFunction(dm);
+		}
 	}
 	
 	private void setNodeLabels(VisualStyle vs, EMStyleOptions options) {
