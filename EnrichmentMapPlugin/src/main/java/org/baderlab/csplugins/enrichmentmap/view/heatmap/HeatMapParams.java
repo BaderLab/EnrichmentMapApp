@@ -37,15 +37,15 @@ public class HeatMapParams {
 	private final Operator operator;
 	private final Distance distanceMetric;
 	private final boolean showValues;
-	private final int sortIndex; // combo index 
+	private final String rankingOptionName; // combo index 
 	
 	
-	public HeatMapParams(Transform transform, Operator operator, int sortIndex, Distance distanceMetric, boolean showValues) {
+	public HeatMapParams(Transform transform, Operator operator, String rankingOptionName, Distance distanceMetric, boolean showValues) {
 		this.transform = transform;
 		this.operator = operator;
 		this.distanceMetric = distanceMetric;
 		this.showValues = showValues;
-		this.sortIndex = sortIndex;
+		this.rankingOptionName = rankingOptionName;
 	}
 	
 	
@@ -59,7 +59,7 @@ public class HeatMapParams {
 		private Operator operator = Operator.UNION;
 		private Distance distanceMetric = Distance.EUCLIDEAN;
 		private boolean showValues = false;
-		private int sortIndex = 0;
+		private String rankingOptionName;
 		
 		public Builder() { }
 		
@@ -68,7 +68,7 @@ public class HeatMapParams {
 			this.operator = params.operator;
 			this.distanceMetric = params.distanceMetric;
 			this.showValues = params.showValues;
-			this.sortIndex = params.sortIndex;
+			this.rankingOptionName = params.rankingOptionName;
 		}
 		
 		public Builder setTransform(Transform transform) {
@@ -87,13 +87,13 @@ public class HeatMapParams {
 			this.showValues = showValues;
 			return this;
 		}
-		public Builder setSortIndex(int sortIndex) {
-			this.sortIndex = sortIndex;
+		public Builder setRankingOptionName(String rankingOptionName) {
+			this.rankingOptionName = rankingOptionName;
 			return this;
 		}
 		
 		public HeatMapParams build() {
-			return new HeatMapParams(transform, operator, sortIndex, distanceMetric, showValues);
+			return new HeatMapParams(transform, operator, rankingOptionName, distanceMetric, showValues);
 		}
 	}
 
@@ -102,8 +102,8 @@ public class HeatMapParams {
 		return transform;
 	}
 
-	public int getSortIndex() {
-		return sortIndex;
+	public String getRankingOptionName() {
+		return rankingOptionName;
 	}
 	
 	public Operator getOperator() {
@@ -122,8 +122,7 @@ public class HeatMapParams {
 	@Override
 	public String toString() {
 		return "HeatMapParams [transform=" + transform + ", operator=" + operator + ", distanceMetric=" + distanceMetric
-				+ ", showValues=" + showValues + ", sortIndex=" + sortIndex + "]";
+				+ ", showValues=" + showValues + ", rankingOptionName=" + rankingOptionName + "]";
 	}
-
 	
 }

@@ -29,6 +29,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -308,8 +309,8 @@ public class HeatMapMainPanel extends JPanel {
 		return settingsPanel.getDistance();
 	}
 	
-	public int getRankingIndex() {
-		return rankOptionCombo.getSelectedIndex();
+	public String getRankingOptionName() {
+		return rankOptionCombo.getSelectedItem().toString();
 	}
 	
 	public HeatMapParams buildParams() {
@@ -317,7 +318,7 @@ public class HeatMapMainPanel extends JPanel {
 				.setDistanceMetric(getDistance())
 				.setOperator(getOperator())
 				.setShowValues(isShowValues())
-				.setSortIndex(getRankingIndex())
+				.setRankingOptionName(getRankingOptionName())
 				.setTransform(getTransform())
 				.build();
 	}
@@ -332,11 +333,11 @@ public class HeatMapMainPanel extends JPanel {
 		interGenes = new ArrayList<>(intersection);
 		interGenes.sort(Comparator.naturalOrder());
 		
-		// Update Combo Boxes
 		operatorCombo.removeActionListener(operatorActionListener);
 		rankOptionCombo.removeActionListener(rankOptionActionListener);
 		normCombo.removeActionListener(normActionListener);
 		
+		// Update Combo Boxes
 		operatorCombo.removeAllItems();
 		operatorCombo.addItem(new ComboItem<>(Operator.UNION, "Union (" + union.size() + ")"));
 		operatorCombo.addItem(new ComboItem<>(Operator.INTERSECTION, "Intersection (" + intersection.size() + ")"));
@@ -348,17 +349,27 @@ public class HeatMapMainPanel extends JPanel {
 		rankOptionCombo.addItem(RankingOption.none());
 		rankOptionCombo.addItem(clusterRankOption);
 		moreRankOptions.forEach(rankOptionCombo::addItem);
-		rankOptionCombo.setSelectedIndex(params.getSortIndex());
+		
+		for(int i = 0; i < rankOptionCombo.getItemCount(); i++) {
+			if(rankOptionCombo.getItemAt(i).toString().equals(params.getRankingOptionName())) {
+				rankOptionCombo.setSelectedIndex(i);
+				break;
+			}
+		}
 
+		// Update the setings panel
 		settingsPanel.update(params);
 		
+		// Update the Table
 		List<String> genesToUse = params.getOperator() == Operator.UNION ? unionGenes : interGenes;
-		
+		List<? extends SortKey> sortKeys = table.getRowSorter().getSortKeys();
 		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, genesToUse, params.getTransform());
 		table.setModel(tableModel);
-		
 		updateSetting_ShowValues(settingsPanel.isShowValues());
 		createTableHeader(params.isShowValues() ? COLUMN_WIDTH_VALUE : COLUMN_WIDTH_COLOR);
+		try {
+			table.getRowSorter().setSortKeys(sortKeys);
+		} catch(IllegalArgumentException e) {}
 		
 		// Re-compute the ranking
 		rankOptionActionListener.actionPerformed(null);

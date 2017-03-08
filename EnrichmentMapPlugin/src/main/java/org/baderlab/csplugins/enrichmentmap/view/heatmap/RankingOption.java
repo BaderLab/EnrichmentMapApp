@@ -11,6 +11,10 @@ public interface RankingOption {
 	/** Value to be displayed in the combo box */
 	String toString();
 	
+	default String getName() {
+		return toString();
+	}
+	
 	/**
 	 * Asynchronously compute the rankings.
 	 * @return Map where keys are geneIDs and value is the rank.
