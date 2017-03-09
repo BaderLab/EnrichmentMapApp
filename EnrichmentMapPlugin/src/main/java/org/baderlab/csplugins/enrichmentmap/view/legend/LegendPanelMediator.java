@@ -6,19 +6,13 @@ import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnE
 import java.awt.BorderLayout;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
-import java.io.ByteArrayOutputStream;
 import java.util.Collection;
 
-import javax.activation.DataHandler;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.rtf.RTFEditorKit;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -110,7 +104,8 @@ public class LegendPanelMediator {
 	private void showCreationParamsDialog() {
 		JDialog d = new JDialog(dialog, "EnrichmentMap Creation Parameters", ModalityType.APPLICATION_MODAL);
 		d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		d.setMinimumSize(new Dimension(640, 420));
+		d.setMinimumSize(new Dimension(420, 260));
+		d.setPreferredSize(new Dimension(580, 460));
 		
 		JButton closeButton = new JButton(new AbstractAction("Close") {
 			@Override
@@ -118,10 +113,8 @@ public class LegendPanelMediator {
 				d.dispose();
 			}
 		});
-		JButton copyButton = new JButton("Copy to Clipboard");
-		copyButton.setEnabled(false);
 		
-		JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, copyButton);
+		JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
 		d.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 		
 		CyNetworkView netView = legendPanelProvider.get().getNetworkView();
@@ -131,23 +124,6 @@ public class LegendPanelMediator {
 			CreationParametersPanel paramsPanel = new CreationParametersPanel(map);
 			d.getContentPane().add(paramsPanel, BorderLayout.CENTER);
 			
-			copyButton.setEnabled(true);
-			copyButton.addActionListener(e -> {
-				StyledDocument doc = paramsPanel.getInfoPane().getStyledDocument();
-				RTFEditorKit rtfek = new RTFEditorKit();
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				
-				try {
-					rtfek.write(baos, doc, 0, doc.getLength());
-					baos.flush();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				
-			    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			    DataHandler dh = new DataHandler(baos.toByteArray(), rtfek.getContentType());
-			    clipboard.setContents(dh, null);
-			});
 		}
 		
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(d.getRootPane(), null, closeButton.getAction());
