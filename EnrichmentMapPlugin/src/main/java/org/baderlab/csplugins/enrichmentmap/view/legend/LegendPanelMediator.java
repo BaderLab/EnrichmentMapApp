@@ -16,6 +16,8 @@ import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
@@ -27,10 +29,12 @@ import com.google.inject.Singleton;
 @Singleton
 public class LegendPanelMediator {
 
-	@Inject private Provider<LegendPanel> parametersPanelProvider;
+	@Inject private EnrichmentMapManager emManager;
+	@Inject private Provider<LegendPanel> legendPanelProvider;
 	@Inject private CySwingApplication swingApplication;
 	
 	private JDialog dialog;
+	private JButton creationParamsButton = new JButton("Creation Parameters...");
 	
 	public void showDialog(Collection<EMDataSet> filteredDataSets, CyNetworkView view) {
 		invokeOnEDT(() -> {
@@ -72,9 +76,12 @@ public class LegendPanelMediator {
 					dialog.dispose();
 				}
 			});
-			JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
 			
-			dialog.getContentPane().add(parametersPanelProvider.get(), BorderLayout.CENTER);
+			creationParamsButton.addActionListener(e -> showCreationParamsDialog());
+			
+			JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, creationParamsButton);
+			
+			dialog.getContentPane().add(legendPanelProvider.get(), BorderLayout.CENTER);
 			dialog.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 			
 			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), null, closeButton.getAction());
@@ -88,7 +95,40 @@ public class LegendPanelMediator {
 			return;
 		
 		invokeOnEDT(() -> {
-			parametersPanelProvider.get().update(filteredDataSets, view);
+			creationParamsButton.setEnabled(view != null);
+			legendPanelProvider.get().update(filteredDataSets, view);
 		});
+	}
+	
+	@SuppressWarnings("serial")
+	private void showCreationParamsDialog() {
+		JDialog d = new JDialog(dialog, "Creation Parameters", ModalityType.APPLICATION_MODAL);
+		d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		d.setMinimumSize(new Dimension(640, 420));
+		
+		JButton closeButton = new JButton(new AbstractAction("Close") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				d.dispose();
+			}
+		});
+		
+		JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
+		d.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
+		
+		CyNetworkView netView = legendPanelProvider.get().getNetworkView();
+		
+		if (netView != null) {
+			EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
+			CreationParametersPanel paramsPanel = new CreationParametersPanel(map);
+			d.getContentPane().add(paramsPanel, BorderLayout.CENTER);
+		}
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(d.getRootPane(), null, closeButton.getAction());
+		d.getRootPane().setDefaultButton(closeButton);
+		
+		d.setLocationRelativeTo(dialog);
+		d.pack();
+		d.setVisible(true);
 	}
 }

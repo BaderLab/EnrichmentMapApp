@@ -127,6 +127,8 @@ public class LegendPanel extends JPanel {
 	
 	private JPanel edgeColorPanel;
 	
+	private CyNetworkView networkView;
+	
 	public LegendPanel() {
 		setLayout(new BorderLayout());
 		
@@ -138,13 +140,19 @@ public class LegendPanel extends JPanel {
 		equalizeSize(nodeShapeDesc1, nodeShapeDesc2);
 	}
 	
+	public CyNetworkView getNetworkView() {
+		return networkView;
+	}
+	
 	/**
 	 * Update parameters panel based on given enrichment map parameters
 	 */
-	void update(Collection<EMDataSet> filteredDataSets, CyNetworkView view) {
+	void update(Collection<EMDataSet> filteredDataSets, CyNetworkView netView) {
+		this.networkView = netView;
+		
 		removeAll();
 		
-		EnrichmentMap map = view != null ? emManager.getEnrichmentMap(view.getModel().getSUID()) : null;
+		EnrichmentMap map = netView != null ? emManager.getEnrichmentMap(netView.getModel().getSUID()) : null;
 		EMCreationParameters params = map != null ? map.getParams() : null;
 
 		if (params == null) {
@@ -157,9 +165,9 @@ public class LegendPanel extends JPanel {
 
 			add(infoLabel, BorderLayout.CENTER);
 		} else {
-			updateNodeColorPanel(filteredDataSets, map, view);
-			updateNodeShapePanel(map, view);
-			updateEdgeColorPanel(map, view);
+			updateNodeColorPanel(filteredDataSets, map, netView);
+			updateNodeShapePanel(map, netView);
+			updateEdgeColorPanel(map, netView);
 			
 			JPanel panel = new JPanel();
 			final GroupLayout layout = new GroupLayout(panel);
@@ -183,7 +191,7 @@ public class LegendPanel extends JPanel {
 		revalidate();
 	}
 
-	private void updateNodeColorPanel(Collection<EMDataSet> dataSets, EnrichmentMap map, CyNetworkView view) {
+	private void updateNodeColorPanel(Collection<EMDataSet> dataSets, EnrichmentMap map, CyNetworkView netView) {
 		JPanel p = getNodeColorPanel();
 		p.removeAll();
 		
@@ -214,9 +222,9 @@ public class LegendPanel extends JPanel {
 		}
 	}
 	
-	private void updateNodeShapePanel(EnrichmentMap map, CyNetworkView view) {
+	private void updateNodeShapePanel(EnrichmentMap map, CyNetworkView netView) {
 		JPanel p = getNodeShapePanel();
-		VisualStyle style = view != null ? visualMappingManager.getVisualStyle(view) : null;
+		VisualStyle style = netView != null ? visualMappingManager.getVisualStyle(netView) : null;
 		
 		nodeShapeIcon1.setVisible(style != null);
 		nodeShapeDesc1.setVisible(style != null);
@@ -236,9 +244,9 @@ public class LegendPanel extends JPanel {
 		p.revalidate();
 	}
 	
-	private void updateEdgeColorPanel(EnrichmentMap map, CyNetworkView view) {
+	private void updateEdgeColorPanel(EnrichmentMap map, CyNetworkView netView) {
 		JPanel p = getEdgeColorPanel();
-		VisualStyle style = view != null ? visualMappingManager.getVisualStyle(view) : null;
+		VisualStyle style = netView != null ? visualMappingManager.getVisualStyle(netView) : null;
 		
 		JComponent[][] entries = null;
 		

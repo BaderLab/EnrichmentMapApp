@@ -14,9 +14,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Similarit
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 
-import com.google.inject.Singleton;
-
-@Singleton
 @SuppressWarnings("serial")
 public class CreationParametersPanel extends JPanel {
 
