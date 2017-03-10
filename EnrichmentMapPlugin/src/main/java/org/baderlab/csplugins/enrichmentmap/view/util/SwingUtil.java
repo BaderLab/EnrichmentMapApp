@@ -126,6 +126,17 @@ public class SwingUtil {
 		return btn;
 	}
 	
+	public static JButton createIconButton(IconManager iconManager, String icon, String toolTip) {
+		JButton button = new JButton(icon);
+		button.setFont(iconManager.getIconFont(13.0f));
+		button.setToolTipText(toolTip);
+		if(LookAndFeelUtil.isAquaLAF()) {
+			button.putClientProperty("JButton.buttonType", "gradient");
+			button.putClientProperty("JComponent.sizeVariant", "small");
+		}
+		return button;
+	}
+	
 	/**
 	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
 	 * @param runnable

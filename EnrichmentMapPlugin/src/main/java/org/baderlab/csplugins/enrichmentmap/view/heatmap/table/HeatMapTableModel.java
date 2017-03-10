@@ -123,12 +123,11 @@ public class HeatMapTableModel extends AbstractTableModel {
 	
 	@Override
 	public Class<?> getColumnClass(int col) {
-		if(col == GENE_COL)
-			return String.class;
-		if(col == RANK_COL)
-			return RankValue.class;
-		else
-			return Double.class;
+		switch(col) {
+			case GENE_COL: return String.class;
+			case RANK_COL: return RankValue.class;
+			default:       return Double.class;
+		}
 	}
 	
 	private int getIndex(int col) {

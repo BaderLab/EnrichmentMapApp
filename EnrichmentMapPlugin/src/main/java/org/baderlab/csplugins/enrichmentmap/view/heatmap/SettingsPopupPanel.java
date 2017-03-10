@@ -1,7 +1,10 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
+import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 import javax.swing.ButtonGroup;
@@ -9,7 +12,9 @@ import javax.swing.GroupLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
+import javax.swing.SwingUtilities;
 
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
@@ -148,4 +153,16 @@ public class SettingsPopupPanel extends JPanel {
 		return panel;
 	}
 
+	public void popup(Component parent) {
+		JPopupMenu menu = new JPopupMenu();
+		menu.add(this);
+		menu.addMouseListener(new MouseAdapter() {
+			@Override public void mouseClicked(MouseEvent e) {
+				if(SwingUtilities.isRightMouseButton(e)) {
+					menu.setVisible(false);
+				}
+			}
+		});
+		menu.show(parent, 0, parent.getHeight());
+	}
 }

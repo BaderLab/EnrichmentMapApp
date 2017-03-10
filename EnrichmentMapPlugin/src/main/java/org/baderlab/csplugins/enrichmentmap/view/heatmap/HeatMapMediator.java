@@ -35,6 +35,9 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
+/**
+ * Updates the HeatMap panel in response to Cytoscape events.
+ */
 @Singleton
 public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewListener {
 

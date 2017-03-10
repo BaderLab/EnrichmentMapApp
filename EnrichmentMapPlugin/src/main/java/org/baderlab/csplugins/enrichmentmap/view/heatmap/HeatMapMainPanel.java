@@ -5,11 +5,8 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -19,8 +16,6 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.GroupLayout.ParallelGroup;
-import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -30,12 +25,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter.SortKey;
-import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
@@ -43,7 +36,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColorAndValueRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColorRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderVerticalRenderer;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.GradientLegendPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValueRenderer;
@@ -51,7 +44,6 @@ import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.mskcc.colorgradient.ColorGradientWidget;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -63,15 +55,16 @@ public class HeatMapMainPanel extends JPanel {
 	private static final int COLUMN_WIDTH_COLOR = 10;
 	private static final int COLUMN_WIDTH_VALUE = 50;
 	
+	
 	@Inject private Provider<ExportTXTAction> txtActionProvider;
 	@Inject private Provider<ExportPDFAction> pdfActionProvider;
-	
 	@Inject private IconManager iconManager;
+
+	private GradientLegendPanel gradientLegendPanel;
+	private SettingsPopupPanel settingsPanel;
 	
-	private JPanel legendHolder;
 	private JTable table;
 	private JScrollPane scrollPane;
-	private SettingsPopupPanel settingsPanel;
 	private JComboBox<ComboItem<Transform>> normCombo;
 	private JComboBox<ComboItem<Operator>> operatorCombo;
 	private JComboBox<RankingOption> rankOptionCombo;
@@ -87,15 +80,16 @@ public class HeatMapMainPanel extends JPanel {
 	private final HeatMapParentPanel parent;
 	private boolean isResetting = false;
 	
+	
 	public interface Factory {
 		HeatMapMainPanel create(HeatMapParentPanel parent);
 	}
-	
 	
 	@Inject
 	public HeatMapMainPanel(@Assisted HeatMapParentPanel parent) {
 		this.parent = parent;
 	}
+	
 	
 	private void settingChanged() {
 		if(!isResetting)
@@ -109,8 +103,8 @@ public class HeatMapMainPanel extends JPanel {
 		settingsPanel.setShowValuesConsumer(this::updateSetting_ShowValues);
 		settingsPanel.setDistanceConsumer(this::updateSetting_Distance);
 		
+		JPanel expressionPanel = createTablePanel(); // must create table first
 		JPanel toolbarPanel = createToolbarPanel();
-		JPanel expressionPanel = createTablePanel();
 		
 		setLayout(new BorderLayout());
 		add(toolbarPanel, BorderLayout.NORTH);
@@ -118,9 +112,41 @@ public class HeatMapMainPanel extends JPanel {
 		setOpaque(false);
 	}
 	
+
+	private JPanel createTablePanel() {
+		table = new JTable();
+		scrollPane = new JScrollPane(table);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		table.setFillsViewportHeight(true);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		table.setCellSelectionEnabled(true);
+		table.setAutoCreateRowSorter(true);
+		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(scrollPane, BorderLayout.CENTER);
+		panel.setOpaque(false);
+		return panel;
+	}
+	
+	
+	private void createTableHeader(int width) {
+		HeatMapTableModel tableModel = (HeatMapTableModel)table.getModel();
+		TableColumnModel columnModel = table.getColumnModel();
+		
+		int colCount = tableModel.getColumnCount();
+		ColumnHeaderVerticalRenderer vertRenderer = new ColumnHeaderVerticalRenderer();
+		for(int i = HeatMapTableModel.DESC_COL_COUNT; i < colCount; i++) {
+			TableColumn column = columnModel.getColumn(i);
+			column.setHeaderRenderer(vertRenderer);
+			column.setPreferredWidth(width);
+		}
+	}
+	
+	
 	private JPanel createToolbarPanel() {
-		legendHolder = new JPanel(new BorderLayout());
-		legendHolder.setOpaque(false);
+		gradientLegendPanel = new GradientLegendPanel(table);
 		
 		JLabel operatorLabel = new JLabel("Genes:");
 		operatorCombo = new JComboBox<>();
@@ -144,11 +170,11 @@ public class HeatMapMainPanel extends JPanel {
 		normCombo.addActionListener(normActionListener = e -> updateSetting_Transform(getTransform()));
 		rankOptionCombo.addActionListener(rankOptionActionListener = e -> updateSetting_RankOption(getRankingOption()));
 		
-		JButton gearButton = createIconButton(IconManager.ICON_GEAR, "Settings");
-		JButton menuButton = createIconButton(IconManager.ICON_EXTERNAL_LINK, "Export");
+		JButton gearButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_GEAR, "Settings");
+		JButton menuButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_EXTERNAL_LINK, "Export");
 		LookAndFeelUtil.equalizeSize(gearButton, menuButton);
-		gearButton.addActionListener(this::showSettingsPopup);
-		menuButton.addActionListener(this::showMenu);
+		gearButton.addActionListener(e -> settingsPanel.popup(gearButton));
+		menuButton.addActionListener(this::showExportMenu);
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
@@ -157,7 +183,7 @@ public class HeatMapMainPanel extends JPanel {
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-			.addComponent(legendHolder, 180, 180, 180)
+			.addComponent(gradientLegendPanel, 180, 180, 180)
 			.addGap(0, 0, Short.MAX_VALUE)
 			.addComponent(operatorLabel)
 			.addComponent(operatorCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -172,7 +198,7 @@ public class HeatMapMainPanel extends JPanel {
 			.addComponent(menuButton)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
-			.addComponent(legendHolder)
+			.addComponent(gradientLegendPanel)
 			.addComponent(operatorLabel)
 			.addComponent(operatorCombo)
 			.addComponent(normLabel)
@@ -185,107 +211,6 @@ public class HeatMapMainPanel extends JPanel {
 		
 		panel.setOpaque(false);
 		return panel;
-	}
-
-
-	private JPanel createTablePanel() {
-		table = new JTable();
-		scrollPane = new JScrollPane(table);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		table.setFillsViewportHeight(true);
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		table.setCellSelectionEnabled(true);
-		table.setAutoCreateRowSorter(true);
-		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-		table.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				Point p = e.getPoint();
-				int row = table.rowAtPoint(p);
-				int col = table.columnAtPoint(p);
-				renderLegend(row, col);
-			}
-		});
-		
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(scrollPane, BorderLayout.CENTER);
-		panel.setOpaque(false);
-		return panel;
-	}
-	
-	
-	private void createTableHeader(int width) {
-		HeatMapTableModel tableModel = (HeatMapTableModel)table.getModel();
-		TableColumnModel columnModel = table.getColumnModel();
-		
-		int colCount = tableModel.getColumnCount();
-		ColumnHeaderVerticalRenderer vertRenderer = new ColumnHeaderVerticalRenderer();
-		for(int i = HeatMapTableModel.DESC_COL_COUNT; i < colCount; i++) {
-			TableColumn column = columnModel.getColumn(i);
-			column.setHeaderRenderer(vertRenderer);
-			column.setPreferredWidth(width);
-		}
-		
-	}
-	
-	
-	private void renderLegend(int row, int col) {
-		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
-		Object value = tableModel.getValueAt(row, col);
-		
-		if(value instanceof Double) {
-			EMDataSet dataset = tableModel.getDataSet(col);
-			ColorRenderer renderer = (ColorRenderer) table.getCellRenderer(row, col);
-			DataSetColorRange colorRange = renderer.getRange(dataset, tableModel.getTransform());
-			
-			JPanel panel = createExpressionLegendPanel(colorRange);
-			legendHolder.removeAll();
-			legendHolder.add(panel, BorderLayout.CENTER);
-			legendHolder.revalidate();
-		}
-	}
-	
-	
-	private static JPanel createExpressionLegendPanel(DataSetColorRange range) {
-		JPanel panel = new JPanel();
-		
-		GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
-
-		ParallelGroup hGroup = layout.createParallelGroup(Alignment.CENTER, true);
-		SequentialGroup vGroup = layout.createSequentialGroup();
-		layout.setHorizontalGroup(hGroup);
-		layout.setVerticalGroup(vGroup);
-
-		ColorGradientWidget legend = ColorGradientWidget.getInstance("", range.getTheme(),
-				range.getRange(), true, ColorGradientWidget.LEGEND_POSITION.NA);
-
-		hGroup.addComponent(legend, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
-		vGroup.addComponent(legend, 25, 25, 25);
-		
-		if (LookAndFeelUtil.isAquaLAF())
-			panel.setOpaque(false);
-
-		panel.revalidate();
-		panel.setOpaque(false);
-		return panel;
-	}
-
-	
-	private JButton createIconButton(String icon, String toolTip) {
-		JButton iconButton = new JButton(icon);
-		iconButton.setFont(iconManager.getIconFont(13.0f));
-		iconButton.setToolTipText(toolTip);
-
-		if(LookAndFeelUtil.isAquaLAF()) {
-			iconButton.putClientProperty("JButton.buttonType", "gradient");
-			iconButton.putClientProperty("JComponent.sizeVariant", "small");
-		}
-		return iconButton;
 	}
 	
 	
@@ -365,6 +290,7 @@ public class HeatMapMainPanel extends JPanel {
 		List<? extends SortKey> sortKeys = table.getRowSorter().getSortKeys();
 		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, genesToUse, params.getTransform());
 		table.setModel(tableModel);
+		
 		updateSetting_ShowValues(settingsPanel.isShowValues());
 		createTableHeader(params.isShowValues() ? COLUMN_WIDTH_VALUE : COLUMN_WIDTH_COLOR);
 		try {
@@ -432,22 +358,7 @@ public class HeatMapMainPanel extends JPanel {
 		settingChanged();
 	}
 	
-	
-	private void showSettingsPopup(ActionEvent event) {
-		JPopupMenu menu = new JPopupMenu();
-		menu.add(settingsPanel);
-		menu.addMouseListener(new MouseAdapter() {
-			@Override public void mouseClicked(MouseEvent e) {
-				if(SwingUtilities.isRightMouseButton(e)) {
-					menu.setVisible(false);
-				}
-			}
-		});
-		Component c = (Component) event.getSource();
-		menu.show(c, 0, c.getHeight());
-	}
-	
-	private void showMenu(ActionEvent event)  {
+	private void showExportMenu(ActionEvent event)  {
 		JPopupMenu menu = new JPopupMenu();
 		ExportTXTAction txtAction = txtActionProvider.get();
 		ExportPDFAction pdfAction = pdfActionProvider.get();
