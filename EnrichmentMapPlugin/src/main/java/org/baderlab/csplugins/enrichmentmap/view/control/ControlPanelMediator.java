@@ -219,8 +219,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		if (getControlPanel().isDisplayable())
 			setCurrentNetworkView(e.getNetworkView());
 		
-		EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(e.getNetworkView());
-		legendPanelMediatorProvider.get().updateDialog(getFilteredDataSets(viewPanel), e.getNetworkView());
+		invokeOnEDT(() -> {
+			EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(e.getNetworkView());
+			legendPanelMediatorProvider.get().updateDialog(getFilteredDataSets(viewPanel), e.getNetworkView());
+		});
 	}
 	
 	@Override
