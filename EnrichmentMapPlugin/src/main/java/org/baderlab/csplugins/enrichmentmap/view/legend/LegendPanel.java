@@ -83,11 +83,11 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Colors;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -113,6 +113,7 @@ public class LegendPanel extends JPanel {
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private VisualMappingManager visualMappingManager;
+	@Inject private RenderingEngineManager engineManager;
 	
 	private BasicCollapsiblePanel nodeLegendPanel;
 	private BasicCollapsiblePanel edgeLegendPanel;
@@ -233,11 +234,11 @@ public class LegendPanel extends JPanel {
 		
 		if (style != null) {
 			NodeShape shape = EMStyleBuilder.getGeneSetNodeShape(style);
-			nodeShapeIcon1.setIcon(getIcon(BasicVisualLexicon.NODE_SHAPE, shape));
+			nodeShapeIcon1.setIcon(getIcon(BasicVisualLexicon.NODE_SHAPE, shape, netView));
 			
 			if (map.hasSignatureDataSets()) {
 				shape = EMStyleBuilder.getSignatureNodeShape(style);
-				nodeShapeIcon2.setIcon(getIcon(BasicVisualLexicon.NODE_SHAPE, shape));
+				nodeShapeIcon2.setIcon(getIcon(BasicVisualLexicon.NODE_SHAPE, shape, netView));
 			}
 		}
 		
@@ -467,12 +468,22 @@ public class LegendPanel extends JPanel {
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Icon getIcon(VisualProperty<?> vp, Object value) {
-		if (value == null)
+	private Icon getIcon(VisualProperty<?> vp, Object value, CyNetworkView netView) {
+		if (value == null || netView == null)
 			return null;
 		
-		RenderingEngine<CyNetwork> engine = applicationManager.getCurrentRenderingEngine();
-		Icon icon = engine.createIcon((VisualProperty)vp, value, LEGEND_ICON_SIZE, LEGEND_ICON_SIZE);
+		Collection<RenderingEngine<?>> engines = engineManager.getRenderingEngines(netView);
+		RenderingEngine<?> engine = null;
+		
+		for (RenderingEngine<?> re : engines) {
+			if (re.getRendererId().equals(netView.getRendererId())) {
+				engine = re;
+				break;
+			}
+		}
+		
+		Icon icon = engine != null ?
+				engine.createIcon((VisualProperty) vp, value, LEGEND_ICON_SIZE, LEGEND_ICON_SIZE) : null;
 		
 		return icon;
 	}
