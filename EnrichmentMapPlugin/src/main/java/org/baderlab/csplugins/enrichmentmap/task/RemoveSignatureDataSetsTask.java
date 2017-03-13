@@ -46,7 +46,7 @@ public class RemoveSignatureDataSetsTask extends AbstractTask implements Observa
 		dataSets.forEach(ds -> {
 			// TODO Delete associated columns?
 			// Delete hub-nodes
-			deleteNodes(ds.getNodeSuids().values(), network);
+			deleteNodes(ds.getNodeSuids(), network);
 			// Remove Signature Data Set from Enrichment Map
 			map.removeSignatureDataSet(ds);
 		});

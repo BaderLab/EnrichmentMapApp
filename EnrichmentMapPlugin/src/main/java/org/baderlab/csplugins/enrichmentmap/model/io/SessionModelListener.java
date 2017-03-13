@@ -3,9 +3,10 @@ package org.baderlab.csplugins.enrichmentmap.model.io;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.CyActivator;
@@ -17,6 +18,8 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
@@ -160,7 +163,7 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 						if(em != null) {
 							em.setServiceRegistrar(serviceRegistrar);
 							em.setNetworkID(network.getSUID());
-							updateNodeSuids(em, session);
+							updateSuids(em, session);
 							emManager.registerEnrichmentMap(em);
 							sessionHasEM = true;
 						}
@@ -171,24 +174,24 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 		return sessionHasEM;
 	}
 	
-	private void updateNodeSuids(EnrichmentMap map, CySession session) {
-		for (EMDataSet ds : map.getDataSetList()) {
-			Map<String, Long> oldSuids = ds.getNodeSuids();
-			Map<String, Long> newSuids = new HashMap<>();
-			
-			for (String key : oldSuids.keySet()) {
-				Long suid = oldSuids.get(key);
-				
-				if (session != null) {
-					// If we are loading from a session file then we need to re-map the ids
-					CyNode node = session.getObject(suid, CyNode.class);
-					suid = node.getSUID();
-				}
-				
-				newSuids.put(key, suid);
+	private static Set<Long> mapSuids(Set<Long> oldSuids, CySession session, Class<? extends CyIdentifiable> type) {
+		Set<Long> newSuids = new HashSet<>();
+		
+		for (Long suid : oldSuids) {
+			if (session != null) {
+				// If we are loading from a session file then we need to re-map the ids
+				CyIdentifiable obj = session.getObject(suid, type);
+				suid = obj.getSUID();
 			}
-			
-			ds.setNodeSuids(newSuids);
+			newSuids.add(suid);
+		}
+		return newSuids;
+	}
+	
+	private void updateSuids(EnrichmentMap map, CySession session) {
+		for(EMDataSet ds : map.getDataSetList()) {
+			ds.setNodeSuids(mapSuids(ds.getNodeSuids(), session, CyNode.class));
+			ds.setEdgeSuids(mapSuids(ds.getEdgeSuids(), session, CyEdge.class));
 		}
 	}
 

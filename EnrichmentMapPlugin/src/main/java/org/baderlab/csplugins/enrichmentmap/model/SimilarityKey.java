@@ -7,18 +7,17 @@ public class SimilarityKey {
 	private final String geneSet1;
 	private final String geneSet2;
 	private final String interaction;
-	// a set of zero indicates a compound edge
-	private final int set;
+	private final String name;
 	
 	
-	public SimilarityKey(String geneSet1, String geneSet2, String interaction, int set) {
+	public SimilarityKey(String geneSet1, String geneSet2, String interaction, String name) {
 		Objects.requireNonNull(geneSet1);
 		Objects.requireNonNull(interaction);
 		Objects.requireNonNull(geneSet2);
 		this.geneSet1 = geneSet1;
 		this.geneSet2 = geneSet2;
 		this.interaction = interaction;
-		this.set = set;
+		this.name = name;
 	}
 	
 	public String getGeneSet1() {
@@ -33,18 +32,18 @@ public class SimilarityKey {
 		return interaction;
 	}
 	
-	public int getSet() {
-		return set;
+	public boolean isCompound() {
+		return name == null;
 	}
 	
-	public boolean isCompound() {
-		return set == 0;
+	public String getName() {
+		return name;
 	}
 	
 	@Override
 	public int hashCode() {
 		// add the hash codes from the genesets so that we get the same hash code regardless of the order
-		return Objects.hash(geneSet1.hashCode() + geneSet2.hashCode(), interaction, set);
+		return Objects.hash(geneSet1.hashCode() + geneSet2.hashCode(), interaction, name);
 	}
 	
 	@Override
@@ -52,8 +51,11 @@ public class SimilarityKey {
 		if(!(o instanceof SimilarityKey))
 			return false;
 		SimilarityKey other = (SimilarityKey)o;
-		
-		if(set != other.set)
+		if(name != null && other.name == null)
+			return false;
+		if(name == null && other.name != null)
+			return false;
+		if(name != null && other.name != null && !name.equals(other.name))
 			return false;
 		if(!interaction.equals(other.interaction))
 			return false;
@@ -65,10 +67,10 @@ public class SimilarityKey {
 	
 	@Override
 	public String toString() {
-		if(set == 0)
+		if(isCompound())
 			return String.format("%s (%s) %s", geneSet1, interaction, geneSet2);
 		else
-			return String.format("%s (%s_set%d) %s", geneSet1, interaction, set, geneSet2);
+			return String.format("%s (%s_set%s) %s", geneSet1, interaction, name, geneSet2);
 	}
 	
 }

@@ -117,7 +117,7 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 			// Set attributes specific to each dataset
 			for(EMDataSet ds : map.getDataSetList()) {
 				if(ds.getGeneSetsOfInterest().getGeneSets().containsKey(genesetName))
-					ds.addNodeSuid(genesetName, node.getSUID());
+					ds.addNodeSuid(node.getSUID());
 				
 				Map<String, EnrichmentResult> enrichmentResults = ds.getEnrichments().getEnrichments();
 				EnrichmentResult result = enrichmentResults.get(genesetName);
@@ -147,6 +147,14 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 			CyNode node2 = nodes.get(similarity.getGeneset2Name());
 			
 			CyEdge edge = network.addEdge(node1, node2, false);
+			
+			String datasetName = key.getName();
+			if(datasetName != null) {
+				EMDataSet dataset = map.getDataSet(datasetName);
+				if(dataset != null) {
+					dataset.addEdgeSuid(edge.getSUID());
+				}
+			}
 			
 			List<String> overlapGenes = 
 				similarity.getOverlappingGenes().stream()

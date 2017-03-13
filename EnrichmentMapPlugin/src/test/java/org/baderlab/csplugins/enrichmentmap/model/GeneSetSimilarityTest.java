@@ -72,7 +72,7 @@ public class GeneSetSimilarityTest {
 		
 		 // Set A has 13 elements, Set B has 142 elements, They have 13 elements in common
 		Double jaccard = 13.0/142.0;
-		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOSIS%REACTOME%REACT_578.5", "Geneset_Overlap", 0));
+		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOSIS%REACTOME%REACT_578.5", "Geneset_Overlap", null));
 		assertEquals(jaccard, similarity.getSimilarityCoeffecient(), 0.0);
 		assertEquals(13, similarity.getSizeOfOverlap());
 		if(similarity.getGeneset1Name().equals("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4")) {
@@ -85,7 +85,7 @@ public class GeneSetSimilarityTest {
 			
 		// Set A has 13 elements, Set B has 9 elements, They have 1 elements in common
 		jaccard = 1.0/21.0;
-		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", "Geneset_Overlap", 0));
+		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", "Geneset_Overlap", null));
 		assertEquals(jaccard,similarity.getSimilarityCoeffecient(),0.0);
 		assertEquals(1, similarity.getSizeOfOverlap());
 		assertTrue(similarity.getOverlappingGenes().contains(map.getHashFromGene("CASP3")));
@@ -99,7 +99,7 @@ public class GeneSetSimilarityTest {
 
 		// Set A has 13 elements, Set B has 7 elements, They have 1 elements in common
 		jaccard = 1.0/19.0;
-		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2", "Geneset_Overlap", 0));
+		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2", "Geneset_Overlap", null));
 		assertEquals(jaccard,similarity.getSimilarityCoeffecient(),0.0);
 		assertEquals(1, similarity.getSizeOfOverlap());
 		assertTrue(similarity.getOverlappingGenes().contains(map.getHashFromGene("CASP3")));
@@ -135,7 +135,7 @@ public class GeneSetSimilarityTest {
 		
 		 // Set A has 13 elements, Set B has 142 elements, They have 13 elements in common
 		Double overlap = 13.0/13.0;
-		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOSIS%REACTOME%REACT_578.5", "Geneset_Overlap", 0));
+		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOSIS%REACTOME%REACT_578.5", "Geneset_Overlap", null));
 		assertEquals(overlap,similarity.getSimilarityCoeffecient(),0.0);
 		assertEquals(13, similarity.getSizeOfOverlap());
 		if("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4".equals(similarity.getGeneset1Name())) {
@@ -148,7 +148,7 @@ public class GeneSetSimilarityTest {
 		
 		// Set A has 13 elements, Set B has 9 elements, They have 1 elements in common
 		overlap = 1.0/9.0;
-		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", "Geneset_Overlap", 0));
+		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", "Geneset_Overlap", null));
 		assertEquals(overlap,similarity.getSimilarityCoeffecient(),0.0);
 		assertEquals(1, similarity.getSizeOfOverlap());
 		assertTrue(similarity.getOverlappingGenes().contains(map.getHashFromGene("CASP3")));
@@ -162,7 +162,7 @@ public class GeneSetSimilarityTest {
 		
 		// Set A has 13 elements, Set B has 7 elements, They have 1 elements in common
 		overlap = 1.0/7.0;
-		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2", "Geneset_Overlap", 0));
+		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2", "Geneset_Overlap", null));
 		assertEquals(overlap,similarity.getSimilarityCoeffecient(),0.0);
 		assertEquals(1, similarity.getSizeOfOverlap());
 		assertTrue(similarity.getOverlappingGenes().contains(map.getHashFromGene("CASP3")));
@@ -201,7 +201,7 @@ public class GeneSetSimilarityTest {
 		
 		 // Set A has 13 elements, Set B has 142 elements, They have 13 elements in common
 		Double combined = (combined_constant * (13.0/13.0)) + ((1-combined_constant) * (13.0/142.0));
-		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOSIS%REACTOME%REACT_578.5", "Geneset_Overlap", 0));
+		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOSIS%REACTOME%REACT_578.5", "Geneset_Overlap", null));
 		assertEquals(combined,similarity.getSimilarityCoeffecient(),0.0);
 		assertEquals(13, similarity.getSizeOfOverlap());
 		if("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4".equals(similarity.getGeneset1Name())) {
@@ -214,7 +214,7 @@ public class GeneSetSimilarityTest {
 		
 		// Set A has 13 elements, Set B has 9 elements, They have 1 elements in common
 		combined = (combined_constant * (1.0/9.0)) + ((1-combined_constant) * (1.0/21.0));
-		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", "Geneset_Overlap", 0));
+		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOTIC CLEAVAGE OF CELL ADHESION PROTEINS%REACTOME%REACT_13579.1", "Geneset_Overlap", null));
 		assertEquals(combined,similarity.getSimilarityCoeffecient(),0.0);
 		assertEquals(1, similarity.getSizeOfOverlap());
 		assertTrue(similarity.getOverlappingGenes().contains(map.getHashFromGene("CASP3")));
@@ -229,7 +229,7 @@ public class GeneSetSimilarityTest {
 		
 		// Set A has 13 elements, Set B has 7 elements, They have 1 elements in common
 		combined = (combined_constant * (1.0/7.0)) + ((1-combined_constant) * (1.0/19.0));;
-		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2", "Geneset_Overlap", 0));
+		similarity = similarities.get(new SimilarityKey("APOPTOSIS INDUCED DNA FRAGMENTATION%REACTOME%REACT_1213.4", "APOPTOTIC FACTOR-MEDIATED RESPONSE%REACTOME%REACT_963.2", "Geneset_Overlap", null));
 		assertEquals(combined,similarity.getSimilarityCoeffecient(),0.0);
 		assertEquals(1, similarity.getSizeOfOverlap());
 		assertTrue(similarity.getOverlappingGenes().contains(map.getHashFromGene("CASP3")));

@@ -374,7 +374,7 @@ public class EMStyleBuilder {
 			CyNetwork net = netView.getModel();
 			
 			for (EMSignatureDataSet sds : signatureDataSets) {
-				for (Long suid : sds.getNodeSuids().values()) {
+				for (Long suid : sds.getNodeSuids()) {
 					CyNode node = net.getNode(suid);
 					
 					if (node != null) {

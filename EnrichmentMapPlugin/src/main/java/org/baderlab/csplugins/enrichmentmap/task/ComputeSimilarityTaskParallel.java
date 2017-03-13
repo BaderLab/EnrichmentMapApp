@@ -87,9 +87,8 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 						continue; //don't compare two identical gene sets
 					
 					if(distinct) {
-						int i = 1;
 						for(EMDataSet dataset : dataSets) {
-							SimilarityKey key = new SimilarityKey(geneset1Name, geneset2Name, edgeType, i++);
+							SimilarityKey key = new SimilarityKey(geneset1Name, geneset2Name, edgeType, dataset.getName());
 							
 							if(!similarities.containsKey(key)) {
 								Map<String,GeneSet> genesets = dataset.getGeneSetsOfInterest().getGeneSets();
@@ -108,7 +107,7 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 					}
 					
 					if(compound) {
-						SimilarityKey key = new SimilarityKey(geneset1Name, geneset2Name, edgeType, 0);
+						SimilarityKey key = new SimilarityKey(geneset1Name, geneset2Name, edgeType, null);
 						
 						if(!similarities.containsKey(key)) {
 							Set<Integer> geneset1 = unionedGenesets.get(geneset1Name);

@@ -1,13 +1,16 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.text.Collator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class AbstractDataSet implements Comparable<AbstractDataSet> {
 
 	private final String name;
-	private final Map<String, Long> nodeSuids = new HashMap<>();
+	private final Set<Long> nodeSuids = new HashSet<>();
+	private final Set<Long> edgeSuids = new HashSet<>();
+	
 	/** EnrichmentMap only creates nodes for these genes. */
 	private SetOfGeneSets geneSetsOfInterest = new SetOfGeneSets();
 	
@@ -22,28 +25,53 @@ public abstract class AbstractDataSet implements Comparable<AbstractDataSet> {
 		return name;
 	}
 	
-	public Map<String, Long> getNodeSuids() {
+	public Set<Long> getNodeSuids() {
 		synchronized (lock) {
-			return new HashMap<>(nodeSuids);
+			return Collections.unmodifiableSet(nodeSuids);
 		}
 	}
 	
-	public void setNodeSuids(Map<String, Long> newValue) {
+	public void setNodeSuids(Set<Long> newValue) {
 		synchronized (lock) {
 			nodeSuids.clear();
-			nodeSuids.putAll(newValue);
+			nodeSuids.addAll(newValue);
 		}
 	}
 	
-	public void addNodeSuid(String key, Long suid) {
+	public void addNodeSuid(Long suid) {
 		synchronized (lock) {
-			nodeSuids.put(key, suid);
+			nodeSuids.add(suid);
 		}
 	}
 	
 	public void clearNodeSuids() {
 		synchronized (lock) {
 			nodeSuids.clear();
+		}
+	}
+	
+	public Set<Long> getEdgeSuids() {
+		synchronized (lock) {
+			return Collections.unmodifiableSet(edgeSuids);
+		}
+	}
+	
+	public void setEdgeSuids(Set<Long> newValue) {
+		synchronized (lock) {
+			edgeSuids.clear();
+			edgeSuids.addAll(newValue);
+		}
+	}
+	
+	public void addEdgeSuid(Long suid) {
+		synchronized (lock) {
+			edgeSuids.add(suid);
+		}
+	}
+	
+	public void clearEdgeSuids() {
+		synchronized (lock) {
+			edgeSuids.clear();
 		}
 	}
 	

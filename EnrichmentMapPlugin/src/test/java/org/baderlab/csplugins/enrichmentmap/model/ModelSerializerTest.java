@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -149,7 +148,8 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertDataSetFilesEquals(expected.getDataSetFiles(), actual.getDataSetFiles());
 		assertSetOfGeneSetsEquals(expected.getSetOfGeneSets(), actual.getSetOfGeneSets());
 		assertSetOfGeneSetsEquals(expected.getGeneSetsOfInterest(), actual.getGeneSetsOfInterest());
-		assertMapsEqual(Objects::equals, expected.getNodeSuids(), actual.getNodeSuids());
+		assertEquals(expected.getNodeSuids(), actual.getNodeSuids());
+		assertEquals(expected.getEdgeSuids(), actual.getEdgeSuids());
 		assertEquals(expected.getDataSetGenes(), actual.getDataSetGenes());
 		assertSetOfEnrichmentResultsEquals(expected.getEnrichments(), actual.getEnrichments());
 		assertGeneExpressionMatrixEquals(expected.getExpressionSets(), actual.getExpressionSets());

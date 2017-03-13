@@ -48,16 +48,16 @@ public class EnrichmentMapTest {
 		CyNode gs3 = network.addNode();
 		CyNode gs4 = network.addNode();
 		
-		ds1.addNodeSuid("gs1", gs1.getSUID());
-		ds1.addNodeSuid("gs2", gs2.getSUID());
+		ds1.addNodeSuid(gs1.getSUID());
+		ds1.addNodeSuid(gs2.getSUID());
 		
-		ds2.addNodeSuid("gs1", gs1.getSUID());
-		ds2.addNodeSuid("gs2", gs2.getSUID());
-		ds2.addNodeSuid("gs3", gs3.getSUID());
+		ds2.addNodeSuid(gs1.getSUID());
+		ds2.addNodeSuid(gs2.getSUID());
+		ds2.addNodeSuid(gs3.getSUID());
 		
-		ds3.addNodeSuid("gs2", gs2.getSUID());
-		ds3.addNodeSuid("gs3", gs3.getSUID());
-		ds3.addNodeSuid("gs4", gs4.getSUID());
+		ds3.addNodeSuid(gs2.getSUID());
+		ds3.addNodeSuid(gs3.getSUID());
+		ds3.addNodeSuid(gs4.getSUID());
 		
 		{	// ds1 vs ds2
 			Set<Long> union = EnrichmentMap.getNodesUnion(Arrays.asList(ds1, ds2));

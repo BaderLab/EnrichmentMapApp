@@ -13,11 +13,11 @@ public class SimilarityKeyTest {
 	
 	@Test
 	public void testSimilarityKey() {
-		SimilarityKey k1  = new SimilarityKey("A", "B", "i", 0);
-		SimilarityKey k1p = new SimilarityKey("A", "B", "i", 0);
-		SimilarityKey k2  = new SimilarityKey("B", "A", "i", 0);
-		SimilarityKey k3  = new SimilarityKey("D", "C", "x", 0);
-		SimilarityKey k4  = new SimilarityKey("A", "B", "x", 0);
+		SimilarityKey k1  = new SimilarityKey("A", "B", "i", null);
+		SimilarityKey k1p = new SimilarityKey("A", "B", "i", null);
+		SimilarityKey k2  = new SimilarityKey("B", "A", "i", null);
+		SimilarityKey k3  = new SimilarityKey("D", "C", "x", null);
+		SimilarityKey k4  = new SimilarityKey("A", "B", "x", null);
 		
 		assertEquals(k1, k1);
 		assertEquals(k1, k1p);
@@ -35,11 +35,11 @@ public class SimilarityKeyTest {
 
 	@Test
 	public void testSimilarityKeyHashCode() {
-		SimilarityKey k1  = new SimilarityKey("A", "B", "i", 0);
-		SimilarityKey k1p = new SimilarityKey("A", "B", "i", 0);
-		SimilarityKey k2  = new SimilarityKey("B", "A", "i", 0);
-		SimilarityKey k3  = new SimilarityKey("D", "C", "x", 0);
-		SimilarityKey k4  = new SimilarityKey("A", "B", "x", 0);
+		SimilarityKey k1  = new SimilarityKey("A", "B", "i", null);
+		SimilarityKey k1p = new SimilarityKey("A", "B", "i", null);
+		SimilarityKey k2  = new SimilarityKey("B", "A", "i", null);
+		SimilarityKey k3  = new SimilarityKey("D", "C", "x", null);
+		SimilarityKey k4  = new SimilarityKey("A", "B", "x", null);
 		
 		assertEquals(k1.hashCode(), k1p.hashCode());
 		assertEquals(k1.hashCode(), k2.hashCode());
@@ -52,9 +52,9 @@ public class SimilarityKeyTest {
 
 	@Test
 	public void testSimilarityKeySet() {
-		SimilarityKey k1  = new SimilarityKey("A", "B", "i", 0);
-		SimilarityKey k2  = new SimilarityKey("A", "B", "i", 1);
-		SimilarityKey k3  = new SimilarityKey("A", "B", "i", 2);
+		SimilarityKey k1  = new SimilarityKey("A", "B", "i", null);
+		SimilarityKey k2  = new SimilarityKey("A", "B", "i", "1");
+		SimilarityKey k3  = new SimilarityKey("A", "B", "i", "2");
 		
 		assertNotEquals(k1, k2);
 		assertNotEquals(k2, k1);
@@ -64,9 +64,9 @@ public class SimilarityKeyTest {
 	
 	@Test
 	public void testSimilarityKeyToString() {
-		SimilarityKey k1  = new SimilarityKey("A", "B", "i", 0);
-		SimilarityKey k2  = new SimilarityKey("A", "B", "i", 1);
-		SimilarityKey k3  = new SimilarityKey("A", "B", "i", 2);
+		SimilarityKey k1  = new SimilarityKey("A", "B", "i", null);
+		SimilarityKey k2  = new SimilarityKey("A", "B", "i", "1");
+		SimilarityKey k3  = new SimilarityKey("A", "B", "i", "2");
 		
 		assertEquals("A (i) B", k1.toString());
 		assertEquals("A (i_set1) B", k2.toString());

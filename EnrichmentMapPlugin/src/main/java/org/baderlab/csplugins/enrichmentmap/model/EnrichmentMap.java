@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
@@ -359,42 +360,63 @@ public class EnrichmentMap {
 		this.networkID = networkID;
 	}
 
-	/**
-	 * Returns the node SUIDs for all the gene-sets in the given collection of DataSets.
-	 * Each returned gene-set is contained in at least one of the given DataSets.
-	 */
 	public static Set<Long> getNodesUnion(Collection<AbstractDataSet> dataSets) {
+		return getUnion(dataSets, AbstractDataSet::getNodeSuids);
+	}
+	
+	public static Set<Long> getNodesIntersection(Collection<? extends AbstractDataSet> dataSets) { 
+		return getIntersection(dataSets, AbstractDataSet::getNodeSuids);
+	}
+			
+	/**
+	 * Returns the SUIDs for all the gene-sets in the given collection of DataSets.
+	 * Each returned gene-set is contained in at least one of the given DataSets.
+	 * 
+	 * Note, this will only return distinct edges, not compound edges.
+	 */
+	public static Set<Long> getEdgesUnion(Collection<AbstractDataSet> dataSets) {
+		return getUnion(dataSets, AbstractDataSet::getEdgeSuids);
+	}
+	
+	/**
+	 * Returns the SUIDs for all the gene-sets in the given collection of DataSets.
+	 * Each returned gene-set is contained all of the given DataSets.
+	 * 
+	 * Note, this will only return distinct edges, not compound edges.
+	 */
+	public static Set<Long> getEdgesIntersection(Collection<? extends AbstractDataSet> dataSets) { 
+		return getIntersection(dataSets, AbstractDataSet::getEdgeSuids);
+	}
+	
+	private static Set<Long> getUnion(Collection<? extends AbstractDataSet> dataSets, Function<AbstractDataSet,Set<Long>> suidSupplier) {
 		if (dataSets.isEmpty())
 			return Collections.emptySet();
 		
 		Set<Long> suids = new HashSet<>();
 		
 		for (AbstractDataSet ds : dataSets) {
-			suids.addAll(ds.getNodeSuids().values());
+			suids.addAll(suidSupplier.apply(ds));
 		}
 		
 		return suids;
 	}
 	
-	/**
-	 * Returns the node SUIDs for all the gene-sets in the given collection of DataSets.
-	 * Each returned gene-set is contained all of the given DataSets.
-	 */
-	public static Set<Long> getNodesIntersection(Collection<EMDataSet> queryDatasets) {
-		if (queryDatasets.isEmpty())
+	private static Set<Long> getIntersection(Collection<? extends AbstractDataSet> dataSets, Function<AbstractDataSet,Set<Long>> suidSupplier) {
+		if (dataSets.isEmpty())
 			return Collections.emptySet();
 
-		Iterator<EMDataSet> iter = queryDatasets.iterator();
-		EMDataSet first = iter.next();
-		Set<Long> suids = new HashSet<>(first.getNodeSuids().values());
+		Iterator<? extends AbstractDataSet> iter = dataSets.iterator();
+		AbstractDataSet first = iter.next();
+		Set<Long> suids = new HashSet<>(suidSupplier.apply(first));
 
 		while (iter.hasNext()) {
-			EMDataSet dataset = iter.next();
-			suids.retainAll(dataset.getNodeSuids().values());
+			AbstractDataSet dataset = iter.next();
+			suids.retainAll(suidSupplier.apply(dataset));
 		}
 
 		return suids;
 	}
+	
 	
 	public Set<String> getAllRankNames() {
 		Set<String> allRankNames = new HashSet<>();

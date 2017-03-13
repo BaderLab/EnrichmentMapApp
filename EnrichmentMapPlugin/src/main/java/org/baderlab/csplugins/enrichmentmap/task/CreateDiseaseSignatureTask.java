@@ -330,7 +330,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 					continue;
 
 				boolean passedCutoff = passesCutoff(edgeName);
-				createEdge(edgeName, currentNetwork, currentView, prefix, edgeTable, nodeTable, passedCutoff);
+				createEdge(edgeName, currentNetwork, currentView, prefix, edgeTable, nodeTable, passedCutoff, sigDataSet);
 			}
 
 			widthFunctionProvider.get().setEdgeWidths(currentNetwork, prefix, taskMonitor);
@@ -395,7 +395,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		if (hubNode == null) {
 			hubNode = network.addNode();
 			taskResult.addNewNode(hubNode);
-			sigDataSet.addNodeSuid(hubName, hubNode.getSUID());
+			sigDataSet.addNodeSuid(hubNode.getSUID());
 			created = true;
 		}
 		
@@ -452,7 +452,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 	 * returned, if the edge had to be created it will not be returned.
 	 */
 	private void createEdge(String edgeName, CyNetwork network, CyNetworkView netView, String prefix, CyTable edgeTable,
-			CyTable nodeTable, boolean passedCutoff) {
+			CyTable nodeTable, boolean passedCutoff, EMSignatureDataSet sigDataSet) {
 		CyEdge edge = NetworkUtil.getEdgeWithValue(network, edgeTable, CyNetwork.NAME, edgeName);
 		GenesetSimilarity genesetSimilarity = geneSetSimilarities.get(edgeName);
 
@@ -467,6 +467,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 					return;
 
 				edge = network.addEdge(hubNode, geneSet, false);
+				sigDataSet.addEdgeSuid(edge.getSUID());
 				taskResult.addNewEdge(edge);
 			} else {
 				return; // edge does not exist and does not pass cutoff, do nothing
