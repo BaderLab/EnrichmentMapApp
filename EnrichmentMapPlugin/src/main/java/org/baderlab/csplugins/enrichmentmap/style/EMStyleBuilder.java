@@ -405,9 +405,7 @@ public class EMStyleBuilder {
 	}
 	
 	private void setNodeSize(VisualStyle vs, EMStyleOptions options, ChartType chartType) {
-		if (chartType == ChartType.PIE) {
-			vs.removeVisualMappingFunction(NODE_SIZE);
-		} else {
+		if (chartType == null || chartType == ChartType.PIE) {
 			String prefix = options.getAttributePrefix();
 			ContinuousMapping<Integer, Double> nodeSize = (ContinuousMapping<Integer, Double>) cmFactory
 					.createVisualMappingFunction(Columns.NODE_GS_SIZE.with(prefix,null), Integer.class, NODE_SIZE);
@@ -418,6 +416,8 @@ public class EMStyleBuilder {
 			nodeSize.addPoint(474, bv1);
 	
 			vs.addVisualMappingFunction(nodeSize);
+		} else {
+			vs.removeVisualMappingFunction(NODE_SIZE);
 		}
 	}
 }
