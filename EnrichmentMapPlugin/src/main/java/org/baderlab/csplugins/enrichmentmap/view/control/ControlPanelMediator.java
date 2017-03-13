@@ -57,6 +57,7 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewCont
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -532,13 +533,25 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				Map<String, Object> props = new HashMap<>(type.getProperties());
 				props.put("cy_dataColumns", columns);
 				
-				if (type == ChartType.LINE) {
-					props.put("cy_colors", colorScheme.getColors(1));
-				} else if (colorScheme != null) {
-					if (colorScheme == ColorScheme.RANDOM)
-						props.put("cy_colors", colorScheme.getColors(columns.size()));
-					else
-						props.put("cy_colorScheme", colorScheme.getKey());
+				if (type != null && type != ChartType.PIE) {
+					List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
+					
+					props.put("cy_range", range);
+					props.put("cy_globalRange", true);
+				}
+				
+				if (colorScheme == ColorScheme.CONTRASTING || colorScheme == ColorScheme.MODULATED
+						|| colorScheme == ColorScheme.RAINBOW) {
+					props.put("cy_colorScheme", colorScheme.getKey());
+				} else {
+					int nColors = columns.size(); 
+					
+					if (type == ChartType.LINE)
+						nColors = 1;
+					else if (type == ChartType.HEAT_STRIPS)
+						nColors = 3;
+					
+					props.put("cy_colors", colorScheme.getColors(nColors));
 				}
 				
 				try {
