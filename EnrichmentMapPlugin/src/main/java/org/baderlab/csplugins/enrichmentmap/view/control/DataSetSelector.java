@@ -386,7 +386,7 @@ public class DataSetSelector extends JPanel {
 		
 		getTable().repaint();
 		updateSelectionButtons();
-		firePropertyChange("selectedData", oldValue, getCheckedItems());
+		firePropertyChange("checkedData", oldValue, getCheckedItems());
 	}
 	
 	private void toggleChecked(final int row) {
@@ -403,7 +403,7 @@ public class DataSetSelector extends JPanel {
 			
 			getTable().repaint();
 			updateSelectionButtons();
-			firePropertyChange("selectedData", oldValue, getCheckedItems());
+			firePropertyChange("checkedData", oldValue, getCheckedItems());
 		}
 	}
 	

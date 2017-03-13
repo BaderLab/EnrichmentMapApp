@@ -270,6 +270,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		});
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void addNetworkView(CyNetworkView netView) {
 		invokeOnEDT(() -> {
 			EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
@@ -303,14 +304,31 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 						sSliderPanel.addPropertyChangeListener("value",
 								evt -> filterNodesAndEdges(viewPanel, map, netView));
 
-					viewPanel.getDataSetSelector().addPropertyChangeListener("selectedData", evt -> {
+					viewPanel.getDataSetSelector().addPropertyChangeListener("checkedData", evt -> {
 						if (!updating) {
 							viewPanel.updateChartDataCombo();
 							
 							filterNodesAndEdges(viewPanel, map, netView);
 							ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
 							
-							if (data != null && data != ChartData.NONE)
+							Set<EMDataSet> oldDataSets = filterDataSets(
+									(Collection<AbstractDataSet>) evt.getOldValue());
+							Set<EMDataSet> newDataSets = filterDataSets(
+									(Collection<AbstractDataSet>) evt.getNewValue());
+							int oldSize = oldDataSets.size();
+							int newSize = newDataSets.size();
+							
+							// Cases where changing the number of checked datasets (Signatures excluded)
+							// requires the style to be updated:
+							//    a) Chart data may change:
+							boolean updateStyle = data != null && data != ChartData.NONE && oldSize != newSize;
+							//    b) Node color/shape may change:
+							updateStyle = updateStyle || oldSize == 0 && newSize > 0;
+							updateStyle = updateStyle || oldSize > 0 && newSize == 0;
+							updateStyle = updateStyle || oldSize == 1 && newSize > 1;
+							updateStyle = updateStyle || oldSize > 1 && newSize == 1;
+
+							if (updateStyle)
 								updateVisualStyle(map, viewPanel);
 							else
 								netView.updateView();
@@ -422,16 +440,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		return view != null ? emManager.getEnrichmentMap(view.getModel().getSUID()) : null;
 	}
 	
-	@SuppressWarnings("unchecked")
 	private Set<EMDataSet> getFilteredDataSets(EMViewControlPanel viewPanel) {
 		if (viewPanel == null)
 			return Collections.emptySet();
 		
-		Set<?> dataSets = viewPanel.getCheckedDataSets().stream()
-				.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets
-				.collect(Collectors.toSet());
-		
-		return (Set<EMDataSet>) dataSets;
+		return filterDataSets(viewPanel.getCheckedDataSets()); // Ignore Signature Data Sets
 	}
 	
 	private void removeSignatureDataSets(EnrichmentMap map, EMViewControlPanel viewPanel) {
@@ -504,9 +517,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		CyCustomGraphics2<?> chart = null;
 		
 		if (data != null && data != ChartData.NONE) {
-			Set<AbstractDataSet> dataSets = options.getDataSets().stream()
-					.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets in charts
-					.collect(Collectors.toSet());
+			// Ignore Signature Data Sets in charts
+			Set<EMDataSet> dataSets = filterDataSets(options.getDataSets());
 			
 			if (dataSets.size() > 1) {
 				ColumnDescriptor<Double> columnDescriptor = data.getColumnDescriptor();
@@ -702,6 +714,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	private void setFilterMode(FilterMode filterMode) {
 		this.filterMode = filterMode;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static Set<EMDataSet> filterDataSets(Collection<AbstractDataSet> abstractDataSets) {
+		Set<?> set = abstractDataSets.stream()
+				.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets
+				.collect(Collectors.toSet());
+		
+		return (Set<EMDataSet>) set;
 	}
 	
 	private class FilterActionListener implements ActionListener {
