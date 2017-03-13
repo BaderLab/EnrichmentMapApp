@@ -23,7 +23,7 @@ public interface CardDialogParameters {
 		return null;
 	}
 	
-	default Dimension getMinimumSize() {
+	default Dimension getPreferredSize() {
 		return new Dimension(400, 300);
 	}
 }

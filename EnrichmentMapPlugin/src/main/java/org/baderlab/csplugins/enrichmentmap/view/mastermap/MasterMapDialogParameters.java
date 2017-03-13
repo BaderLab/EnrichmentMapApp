@@ -43,7 +43,7 @@ public class MasterMapDialogParameters implements CardDialogParameters {
 	}
 	
 	@Override
-	public Dimension getMinimumSize() {
+	public Dimension getPreferredSize() {
 		return new Dimension(750, 700);
 	}
 	

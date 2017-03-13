@@ -65,7 +65,7 @@ public class CardDialog {
 	
 	private void createComponents() {
 		dialog.setLayout(new BorderLayout());
-		dialog.setMinimumSize(params.getMinimumSize());
+		dialog.setPreferredSize(params.getPreferredSize());
 		dialog.setTitle(params.getTitle());
 		
 		// Create message and button panel first because 
