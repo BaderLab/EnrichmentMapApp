@@ -510,9 +510,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		}
 		
 		void updateChartColorsCombo() {
-			getChartColorsCombo().removeAllItems();
-			
+			ColorScheme selectedItem = (ColorScheme) getChartColorsCombo().getSelectedItem();
 			ChartData data = (ChartData) getChartDataCombo().getSelectedItem();
+			
+			getChartColorsCombo().removeAllItems();
 			
 			if (data != ChartData.NONE) {
 				ChartType type = (ChartType) getChartTypeCombo().getSelectedItem();
@@ -532,6 +533,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				
 				for (ColorScheme scheme : colorSchemes)
 					getChartColorsCombo().addItem(scheme);
+				
+				if (selectedItem != null)
+					getChartColorsCombo().setSelectedItem(selectedItem);
 			}
 			
 			getChartColorsCombo().setEnabled(getChartTypeCombo().isEnabled() && data != ChartData.NONE);

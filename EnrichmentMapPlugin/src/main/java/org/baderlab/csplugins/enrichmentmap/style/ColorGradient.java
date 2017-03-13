@@ -7,7 +7,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Colors;
+
 public enum ColorGradient {
+	
+	// 3-color ColorBrewer schemes (color-blind safe and print friendly):
+	// Diverging
+	// -- same as NODE_FILL_COLOR Continuous Mapping:
+	RD_BU("RdBu", Colors.MAX_PHENOTYPE_2, Colors.OVER_COLOR, Colors.MAX_PHENOTYPE_1),
+//		BR_BG("BrBG", new Color(90,180,172), null, new Color(216,179,101)),
+//		PI_YG("PiYG", new Color(161,215,106), null, new Color(233,163,201)),
+//		PR_GN("PRGn", new Color(127,191,123), null, new Color(175,141,195)),
+//		PU_OR("PuOr", new Color(153,142,195), null, new Color(241,163,64)),
+	// Sequential - Multi-hue
+	YL_GN("YlGn", new Color(49,163,84), new Color(173,221,142), new Color(247,252,185)),
+	YL_GN_B("YlGnB", new Color(44,127,184), new Color(127,205,187), new Color(237,248,177)),
+	YL_OR_BR("YlOrBr", new Color(217,95,14), new Color(254,196,79), new Color(255,247,188)),
+	YL_OR_RD("YlOrRd", new Color(240,59,32), new Color(254,178,76), new Color(255,237,160)),
 	
 	CYAN_YELLOW("Cyan-Yellow", Color.CYAN, null, Color.YELLOW),
 	CYAN_WHITE_YELLOW("Cyan-White-Yellow", Color.CYAN, Color.WHITE, Color.YELLOW),
@@ -23,19 +39,6 @@ public enum ColorGradient {
 	PURPLE_BLACK_YELLOW("Purple-Black-Yellow", Color.MAGENTA, Color.BLACK, Color.YELLOW),
 	RED_YELLOW("Red-Yellow", Color.RED, null, Color.YELLOW),
 	RED_BLACK_YELLOW("Red-Black-Yellow", Color.RED, Color.BLACK, Color.YELLOW),
-	
-	// 3-color ColorBrewer schemes (color-blind safe and print friendly):
-	// Sequential - Multi-hue
-	YL_GN("YlGn", new Color(49,163,84), new Color(173,221,142), new Color(247,252,185)),
-	YL_GN_B("YlGnB", new Color(44,127,184), new Color(127,205,187), new Color(237,248,177)),
-	YL_OR_BR("YlOrBr", new Color(217,95,14), new Color(254,196,79), new Color(255,247,188)),
-	YL_OR_RD("YlOrRd", new Color(240,59,32), new Color(254,178,76), new Color(255,237,160)),
-	// Diverging
-	BR_BG("BrBG", new Color(90,180,172), null, new Color(216,179,101)),
-	PI_YG("PiYG", new Color(161,215,106), null, new Color(233,163,201)),
-	PR_GN("PRGn", new Color(127,191,123), null, new Color(175,141,195)),
-	PU_OR("PuOr", new Color(153,142,195), null, new Color(241,163,64)),
-	RD_BU("RdBu", new Color(103,169,207), null, new Color(239,138,98)),
 	;
 
 	private String label;

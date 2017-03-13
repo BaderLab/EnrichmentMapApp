@@ -534,7 +534,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				
 				if (type == ChartType.LINE) {
 					props.put("cy_colors", colorScheme.getColors(1));
-				} else {
+				} else if (colorScheme != null) {
 					if (colorScheme == ColorScheme.RANDOM)
 						props.put("cy_colors", colorScheme.getColors(columns.size()));
 					else
