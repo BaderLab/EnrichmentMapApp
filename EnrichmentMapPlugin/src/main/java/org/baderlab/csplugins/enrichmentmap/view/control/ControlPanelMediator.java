@@ -537,6 +537,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
 					
 					props.put("cy_range", range);
+					props.put("cy_autoRange", false);
 					props.put("cy_globalRange", true);
 				}
 				

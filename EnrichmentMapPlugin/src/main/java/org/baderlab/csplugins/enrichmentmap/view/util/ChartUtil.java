@@ -34,7 +34,7 @@ public final class ChartUtil {
 			Map<String, CyColumn> columnMap = columns.stream().collect(Collectors.toMap(CyColumn::getName, c -> c));
 			
 			for (final CyColumnIdentifier colId : dataColumns) {
-				final CyColumn column = columnMap.get(colId);
+				final CyColumn column = columnMap.get(colId.getColumnName());
 				
 				if (column == null)
 					continue;
