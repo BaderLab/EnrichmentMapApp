@@ -17,12 +17,12 @@ import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.SessionFile;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.GreatFilter;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -150,7 +150,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(389, dataset.getGeneSetsOfInterest().getGeneSets().size());
 //		assertEquals(17259, dataset.getSetofgenesets().getGenesets().size()); // MKTODO why? what is this used for
 		assertEndsWith(dataset.getSetOfGeneSets().getFilename(), "Human_GO_AllPathways_no_GO_iea_April_15_2013_symbol.gmt");
-		for(long suid : dataset.getNodeSuids().values()) {
+		for(long suid : dataset.getNodeSuids()) {
 			assertNotNull(network.getNode(suid));
 		}
 		
