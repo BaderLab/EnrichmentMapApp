@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -332,10 +333,14 @@ public class HeatMapMainPanel extends JPanel {
 	private void updateSetting_RankOption(RankingOption rankOption) {
 		//rankOptionCombo.setEnabled(false);
 		List<String> genes = getGenes(getOperator());
-		CompletableFuture<Map<Integer,RankValue>> rankingFuture = rankOption.computeRanking(genes);
+		
+		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
+		EnrichmentMap map = tableModel.getEnrichmentMap();
+		List<Integer> geneIds = genes.stream().map(map::getHashFromGene).collect(Collectors.toList());
+		
+		CompletableFuture<Map<Integer,RankValue>> rankingFuture = rankOption.computeRanking(geneIds);
 		if(rankingFuture != null) {
 			rankingFuture.whenComplete((ranking, ex) -> {
-				HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
 				tableModel.setRanking(ranking);
 				//rankOptionCombo.setEnabled(true);
 			});

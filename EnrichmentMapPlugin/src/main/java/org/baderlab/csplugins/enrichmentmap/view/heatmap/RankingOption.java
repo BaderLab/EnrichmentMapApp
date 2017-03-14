@@ -19,7 +19,7 @@ public interface RankingOption {
 	 * Asynchronously compute the rankings.
 	 * @return Map where keys are geneIDs and value is the rank.
 	 */
-	CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<String> genes);
+	CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<Integer> genes);
 	
 	
 	public static RankingOption none() {
@@ -27,7 +27,7 @@ public interface RankingOption {
 			public String toString() {
 				return "None";
 			}
-			public CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<String> genes) {
+			public CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<Integer> genes) {
 				return CompletableFuture.completedFuture(null);
 			}
 		};

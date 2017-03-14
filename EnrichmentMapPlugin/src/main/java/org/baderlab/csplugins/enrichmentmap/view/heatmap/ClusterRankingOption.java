@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Dialog;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.cluster.HierarchicalClusterTask;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
@@ -11,15 +12,15 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 public class ClusterRankingOption implements RankingOption {
 
-	@Inject private DialogTaskManager taskManager;
+	private final TaskManager<?,?> taskManager;
 	
 	private final EnrichmentMap map;
 	private Distance distance = Distance.PEARSON;
@@ -29,8 +30,9 @@ public class ClusterRankingOption implements RankingOption {
 	}
 	
 	@Inject
-	public ClusterRankingOption(@Assisted EnrichmentMap map) {
+	public ClusterRankingOption(@Assisted EnrichmentMap map, @Dialog TaskManager<?,?> taskManager) {
 		this.map = map;
+		this.taskManager = taskManager;
 	}
 
 	@Override
@@ -48,7 +50,7 @@ public class ClusterRankingOption implements RankingOption {
 	
 
 	@Override
-	public CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<String> genes) {
+	public CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<Integer> genes) {
 		HierarchicalClusterTask task = new HierarchicalClusterTask(map, genes, distance.getMetric());
 		
 		CompletableFuture<Map<Integer,RankValue>> future = new CompletableFuture<>();

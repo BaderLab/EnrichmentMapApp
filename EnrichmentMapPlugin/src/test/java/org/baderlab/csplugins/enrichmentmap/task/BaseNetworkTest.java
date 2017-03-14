@@ -83,11 +83,6 @@ public abstract class BaseNetworkTest {
 			
 			// Bind all AssistedInjection factories
 			install(ApplicationModule.createFactoryModule());
-						
-//			// MKTODO get rid of these fields in EnrichmentMapManager
-//			bind(ParametersPanel.class).toProvider(Providers.of(null));
-//			bind(HeatMapPanel.class).annotatedWith(Edges.class).toProvider(Providers.of(null));
-//			bind(HeatMapPanel.class).annotatedWith(Nodes.class).toProvider(Providers.of(null));
 		}
 	}
 

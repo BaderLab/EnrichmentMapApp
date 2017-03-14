@@ -5,13 +5,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
@@ -47,7 +44,7 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 	}
 	
 	@Override
-	public CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<String> genes) {
+	public CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<Integer> genes) {
 		initializeLeadingEdge();
 		
 		int topRank = getTopRank();
@@ -99,9 +96,7 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 		}
 		
 		// Remove genes that we don't need
-		EnrichmentMap em = dataset.getMap();
-		Set<Integer> currentGenes = genes.stream().map(em::getHashFromGene).collect(Collectors.toSet());
-		result.keySet().retainAll(currentGenes);
+		result.keySet().retainAll(genes);
 		
 		BasicRankingOption.normalizeRanks(result);
 		

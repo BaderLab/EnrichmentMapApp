@@ -23,14 +23,14 @@ import com.google.common.collect.ImmutableList;
 
 public class HierarchicalClusterTask extends AbstractTask implements ObservableTask {
 
-	private final Collection<String> genes;
+	private final Collection<Integer> genes;
 	private final EnrichmentMap map;
 	private final DistanceMetric distanceMetric;
 	
 	private Map<Integer,RankValue> results;
 	
 	
-	public HierarchicalClusterTask(EnrichmentMap map, Collection<String> genes, DistanceMetric distanceMetric) {
+	public HierarchicalClusterTask(EnrichmentMap map, Collection<Integer> genes, DistanceMetric distanceMetric) {
 		this.map = map;
 		this.genes = ImmutableList.copyOf(genes);
 		this.distanceMetric = distanceMetric;
@@ -51,8 +51,7 @@ public class HierarchicalClusterTask extends AbstractTask implements ObservableT
         List<EMDataSet> dataSets = map.getDataSetList();
         final int expressionCount = getTotalExpressionCount(dataSets);
         
-        for(String gene : genes) {
-        	int geneId = map.getHashFromGene(gene);
+        for(int geneId : genes) {
         	double[] vals = new double[expressionCount]; // values all default to 0.0
         	int valsIndex = 0;
         	
@@ -105,9 +104,6 @@ public class HierarchicalClusterTask extends AbstractTask implements ObservableT
         tm.setStatusMessage("");
         return ranks;
 	}
-	
-	
-	
 	
 	
 	private static int getTotalExpressionCount(List<EMDataSet> dataSetList) {

@@ -74,6 +74,9 @@ public class HeatMapTableModel extends AbstractTableModel {
 		return transform;
 	}
 	
+	public EnrichmentMap getEnrichmentMap() {
+		return map;
+	}
 	
 	public String getGene(int row) {
 		return genes.get(row);

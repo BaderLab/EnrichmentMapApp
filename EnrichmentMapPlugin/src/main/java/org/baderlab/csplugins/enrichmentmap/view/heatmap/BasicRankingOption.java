@@ -6,12 +6,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
@@ -36,7 +33,7 @@ public class BasicRankingOption implements RankingOption {
 	}
 	
 	@Override
-	public CompletableFuture<Map<Integer, RankValue>> computeRanking(Collection<String> genes) {
+	public CompletableFuture<Map<Integer, RankValue>> computeRanking(Collection<Integer> genes) {
 		Map<Integer,RankValue> result = new HashMap<>();
 		
 		for(Map.Entry<Integer,Rank> entry : ranking.getRanking().entrySet()) {
@@ -44,9 +41,7 @@ public class BasicRankingOption implements RankingOption {
 		}
 		
 		// Remove genes that we don't need
-		EnrichmentMap em = dataset.getMap();
-		Set<Integer> currentGenes = genes.stream().map(em::getHashFromGene).collect(Collectors.toSet());
-		result.keySet().retainAll(currentGenes);
+		result.keySet().retainAll(genes);
 		
 		normalizeRanks(result);
 		
@@ -56,7 +51,7 @@ public class BasicRankingOption implements RankingOption {
 	
 	public static void normalizeRanks(Map<Integer,RankValue> result) {
 		List<RankValue> rankValueList = new ArrayList<>(result.values());
-		rankValueList.sort(Comparator.comparing(RankValue::getRank).reversed());
+		rankValueList.sort(Comparator.comparing(RankValue::getRank));
 		
 		// Normalize the ranks so they are of the form 1,2,3,4...
 		for(int i = 0; i < rankValueList.size(); i++) {
