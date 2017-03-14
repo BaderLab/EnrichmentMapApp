@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -51,6 +52,11 @@ public class ClusterRankingOption implements RankingOption {
 
 	@Override
 	public CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<Integer> genes) {
+		if(genes.size() < 2) {
+			// The HierarchicalClusterTask requires at least 2 genes
+			return CompletableFuture.completedFuture(Collections.emptyMap());
+		}
+		
 		HierarchicalClusterTask task = new HierarchicalClusterTask(map, genes, distance.getMetric());
 		
 		CompletableFuture<Map<Integer,RankValue>> future = new CompletableFuture<>();
