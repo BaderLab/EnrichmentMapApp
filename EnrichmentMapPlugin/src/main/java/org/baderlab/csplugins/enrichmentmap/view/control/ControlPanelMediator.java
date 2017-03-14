@@ -604,98 +604,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		timer.start();
 	}
 	
-	private Set<CyNode> getFilteredInNodes(SliderBarPanel sliderPanel, EnrichmentMap map, CyNetworkView networkView,
-			Set<String> columnNames, Set<Long> dataSetNodes) {
-		Set<CyNode> nodes = new HashSet<>();
-		
-		Double maxCutoff = (double) sliderPanel.getValue() / sliderPanel.getPrecision();
-		Double minCutoff = (double) sliderPanel.getMin() / sliderPanel.getPrecision();
-		
-		CyNetwork network = networkView.getModel();
-		CyTable table = network.getDefaultNodeTable();
-
-		EMCreationParameters params = map.getParams();
-		
-		// Get the prefix of the current network
-		final String prefix = params.getAttributePrefix();
-		
-		// Go through all the existing nodes to see if we need to hide any new nodes.
-		for (CyNode n : network.getNodeList()) {
-			boolean show = true;
-			CyRow row = network.getRow(n);
-			
-			if (!dataSetNodes.contains(n.getSUID())) {
-				show = false;
-			} else if (table.getColumn(prefix + NODE_GS_TYPE) != null
-					&& NODE_GS_TYPE_ENRICHMENT.equalsIgnoreCase(row.get(prefix + NODE_GS_TYPE, String.class))) {
-				// Skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)...
-				for (String colName : columnNames) {
-					if (table.getColumn(colName) == null)
-						continue; // Ignore this column name (maybe the user deleted it)
-
-					Double value = row.get(colName, Double.class);
-
-					// Possible that there isn't a cutoff value for this geneset
-					if (value == null)
-						continue;
-
-					if (value >= minCutoff && value <= maxCutoff) {
-						show = true;
-						break;
-					} else {
-						show = false;
-					}
-				}
-			}
-			
-			if (show)
-				nodes.add(n);
-		}
-		
-		return nodes;
-	}
-
-	private Set<CyEdge> getFilteredInEdges(SliderBarPanel sliderPanel, EnrichmentMap map, CyNetworkView networkView,
-			Set<String> columnNames) {
-		Set<CyEdge> edges = new HashSet<>();
-		
-		JSlider slider = sliderPanel.getSlider();
-		Double maxCutoff = slider.getMaximum() / sliderPanel.getPrecision();
-		Double minCutoff = slider.getValue() / sliderPanel.getPrecision();
-		
-		CyNetwork network = networkView.getModel();
-		CyTable table = network.getDefaultEdgeTable();
-
-		// Go through all the existing edges to see if we need to hide any new ones.
-		for (CyEdge e : network.getEdgeList()) {
-			boolean show = true;
-			CyRow row = network.getRow(e);
-			
-			for (String colName : columnNames) {
-				if (table.getColumn(colName) == null)
-					continue; // Ignore this column name (maybe the user deleted it)
-
-				Double value = row.get(colName, Double.class);
-
-				// Possible that there isn't value for this interaction
-				if (value == null)
-					continue;
-
-				if (value >= minCutoff && value <= maxCutoff) {
-					show = true;
-					break;
-				} else {
-					show = false;
-				}
-			}
-		
-			if (show)
-				edges.add(e);
-		}
-		
-		return edges;
-	}
-	
 	private JPopupMenu getOptionsMenu() {
 		final JPopupMenu menu = new JPopupMenu();
 		
@@ -753,31 +661,184 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		
 		@Override
 		public void actionPerformed(ActionEvent evt) {
-			Set<CyNode> filteredInNodes = new HashSet<>();
-			Set<CyEdge> filteredInEdges = Collections.emptySet();
-			
+			CyNetwork net = netView.getModel();
 			EMCreationParameters params = map.getParams();
 			Set<AbstractDataSet> selectedDataSets = viewPanel.getCheckedDataSets();
+			
+			// Find nodes and edges that must be displayed
+			Set<CyNode> filteredInNodes = getFilteredInNodes(net, params, selectedDataSets);
+			Set<CyEdge> filteredInEdges = getFilteredInEdges(net, params, selectedDataSets);
+			
+			// Hide or show nodes and their edges
+			showOrHideNodes(net, filteredInNodes);
+			showOrHideEdges(net, filteredInNodes, filteredInEdges);
+			netView.updateView();
+			
+			Timer timer = filterTimers.get(netView);
+			
+			if (timer != null)
+				timer.stop();
+		}
+
+		private Set<CyNode> getFilteredInNodes(CyNetwork net, EMCreationParameters params,
+				Set<AbstractDataSet> selectedDataSets) {
 			Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(selectedDataSets);
 			
 			// Only p or q value, but not both!
 			if (viewPanel.getPValueSliderPanel() != null && viewPanel.getPValueSliderPanel().isVisible()) {
 				Set<String> columnNames = getFilteredColumnNames(params.getPValueColumnNames(), selectedDataSets);
-				filteredInNodes.addAll(
-						getFilteredInNodes(viewPanel.getPValueSliderPanel(), map, netView, columnNames, dataSetNodes));
-			} else if (viewPanel.getQValueSliderPanel() != null && viewPanel.getQValueSliderPanel().isVisible()) {
-				Set<String> columnNames = getFilteredColumnNames(params.getQValueColumnNames(), selectedDataSets);
-				filteredInNodes.addAll(
-						getFilteredInNodes(viewPanel.getQValueSliderPanel(), map, netView, columnNames, dataSetNodes));
+				
+				return getFilteredInNodes(viewPanel.getPValueSliderPanel(), map, netView, columnNames, dataSetNodes);
 			}
-
+			
+			if (viewPanel.getQValueSliderPanel() != null && viewPanel.getQValueSliderPanel().isVisible()) {
+				Set<String> columnNames = getFilteredColumnNames(params.getQValueColumnNames(), selectedDataSets);
+				
+				return getFilteredInNodes(viewPanel.getQValueSliderPanel(), map, netView, columnNames, dataSetNodes);
+			}
+			
+			Set<CyNode> filteredInNodes = new HashSet<>();
+				
+			for (CyNode n : net.getNodeList()) {
+				if (dataSetNodes.contains(n.getSUID()))
+					filteredInNodes.add(n);
+			}
+			
+			return filteredInNodes; 
+		}
+		
+		private Set<CyEdge> getFilteredInEdges(CyNetwork net, EMCreationParameters params,
+				Set<AbstractDataSet> selectedDataSets) {
+			Set<Long> dataSetEdges = EnrichmentMap.getEdgesUnion(selectedDataSets);
+			
 			if (viewPanel.getSimilaritySliderPanel() != null)
-				filteredInEdges = getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
-						params.getSimilarityCutoffColumnNames());
+				return getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
+						params.getSimilarityCutoffColumnNames(), dataSetEdges);
 			
-			CyNetwork net = netView.getModel();
+			Set<CyEdge> filteredInEdges = new HashSet<>();
 			
-			// Hide or show nodes and their edges
+			for (CyEdge e : net.getEdgeList()) {
+				if (dataSetEdges.contains(e.getSUID()))
+					filteredInEdges.add(e);
+			}
+			
+			return filteredInEdges;
+		}
+		
+		private Set<CyNode> getFilteredInNodes(SliderBarPanel sliderPanel, EnrichmentMap map, CyNetworkView networkView,
+				Set<String> columnNames, Set<Long> dataSetNodes) {
+			Set<CyNode> nodes = new HashSet<>();
+			
+			Double maxCutoff = (double) sliderPanel.getValue() / sliderPanel.getPrecision();
+			Double minCutoff = (double) sliderPanel.getMin() / sliderPanel.getPrecision();
+			
+			CyNetwork network = networkView.getModel();
+			CyTable table = network.getDefaultNodeTable();
+
+			EMCreationParameters params = map.getParams();
+			
+			// Get the prefix of the current network
+			final String prefix = params.getAttributePrefix();
+			
+			// Go through all the existing nodes to see if we need to hide any new nodes.
+			for (CyNode n : network.getNodeList()) {
+				boolean show = true;
+				CyRow row = network.getRow(n);
+				
+				if (!dataSetNodes.contains(n.getSUID())) {
+					show = false;
+				} else if (table.getColumn(prefix + NODE_GS_TYPE) != null
+						&& NODE_GS_TYPE_ENRICHMENT.equalsIgnoreCase(row.get(prefix + NODE_GS_TYPE, String.class))) {
+					// Skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)...
+					for (String colName : columnNames) {
+						if (table.getColumn(colName) == null)
+							continue; // Ignore this column name (maybe the user deleted it)
+
+						Double value = row.get(colName, Double.class);
+
+						// Possible that there isn't a cutoff value for this geneset
+						if (value == null)
+							continue;
+
+						if (value >= minCutoff && value <= maxCutoff) {
+							show = true;
+							break;
+						} else {
+							show = false;
+						}
+					}
+				}
+				
+				if (show)
+					nodes.add(n);
+			}
+			
+			return nodes;
+		}
+
+		private Set<CyEdge> getFilteredInEdges(SliderBarPanel sliderPanel, EnrichmentMap map, CyNetworkView networkView,
+				Set<String> columnNames, Set<Long> dataSetEdges) {
+			Set<CyEdge> edges = new HashSet<>();
+			
+			JSlider slider = sliderPanel.getSlider();
+			Double maxCutoff = slider.getMaximum() / sliderPanel.getPrecision();
+			Double minCutoff = slider.getValue() / sliderPanel.getPrecision();
+			
+			CyNetwork network = networkView.getModel();
+			CyTable table = network.getDefaultEdgeTable();
+
+			// Go through all the existing edges to see if we need to hide any new ones.
+			for (CyEdge e : network.getEdgeList()) {
+				boolean show = true;
+				
+				if (!dataSetEdges.contains(e.getSUID())) {
+					show = false;
+				} else {
+					CyRow row = network.getRow(e);
+					
+					for (String colName : columnNames) {
+						if (table.getColumn(colName) == null)
+							continue; // Ignore this column name (maybe the user deleted it)
+		
+						Double value = row.get(colName, Double.class);
+		
+						// Possible that there isn't value for this interaction
+						if (value == null)
+							continue;
+		
+						if (value >= minCutoff && value <= maxCutoff) {
+							show = true;
+							break;
+						} else {
+							show = false;
+						}
+					}
+				}
+			
+				if (show)
+					edges.add(e);
+			}
+			
+			return edges;
+		}
+
+		private Set<String> getFilteredColumnNames(Set<String> columnNames, Collection<AbstractDataSet> dataSets) {
+			Set<String> filteredNames = new HashSet<>();
+			
+			for (String name : columnNames) {
+				for (AbstractDataSet ds : dataSets) {
+					// TODO What about 2.x columns?
+					if (name.endsWith(" (" + ds.getName() + ")")) {
+						filteredNames.add(name);
+						break;
+					}
+				}
+			}
+			
+			return filteredNames;
+		}
+		
+		private void showOrHideNodes(CyNetwork net, Set<CyNode> filteredInNodes) {
 			for (CyNode n : net.getNodeList()) {
 				final View<CyNode> nv = netView.getNodeView(n);
 				
@@ -820,7 +881,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					}
 				}
 			}
-			
+		}
+		
+		private void showOrHideEdges(CyNetwork net, Set<CyNode> filteredInNodes, Set<CyEdge> filteredInEdges) {
 			for (CyEdge e : net.getEdgeList()) {
 				final View<CyEdge> ev = netView.getEdgeView(e);
 				
@@ -854,29 +917,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					}
 				}
 			}
-			
-			netView.updateView();
-			
-			Timer timer = filterTimers.get(netView);
-			
-			if (timer != null)
-				timer.stop();
-		}
-
-		private Set<String> getFilteredColumnNames(Set<String> columnNames, Collection<AbstractDataSet> dataSets) {
-			Set<String> filteredNames = new HashSet<>();
-			
-			for (String name : columnNames) {
-				for (AbstractDataSet ds : dataSets) {
-					// TODO What about 2.x columns?
-					if (name.endsWith(" (" + ds.getName() + ")")) {
-						filteredNames.add(name);
-						break;
-					}
-				}
-			}
-			
-			return filteredNames;
 		}
 	}
 }
