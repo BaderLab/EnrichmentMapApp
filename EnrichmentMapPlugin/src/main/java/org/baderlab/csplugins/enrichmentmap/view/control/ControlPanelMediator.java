@@ -661,17 +661,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		
 		@Override
 		public void actionPerformed(ActionEvent evt) {
-			CyNetwork net = netView.getModel();
-			EMCreationParameters params = map.getParams();
 			Set<AbstractDataSet> selectedDataSets = viewPanel.getCheckedDataSets();
 			
 			// Find nodes and edges that must be displayed
-			Set<CyNode> filteredInNodes = getFilteredInNodes(net, params, selectedDataSets);
-			Set<CyEdge> filteredInEdges = getFilteredInEdges(net, params, selectedDataSets);
+			Set<CyNode> filteredInNodes = getFilteredInNodes(selectedDataSets);
+			Set<CyEdge> filteredInEdges = getFilteredInEdges(selectedDataSets);
 			
 			// Hide or show nodes and their edges
-			showOrHideNodes(net, filteredInNodes);
-			showOrHideEdges(net, filteredInNodes, filteredInEdges);
+			showOrHideNodes(filteredInNodes);
+			showOrHideEdges(filteredInNodes, filteredInEdges);
 			netView.updateView();
 			
 			Timer timer = filterTimers.get(netView);
@@ -680,9 +678,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				timer.stop();
 		}
 
-		private Set<CyNode> getFilteredInNodes(CyNetwork net, EMCreationParameters params,
-				Set<AbstractDataSet> selectedDataSets) {
+		private Set<CyNode> getFilteredInNodes(Set<AbstractDataSet> selectedDataSets) {
 			Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(selectedDataSets);
+			EMCreationParameters params = map.getParams();
 			
 			// Only p or q value, but not both!
 			if (viewPanel.getPValueSliderPanel() != null && viewPanel.getPValueSliderPanel().isVisible()) {
@@ -698,6 +696,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			}
 			
 			Set<CyNode> filteredInNodes = new HashSet<>();
+			CyNetwork net = netView.getModel();
 				
 			for (CyNode n : net.getNodeList()) {
 				if (dataSetNodes.contains(n.getSUID()))
@@ -706,20 +705,29 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			
 			return filteredInNodes; 
 		}
-		
-		private Set<CyEdge> getFilteredInEdges(CyNetwork net, EMCreationParameters params,
-				Set<AbstractDataSet> selectedDataSets) {
-			Set<Long> dataSetEdges = EnrichmentMap.getEdgesUnion(selectedDataSets);
+
+		private Set<CyEdge> getFilteredInEdges(Set<AbstractDataSet> selectedDataSets) {
+			EMCreationParameters params = map.getParams();
+			boolean distinct = params.getCreateDistinctEdges() && map.isDistinctExpressionSets();
+
+			// Compound edges are not associated with a specific data set
+			Set<Long> dataSetEdges = distinct ? EnrichmentMap.getEdgesUnion(selectedDataSets) : null;
 			
 			if (viewPanel.getSimilaritySliderPanel() != null)
 				return getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
 						params.getSimilarityCutoffColumnNames(), dataSetEdges);
 			
 			Set<CyEdge> filteredInEdges = new HashSet<>();
+			CyNetwork net = netView.getModel();
 			
-			for (CyEdge e : net.getEdgeList()) {
-				if (dataSetEdges.contains(e.getSUID()))
-					filteredInEdges.add(e);
+			if (distinct) {
+				for (CyEdge e : net.getEdgeList()) {
+					if (dataSetEdges.contains(e.getSUID()))
+						filteredInEdges.add(e);
+				}
+			} else {
+				// If compound edges, all edges are filtered in, no matter the selected data sets
+				filteredInEdges.addAll(net.getEdgeList());
 			}
 			
 			return filteredInEdges;
@@ -745,7 +753,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				boolean show = true;
 				CyRow row = network.getRow(n);
 				
-				if (!dataSetNodes.contains(n.getSUID())) {
+				if (dataSetNodes != null && !dataSetNodes.contains(n.getSUID())) {
 					show = false;
 				} else if (table.getColumn(prefix + NODE_GS_TYPE) != null
 						&& NODE_GS_TYPE_ENRICHMENT.equalsIgnoreCase(row.get(prefix + NODE_GS_TYPE, String.class))) {
@@ -776,6 +784,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			return nodes;
 		}
 
+		/**
+		 * If dataSetEdges is null, don't filter by Data Sets.
+		 */
 		private Set<CyEdge> getFilteredInEdges(SliderBarPanel sliderPanel, EnrichmentMap map, CyNetworkView networkView,
 				Set<String> columnNames, Set<Long> dataSetEdges) {
 			Set<CyEdge> edges = new HashSet<>();
@@ -791,7 +802,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			for (CyEdge e : network.getEdgeList()) {
 				boolean show = true;
 				
-				if (!dataSetEdges.contains(e.getSUID())) {
+				if (dataSetEdges != null && !dataSetEdges.contains(e.getSUID())) {
 					show = false;
 				} else {
 					CyRow row = network.getRow(e);
@@ -838,7 +849,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			return filteredNames;
 		}
 		
-		private void showOrHideNodes(CyNetwork net, Set<CyNode> filteredInNodes) {
+		private void showOrHideNodes(Set<CyNode> filteredInNodes) {
+			CyNetwork net = netView.getModel();
+			
 			for (CyNode n : net.getNodeList()) {
 				final View<CyNode> nv = netView.getNodeView(n);
 				
@@ -883,7 +896,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			}
 		}
 		
-		private void showOrHideEdges(CyNetwork net, Set<CyNode> filteredInNodes, Set<CyEdge> filteredInEdges) {
+		private void showOrHideEdges(Set<CyNode> filteredInNodes, Set<CyEdge> filteredInEdges) {
+			CyNetwork net = netView.getModel();
+			
 			for (CyEdge e : net.getEdgeList()) {
 				final View<CyEdge> ev = netView.getEdgeView(e);
 				
