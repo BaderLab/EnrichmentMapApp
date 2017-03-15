@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.cytoscape.work.AbstractTask;
@@ -82,7 +83,10 @@ public class CreateDummyExpressionTask extends AbstractTask{
 		expressionMatrix.setFilename("Dummy Expression_" + dataset.getName().toString() );
 		
 		//set that there is data for the expression viewer
-		dataset.getMap().getParams().setData(true);
+		if(dataset.getName().equals(EnrichmentMap.DATASET1))
+			dataset.getMap().getParams().setData(true);
+		else if(dataset.getName().equals(EnrichmentMap.DATASET2))
+			dataset.getMap().getParams().setData2(true);
     }
 	
 	public void run(TaskMonitor taskMonitor) throws Exception {

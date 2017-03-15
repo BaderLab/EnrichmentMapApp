@@ -1174,7 +1174,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent {
 		layout.setHorizontalGroup(hGroup);
 		layout.setVerticalGroup(vGroup);
 
-		if (params.isTwoDistinctExpressionSets()) {
+		if (params.isTwoDistinctExpressionSets() && params.isData2()) {
 			ColorGradientWidget legend1 = ColorGradientWidget.getInstance("", hmParams.getTheme_ds1(),
 					hmParams.getRange_ds1(), true, ColorGradientWidget.LEGEND_POSITION.NA);
 			ColorGradientWidget legend2 = ColorGradientWidget.getInstance("", hmParams.getTheme_ds2(),
