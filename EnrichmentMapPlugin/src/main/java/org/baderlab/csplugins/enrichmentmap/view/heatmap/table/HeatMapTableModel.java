@@ -109,19 +109,25 @@ public class HeatMapTableModel extends AbstractTableModel {
 	public Object getValueAt(int row, int col) {
 		if(row < 0)
 			return null; // Why is it passing -1?
+		if(col == RANK_COL)
+			return getRankValue(row);
 		String gene = genes.get(row);
 		if(col == GENE_COL)
 			return gene;
 		int geneID = map.getHashFromGene(gene);
-		
-		// Use empty RankValue objects for missing genes instead of nulls so that they sort last (see RankValue.compareTo()).
-		if(col == RANK_COL)
-			return (ranking == null) ? RankValue.EMPTY : ranking.getOrDefault(geneID, RankValue.EMPTY);
-		
 		EMDataSet dataset = getDataSet(col);
 		int index = getIndex(col);
 		double[] vals = getExpression(dataset, geneID);
 		return vals[index];
+	}
+	
+	public RankValue getRankValue(int row) {
+		// Use empty RankValue objects for missing genes instead of nulls so that they sort last (see RankValue.compareTo()).
+		if(ranking == null)
+			return RankValue.EMPTY;
+		String gene = genes.get(row);
+		int geneID = map.getHashFromGene(gene);
+		return ranking.getOrDefault(geneID, RankValue.EMPTY);
 	}
 	
 	@Override
@@ -131,6 +137,12 @@ public class HeatMapTableModel extends AbstractTableModel {
 			case RANK_COL: return RankValue.class;
 			default:       return Double.class;
 		}
+	}
+	
+	public boolean hasSignificantRanks() {
+		if(ranking == null)
+			return false;
+		return ranking.values().stream().anyMatch(RankValue::isSignificant);
 	}
 	
 	private int getIndex(int col) {

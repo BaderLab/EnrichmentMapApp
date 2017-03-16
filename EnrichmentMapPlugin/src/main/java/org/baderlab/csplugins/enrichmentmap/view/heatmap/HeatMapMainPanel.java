@@ -47,7 +47,6 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
@@ -57,8 +56,8 @@ public class HeatMapMainPanel extends JPanel {
 	private static final int COLUMN_WIDTH_VALUE = 50;
 	
 	
-	@Inject private Provider<ExportTXTAction> txtActionProvider;
-	@Inject private Provider<ExportPDFAction> pdfActionProvider;
+	@Inject private ExportTXTAction.Factory txtActionFactory;
+	@Inject private ExportPDFAction.Factory pdfActionFactory;
 	@Inject private IconManager iconManager;
 
 	private GradientLegendPanel gradientLegendPanel;
@@ -365,12 +364,8 @@ public class HeatMapMainPanel extends JPanel {
 	
 	private void showExportMenu(ActionEvent event)  {
 		JPopupMenu menu = new JPopupMenu();
-		ExportTXTAction txtAction = txtActionProvider.get();
-		ExportPDFAction pdfAction = pdfActionProvider.get();
-		txtAction.setEnabled(false); // TEMPORARY
-		pdfAction.setEnabled(false); // TEMPORARY
-		menu.add(txtAction);
-		menu.add(pdfAction);
+		menu.add(txtActionFactory.create(table));
+		menu.add(pdfActionFactory.create(table));
 		Component c = (Component) event.getSource();
 		menu.show(c, 0, c.getHeight());
 	}
