@@ -4,14 +4,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
+import org.baderlab.csplugins.enrichmentmap.parsers.ClassFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
@@ -85,16 +86,15 @@ public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 			}
 			
 			// Load ranks if present
-			// Note the ranks objects are initialized in EnrichmentMap.initializeFiles()
-			
-			// MKTODO I don't understand why the ranks are in a Map that uses the data set name as key
-			// It might have something to do with the leading edge calculation in the heat map.
 			String ranksName = dataset.getMethod() == Method.GSEA ? Ranking.GSEARanking : datasetName;
 			if(dataset.getExpressionSets().getRanksByName(ranksName) != null) {
 				String filename = dataset.getExpressionSets().getRanksByName(ranksName).getFilename();
 				tasks.append(new RanksFileReaderTask(filename, dataset, ranksName, false));
 			}
 			
+			if(!Strings.isNullOrEmpty(dataset.getDataSetFiles().getClassFile())) {
+				tasks.append(new ClassFileReaderTask(dataset));
+			}
 		}
 		
 		// NOTE: First filter out genesets that don't pass the thresholds, 

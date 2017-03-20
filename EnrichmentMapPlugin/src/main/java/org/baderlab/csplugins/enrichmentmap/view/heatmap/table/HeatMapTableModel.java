@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import javax.swing.table.AbstractTableModel;
@@ -100,7 +101,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 			return "Ranks";
 		
 		EMDataSet dataset = getDataSet(col);
-		int index = getIndex(col) + 2;
+		int index = getIndexInDataSet(col) + 2;
 		String[] columns = dataset.getExpressionSets().getColumnNames();
 		return columns[index];
 	}
@@ -116,8 +117,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 			return gene;
 		int geneID = map.getHashFromGene(gene);
 		EMDataSet dataset = getDataSet(col);
-		int index = getIndex(col);
 		double[] vals = getExpression(dataset, geneID);
+		int index = getIndexInDataSet(col);
 		return vals[index];
 	}
 	
@@ -145,7 +146,17 @@ public class HeatMapTableModel extends AbstractTableModel {
 		return ranking.values().stream().anyMatch(RankValue::isSignificant);
 	}
 	
-	private int getIndex(int col) {
+	public Optional<String> getPhenotype(int col) {
+		EMDataSet dataset = getDataSet(col);
+		int index = getIndexInDataSet(col);
+		String[] classes = dataset.getExpressionSets().getPhenotypes();
+		if(classes != null && index < classes.length) {
+			return Optional.ofNullable(classes[index]);
+		}
+		return Optional.empty();
+	}
+	
+	private int getIndexInDataSet(int col) {
 		int start = colToDataSet.floorKey(col);
 		return col - start;
 	}
@@ -167,9 +178,9 @@ public class HeatMapTableModel extends AbstractTableModel {
 		double[] values = null;
 		if(row != null) {
 			switch(transform) {
-				case ROW_NORMALIZE:  values = row.rowNormalize();    break;
-				case LOG_TRANSFORM:  values = row.rowLogTransform(); break;
-				case AS_IS:          values = row.getExpression();   break;
+				case ROW_NORMALIZE: values = row.rowNormalize();    break;
+				case LOG_TRANSFORM: values = row.rowLogTransform(); break;
+				case AS_IS:         values = row.getExpression();   break;
 			}
 		}
 		if(values == null) {

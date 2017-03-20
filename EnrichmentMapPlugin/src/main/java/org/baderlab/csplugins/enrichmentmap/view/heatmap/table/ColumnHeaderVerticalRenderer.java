@@ -43,18 +43,22 @@
 
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.util.Optional;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -68,42 +72,68 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 @SuppressWarnings("serial")
 public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
 
+	private Optional<Color> labelBackgroundColor;
+	
+	public ColumnHeaderVerticalRenderer(Color labelBackgroundColor) {
+		this.labelBackgroundColor = Optional.ofNullable(labelBackgroundColor);
+	}
+	
+	public ColumnHeaderVerticalRenderer() {
+		this.labelBackgroundColor = Optional.empty();
+	}
+	
+	
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
 		EMDataSet dataset = model.getDataSet(col);
 		
+		JLabel verticalLabel = createVerticalLabel(value);
+		
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(verticalLabel, BorderLayout.CENTER);
+		
+		Color barColor = dataset.getMap().isDistinctExpressionSets() ? dataset.getColor() : null;
+		if(barColor != null) {
+			JPanel barPanel = new JPanel();
+			barPanel.setPreferredSize(new Dimension(verticalLabel.getWidth(), 5));
+			barPanel.setBackground(barColor);
+			panel.add(barPanel, BorderLayout.NORTH);
+		}
+		
+		if(labelBackgroundColor.isPresent()) {
+	        panel.setBackground(labelBackgroundColor.get()); 
+        }
+		
+		return panel;
+	}
+
+	
+	private JLabel createVerticalLabel(Object value) {
 		JLabel label = new JLabel();
 
 		label.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 		label.setBackground(this.getBackground());
 		label.setForeground(UIManager.getColor("TableHeader.foreground"));
 		label.setFont(UIManager.getFont("TableHeader.font"));
-
-		Color color = dataset.getMap().isDistinctExpressionSets() ? dataset.getColor() : null;
-		Icon icon = getVerticalCaption(label, value.toString(), color, false);
-
-		label.setIcon(icon);
+		
+		// Create vertical text label
+		Icon verticalText = getVerticalText(label, value.toString(), false);
+		label.setIcon(verticalText);
 		label.setVerticalAlignment(JLabel.BOTTOM);
 		label.setHorizontalAlignment(JLabel.CENTER);
-
 		return label;
 	}
-
 	
-    private static Icon getVerticalCaption(JComponent component, String caption, Color barColor, boolean clockwise) {
-    	final int barHeight = 5;
+	
+    private Icon getVerticalText(JComponent component, String caption, boolean clockwise) {
 		Font f = component.getFont();
 		FontMetrics fm = component.getFontMetrics(f);
 		int height = fm.getHeight() + 4 ;
-		int width  = fm.stringWidth(caption) + 4 + (barColor == null ? 0 : barHeight);
+		int width  = fm.stringWidth(caption) + 4;
 		BufferedImage bi = new BufferedImage(height, width, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = (Graphics2D) bi.getGraphics();
 		
-		if(barColor != null) {
-			g.setColor(barColor);
-			g.fillRect(0, 0, bi.getWidth(), barHeight);
-		}
 		
 		g.setColor(component.getForeground());
 		g.setFont(f);
@@ -121,4 +151,5 @@ public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
 
 		return icon;
 	}
+    
 }

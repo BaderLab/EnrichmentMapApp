@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -26,11 +27,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter.SortKey;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
@@ -135,11 +139,27 @@ public class HeatMapMainPanel extends JPanel {
 		HeatMapTableModel tableModel = (HeatMapTableModel)table.getModel();
 		TableColumnModel columnModel = table.getColumnModel();
 		
+		TableCellRenderer vertRenderer = new ColumnHeaderVerticalRenderer();
+		TableCellRenderer vertRendererPheno1 = new ColumnHeaderVerticalRenderer(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_1);
+		TableCellRenderer vertRendererPheno2 = new ColumnHeaderVerticalRenderer(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_2);
+		
 		int colCount = tableModel.getColumnCount();
-		ColumnHeaderVerticalRenderer vertRenderer = new ColumnHeaderVerticalRenderer();
-		for(int i = HeatMapTableModel.DESC_COL_COUNT; i < colCount; i++) {
-			TableColumn column = columnModel.getColumn(i);
-			column.setHeaderRenderer(vertRenderer);
+		for(int col = HeatMapTableModel.DESC_COL_COUNT; col < colCount; col++) {
+			EMDataSet dataset = tableModel.getDataSet(col);
+			String pheno1 = dataset.getEnrichments().getPhenotype1();
+			String pheno2 = dataset.getEnrichments().getPhenotype2();
+			
+			Optional<String> pheno = tableModel.getPhenotype(col);
+			TableCellRenderer renderer;
+			if(pheno.filter(p -> p.equals(pheno1)).isPresent())
+				renderer = vertRendererPheno1;
+			else if(pheno.filter(p -> p.equals(pheno2)).isPresent())
+				renderer = vertRendererPheno2;
+			else
+				renderer = vertRenderer;
+			
+			TableColumn column = columnModel.getColumn(col);
+			column.setHeaderRenderer(renderer);
 			column.setPreferredWidth(width);
 		}
 	}
