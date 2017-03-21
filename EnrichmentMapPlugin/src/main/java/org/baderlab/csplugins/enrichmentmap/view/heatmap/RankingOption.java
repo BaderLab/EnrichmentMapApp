@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
@@ -13,6 +14,11 @@ public interface RankingOption {
 	
 	default String getName() {
 		return toString();
+	}
+	
+	/** If the ranking comes directly from a DataSet, then get the ranking's name in the DataSet. */
+	default Optional<String> getNameInDataSet() {
+		return Optional.empty();
 	}
 	
 	/**

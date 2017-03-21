@@ -5,6 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ public class HeatMapMainPanel extends JPanel {
 	
 	@Inject private ExportTXTAction.Factory txtActionFactory;
 	@Inject private ExportPDFAction.Factory pdfActionFactory;
+	@Inject private AddRanksDialog.Factory ranksDialogFactory;
 	@Inject private IconManager iconManager;
 
 	private GradientLegendPanel gradientLegendPanel;
@@ -96,8 +98,10 @@ public class HeatMapMainPanel extends JPanel {
 	
 	
 	private void settingChanged() {
-		if(!isResetting)
-			parent.settingsChanged(buildParams());
+		if(!isResetting) {
+			HeatMapParams params = buildParams();
+			parent.getMediator().heatMapParamsChanged(params);
+		}
 	}
 	
 	
@@ -186,6 +190,10 @@ public class HeatMapMainPanel extends JPanel {
 		normCombo.addItem(new ComboItem<>(Transform.LOG_TRANSFORM, "Log"));
 		normCombo.setSelectedItem(ComboItem.of(Transform.AS_IS));
 		
+		JButton plusButton = createPlusButton();
+		plusButton.setToolTipText("Add Rankings...");
+		plusButton.addActionListener(e -> addRankings());
+		
 		operatorCombo.addActionListener(operatorActionListener = e -> updateSetting_Operator(getOperator()));
 		normCombo.addActionListener(normActionListener = e -> updateSetting_Transform(getTransform()));
 		rankOptionCombo.addActionListener(rankOptionActionListener = e -> updateSetting_RankOption(getRankingOption()));
@@ -213,7 +221,8 @@ public class HeatMapMainPanel extends JPanel {
 			.addGap(5)
 			.addComponent(sortLabel)
 			.addComponent(rankOptionCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			.addGap(5)
+			.addComponent(plusButton)
+			.addGap(2)
 			.addComponent(gearButton)
 			.addComponent(menuButton)
 		);
@@ -225,6 +234,7 @@ public class HeatMapMainPanel extends JPanel {
 			.addComponent(normCombo)
 			.addComponent(sortLabel)
 			.addComponent(rankOptionCombo)
+			.addComponent(plusButton)
 			.addComponent(gearButton)
 			.addComponent(menuButton)
 		);
@@ -233,6 +243,18 @@ public class HeatMapMainPanel extends JPanel {
 		return panel;
 	}
 	
+	
+	private JButton createPlusButton() {
+		JButton button = new JButton(IconManager.ICON_PLUS);
+		button.setFont(iconManager.getIconFont(10.0f));
+		button.setBorder(null);
+		button.setContentAreaFilled(false);
+		button.setBorderPainted(false);
+		int h = rankOptionCombo.getPreferredSize().height;
+		button.setMinimumSize(new Dimension(h, h));
+		button.setPreferredSize(new Dimension(h, h));
+		return button;
+	}
 	
 	public Operator getOperator() {
 		return operatorCombo.getItemAt(operatorCombo.getSelectedIndex()).getValue();
@@ -269,9 +291,9 @@ public class HeatMapMainPanel extends JPanel {
 	}
 	
 	
-	public void reset(EnrichmentMap map, HeatMapParams params, ClusterRankingOption clusterRankOption, List<RankingOption> moreRankOptions, Set<String> union, Set<String> intersection) {
+	public void reset(EnrichmentMap map, HeatMapParams params, List<RankingOption> moreRankOptions, Set<String> union, Set<String> intersection) {
 		isResetting = true;
-		this.clusterRankOption = clusterRankOption;
+		this.clusterRankOption = parent.getMediator().getClusterRankOption(map);
 		
 		unionGenes = new ArrayList<>(union);
 		unionGenes.sort(Comparator.naturalOrder());
@@ -326,6 +348,34 @@ public class HeatMapMainPanel extends JPanel {
 		
 		isResetting = false;
 	}
+	
+	
+	private void addRankings() {
+		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
+		EnrichmentMap map = model.getEnrichmentMap();
+		AddRanksDialog dialog = ranksDialogFactory.create(map);
+		Optional<String> ranksName = dialog.open();
+		if(ranksName.isPresent()) {
+			List<RankingOption> moreRankOptions = parent.getMediator().getDataSetRankOptions(map);
+			
+			rankOptionCombo.removeActionListener(rankOptionActionListener);
+			
+			rankOptionCombo.removeAllItems();
+			rankOptionCombo.addItem(RankingOption.none());
+			rankOptionCombo.addItem(clusterRankOption);
+			moreRankOptions.forEach(rankOptionCombo::addItem);
+			
+			for(int i = 0; i < rankOptionCombo.getItemCount(); i++) {
+				RankingOption ranking = rankOptionCombo.getItemAt(i);
+				if(ranking.getNameInDataSet().filter(ranksName.get()::equals).isPresent()) {
+					rankOptionCombo.setSelectedIndex(i);
+					break;
+				}
+			}
+			rankOptionCombo.addActionListener(rankOptionActionListener);
+		}
+	}
+
 	
 	private List<String> getGenes(Operator operator) {
 		switch(operator) {

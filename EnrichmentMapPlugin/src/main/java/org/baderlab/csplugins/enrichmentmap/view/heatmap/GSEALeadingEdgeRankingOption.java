@@ -23,24 +23,24 @@ import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
  */
 public class GSEALeadingEdgeRankingOption implements RankingOption {
 	
+	private final String rankingName;
 	private final EMDataSet dataset;
 	private final String geneSetName;
 	
 	private double scoreAtMax;
 	private int rankAtMax;
-	private final String ranksName = Ranking.GSEARanking; // MKTODO will this ever be different?
 	
 	
-	public GSEALeadingEdgeRankingOption(EMDataSet dataset, String geneSetName) {
+	public GSEALeadingEdgeRankingOption(EMDataSet dataset, String geneSetName, String rankingName) {
 		assert dataset.getMethod() == Method.GSEA;
 		this.dataset = dataset;
 		this.geneSetName = geneSetName;
+		this.rankingName = rankingName;
 	}
 	
 	@Override
 	public String toString() {
-		String name = dataset.getName();
-		return "GSEA Ranks: " + SwingUtil.abbreviate(name, 25);
+		return SwingUtil.abbreviate(rankingName, 15) + " - " + SwingUtil.abbreviate(dataset.getName(), 15);
 	}
 	
 	@Override
@@ -51,7 +51,7 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 		boolean isNegative = isNegativeGS();
 		
 		Map<Integer,GeneExpression> expressions = dataset.getExpressionSets().getExpressionMatrix();
-		Ranking ranking = dataset.getExpressionSets().getRanksByName(ranksName);
+		Ranking ranking = dataset.getExpressionSets().getRanksByName(rankingName);
 		
 		Integer[] ranksSubset = new Integer[expressions.size()];
 		HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer, ArrayList<Integer>>();
@@ -123,7 +123,7 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 	private int getTopRank() {
 		int topRank = rankAtMax + 3; // MKTODO why?
 		if(scoreAtMax < 0) {
-			topRank = dataset.getExpressionSets().getRanksByName(ranksName).getMaxRank() - topRank;
+			topRank = dataset.getExpressionSets().getRanksByName(rankingName).getMaxRank() - topRank;
 		}
 		return topRank;
 	}

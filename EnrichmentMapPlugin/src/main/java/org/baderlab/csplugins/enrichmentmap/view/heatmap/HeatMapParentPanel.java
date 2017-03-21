@@ -8,7 +8,6 @@ import java.awt.Component;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
@@ -23,6 +22,7 @@ import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 
 import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 
 
 @SuppressWarnings("serial")
@@ -32,9 +32,18 @@ public class HeatMapParentPanel extends JPanel implements CytoPanelComponent2 {
 	
 	@Inject private HeatMapMainPanel.Factory mainPanelFactory;
 	
+	private final HeatMapMediator mediator;
 	private HeatMapMainPanel mainPanel;
-	private Consumer<HeatMapParams> heatMapParamsChangeListener;
 	
+	
+	public interface Factory {
+		HeatMapParentPanel create(HeatMapMediator mediator);
+	}
+	
+	@Inject
+	public HeatMapParentPanel(@Assisted HeatMapMediator mediator) {
+		this.mediator = mediator;
+	}
 	
 	@AfterInjection
 	public void CreateContents() {
@@ -43,15 +52,18 @@ public class HeatMapParentPanel extends JPanel implements CytoPanelComponent2 {
 		showEmptyView();
 	}
 	
-	public void selectGenes(EnrichmentMap map, HeatMapParams params, ClusterRankingOption clusterRankOption, List<RankingOption> moreRankOptions, Set<String> union, Set<String> intersection) {
+	public void selectGenes(EnrichmentMap map, HeatMapParams params, List<RankingOption> moreRankOptions, Set<String> union, Set<String> intersection) {
 		if(mainPanel == null) {
 			removeAll();
 			mainPanel = mainPanelFactory.create(this);
 			add(mainPanel, BorderLayout.CENTER);
 		}
-		mainPanel.reset(map, params, clusterRankOption, moreRankOptions, union, intersection);
+		mainPanel.reset(map, params, moreRankOptions, union, intersection);
 	}
 	
+	public HeatMapMediator getMediator() {
+		return mediator;
+	}
 	
 	public void showEmptyView() {
 		removeAll();
@@ -59,16 +71,6 @@ public class HeatMapParentPanel extends JPanel implements CytoPanelComponent2 {
 		add(new NullViewPanel(), BorderLayout.CENTER);
 	}
 	
-	
-	public void setHeatMapParamsChangeListener(Consumer<HeatMapParams> listener) {
-		this.heatMapParamsChangeListener = listener;
-	}
-	
-	void settingsChanged(HeatMapParams params) {
-		if(heatMapParamsChangeListener != null) {
-			heatMapParamsChangeListener.accept(params);
-		}
-	}
 	
 	private class NullViewPanel extends JPanel {
 		

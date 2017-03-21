@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -27,9 +28,13 @@ public class BasicRankingOption implements RankingOption {
 	}
 	
 	@Override
+	public Optional<String> getNameInDataSet() {
+		return Optional.of(rankingName);
+	}
+	
+	@Override
 	public String toString() {
-		return "Ranks: " + SwingUtil.abbreviate(rankingName, 15) + 
-				" - " + SwingUtil.abbreviate(dataset.getName(), 15);
+		return SwingUtil.abbreviate(rankingName, 15) + " - " + SwingUtil.abbreviate(dataset.getName(), 15);
 	}
 	
 	@Override

@@ -93,7 +93,7 @@ public class EditDataSetDialog extends JDialog {
 	
 	
 	public DataSetParameters open() {
-		setVisible(true); // must be modal for this to work
+		setVisible(true); // blocks until dispose() is called, must be model to work
 		if(!okClicked)
 			return null;
 		return createDataSetParameters();
@@ -462,11 +462,11 @@ public class EditDataSetDialog extends JDialog {
 	private void validateInput() {
 		boolean valid = true;
 		valid &= !Strings.isNullOrEmpty(nameText.getText().trim());
-		valid &= validatePathTextField(enrichments1Text, textFieldForeground);
-		valid &= validatePathTextField(enrichments2Text, textFieldForeground);
-		valid &= validatePathTextField(expressionsText, textFieldForeground);
-		valid &= validatePathTextField(ranksText, textFieldForeground);
-		valid &= validatePathTextField(classesText, textFieldForeground);
+		valid &= validatePathTextField(enrichments1Text, textFieldForeground, true);
+		valid &= validatePathTextField(enrichments2Text, textFieldForeground, true);
+		valid &= validatePathTextField(expressionsText, textFieldForeground, true);
+		valid &= validatePathTextField(ranksText, textFieldForeground, true);
+		valid &= validatePathTextField(classesText, textFieldForeground, true);
 		// MKTODO need to make at least enrichments mandatory?
 		okButton.setEnabled(valid);
 	}
@@ -509,7 +509,7 @@ public class EditDataSetDialog extends JDialog {
 	
 	
 	private void updateClasses() {
-		if(positiveText.getText().trim().isEmpty() && negativeText.getText().trim().isEmpty() && validatePathTextField(classesText, textFieldForeground)) {
+		if(positiveText.getText().trim().isEmpty() && negativeText.getText().trim().isEmpty() && validatePathTextField(classesText, textFieldForeground, true)) {
 			String classFile = classesText.getText();
 			String[] phenotypes = ClassFileReaderTask.parseClasses(classFile);
 			if(phenotypes != null) {

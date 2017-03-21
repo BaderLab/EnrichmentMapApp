@@ -36,10 +36,10 @@ import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
@@ -468,7 +468,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 	
 	private void validateInput() {
 		boolean valid = true;
-		valid &= validatePathTextField(gmtPathText, null);
+		valid &= validatePathTextField(gmtPathText, null, true);
 		callback.setFinishButtonEnabled(valid && !dataSetListModel.isEmpty());
 	}
 

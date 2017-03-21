@@ -160,12 +160,12 @@ public class SwingUtil {
 		}
 	}
 	
-	public static boolean validatePathTextField(JTextField textField, @Nullable Color validForeground) {
+	public static boolean validatePathTextField(JTextField textField, @Nullable Color validForeground, boolean optional) {
 		Color fg = validForeground == null ? Color.BLACK : validForeground;
 		boolean valid;
 		try {
 			String text = textField.getText();
-			if(Strings.isNullOrEmpty(text.trim())) {
+			if(optional && Strings.isNullOrEmpty(text.trim())) {
 				valid = true;
 			} else { 
 				valid = Files.isReadable(Paths.get(text));

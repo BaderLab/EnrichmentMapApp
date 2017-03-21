@@ -21,6 +21,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.task.BaseNetworkTest;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.RankingOption;
@@ -92,7 +93,7 @@ public class HeatMapRanksTest extends BaseNetworkTest {
 		assertNotNull(gs);
 		
 		// Run the ranking
-		RankingOption rankingOption = new GSEALeadingEdgeRankingOption(dataset, geneSetName);
+		RankingOption rankingOption = new GSEALeadingEdgeRankingOption(dataset, geneSetName, Ranking.GSEARanking);
 		Map<Integer,RankValue> ranks = rankingOption.computeRanking(gs.getGenes()).get();
 		assertEquals(454, ranks.size());
 		
