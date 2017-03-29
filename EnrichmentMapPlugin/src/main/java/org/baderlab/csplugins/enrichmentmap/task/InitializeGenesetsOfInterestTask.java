@@ -224,7 +224,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("Initializing subset of genesets and GSEA results of interest");
+		taskMonitor.setTitle("Initializing subset of genesets and results of interest");
 		initializeSets(taskMonitor);
 		taskMonitor.setStatusMessage("");
 	}

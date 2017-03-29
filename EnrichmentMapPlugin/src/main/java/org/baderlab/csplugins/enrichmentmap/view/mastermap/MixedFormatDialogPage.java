@@ -186,7 +186,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 		gmtBrowseButton.addActionListener(e -> browse(gmtPathText, FileBrowser.Filter.GMT));
 		SwingUtil.makeSmall(gmtLabel, gmtPathText, gmtBrowseButton);
 
-		distinctEdgesCheckbox = new JCheckBox("Create separate edges when expression sets are distinct");
+		distinctEdgesCheckbox = new JCheckBox("Create separate edges for each dataset");
 		
 		addFolderButton = new JButton("Add Folder...");
 		addManualButton = new JButton("Add Single...");

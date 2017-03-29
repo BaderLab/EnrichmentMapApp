@@ -102,7 +102,7 @@ public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 
 		// Filter out genesets that don't pass the p-value and q-value thresholds
 		InitializeGenesetsOfInterestTask genesetsTask = new InitializeGenesetsOfInterestTask(map);
-		genesetsTask.setThrowIfMissing(false); // TEMPORARY
+//		genesetsTask.setThrowIfMissing(false); // TEMPORARY
 		tasks.append(genesetsTask);
 		
 		// Trim the genesets to only contain the genes that are in the data file.

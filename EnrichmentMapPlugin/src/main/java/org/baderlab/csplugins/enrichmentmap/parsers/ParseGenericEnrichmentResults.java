@@ -28,7 +28,7 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 
 		//Get the current genesets so we can check that all the results are in the geneset list
 		//and put the size of the genesets into the visual style
-		Map<String, GeneSet> genesets = dataset.getSetOfGeneSets().getGeneSets();
+		Map<String, GeneSet> genesets = dataset.getMap().getGlobalGenesets().getGeneSets();
 
 		int currentProgress = 0;
 		int maxValue = lines.size();
@@ -79,13 +79,8 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 			final String name = tokens[0].toUpperCase().trim();
 			final String description = tokens[1].toUpperCase();
 
-			//the current gene-set
-			ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
-
 			if(genesets.containsKey(name)) {
-				GeneSet gs = genesets.get(name);
-				builder = builder.addAll(gs.getGenes());
-				gs_size = gs.getGenes().size();
+				gs_size = genesets.get(name).getGenes().size();
 			} 
 
 			//The third column is the nominal p-value
@@ -122,7 +117,6 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 							try {
 								NES = Double.parseDouble(tokens[4]);
 							} catch(NumberFormatException nfe) {
-
 								throw new IllegalThreadStateException(tokens[4]
 										+ " is not a valid phenotype.  Phenotype specified in generic enrichment results file must have the same phenotype as specified in advanced options or must be a positive or negative number.");
 							}
@@ -137,6 +131,8 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 						//get all the genes in the field
 						String[] gene_tokens = tokens[5].split(",");
 
+						ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
+						
 						//All subsequent fields in the list are the geneset associated with this geneset.
 						for(String token : gene_tokens) {
 							String gene = token.trim().toUpperCase();
