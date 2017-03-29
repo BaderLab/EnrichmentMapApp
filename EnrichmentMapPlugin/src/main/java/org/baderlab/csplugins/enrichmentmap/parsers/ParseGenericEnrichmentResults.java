@@ -101,7 +101,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 
         //Get the current genesets so we can check that all the results are in the geneset list
         //and put the size of the genesets into the visual style
-        HashMap<String,GeneSet> genesets = dataset.getSetofgenesets().getGenesets();
+        HashMap<String,GeneSet> genesets = dataset.getMap().getAllGenesets();
 
         int currentProgress = 0;
         int maxValue = lines.length;
