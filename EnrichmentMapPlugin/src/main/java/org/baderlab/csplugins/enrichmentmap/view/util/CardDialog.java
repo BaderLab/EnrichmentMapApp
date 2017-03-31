@@ -12,7 +12,6 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -26,9 +25,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 
 public class CardDialog {
 	
-	private JLabel subTitle;
 	private JPanel message;
-	
 	private JDialog dialog;
 	
 	private JComboBox<ComboItem<CardDialogPage>> pageChooserCombo;
@@ -38,6 +35,7 @@ public class CardDialog {
 	
 	private final CardDialogParameters params;
 	private final IconManager iconManager;
+	
 	
 	public CardDialog(JFrame parent, IconManager iconManager, CardDialogParameters params) {
 		if (iconManager == null)
@@ -70,14 +68,11 @@ public class CardDialog {
 		
 		// Create message and button panel first because 
 		// the controller can call callbacks from inside createBodyPanel()
-		JPanel messagePanel = createMessagePanel();
 		JPanel buttonPanel  = createButtonPanel();
 		JPanel bodyPanel    = createBodyPanel();
 	    
-	    messagePanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
 	    buttonPanel .setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
 	    
-	    dialog.add(messagePanel, BorderLayout.NORTH);
 	    dialog.add(bodyPanel,    BorderLayout.CENTER);
 	    dialog.add(buttonPanel,  BorderLayout.SOUTH);
 	}
@@ -104,8 +99,6 @@ public class CardDialog {
 		    bodyPanel.add(body, BorderLayout.CENTER);
 		    
 		    currentPage = page;
-		    subTitle.setText("<html><b>" + currentPage.getPageTitle() + "</b></html>");
-		    
 		    return bodyPanel;
 	    }
 	    
@@ -123,12 +116,10 @@ public class CardDialog {
 	    	ComboItem<CardDialogPage> selected = pageChooserCombo.getItemAt(pageChooserCombo.getSelectedIndex());
 	    	CardDialogPage page = selected.getValue();
 			cardLayout.show(cards, page.getID());
-	    	subTitle.setText("<html><b>" + page.getPageTitle() + "</b></html>");
 	    	currentPage = page;
 	    });
 	    
 	    currentPage = pages.get(0);
-	    subTitle.setText("<html><b>" + currentPage.getPageTitle() + "</b></html>");
 	    
 	    JPanel body = new JPanel(new BorderLayout());
 	    body.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -172,41 +163,9 @@ public class CardDialog {
 	}
 	
 	
-	private JPanel createMessagePanel() {
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.setBackground(panel.getBackground().brighter());
-
-		JPanel messagePanel = new JPanel(new BorderLayout());
-		subTitle = new JLabel();
-		message = new JPanel(new BorderLayout());
-		message.setOpaque(false);
-		
-		subTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
-		
-		messagePanel.add(subTitle, BorderLayout.NORTH);
-		messagePanel.add(message, BorderLayout.CENTER);
-		
-		messagePanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-		messagePanel.setOpaque(false);
-		
-		panel.add(messagePanel, BorderLayout.CENTER);
-		
-		Icon icon = params.getIcon();
-		if(icon != null) {
-			JPanel iconPanel = new JPanel(new BorderLayout());
-			iconPanel.add(new JLabel(icon), BorderLayout.CENTER);
-			iconPanel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-			iconPanel.setOpaque(false);
-			
-			panel.add(iconPanel, BorderLayout.EAST);
-		}
-		
-		return panel;
-	}
-	
-	
 	private JPanel createMessage(Message severity, String message) {
 		JPanel panel = new JPanel(new BorderLayout());
+		panel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
 		JLabel icon = getMessageIcon(severity);
 		JLabel messageLabel = new JLabel(message + "  ");
 		panel.add(icon, BorderLayout.WEST);
@@ -251,7 +210,12 @@ public class CardDialog {
 		buttonPanel.add(finishButton);
 		finishButton.addActionListener(e -> currentPage.finish());
 		
-		panel.add(buttonPanel, BorderLayout.CENTER);
+		message = new JPanel(new BorderLayout());
+		message.setOpaque(false);
+		
+		panel.add(buttonPanel, BorderLayout.EAST);
+		panel.add(message, BorderLayout.WEST);
+		
 		return panel;
 	}
 	
