@@ -14,7 +14,15 @@ import java.util.Set;
 public class EMDataSet extends AbstractDataSet {
 	
 	public static enum Method {
-		GSEA, Generic, Specialized
+		GSEA, Generic, Specialized;
+		
+		public String getLabel() {
+			switch(this) {
+				case GSEA: default: return "GSEA";
+				case Generic:       return "Generic/gProfiler";
+				case Specialized:   return "DAVID/BINGO/Great";
+			}
+		}
 	}
 	
 	private Method method;
