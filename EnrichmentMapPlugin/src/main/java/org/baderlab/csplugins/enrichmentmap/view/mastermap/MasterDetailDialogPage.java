@@ -49,6 +49,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	private IterableListModel<DataSetListItem> dataSetListModel;
 	private JPanel dataSetDetailPanel;
 	private CardLayout cardLayout;
+	private JButton deleteButton;
 	
 	private JCheckBox distinctEdgesCheckbox;
 	private CardDialogCallback callback;
@@ -90,7 +91,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		panel.add(dataPanel, BorderLayout.CENTER);
 		panel.add(cutoffPanel, BorderLayout.SOUTH);
 		
-		this.callback.setFinishButtonEnabled(false);
+		updateButtonEnablement();
 		return panel;
 	}
 
@@ -101,12 +102,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		dataSetListModel = new IterableListModel<>();
 		dataSetList = new DataSetList(dataSetListModel);
-		dataSetList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		
-		dataSetList.addListSelectionListener(e -> {
-			DataSetListItem item = dataSetList.getSelectedValue();
-			editDataSet(item);
-		});
+		dataSetList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		dataSetList.addListSelectionListener(e -> selectItem(dataSetList.getSelectedValue()));
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(dataSetList);
@@ -164,11 +161,12 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		JLabel label = new JLabel("Data Sets:");
 		SwingUtil.makeSmall(label);
 		
-		JButton addButton    = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS,     "Add Data Set");
-		JButton scanButton   = SwingUtil.createIconButton(iconManager, IconManager.ICON_FOLDER_O, "Scan Folder for Data Sets");
-		JButton deleteButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_TRASH_O,  "Delete Data Set");
+		JButton addButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS,     "Add Data Set");
+		JButton scanButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_FOLDER_O, "Scan Folder for Data Sets");
+		deleteButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_TRASH_O,  "Delete Data Set");
 		
 		addButton.addActionListener(e -> addNewDataSetToList());
+		deleteButton.addActionListener(e -> deleteSelectedItems());
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
@@ -211,18 +209,29 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		dataSetListModel.addElement(item);
 		dataSetDetailPanel.add(panel, item.id);
-		
-		dataSetList.setSelectedValue(params, true);
+		dataSetList.setSelectedValue(item, true);
 	}
 	
 	
-	private void editDataSet(DataSetListItem params) {
-		if(params == null)
-			cardLayout.show(dataSetDetailPanel, "nothing");
-		else 
-			cardLayout.show(dataSetDetailPanel, params.id);
+	private void deleteSelectedItems() {
+		for(DataSetListItem item : dataSetList.getSelectedValuesList()) {
+			if(item != commonParams) {
+				dataSetListModel.removeElement(item);
+				dataSetDetailPanel.remove(item.getPanel());
+			}
+		}
 	}
 	
+	private void selectItem(DataSetListItem params) {
+		cardLayout.show(dataSetDetailPanel, params == null ? "nothing" : params.id);
+		updateButtonEnablement();
+	}
+	
+	
+	private void updateButtonEnablement() {
+		deleteButton.setEnabled(dataSetListModel.getSize() > 0 && dataSetList.getSelectedIndex() > 0);
+		callback.setFinishButtonEnabled(dataSetListModel.size() > 1);
+	}
 	
 	private static abstract class DataSetListItem {
 		private static final Iterator<String> idGenerator = Stream.iterate(0, x -> x + 1).map(String::valueOf).iterator();
