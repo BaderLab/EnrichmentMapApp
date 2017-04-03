@@ -97,7 +97,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		scrollPane.setViewportView(dataSetMasterList);
 		
 		dataSetDetailHolder = new JPanel(new BorderLayout());
-		dataSetDetailHolder.setBorder(BorderFactory.createLineBorder(Color.GRAY)); // MKTODO get the color properly
+		dataSetDetailHolder.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); // MKTODO get the color properly
 		dataSetDetailHolder.add(dataSetPanelFactory.create(null), BorderLayout.CENTER);
 		
 		distinctEdgesCheckbox = new JCheckBox("Create separate edges for each dataset");
@@ -110,25 +110,27 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		layout.setAutoCreateContainerGaps(true);
 		
 		layout.setHorizontalGroup(
-			layout.createParallelGroup()
-				.addGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup()
-						.addComponent(titlePanel)
-						.addComponent(scrollPane, 250, 250, 250)
-					)
+			layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup()
+					.addComponent(titlePanel)
+					.addComponent(scrollPane, 250, 250, 250)
+				)
+				.addGroup(layout.createParallelGroup()
+					.addComponent(distinctEdgesCheckbox, Alignment.TRAILING)
 					.addComponent(dataSetDetailHolder, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
 				)
-				.addComponent(distinctEdgesCheckbox)
 		);
 		
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
-				.addComponent(titlePanel)
+				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
+					.addComponent(titlePanel)
+					.addComponent(distinctEdgesCheckbox)
+				)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(scrollPane)
 					.addComponent(dataSetDetailHolder)
 				)
-				.addComponent(distinctEdgesCheckbox)
 		);
 		
 		return panel;
@@ -149,7 +151,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
 		layout.setAutoCreateGaps(true);
-		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateContainerGaps(false);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 			.addComponent(label)

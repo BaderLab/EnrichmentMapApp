@@ -68,18 +68,18 @@ public class EditDataSetCompactPanel extends JPanel {
 	
 	@AfterInjection
 	private void createContents() {
-		JLabel nameLabel = new JLabel("Name:");
+		JLabel nameLabel = new JLabel("* Name:");
 		nameText = new JTextField();
 		textFieldForeground = nameText.getForeground();
 		nameText.setText(initDataSet != null ? initDataSet.getName() : null);
 		
-		JLabel analysisLabel = new JLabel("Analysis Type:");
+		JLabel analysisLabel = new JLabel("* Analysis Type:");
 		analysisTypeCombo = new JComboBox<>();
 		analysisTypeCombo.addItem(new ComboItem<>(Method.GSEA, Method.GSEA.getLabel()));
 		analysisTypeCombo.addItem(new ComboItem<>(Method.Generic, Method.Generic.getLabel()));
 		analysisTypeCombo.addItem(new ComboItem<>(Method.Specialized, Method.Specialized.getLabel()));
 
-		JLabel enrichmentsLabel = new JLabel("Enrichments:");
+		JLabel enrichmentsLabel = new JLabel("* Enrichments:");
 		enrichments1Text = new JTextField();
 		JButton enrichmentsBrowse = createBrowseButton();
 		enrichmentsBrowse.addActionListener(e -> browse(enrichments1Text, FileBrowser.Filter.ENRICHMENT));
