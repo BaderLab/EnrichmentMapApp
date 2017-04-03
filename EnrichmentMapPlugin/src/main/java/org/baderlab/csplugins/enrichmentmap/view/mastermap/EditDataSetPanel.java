@@ -35,7 +35,7 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
-public class EditDataSetCompactPanel extends JPanel {
+public class EditDataSetPanel extends JPanel {
 	
 	@Inject private FileUtil fileUtil;
 	@Inject private IconManager iconManager;
@@ -58,11 +58,11 @@ public class EditDataSetCompactPanel extends JPanel {
 	
 	
 	public interface Factory {
-		EditDataSetCompactPanel create(@Nullable DataSetParameters initDataSet);
+		EditDataSetPanel create(@Nullable DataSetParameters initDataSet);
 	}
 	
 	@Inject
-	public EditDataSetCompactPanel(@Assisted @Nullable DataSetParameters initDataSet) {
+	public EditDataSetPanel(@Assisted @Nullable DataSetParameters initDataSet) {
 		this.initDataSet = initDataSet;
 	}
 	
@@ -81,19 +81,19 @@ public class EditDataSetCompactPanel extends JPanel {
 
 		JLabel enrichmentsLabel = new JLabel("* Enrichments:");
 		enrichments1Text = new JTextField();
-		JButton enrichmentsBrowse = createBrowseButton();
+		JButton enrichmentsBrowse = createBrowseButton(iconManager);
 		enrichmentsBrowse.addActionListener(e -> browse(enrichments1Text, FileBrowser.Filter.ENRICHMENT));
 		
 		enrichments2Label = new JLabel("Enrichments 2:");
 		enrichments2Text = new JTextField();
 		enrichments2Text.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName1() : null);
-		enrichments2Browse = createBrowseButton();
+		enrichments2Browse = createBrowseButton(iconManager);
 		enrichments2Browse.addActionListener(e -> browse(enrichments2Text, FileBrowser.Filter.ENRICHMENT));
 		
 		JLabel expressionsLabel = new JLabel("Expressions:");
 		expressionsText = new JTextField();
 		expressionsText.setText(initDataSet != null ? initDataSet.getFiles().getExpressionFileName() : null);
-		JButton expressionsBrowse = createBrowseButton();
+		JButton expressionsBrowse = createBrowseButton(iconManager);
 		expressionsBrowse.addActionListener(e -> browse(expressionsText, FileBrowser.Filter.EXPRESSION));
 		
 		makeSmall(nameLabel, nameText, analysisLabel, analysisTypeCombo);
@@ -104,13 +104,13 @@ public class EditDataSetCompactPanel extends JPanel {
 		JLabel ranksLabel = new JLabel("Ranks:");
 		ranksText = new JTextField();
 		ranksText.setText(initDataSet != null ? initDataSet.getFiles().getRankedFile() : null);
-		JButton ranksBrowse = createBrowseButton();
+		JButton ranksBrowse = createBrowseButton(iconManager);
 		ranksBrowse.addActionListener(e -> browse(ranksText, FileBrowser.Filter.RANK));
 		
 		JLabel classesLabel = new JLabel("Classes:");
 		classesText = new JTextField();
 		classesText.setText(initDataSet != null ? initDataSet.getFiles().getClassFile() : null);
-		JButton classesBrowse = createBrowseButton();
+		JButton classesBrowse = createBrowseButton(iconManager);
 		classesText.getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(this::updateClasses));
 		classesBrowse.addActionListener(e -> browse(classesText, FileBrowser.Filter.CLASS));
 		
@@ -240,7 +240,7 @@ public class EditDataSetCompactPanel extends JPanel {
 		}
 	}
 	
-	public JButton createBrowseButton() {
+	public static JButton createBrowseButton(IconManager iconManager) {
 		JButton button = new JButton(IconManager.ICON_ELLIPSIS_H);
 		button.setFont(iconManager.getIconFont(10.0f));
 		button.setToolTipText("Browse...");

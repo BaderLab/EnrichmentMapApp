@@ -29,14 +29,18 @@ import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
 
 import com.google.inject.Inject;
-import com.lowagie.text.Font;
 
 @SuppressWarnings("serial")
 public class MasterDetailDialogPage implements CardDialogPage {
 
 	@Inject private IconManager iconManager;
+	
 	@Inject private CutoffPropertiesPanel cutoffPanel;
-	@Inject private EditDataSetCompactPanel.Factory dataSetPanelFactory;
+	@Inject private EditCommonPropertiesPanel.Factory commonPanelFactory;
+	@Inject private EditDataSetPanel.Factory dataSetPanelFactory;
+	
+	
+	private DataSetParameters commonParams;
 	
 	private DataSetList dataSetMasterList;
 	private IterableListModel<DataSetParameters> dataSetListModel;
@@ -70,6 +74,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	public JPanel createBodyPanel(CardDialogCallback callback) {
 		this.callback = callback;
 		
+		commonParams = new DataSetParameters("Common Files", Method.GSEA, new DataSetFiles());
+		
 		JPanel dataPanel = createDataSetPanel();
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(dataPanel, BorderLayout.CENTER);
@@ -87,6 +93,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		dataSetListModel = new IterableListModel<>();
 		dataSetMasterList = new DataSetList(dataSetListModel);
 		dataSetMasterList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		dataSetListModel.addElement(commonParams);
 		
 		dataSetMasterList.addListSelectionListener(e -> {
 			DataSetParameters params = dataSetMasterList.getSelectedValue();
@@ -98,7 +105,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		dataSetDetailHolder = new JPanel(new BorderLayout());
 		dataSetDetailHolder.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); // MKTODO get the color properly
-		dataSetDetailHolder.add(dataSetPanelFactory.create(null), BorderLayout.CENTER);
+		dataSetDetailHolder.add(new EditNothingPanel(), BorderLayout.CENTER);
 		
 		distinctEdgesCheckbox = new JCheckBox("Create separate edges for each dataset");
 		SwingUtil.makeSmall(distinctEdgesCheckbox);
@@ -173,7 +180,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	
 	private void addNewDataSetToList() {
-		int n = 1 + dataSetListModel.size();
+		int n = dataSetListModel.size();
 		DataSetParameters params = new DataSetParameters("Data Set " + n, Method.GSEA, new DataSetFiles());
 		dataSetListModel.addElement(params);
 		dataSetMasterList.setSelectedValue(params, true);
@@ -181,8 +188,15 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	
 	private void editDataSet(DataSetParameters params) {
+		JPanel editPanel;
+		if(params == null)
+			editPanel = new EditNothingPanel();
+		else if(params == commonParams)
+			editPanel = commonPanelFactory.create(commonParams);
+		else
+			editPanel = dataSetPanelFactory.create(params);
+		
 		dataSetDetailHolder.removeAll();
-		JPanel editPanel = dataSetPanelFactory.create(params);
 		dataSetDetailHolder.add(editPanel, BorderLayout.CENTER);
 		dataSetDetailHolder.revalidate();
 	}
@@ -206,14 +220,17 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				Color bgColor = UIManager.getColor(isSelected ? "Table.selectionBackground" : "Table.background");
 				Color fgColor = UIManager.getColor(isSelected ? "Table.selectionForeground" : "Table.foreground");
 				
-				JLabel iconLabel = new JLabel(" " + IconManager.ICON_FILE_TEXT + "  ");
+				boolean isCommon = dataSet == commonParams;
+				
+				String icon = isCommon ? IconManager.ICON_FILE_O : IconManager.ICON_FILE_TEXT_O;
+				JLabel iconLabel = new JLabel(" " + icon + "  ");
 				iconLabel.setFont(iconManager.getIconFont(13.0f));
 				iconLabel.setForeground(fgColor);
 				
-				String title = dataSet.getName() + "  (" + dataSet.getMethod().getLabel() + ")";
+				String title = dataSet.getName() + (isCommon ? "" : "  (" + dataSet.getMethod().getLabel() + ")");
 				JLabel titleLabel = new JLabel(title);
 				SwingUtil.makeSmall(titleLabel);
-				titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
+				//titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
 				titleLabel.setForeground(fgColor);
 				
 				JPanel panel = new JPanel(new BorderLayout());
@@ -223,9 +240,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				panel.setBackground(bgColor);
 				
 				Border emptyBorder = BorderFactory.createEmptyBorder(2, 4, 2, 4);
-				Border lineBorder  = BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground"));
-				Border compound = BorderFactory.createCompoundBorder(lineBorder, emptyBorder);
-				panel.setBorder(compound);
+				panel.setBorder(emptyBorder);
 				
 				return panel;
 			}

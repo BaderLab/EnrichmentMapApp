@@ -19,7 +19,8 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.ExportPDFAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.ExportTXTAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMainPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParentPanel;
-import org.baderlab.csplugins.enrichmentmap.view.mastermap.EditDataSetCompactPanel;
+import org.baderlab.csplugins.enrichmentmap.view.mastermap.EditCommonPropertiesPanel;
+import org.baderlab.csplugins.enrichmentmap.view.mastermap.EditDataSetPanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisSignatureDiscoveryPanel;
@@ -82,7 +83,8 @@ class FactoryModule extends AbstractModule {
 		installFactory(ExportPDFAction.Factory.class);
 		installFactory(ExportTXTAction.Factory.class);
 		installFactory(AddRanksDialog.Factory.class);
-		installFactory(EditDataSetCompactPanel.Factory.class);
+		installFactory(EditDataSetPanel.Factory.class);
+		installFactory(EditCommonPropertiesPanel.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {
