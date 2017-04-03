@@ -33,6 +33,10 @@ public class IterableListModel<T> extends DefaultListModel<T> implements Iterabl
 		return StreamSupport.stream(spliterator(), false);
 	}
 	
+	public void update() {
+		fireContentsChanged(this, 0, getSize());
+	}
+	
 	public Iterator<T> iterator() {
 		return new Iterator<T>() {
 

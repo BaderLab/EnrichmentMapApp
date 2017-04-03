@@ -36,6 +36,8 @@ import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
 public class EditDataSetPanel extends JPanel {
+	 
+	public static final String PROP_NAME = "dataSetName";
 	
 	@Inject private FileUtil fileUtil;
 	@Inject private IconManager iconManager;
@@ -66,18 +68,29 @@ public class EditDataSetPanel extends JPanel {
 		this.initDataSet = initDataSet;
 	}
 	
+	public String getDisplayName() {
+		String m = analysisTypeCombo.getSelectedItem().toString();
+		return nameText.getText() + "  (" + m + ")";
+	}
+	
 	@AfterInjection
 	private void createContents() {
 		JLabel nameLabel = new JLabel("* Name:");
 		nameText = new JTextField();
 		textFieldForeground = nameText.getForeground();
 		nameText.setText(initDataSet != null ? initDataSet.getName() : null);
+		nameText.getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(() -> 
+			firePropertyChange(PROP_NAME, null, getDisplayName())
+		));
 		
 		JLabel analysisLabel = new JLabel("* Analysis Type:");
 		analysisTypeCombo = new JComboBox<>();
 		analysisTypeCombo.addItem(new ComboItem<>(Method.GSEA, Method.GSEA.getLabel()));
 		analysisTypeCombo.addItem(new ComboItem<>(Method.Generic, Method.Generic.getLabel()));
 		analysisTypeCombo.addItem(new ComboItem<>(Method.Specialized, Method.Specialized.getLabel()));
+		analysisTypeCombo.addActionListener(e -> 
+			firePropertyChange(PROP_NAME, null, getDisplayName())
+		);
 
 		JLabel enrichmentsLabel = new JLabel("* Enrichments:");
 		enrichments1Text = new JTextField();

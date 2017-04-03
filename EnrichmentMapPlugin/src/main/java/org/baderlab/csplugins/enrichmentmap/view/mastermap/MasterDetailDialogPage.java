@@ -1,8 +1,11 @@
 package org.baderlab.csplugins.enrichmentmap.view.mastermap;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -40,11 +43,12 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Inject private EditDataSetPanel.Factory dataSetPanelFactory;
 	
 	
-	private DataSetParameters commonParams;
+	private DataSetListItem commonParams;
 	
-	private DataSetList dataSetMasterList;
-	private IterableListModel<DataSetParameters> dataSetListModel;
-	private JPanel dataSetDetailHolder;
+	private DataSetList dataSetList;
+	private IterableListModel<DataSetListItem> dataSetListModel;
+	private JPanel dataSetDetailPanel;
+	private CardLayout cardLayout;
 	
 	private JCheckBox distinctEdgesCheckbox;
 	private CardDialogCallback callback;
@@ -74,14 +78,19 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	public JPanel createBodyPanel(CardDialogCallback callback) {
 		this.callback = callback;
 		
-		commonParams = new DataSetParameters("Common Files", Method.GSEA, new DataSetFiles());
-		
+		commonParams = new DataSetListItem() {
+			private final JPanel panel = commonPanelFactory.create(null);
+			@Override String getIcon()  { return IconManager.ICON_FILE_O; }
+			@Override String getName()  { return "Common Files"; }
+			@Override JPanel getPanel() { return panel; }
+		};
+				
 		JPanel dataPanel = createDataSetPanel();
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(dataPanel, BorderLayout.CENTER);
 		panel.add(cutoffPanel, BorderLayout.SOUTH);
 		
-		callback.setFinishButtonEnabled(false);
+		this.callback.setFinishButtonEnabled(false);
 		return panel;
 	}
 
@@ -91,21 +100,28 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		JPanel titlePanel = createTitlePanel();
 		
 		dataSetListModel = new IterableListModel<>();
-		dataSetMasterList = new DataSetList(dataSetListModel);
-		dataSetMasterList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		dataSetListModel.addElement(commonParams);
+		dataSetList = new DataSetList(dataSetListModel);
+		dataSetList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
-		dataSetMasterList.addListSelectionListener(e -> {
-			DataSetParameters params = dataSetMasterList.getSelectedValue();
-			editDataSet(params);
+		dataSetList.addListSelectionListener(e -> {
+			DataSetListItem item = dataSetList.getSelectedValue();
+			editDataSet(item);
 		});
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setViewportView(dataSetMasterList);
+		scrollPane.setViewportView(dataSetList);
 		
-		dataSetDetailHolder = new JPanel(new BorderLayout());
-		dataSetDetailHolder.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); // MKTODO get the color properly
-		dataSetDetailHolder.add(new EditNothingPanel(), BorderLayout.CENTER);
+		dataSetDetailPanel = new JPanel(new BorderLayout());
+		dataSetDetailPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); // MKTODO get the color properly
+		cardLayout = new CardLayout();
+		dataSetDetailPanel.setLayout(cardLayout);
+		
+		// Blank page
+		dataSetDetailPanel.add(new EditNothingPanel(), "nothing");
+		
+		// Common page
+		dataSetListModel.addElement(commonParams);
+		dataSetDetailPanel.add(commonParams.getPanel(), commonParams.id);
 		
 		distinctEdgesCheckbox = new JCheckBox("Create separate edges for each dataset");
 		SwingUtil.makeSmall(distinctEdgesCheckbox);
@@ -124,7 +140,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(distinctEdgesCheckbox, Alignment.TRAILING)
-					.addComponent(dataSetDetailHolder, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
+					.addComponent(dataSetDetailPanel, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
 				)
 		);
 		
@@ -136,7 +152,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(scrollPane)
-					.addComponent(dataSetDetailHolder)
+					.addComponent(dataSetDetailPanel)
 				)
 		);
 		
@@ -162,7 +178,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 			.addComponent(label)
-//			.addGap(0, 0, Short.MAX_VALUE)
 			.addComponent(scanButton)
 			.addComponent(addButton)
 			.addComponent(deleteButton)
@@ -182,55 +197,67 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	private void addNewDataSetToList() {
 		int n = dataSetListModel.size();
 		DataSetParameters params = new DataSetParameters("Data Set " + n, Method.GSEA, new DataSetFiles());
-		dataSetListModel.addElement(params);
-		dataSetMasterList.setSelectedValue(params, true);
-	}
-	
-	
-	private void editDataSet(DataSetParameters params) {
-		JPanel editPanel;
-		if(params == null)
-			editPanel = new EditNothingPanel();
-		else if(params == commonParams)
-			editPanel = commonPanelFactory.create(commonParams);
-		else
-			editPanel = dataSetPanelFactory.create(params);
+		EditDataSetPanel panel = dataSetPanelFactory.create(params);
 		
-		dataSetDetailHolder.removeAll();
-		dataSetDetailHolder.add(editPanel, BorderLayout.CENTER);
-		dataSetDetailHolder.revalidate();
+		panel.addPropertyChangeListener(EditDataSetPanel.PROP_NAME, e ->
+			((IterableListModel<?>)dataSetList.getModel()).update()
+		);
+		
+		DataSetListItem item = new DataSetListItem() {
+			@Override JPanel getPanel() { return panel; }
+			@Override String getName()  { return panel.getDisplayName(); }
+			@Override String getIcon()  { return IconManager.ICON_FILE_TEXT_O; }
+		};
+		
+		dataSetListModel.addElement(item);
+		dataSetDetailPanel.add(panel, item.id);
+		
+		dataSetList.setSelectedValue(params, true);
 	}
 	
 	
-	private class DataSetList extends JList<DataSetParameters> {
+	private void editDataSet(DataSetListItem params) {
+		if(params == null)
+			cardLayout.show(dataSetDetailPanel, "nothing");
+		else 
+			cardLayout.show(dataSetDetailPanel, params.id);
+	}
+	
+	
+	private static abstract class DataSetListItem {
+		private static final Iterator<String> idGenerator = Stream.iterate(0, x -> x + 1).map(String::valueOf).iterator();
+		public final String id = idGenerator.next();
+		
+		abstract JPanel getPanel();
+		abstract String getName();
+		abstract String getIcon();
+	}
+	
+	private class DataSetList extends JList<DataSetListItem> {
 		
 		@Inject
-		public DataSetList(ListModel<DataSetParameters> model) {
+		public DataSetList(ListModel<DataSetListItem> model) {
 			setModel(model);
 			setCellRenderer(new CellRenderer());
 			setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		}
 		
-		private class CellRenderer implements ListCellRenderer<DataSetParameters> {
+		private class CellRenderer implements ListCellRenderer<DataSetListItem> {
 
 			@Override
-			public Component getListCellRendererComponent(JList<? extends DataSetParameters> list,
-					DataSetParameters dataSet, int index, boolean isSelected, boolean cellHasFocus) {
+			public Component getListCellRendererComponent(JList<? extends DataSetListItem> list,
+					DataSetListItem dataSet, int index, boolean isSelected, boolean cellHasFocus) {
 				
 				Color bgColor = UIManager.getColor(isSelected ? "Table.selectionBackground" : "Table.background");
 				Color fgColor = UIManager.getColor(isSelected ? "Table.selectionForeground" : "Table.foreground");
 				
-				boolean isCommon = dataSet == commonParams;
-				
-				String icon = isCommon ? IconManager.ICON_FILE_O : IconManager.ICON_FILE_TEXT_O;
-				JLabel iconLabel = new JLabel(" " + icon + "  ");
+				JLabel iconLabel = new JLabel(" " + dataSet.getIcon() + "  ");
 				iconLabel.setFont(iconManager.getIconFont(13.0f));
 				iconLabel.setForeground(fgColor);
 				
-				String title = dataSet.getName() + (isCommon ? "" : "  (" + dataSet.getMethod().getLabel() + ")");
+				String title = dataSet.getName();
 				JLabel titleLabel = new JLabel(title);
 				SwingUtil.makeSmall(titleLabel);
-				//titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
 				titleLabel.setForeground(fgColor);
 				
 				JPanel panel = new JPanel(new BorderLayout());
