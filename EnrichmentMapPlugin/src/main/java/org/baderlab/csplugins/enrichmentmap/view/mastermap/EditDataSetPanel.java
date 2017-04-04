@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.mastermap;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
@@ -22,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.parsers.ClassFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
@@ -58,6 +60,7 @@ public class EditDataSetPanel extends JPanel {
 	private JButton enrichments2Browse;
 	
 	private Color textFieldForeground;
+	private String[] classes;
 	
 	private final @Nullable DataSetParameters initDataSet;
 	
@@ -75,6 +78,44 @@ public class EditDataSetPanel extends JPanel {
 		String m = analysisTypeCombo.getSelectedItem().toString();
 		return nameText.getText() + "  (" + m + ")";
 	}
+	
+	public DataSetParameters createDataSetParameters() {
+		String name = nameText.getText().trim();
+		Method method = getMethod();
+		
+		DataSetFiles files = new DataSetFiles();
+		
+		String enrichmentFileName1 = enrichments1Text.getText();
+		if(!isNullOrEmpty(enrichmentFileName1))
+			files.setEnrichmentFileName1(enrichmentFileName1);
+		
+		String enrichmentFileName2 = enrichments2Text.getText();
+		if(!isNullOrEmpty(enrichmentFileName2))
+			files.setEnrichmentFileName2(enrichmentFileName2);
+		
+		String expressionFileName = expressionsText.getText();
+		if(!isNullOrEmpty(expressionFileName))
+			files.setExpressionFileName(expressionFileName);
+		
+		String ranksFileName = ranksText.getText();
+		if(!isNullOrEmpty(ranksFileName))
+			files.setRankedFile(ranksFileName);
+		
+		String classesFileName = classesText.getText();
+		if(!isNullOrEmpty(classesFileName))
+			files.setClassFile(classesFileName);
+		
+		String positive = positiveText.getText();
+		String negative = negativeText.getText();
+		if(!isNullOrEmpty(positive) && !isNullOrEmpty(negative) && classes != null) {
+			files.setPhenotype1(positive);
+			files.setPhenotype2(negative);
+			files.setTemp_class1(classes);
+		}
+		
+		return new DataSetParameters(name, method, files);
+	}
+	
 	
 	@AfterInjection
 	private void createContents() {
@@ -97,12 +138,13 @@ public class EditDataSetPanel extends JPanel {
 
 		JLabel enrichmentsLabel = new JLabel("* Enrichments:");
 		enrichments1Text = new JTextField();
+		enrichments1Text.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName1() : null);
 		JButton enrichmentsBrowse = createBrowseButton(iconManager);
 		enrichmentsBrowse.addActionListener(e -> browse(enrichments1Text, FileBrowser.Filter.ENRICHMENT));
 		
 		enrichments2Label = new JLabel("Enrichments 2:");
 		enrichments2Text = new JTextField();
-		enrichments2Text.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName1() : null);
+		enrichments2Text.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName2() : null);
 		enrichments2Browse = createBrowseButton(iconManager);
 		enrichments2Browse.addActionListener(e -> browse(enrichments2Text, FileBrowser.Filter.ENRICHMENT));
 		
@@ -265,6 +307,10 @@ public class EditDataSetPanel extends JPanel {
 			button.putClientProperty("JComponent.sizeVariant", "small");
 		}
 		return button;
+	}
+	
+	private Method getMethod() {
+		return analysisTypeCombo.getItemAt(analysisTypeCombo.getSelectedIndex()).getValue();
 	}
 
 }

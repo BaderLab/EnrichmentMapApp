@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -23,6 +24,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
@@ -30,6 +32,7 @@ public class EditCommonPropertiesPanel extends JPanel {
 
 	@Inject private FileUtil fileUtil;
 	@Inject private IconManager iconManager;
+	@Inject private Provider<JFrame> jframe;
 	
 	private JTextField gmtText;
 	private JTextField expressionsText;
@@ -53,15 +56,18 @@ public class EditCommonPropertiesPanel extends JPanel {
 		gmtText.setText(initDataSet != null ? initDataSet.getFiles().getGMTFileName() : null);
 		textFieldForeground = gmtText.getForeground();
 		JButton gmtBrowse = EditDataSetPanel.createBrowseButton(iconManager);
-		gmtBrowse.addActionListener(e -> browse(expressionsText, FileBrowser.Filter.GMT));
+		gmtBrowse.addActionListener(e -> browse(gmtText, FileBrowser.Filter.GMT));
 		makeSmall(gmtLabel, gmtText);
 		
 		JLabel expressionsLabel = new JLabel("Expressions:");
 		expressionsText = new JTextField();
 		expressionsText.setText(initDataSet != null ? initDataSet.getFiles().getExpressionFileName() : null);
 		JButton expressionsBrowse = EditDataSetPanel.createBrowseButton(iconManager);
-		gmtBrowse.addActionListener(e -> browse(expressionsText, FileBrowser.Filter.EXPRESSION));
+		expressionsBrowse.addActionListener(e -> browse(expressionsText, FileBrowser.Filter.EXPRESSION));
 		makeSmall(expressionsLabel, expressionsText);
+		
+		expressionsLabel.setEnabled(false);
+		expressionsText.setEnabled(false);
 		
 		
 		GroupLayout layout = new GroupLayout(this);
@@ -105,9 +111,13 @@ public class EditCommonPropertiesPanel extends JPanel {
 	
 	
 	private void browse(JTextField textField, FileBrowser.Filter filter) {
-		Optional<Path> path = FileBrowser.browse(fileUtil, this, filter);
+		Optional<Path> path = FileBrowser.browse(fileUtil, jframe.get(), filter);
 		path.map(Path::toString).ifPresent(textField::setText);
 		//validateInput();
+	}
+
+	public String getGmtFile() {
+		return gmtText.getText().trim();
 	}
 	
 }

@@ -1,13 +1,17 @@
 package org.baderlab.csplugins.enrichmentmap.view.mastermap;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
@@ -26,19 +30,25 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback.Message;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.baderlab.csplugins.enrichmentmap.view.util.IterableListModel;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -50,11 +60,14 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Inject private IconManager iconManager;
 	@Inject private DialogTaskManager dialogTaskManager;
 	
+	@Inject private LegacySupport legacySupport;
 	@Inject private CutoffPropertiesPanel cutoffPanel;
 	@Inject private EditCommonPropertiesPanel.Factory commonPanelFactory;
 	@Inject private EditDataSetPanel.Factory dataSetPanelFactory;
+	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	
 	
+	private EditCommonPropertiesPanel commonPanel;
 	private DataSetListItem commonParams;
 	
 	private DataSetList dataSetList;
@@ -86,18 +99,54 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	@Override
 	public void finish() {
+		String prefix = legacySupport.getNextAttributePrefix();
+		SimilarityMetric similarityMetric = cutoffPanel.getSimilarityMetric();
+		double pvalue = cutoffPanel.getPValue();
+		double qvalue = cutoffPanel.getQValue();
+		NESFilter nesFilter = cutoffPanel.getNESFilter();
+		double cutoff = cutoffPanel.getCutoff();
+		double combined = cutoffPanel.getCombinedConstant();
+		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
+		
+		
+		EMCreationParameters params = 
+			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
+		
+		String gmtPath = commonPanel.getGmtFile();
+		if(!isNullOrEmpty(gmtPath)) {
+			params.setGlobalGmtFile(Paths.get(gmtPath));
+		}
+		params.setCreateDistinctEdges(distinctEdgesCheckbox.isSelected());
+		
+		List<DataSetParameters> dataSets = 
+				dataSetListModel.toList().stream()
+				.map(DataSetListItem::createDataSetParameters)
+				.filter(x -> x != null)
+				.collect(Collectors.toList());
+		
+		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
+		TaskIterator tasks = taskFactory.createTaskIterator();
+		
+		// Close this dialog after the progress dialog finishes normally
+		tasks.append(new AbstractTask() {
+			public void run(TaskMonitor taskMonitor) {
+				callback.close();
+			}
+		});
+		
+		dialogTaskManager.execute(tasks);
 	}
 	
 	
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
 		this.callback = callback;
+		this.commonPanel = commonPanelFactory.create(null);
 		
 		commonParams = new DataSetListItem() {
-			private final JPanel panel = commonPanelFactory.create(null);
 			@Override String getIcon()  { return IconManager.ICON_FILE_O; }
 			@Override String getName()  { return "Common Files"; }
-			@Override JPanel getPanel() { return panel; }
+			@Override JPanel getPanel() { return commonPanel; }
 		};
 				
 		JPanel dataPanel = createDataSetPanel();
@@ -224,6 +273,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			@Override JPanel getPanel() { return panel; }
 			@Override String getName()  { return panel.getDisplayName(); }
 			@Override String getIcon()  { return IconManager.ICON_FILE_TEXT_O; }
+			@Override DataSetParameters createDataSetParameters() { return panel.createDataSetParameters(); }
 		};
 		
 		dataSetListModel.addElement(item);
@@ -256,13 +306,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	private void scan() {
 		Optional<File> rootFolder = FileBrowser.browseForRootFolder(callback.getDialogFrame());
 		if(rootFolder.isPresent()) {
-			File root = rootFolder.get();
-			if(!root.isDirectory()) {
-				callback.setMessage(Message.WARN, "Not a folder");
-			}
-			
 			scanButton.setEnabled(false);
-			ResolverTask task = new ResolverTask(root);
+			ResolverTask task = new ResolverTask(rootFolder.get());
 			
 			dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
 				
@@ -293,6 +338,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		abstract JPanel getPanel();
 		abstract String getName();
 		abstract String getIcon();
+		DataSetParameters createDataSetParameters() { return null; };
 	}
 	
 	private class DataSetList extends JList<DataSetListItem> {

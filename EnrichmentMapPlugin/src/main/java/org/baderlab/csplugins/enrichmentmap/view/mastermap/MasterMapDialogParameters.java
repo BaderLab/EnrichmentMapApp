@@ -25,7 +25,7 @@ public class MasterMapDialogParameters implements CardDialogParameters {
 	public List<CardDialogPage> getPages() {
 		return Arrays.asList(
 			masterDetailDialogPage.get()
-//			mixedFormatDialogPage.get()
+//			,mixedFormatDialogPage.get()
 		);
 	}
 	
