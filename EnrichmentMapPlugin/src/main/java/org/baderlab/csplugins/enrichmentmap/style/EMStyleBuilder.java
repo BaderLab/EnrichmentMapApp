@@ -14,6 +14,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_L
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TOOLTIP;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.DIAMOND;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.ELLIPSE;
@@ -195,6 +196,7 @@ public class EMStyleBuilder {
 			setNodeBorderColors(vs, options);
 			setNodeColors(vs, options);
 			setNodeLabels(vs, options);
+			setNodeTooltip(vs, options);
 			setNodeChart(vs, chart);
 			
 			if (options.isPublicationReady()) {
@@ -400,7 +402,14 @@ public class EMStyleBuilder {
 	private void setNodeLabels(VisualStyle vs, EMStyleOptions options) {
 		String prefix = options.getAttributePrefix();
 		PassthroughMapping<String, String> nodeLabel = (PassthroughMapping<String, String>) pmFactory
-				.createVisualMappingFunction(Columns.NODE_GS_DESCR.with(prefix,null), String.class, NODE_LABEL);
+				.createVisualMappingFunction(Columns.NODE_GS_DESCR.with(prefix, null), String.class, NODE_LABEL);
+		vs.addVisualMappingFunction(nodeLabel);
+	}
+	
+	private void setNodeTooltip(VisualStyle vs, EMStyleOptions options) {
+		String prefix = options.getAttributePrefix();
+		PassthroughMapping<String, String> nodeLabel = (PassthroughMapping<String, String>) pmFactory
+				.createVisualMappingFunction(Columns.NODE_GS_DESCR.with(prefix ,null), String.class, NODE_TOOLTIP);
 		vs.addVisualMappingFunction(nodeLabel);
 	}
 	
