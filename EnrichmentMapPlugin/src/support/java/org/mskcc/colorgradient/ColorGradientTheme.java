@@ -148,21 +148,25 @@ public class ColorGradientTheme {
     }
 
 	/**
-	 * See http://colorbrewer2.org/#type=diverging&scheme=PRGn&n=3
+	 * See http://colorbrewer2.org/#type=diverging&scheme=PRGn&n=7
 	 */
     public static final ColorGradientTheme PR_GN_GRADIENT_THEME = new ColorGradientTheme(
-            		"3-class PRGn",
-            		new Color(127, 191, 123)/*green*/, new Color(247, 247, 247)/*almost white*/,
-					new Color(175, 141, 195)/*purple*/, Color.LIGHT_GRAY,
-					Color.BLACK, Color.WHITE
+    		"7-class PRGn",
+    		new Color(27, 120, 55)/*green*/,
+    		new Color(247, 247, 247)/*almost white*/,
+			new Color(118, 42, 131)/*purple*/,
+			Color.LIGHT_GRAY,
+			Color.BLACK,
+			Color.WHITE
 	);
 
-    /**
-     * Color Theme:  RED_ONECOLOR_GRADIENT_THEME
-     */
-    public static final ColorGradientTheme GREEN_ONECOLOR_GRADIENT_THEME
-            = new ColorGradientTheme("Green", Color.WHITE, new Color(120,255,120),
-									 Color.GREEN, Color.LIGHT_GRAY,
-									 Color.BLACK, Color.WHITE);
+    public static final ColorGradientTheme GREEN_ONECOLOR_GRADIENT_THEME = new ColorGradientTheme(
+    		"Green",
+    		Color.WHITE,
+    		new Color(27, 120, 55),
+			Color.GREEN,
+			Color.LIGHT_GRAY,
+			Color.BLACK,
+			Color.WHITE);
 
 }
