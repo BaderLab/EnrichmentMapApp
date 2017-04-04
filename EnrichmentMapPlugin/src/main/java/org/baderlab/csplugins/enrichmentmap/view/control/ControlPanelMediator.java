@@ -16,6 +16,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_V
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -362,6 +363,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 							
 							try {
 								viewPanel.updateChartColorsCombo();
+								viewPanel.updateChartLabelsCheck();
 							} finally {
 								updating = false;
 							}
@@ -373,15 +375,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 						if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
 							updateVisualStyle(map, viewPanel);
 					});
-					
+					viewPanel.getShowChartLabelsCheck().addActionListener(evt -> {
+						updateVisualStyle(map, viewPanel);
+					});
 					viewPanel.getPublicationReadyCheck().addActionListener(evt -> {
 						updateVisualStyle(map, viewPanel);
 					});
-					
 					viewPanel.getResetStyleButton().addActionListener(evt -> {
 						updateVisualStyle(map, viewPanel);
 					});
-					
 					viewPanel.getSetEdgeWidthButton().addActionListener(evt -> {
 						showEdgeWidthDialog();
 					});
@@ -509,12 +511,13 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
 		ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
 		ColorScheme colorScheme = (ColorScheme) viewPanel.getChartColorsCombo().getSelectedItem();
+		boolean showLabels = viewPanel.getShowChartLabelsCheck().isSelected();
 		
-		return createChart(data, type, colorScheme, options);
+		return createChart(data, type, colorScheme, showLabels, options);
 	}
 	
 	private CyCustomGraphics2<?> createChart(ChartData data, ChartType type, ColorScheme colorScheme,
-			EMStyleOptions options) {
+			boolean showLabels, EMStyleOptions options) {
 		CyCustomGraphics2<?> chart = null;
 		
 		if (data != null && data != ChartData.NONE) {
@@ -530,16 +533,20 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 						.map(columnIdFactory::createColumnIdentifier) // column id
 						.collect(Collectors.toList());
 				
+				// Sort the columns by name, so the chart items have the same order as the data set list
+				Collator collator = Collator.getInstance();
+				Collections.sort(columns, (CyColumnIdentifier o1, CyColumnIdentifier o2) -> {
+					return collator.compare(o1.getColumnName(), o2.getColumnName());
+				});
+				
 				Map<String, Object> props = new HashMap<>(type.getProperties());
 				props.put("cy_dataColumns", columns);
 				
-				if (type != null && type != ChartType.PIE) {
-					List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
-					
-					props.put("cy_range", range);
-					props.put("cy_autoRange", false);
-					props.put("cy_globalRange", true);
-				}
+				List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
+				props.put("cy_range", range);
+				props.put("cy_autoRange", false);
+				props.put("cy_globalRange", true);
+				props.put("cy_showItemLabels", showLabels);
 				
 				if (colorScheme == ColorScheme.CONTRASTING || colorScheme == ColorScheme.MODULATED
 						|| colorScheme == ColorScheme.RAINBOW) {

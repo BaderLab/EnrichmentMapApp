@@ -172,7 +172,7 @@ public class EMStyleBuilder {
 	}
 	
 	public static NodeShape getDefaultNodeShape(ChartType chartType) {
-		return chartType == null || chartType == ChartType.PIE ? ELLIPSE : RECTANGLE;
+		return chartType == null || chartType == ChartType.HEAT_PIE ? ELLIPSE : RECTANGLE;
 	}
 	
 	public void updateProperties(VisualStyle vs, EMStyleOptions options, CyCustomGraphics2<?> chart) {
@@ -290,7 +290,7 @@ public class EMStyleBuilder {
 		vs.setDefaultValue(NODE_FILL_COLOR, Colors.DEF_NODE_COLOR);
 		vs.setDefaultValue(NODE_BORDER_PAINT, Colors.DEF_NODE_BORDER_COLOR);
 		vs.setDefaultValue(NODE_SHAPE, getDefaultNodeShape(chartType));
-		vs.setDefaultValue(NODE_SIZE, chartType == ChartType.PIE ? MIN_NODE_SIZE : (MAX_NODE_SIZE + MIN_NODE_SIZE) / 2);
+		vs.setDefaultValue(NODE_SIZE, chartType == ChartType.HEAT_PIE ? MIN_NODE_SIZE : (MAX_NODE_SIZE + MIN_NODE_SIZE) / 2);
 		vs.setDefaultValue(NODE_BORDER_WIDTH, DEF_NODE_BORDER_WIDTH);
 		vs.setDefaultValue(NODE_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
 		vs.setDefaultValue(NODE_BORDER_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
@@ -405,7 +405,7 @@ public class EMStyleBuilder {
 	}
 	
 	private void setNodeSize(VisualStyle vs, EMStyleOptions options, ChartType chartType) {
-		if (chartType == null || chartType == ChartType.PIE) {
+		if (chartType == null || chartType == ChartType.HEAT_PIE) {
 			String prefix = options.getAttributePrefix();
 			ContinuousMapping<Integer, Double> nodeSize = (ContinuousMapping<Integer, Double>) cmFactory
 					.createVisualMappingFunction(Columns.NODE_GS_SIZE.with(prefix,null), Integer.class, NODE_SIZE);

@@ -12,6 +12,7 @@ import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.RAINBOW;
 import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.RANDOM;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -21,6 +22,7 @@ import java.awt.Font;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -396,6 +398,20 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					public List<Color> getColors(int nColors) { return Collections.singletonList(DARK_RED); }
 				}
 		};
+		private final ColorScheme[] HEAT_MAP_SCHEMES = new ColorScheme[] {
+				new ColorScheme("7_PR_GN", "7-class PRGn") {
+					@Override
+					public List<Color> getColors(int nColors) {
+						return Arrays.asList(
+								new Color(27, 120, 55)/*green*/,
+					    		new Color(247, 247, 247)/*almost white*/,
+								new Color(118, 42, 131)/*purple*/,
+								Color.LIGHT_GRAY
+						);
+					}
+				}
+		};
+		
 		private final ColorScheme[] HEAT_STRIP_COLOR_SCHEMES;
 		
 		private JRadioButton pValueRadio;
@@ -418,6 +434,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JComboBox<ChartData> chartDataCombo;
 		private JComboBox<ChartType> chartTypeCombo;
 		private JComboBox<ColorScheme> chartColorsCombo;
+		private JCheckBox showChartLabelsCheck;
 		
 		private final CyNetworkView networkView;
 		
@@ -502,6 +519,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		void updateChartCombos() {
 			updateChartTypeCombo();
 			updateChartColorsCombo();
+			updateChartLabelsCheck();
 		}
 		
 		void updateChartTypeCombo() {
@@ -520,6 +538,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				ColorScheme[] colorSchemes = null;
 				
 				switch (type) {
+					case HEAT_PIE:
+					case HEAT_MAP:
+						colorSchemes = HEAT_MAP_SCHEMES;
+						break;
 					case HEAT_STRIPS:
 						colorSchemes = HEAT_STRIP_COLOR_SCHEMES;
 						break;
@@ -539,6 +561,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			}
 			
 			getChartColorsCombo().setEnabled(getChartTypeCombo().isEnabled() && data != ChartData.NONE);
+		}
+		
+		void updateChartLabelsCheck() {
+			ChartData data = (ChartData) getChartDataCombo().getSelectedItem();
+			getShowChartLabelsCheck().setEnabled(getChartTypeCombo().isEnabled() && data != ChartData.NONE);
 		}
 		
 		CyNetworkView getNetworkView() {
@@ -632,8 +659,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		}
 		
 		private JPanel createStylePanel() {
-			makeSmall(chartDataLabel, chartTypeLabel, chartColorsLabel, getChartDataCombo(), getChartTypeCombo(),
-					getChartColorsCombo(), getPublicationReadyCheck(), getSetEdgeWidthButton(), getResetStyleButton());
+			makeSmall(chartDataLabel, chartTypeLabel, chartColorsLabel);
+			makeSmall(getChartDataCombo(), getChartTypeCombo(), getChartColorsCombo(), getShowChartLabelsCheck());
+			makeSmall(getPublicationReadyCheck(), getSetEdgeWidthButton(), getResetStyleButton());
 			
 			final JPanel panel = new JPanel();
 			panel.setBorder(LookAndFeelUtil.createTitledBorder("Style"));
@@ -655,11 +683,15 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 									.addComponent(getChartDataCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartTypeCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartColorsCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-									.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+									.addComponent(getShowChartLabelsCheck(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 									.addComponent(getPublicationReadyCheck(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 							)
 					)
-					.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(CENTER, false)
@@ -674,10 +706,13 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							.addComponent(chartColorsLabel)
 							.addComponent(getChartColorsCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
-					.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getShowChartLabelsCheck(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getPublicationReadyCheck(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
 			);
 			
 			if (LookAndFeelUtil.isAquaLAF())
@@ -798,9 +833,17 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return chartColorsCombo;
 		}
 		
+		JCheckBox getShowChartLabelsCheck() {
+			if (showChartLabelsCheck == null) {
+				showChartLabelsCheck = new JCheckBox("Show Chart Labels");
+			}
+			
+			return showChartLabelsCheck;
+		}
+		
 		JCheckBox getPublicationReadyCheck() {
 			if (publicationReadyCheck == null) {
-				publicationReadyCheck = new JCheckBox("Publication-Ready Style");
+				publicationReadyCheck = new JCheckBox("Publication-Ready");
 			}
 			
 			return publicationReadyCheck;
@@ -809,6 +852,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		public JButton getSetEdgeWidthButton() {
 			if (setEdgeWidthButton == null) {
 				setEdgeWidthButton = new JButton("Set Signature Edge Width...");
+				
+				if (isAquaLAF())
+					setEdgeWidthButton.putClientProperty("JButton.buttonType", "gradient");
 			}
 			
 			return setEdgeWidthButton;
@@ -816,7 +862,12 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		JButton getResetStyleButton() {
 			if (resetStyleButton == null) {
-				resetStyleButton = new JButton("Reset Style");
+				resetStyleButton = new JButton(IconManager.ICON_REFRESH);
+				resetStyleButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(13.0f));
+				resetStyleButton.setToolTipText("Reset Style");
+				
+				if (isAquaLAF())
+					resetStyleButton.putClientProperty("JButton.buttonType", "gradient");
 			}
 			
 			return resetStyleButton;

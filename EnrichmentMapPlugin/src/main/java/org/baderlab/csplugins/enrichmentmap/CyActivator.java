@@ -10,6 +10,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.io.LegacySessionLoader;
 import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
+import org.baderlab.csplugins.enrichmentmap.style.charts.heatpie.HeatPieChartFactory;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.cytoscape.application.CyApplicationConfiguration;
@@ -70,11 +71,18 @@ public class CyActivator extends AbstractCyActivator {
 		if (!headless) {
 			// register actions
 			registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class), new Properties());
-				
+			
 			// chart listener
 			ChartFactoryManager chartFactoryManager = injector.getInstance(ChartFactoryManager.class);
 			registerServiceListener(bc, chartFactoryManager, "addFactory", "removeFactory", CyCustomGraphics2Factory.class);
-					
+			
+			// chart factories
+			final Properties chartProps = new Properties();
+			chartProps.setProperty(CyCustomGraphics2Factory.GROUP, "Charts");
+			
+			HeatPieChartFactory heatPieChartFactory = injector.getInstance(HeatPieChartFactory.class);
+			registerService(bc, heatPieChartFactory, CyCustomGraphics2Factory.class, chartProps);
+			
 			// UI Mediators
 			ControlPanelMediator controlPanelMediator = injector.getInstance(ControlPanelMediator.class);
 			registerAllServices(bc, controlPanelMediator, new Properties());
