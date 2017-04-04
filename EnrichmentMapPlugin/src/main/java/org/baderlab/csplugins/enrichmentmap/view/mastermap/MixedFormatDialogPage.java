@@ -353,7 +353,7 @@ public class MixedFormatDialogPage implements CardDialogPage {
 					publish("Not a folder");
 					return Collections.emptyList();
 				}
-				List<DataSetParameters> datasets = DataSetResolver.guessDataSets(root.toPath());
+				List<DataSetParameters> datasets = DataSetResolver.guessDataSets(root.toPath(), null);
 				if(datasets.isEmpty()) {
 					publish("No Data Sets found under: " + rootFolder.get());
 				}

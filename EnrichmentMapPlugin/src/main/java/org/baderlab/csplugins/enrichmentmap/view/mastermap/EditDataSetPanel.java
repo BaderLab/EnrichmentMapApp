@@ -16,6 +16,7 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -32,6 +33,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
@@ -41,6 +43,7 @@ public class EditDataSetPanel extends JPanel {
 	
 	@Inject private FileUtil fileUtil;
 	@Inject private IconManager iconManager;
+	@Inject private Provider<JFrame> jframe;
 	
 	private JComboBox<ComboItem<Method>> analysisTypeCombo;
 	private JTextField nameText;
@@ -229,7 +232,7 @@ public class EditDataSetPanel extends JPanel {
 	
 	
 	private void browse(JTextField textField, FileBrowser.Filter filter) {
-		Optional<Path> path = FileBrowser.browse(fileUtil, this, filter);
+		Optional<Path> path = FileBrowser.browse(fileUtil, jframe.get(), filter);
 		path.map(Path::toString).ifPresent(textField::setText);
 		//validateInput();
 	}

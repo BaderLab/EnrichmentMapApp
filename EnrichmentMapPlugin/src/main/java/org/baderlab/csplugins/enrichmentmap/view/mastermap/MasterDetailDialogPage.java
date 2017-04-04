@@ -4,7 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.io.File;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
@@ -25,11 +28,19 @@ import javax.swing.border.Border;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
+import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
+import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback.Message;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
+import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.baderlab.csplugins.enrichmentmap.view.util.IterableListModel;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
 
@@ -37,6 +48,7 @@ import com.google.inject.Inject;
 public class MasterDetailDialogPage implements CardDialogPage {
 
 	@Inject private IconManager iconManager;
+	@Inject private DialogTaskManager dialogTaskManager;
 	
 	@Inject private CutoffPropertiesPanel cutoffPanel;
 	@Inject private EditCommonPropertiesPanel.Factory commonPanelFactory;
@@ -49,7 +61,9 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	private IterableListModel<DataSetListItem> dataSetListModel;
 	private JPanel dataSetDetailPanel;
 	private CardLayout cardLayout;
+	
 	private JButton deleteButton;
+	private JButton scanButton;
 	
 	private JCheckBox distinctEdgesCheckbox;
 	private CardDialogCallback callback;
@@ -162,11 +176,12 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		SwingUtil.makeSmall(label);
 		
 		JButton addButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS,     "Add Data Set");
-		JButton scanButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_FOLDER_O, "Scan Folder for Data Sets");
+		scanButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_FOLDER_O, "Scan Folder for Data Sets");
 		deleteButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_TRASH_O,  "Delete Data Set");
 		
 		addButton.addActionListener(e -> addNewDataSetToList());
 		deleteButton.addActionListener(e -> deleteSelectedItems());
+		scanButton.addActionListener(e -> scan());
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
@@ -195,6 +210,10 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	private void addNewDataSetToList() {
 		int n = dataSetListModel.size();
 		DataSetParameters params = new DataSetParameters("Data Set " + n, Method.GSEA, new DataSetFiles());
+		addDataSetToList(params);
+	}
+	
+	private void addDataSetToList(DataSetParameters params) {
 		EditDataSetPanel panel = dataSetPanelFactory.create(params);
 		
 		panel.addPropertyChangeListener(EditDataSetPanel.PROP_NAME, e ->
@@ -232,6 +251,40 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		deleteButton.setEnabled(dataSetListModel.getSize() > 0 && dataSetList.getSelectedIndex() > 0);
 		callback.setFinishButtonEnabled(dataSetListModel.size() > 1);
 	}
+	
+	
+	private void scan() {
+		Optional<File> rootFolder = FileBrowser.browseForRootFolder(callback.getDialogFrame());
+		if(rootFolder.isPresent()) {
+			File root = rootFolder.get();
+			if(!root.isDirectory()) {
+				callback.setMessage(Message.WARN, "Not a folder");
+			}
+			
+			scanButton.setEnabled(false);
+			ResolverTask task = new ResolverTask(root);
+			
+			dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
+				
+				@Override
+				public void taskFinished(ObservableTask task) {
+					@SuppressWarnings("unchecked")
+					List<DataSetParameters> datasets = task.getResults(List.class);
+					if(!datasets.isEmpty()) {
+						datasets.forEach(MasterDetailDialogPage.this::addDataSetToList);
+						dataSetList.setSelectedValue(datasets.get(0), true);
+					}
+				}
+				
+				@Override
+				public void allFinished(FinishStatus finishStatus) {
+					scanButton.setEnabled(true);
+					updateButtonEnablement();
+				}
+			});
+		}
+	}
+	
 	
 	private static abstract class DataSetListItem {
 		private static final Iterator<String> idGenerator = Stream.iterate(0, x -> x + 1).map(String::valueOf).iterator();

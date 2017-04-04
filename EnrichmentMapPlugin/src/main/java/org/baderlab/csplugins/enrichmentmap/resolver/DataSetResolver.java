@@ -24,8 +24,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 
 import com.google.common.collect.ImmutableList;
 
@@ -48,11 +48,21 @@ public class DataSetResolver {
 	}
 	
 	
-	public static List<DataSetParameters> guessDataSets(Path rootFolder) {
+	public static List<DataSetParameters> guessDataSets(Path rootFolder, CancelStatus cancelStatus) {
+		if(cancelStatus == null) {
+			cancelStatus = new CancelStatus() {
+				@Override public boolean isCancelled() { return false; }
+				@Override public void cancel() { }
+			};
+		}
+		
 		// First test if rootFolder is itself a GSEA results folder
 		Optional<DataSetParameters> dataset = GSEAResolver.resolveGSEAResultsFolder(rootFolder);
 		if(dataset.isPresent())
 			return ImmutableList.of(dataset.get());
+		
+		if(cancelStatus.isCancelled())
+			return Collections.emptyList();
 		
 		try(Stream<Path> contents = Files.list(rootFolder)) {
 			Map<Type,List<Path>> types = new EnumMap<>(Type.class);
@@ -61,14 +71,15 @@ public class DataSetResolver {
 			}
 			
 			for(Path path : (Iterable<Path>)contents::iterator) {
+				if(cancelStatus.isCancelled())
+					return Collections.emptyList();
+				
 				Type type = guessType(path);
 				types.get(type).add(path);
 			}
 			
-//			System.out.println("TYPES");
-//			types.forEach((type, files) -> {
-//				System.out.println(type + ": " + files);
-//			});
+			if(cancelStatus.isCancelled())
+				return Collections.emptyList();
 			
 			return createDataSets(types);
 		} catch(IOException e) {
