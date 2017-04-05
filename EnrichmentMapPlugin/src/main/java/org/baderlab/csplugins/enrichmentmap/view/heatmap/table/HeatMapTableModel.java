@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
 
@@ -35,6 +36,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	private List<String> genes;
 	private Transform transform;
 	private Map<Integer,RankValue> ranking;
+	private String ranksColName = "Ranks";
 
 	
 	public HeatMapTableModel(EnrichmentMap map, Map<Integer,RankValue> ranking, List<String> genes, Transform transform) {
@@ -61,7 +63,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 		fireTableDataChanged();
 	}
 
-	public void setRanking(Map<Integer,RankValue> ranking) {
+	public void setRanking(String ranksColName, Map<Integer,RankValue> ranking) {
+		this.ranksColName = Objects.requireNonNull(ranksColName);
 		this.ranking = ranking;
 		fireTableDataChanged();
 	}
@@ -98,7 +101,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		if(col == GENE_COL)
 			return "Gene";
 		if(col == RANK_COL)
-			return "Ranks";
+			return ranksColName;
 		
 		EMDataSet dataset = getDataSet(col);
 		int index = getIndexInDataSet(col) + 2;

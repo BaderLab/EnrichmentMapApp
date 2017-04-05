@@ -21,6 +21,11 @@ public interface RankingOption {
 		return Optional.empty();
 	}
 	
+	/** Text to be used in the JTable header. The given string will be passed to JLabel.setText(), so basic html is allowed. */
+	default String getTableHeaderText() {
+		return toString();
+	}
+	
 	/**
 	 * Asynchronously compute the rankings.
 	 * @return Map where keys are geneIDs and value is the rank.

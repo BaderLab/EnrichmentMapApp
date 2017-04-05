@@ -40,7 +40,16 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 	
 	@Override
 	public String toString() {
-		return SwingUtil.abbreviate(rankingName, 15) + " - " + SwingUtil.abbreviate(dataset.getName(), 15);
+		String r = SwingUtil.abbreviate(rankingName, 15);
+		String d = SwingUtil.abbreviate(dataset.getName(), 15);
+		return r + " - " + d;
+	}
+	
+	@Override
+	public String getTableHeaderText() {
+		String r = SwingUtil.abbreviate(rankingName, 11);
+		String d = SwingUtil.abbreviate(dataset.getName(), 11);
+		return "<html>" + r + "<br>" + d + "</html>";
 	}
 	
 	@Override

@@ -41,6 +41,11 @@ public class ClusterRankingOption implements RankingOption {
 		return "Hierarchical Cluster";
 	}
 
+	@Override
+	public String getTableHeaderText() {
+		return "<html>Hierarchical<br>Cluster</html>";
+	}
+	
 	public void setDistance(Distance distance) {
 		this.distance = distance;
 	}

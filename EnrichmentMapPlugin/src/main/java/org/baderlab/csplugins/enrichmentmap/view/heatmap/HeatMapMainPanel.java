@@ -41,6 +41,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColorAndValueRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColorRenderer;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankOptionRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderVerticalRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.GradientLegendPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel;
@@ -139,13 +140,17 @@ public class HeatMapMainPanel extends JPanel {
 	}
 	
 	
-	private void createTableHeader(int width) {
+	private void createTableHeader(int expressionColumnWidth) {
 		HeatMapTableModel tableModel = (HeatMapTableModel)table.getModel();
 		TableColumnModel columnModel = table.getColumnModel();
 		
 		TableCellRenderer vertRenderer = new ColumnHeaderVerticalRenderer();
 		TableCellRenderer vertRendererPheno1 = new ColumnHeaderVerticalRenderer(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_1);
 		TableCellRenderer vertRendererPheno2 = new ColumnHeaderVerticalRenderer(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_2);
+		
+		TableColumn rankColumn = columnModel.getColumn(HeatMapTableModel.RANK_COL);
+		rankColumn.setHeaderRenderer(new ColumnHeaderRankOptionRenderer(table));
+		rankColumn.setPreferredWidth(100);
 		
 		int colCount = tableModel.getColumnCount();
 		for(int col = HeatMapTableModel.DESC_COL_COUNT; col < colCount; col++) {
@@ -164,7 +169,7 @@ public class HeatMapMainPanel extends JPanel {
 			
 			TableColumn column = columnModel.getColumn(col);
 			column.setHeaderRenderer(renderer);
-			column.setPreferredWidth(width);
+			column.setPreferredWidth(expressionColumnWidth);
 		}
 	}
 	
@@ -410,8 +415,9 @@ public class HeatMapMainPanel extends JPanel {
 		CompletableFuture<Map<Integer,RankValue>> rankingFuture = rankOption.computeRanking(geneIds);
 		if(rankingFuture != null) {
 			rankingFuture.whenComplete((ranking, ex) -> {
-				tableModel.setRanking(ranking);
-				//rankOptionCombo.setEnabled(true);
+				tableModel.setRanking(rankOption.getName(), ranking);
+				table.getColumnModel().getColumn(HeatMapTableModel.RANK_COL).setHeaderValue(rankOption);
+				table.getTableHeader().repaint();
 			});
 		}
 		settingChanged();

@@ -61,7 +61,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
-import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 
@@ -69,8 +69,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 /**
  * Flips column headers to vertical position
  */
-@SuppressWarnings("serial")
-public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
+public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 
 	private Optional<Color> labelBackgroundColor;
 	
@@ -113,7 +112,6 @@ public class ColumnHeaderVerticalRenderer extends DefaultTableCellRenderer {
 		JLabel label = new JLabel();
 
 		label.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-		label.setBackground(this.getBackground());
 		label.setForeground(UIManager.getColor("TableHeader.foreground"));
 		label.setFont(UIManager.getFont("TableHeader.font"));
 		
