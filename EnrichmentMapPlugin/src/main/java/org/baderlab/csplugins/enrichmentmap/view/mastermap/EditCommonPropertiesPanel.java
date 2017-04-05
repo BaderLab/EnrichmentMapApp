@@ -3,8 +3,9 @@ package org.baderlab.csplugins.enrichmentmap.view.mastermap;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 
-import java.awt.Color;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -28,7 +29,7 @@ import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
-public class EditCommonPropertiesPanel extends JPanel {
+public class EditCommonPropertiesPanel extends JPanel implements DetailPanel {
 
 	@Inject private FileUtil fileUtil;
 	@Inject private IconManager iconManager;
@@ -36,7 +37,6 @@ public class EditCommonPropertiesPanel extends JPanel {
 	
 	private JTextField gmtText;
 	private JTextField expressionsText;
-	private Color textFieldForeground;
 	
 	private final DataSetParameters initDataSet;
 	
@@ -49,12 +49,27 @@ public class EditCommonPropertiesPanel extends JPanel {
 		this.initDataSet = initDataSet;
 	}
 	
+	
+	@Override
+	public String getIcon() {
+		return IconManager.ICON_FILE_O;
+	}
+
+	@Override
+	public String getDisplayName() {
+		return "Common Files";
+	}
+
+	@Override
+	public JPanel getPanel() {
+		return this;
+	}
+	
 	@AfterInjection
 	private void createContents() {
 		JLabel gmtLabel = new JLabel("GMT File:");
 		gmtText = new JTextField();
 		gmtText.setText(initDataSet != null ? initDataSet.getFiles().getGMTFileName() : null);
-		textFieldForeground = gmtText.getForeground();
 		JButton gmtBrowse = EditDataSetPanel.createBrowseButton(iconManager);
 		gmtBrowse.addActionListener(e -> browse(gmtText, FileBrowser.Filter.GMT));
 		makeSmall(gmtLabel, gmtText);
@@ -113,9 +128,21 @@ public class EditCommonPropertiesPanel extends JPanel {
 	private void browse(JTextField textField, FileBrowser.Filter filter) {
 		Optional<Path> path = FileBrowser.browse(fileUtil, jframe.get(), filter);
 		path.map(Path::toString).ifPresent(textField::setText);
-		//validateInput();
 	}
 
+	@Override
+	public List<String> validateInput() {
+		List<String> err = new ArrayList<>(2);
+		if(!EditDataSetPanel.emptyOrReadable(gmtText)) {
+			err.add("Enrichments file path is not valid.");
+		}
+		if(!EditDataSetPanel.emptyOrReadable(expressionsText)) {
+			err.add("Enrichments 2 file path is not valid.");
+		}
+		return err;
+	}
+	
+	
 	public String getGmtFile() {
 		return gmtText.getText().trim();
 	}

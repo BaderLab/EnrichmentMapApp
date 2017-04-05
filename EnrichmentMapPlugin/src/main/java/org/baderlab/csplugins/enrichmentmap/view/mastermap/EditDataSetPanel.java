@@ -4,12 +4,14 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
-import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.validatePathTextField;
 
-import java.awt.Color;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -34,12 +36,13 @@ import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
-public class EditDataSetPanel extends JPanel {
+public class EditDataSetPanel extends JPanel implements DetailPanel {
 	 
 	public static final String PROP_NAME = "dataSetName";
 	
@@ -59,7 +62,6 @@ public class EditDataSetPanel extends JPanel {
 	private JLabel enrichments2Label;
 	private JButton enrichments2Browse;
 	
-	private Color textFieldForeground;
 	private String[] classes;
 	
 	private final @Nullable DataSetParameters initDataSet;
@@ -74,11 +76,27 @@ public class EditDataSetPanel extends JPanel {
 		this.initDataSet = initDataSet;
 	}
 	
+	public String getDataSetName() {
+		return nameText.getText();
+	}
+	
+	@Override
 	public String getDisplayName() {
 		String m = analysisTypeCombo.getSelectedItem().toString();
 		return nameText.getText() + "  (" + m + ")";
 	}
 	
+	@Override
+	public JPanel getPanel() {
+		return this;
+	}
+
+	@Override
+	public String getIcon() {
+		return IconManager.ICON_FILE_TEXT_O;
+	}
+	
+	@Override
 	public DataSetParameters createDataSetParameters() {
 		String name = nameText.getText().trim();
 		Method method = getMethod();
@@ -121,7 +139,6 @@ public class EditDataSetPanel extends JPanel {
 	private void createContents() {
 		JLabel nameLabel = new JLabel("* Name:");
 		nameText = new JTextField();
-		textFieldForeground = nameText.getForeground();
 		nameText.setText(initDataSet != null ? initDataSet.getName() : null);
 		nameText.getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(() -> 
 			firePropertyChange(PROP_NAME, null, getDisplayName())
@@ -276,12 +293,45 @@ public class EditDataSetPanel extends JPanel {
 	private void browse(JTextField textField, FileBrowser.Filter filter) {
 		Optional<Path> path = FileBrowser.browse(fileUtil, jframe.get(), filter);
 		path.map(Path::toString).ifPresent(textField::setText);
-		//validateInput();
+	}
+	
+	@Override
+	public List<String> validateInput() {
+		List<String> err = new ArrayList<>();
+		if(Strings.isNullOrEmpty(nameText.getText())) {
+			err.add("Name field is empty.");
+		}
+		if(Strings.isNullOrEmpty(enrichments1Text.getText())) {
+			err.add("Enrichments file path is empty.");
+		} 
+		if(!emptyOrReadable(enrichments1Text)) {
+			err.add("Enrichments file path is not valid.");
+		}
+		if(!emptyOrReadable(enrichments2Text)) {
+			err.add("Enrichments 2 file path is not valid.");
+		}
+		if(!emptyOrReadable(expressionsText)) {
+			err.add("Expressions file path is not valid.");
+		}
+		if(!emptyOrReadable(ranksText)) {
+			err.add("Ranks file path is not valid.");
+		}
+		if(!emptyOrReadable(classesText)) {
+			err.add("Classes file path is not valid.");
+		}
+		return err;
+	}
+	
+	
+	public static boolean emptyOrReadable(JTextField textField) {
+		String text = textField.getText();
+		return Strings.isNullOrEmpty(text) || Files.isReadable(Paths.get(text));
 	}
 	
 	
 	private void updateClasses() {
-		if(positiveText.getText().trim().isEmpty() && negativeText.getText().trim().isEmpty() && validatePathTextField(classesText, textFieldForeground, true)) {
+		if(positiveText.getText().trim().isEmpty() && negativeText.getText().trim().isEmpty() 
+				&& Files.isReadable(Paths.get(classesText.getText()))) {
 			String classFile = classesText.getText();
 			String[] phenotypes = ClassFileReaderTask.parseClasses(classFile);
 			if(phenotypes != null) {

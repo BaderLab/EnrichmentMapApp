@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view.util;
 
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 public class GBCFactory {
 
@@ -50,6 +51,15 @@ public class GBCFactory {
 	public GBCFactory fill(int fill) {
 		gbc.fill = fill;
 		return this;
+	}
+	
+	public GBCFactory insets(int top, int left, int bottom, int right) {
+		gbc.insets = new Insets(top, left, bottom, right);
+		return this;
+	}
+	
+	public GBCFactory insets(int v) {
+		return insets(v,v,v,v);
 	}
 	
 	
