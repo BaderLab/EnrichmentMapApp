@@ -6,21 +6,26 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.baderlab.csplugins.enrichmentmap.style.charts.Rotation;
+import org.baderlab.csplugins.enrichmentmap.style.charts.heatpie.HeatPieChart;
+
 public enum ChartType {
-//	HEAT_MAP(
-//			"org.cytoscape.HeatMapChart",
-//			"Heat Map",
-//			Collections.unmodifiableMap(Stream.of(
-//	                new SimpleEntry<>("cy_orientation", "VERTICAL"),
-//	                new SimpleEntry<>("cy_showDomainAxis", false),
-//	                new SimpleEntry<>("cy_showRangeAxis", false))
-//	                .collect(Collectors.toMap((e) -> e.getKey(), (e) -> e.getValue())))
-//	),
-	PIE(
-			"org.cytoscape.PieChart",
-			"Pie",
+	HEAT_PIE(
+			HeatPieChart.FACTORY_ID,
+			"Heat Pie",
 			Collections.unmodifiableMap(Stream.of(
-	                new SimpleEntry<>("cy_borderWidth", 0.0f))
+	                new SimpleEntry<>("cy_borderWidth", 0.0f),
+	                new SimpleEntry<>("cy_rotation", Rotation.CLOCKWISE),
+					new SimpleEntry<>("cy_startAngle", 90.0f))
+	                .collect(Collectors.toMap((e) -> e.getKey(), (e) -> e.getValue())))
+	),
+	HEAT_MAP(
+			"org.cytoscape.HeatMapChart",
+			"Heat Map",
+			Collections.unmodifiableMap(Stream.of(
+					new SimpleEntry<>("cy_orientation", "VERTICAL"),
+	                new SimpleEntry<>("cy_showDomainAxis", false),
+	                new SimpleEntry<>("cy_showRangeAxis", false))
 	                .collect(Collectors.toMap((e) -> e.getKey(), (e) -> e.getValue())))
 	),
 	HEAT_STRIPS(
@@ -68,8 +73,10 @@ public enum ChartType {
 	public static ChartType toChartType(String chartName) {
 		chartName = chartName != null ? chartName.toLowerCase() : "";
 		
-		if (chartName.startsWith("pie"))
-			return PIE;
+		if (chartName.startsWith("heat pie"))
+			return HEAT_PIE;
+		if (chartName.startsWith("heat map"))
+			return HEAT_MAP;
 		if (chartName.startsWith("bar"))
 			return HEAT_STRIPS;
 		if (chartName.startsWith("line"))

@@ -14,6 +14,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_L
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TOOLTIP;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.DIAMOND;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.ELLIPSE;
@@ -172,7 +173,7 @@ public class EMStyleBuilder {
 	}
 	
 	public static NodeShape getDefaultNodeShape(ChartType chartType) {
-		return chartType == null || chartType == ChartType.PIE ? ELLIPSE : RECTANGLE;
+		return chartType == null || chartType == ChartType.HEAT_PIE ? ELLIPSE : RECTANGLE;
 	}
 	
 	public void updateProperties(VisualStyle vs, EMStyleOptions options, CyCustomGraphics2<?> chart) {
@@ -195,6 +196,7 @@ public class EMStyleBuilder {
 			setNodeBorderColors(vs, options);
 			setNodeColors(vs, options);
 			setNodeLabels(vs, options);
+			setNodeTooltip(vs, options);
 			setNodeChart(vs, chart);
 			
 			if (options.isPublicationReady()) {
@@ -290,7 +292,7 @@ public class EMStyleBuilder {
 		vs.setDefaultValue(NODE_FILL_COLOR, Colors.DEF_NODE_COLOR);
 		vs.setDefaultValue(NODE_BORDER_PAINT, Colors.DEF_NODE_BORDER_COLOR);
 		vs.setDefaultValue(NODE_SHAPE, getDefaultNodeShape(chartType));
-		vs.setDefaultValue(NODE_SIZE, chartType == ChartType.PIE ? MIN_NODE_SIZE : (MAX_NODE_SIZE + MIN_NODE_SIZE) / 2);
+		vs.setDefaultValue(NODE_SIZE, chartType == ChartType.HEAT_PIE ? MIN_NODE_SIZE : (MAX_NODE_SIZE + MIN_NODE_SIZE) / 2);
 		vs.setDefaultValue(NODE_BORDER_WIDTH, DEF_NODE_BORDER_WIDTH);
 		vs.setDefaultValue(NODE_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
 		vs.setDefaultValue(NODE_BORDER_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
@@ -400,12 +402,19 @@ public class EMStyleBuilder {
 	private void setNodeLabels(VisualStyle vs, EMStyleOptions options) {
 		String prefix = options.getAttributePrefix();
 		PassthroughMapping<String, String> nodeLabel = (PassthroughMapping<String, String>) pmFactory
-				.createVisualMappingFunction(Columns.NODE_GS_DESCR.with(prefix,null), String.class, NODE_LABEL);
+				.createVisualMappingFunction(Columns.NODE_GS_DESCR.with(prefix, null), String.class, NODE_LABEL);
+		vs.addVisualMappingFunction(nodeLabel);
+	}
+	
+	private void setNodeTooltip(VisualStyle vs, EMStyleOptions options) {
+		String prefix = options.getAttributePrefix();
+		PassthroughMapping<String, String> nodeLabel = (PassthroughMapping<String, String>) pmFactory
+				.createVisualMappingFunction(Columns.NODE_GS_DESCR.with(prefix ,null), String.class, NODE_TOOLTIP);
 		vs.addVisualMappingFunction(nodeLabel);
 	}
 	
 	private void setNodeSize(VisualStyle vs, EMStyleOptions options, ChartType chartType) {
-		if (chartType == null || chartType == ChartType.PIE) {
+		if (chartType == null || chartType == ChartType.HEAT_PIE) {
 			String prefix = options.getAttributePrefix();
 			ContinuousMapping<Integer, Double> nodeSize = (ContinuousMapping<Integer, Double>) cmFactory
 					.createVisualMappingFunction(Columns.NODE_GS_SIZE.with(prefix,null), Integer.class, NODE_SIZE);
