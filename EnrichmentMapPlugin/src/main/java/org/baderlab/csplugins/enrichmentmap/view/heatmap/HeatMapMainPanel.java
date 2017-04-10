@@ -5,10 +5,10 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +28,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter.SortKey;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableRowSorter;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -74,13 +76,14 @@ public class HeatMapMainPanel extends JPanel {
 	private JScrollPane scrollPane;
 	private JComboBox<ComboItem<Transform>> normCombo;
 	private JComboBox<ComboItem<Operator>> operatorCombo;
-	private JComboBox<RankingOption> rankOptionCombo;
 	
-	private ActionListener rankOptionActionListener;
 	private ActionListener normActionListener;
 	private ActionListener operatorActionListener;
 	
 	private ClusterRankingOption clusterRankOption = null;
+	private List<RankingOption> moreRankOptions;
+	private RankingOption selectedRankOption;
+	
 	private List<String> unionGenes;
 	private List<String> interGenes;
 	
@@ -140,7 +143,21 @@ public class HeatMapMainPanel extends JPanel {
 	}
 	
 	
+	private void clearTableHeader() {
+		JTableHeader header = table.getTableHeader();
+		TableColumnModel columnModel = table.getColumnModel();
+		if(columnModel.getColumnCount() > 0) {
+			TableColumn rankColumn = columnModel.getColumn(HeatMapTableModel.RANK_COL);
+			TableCellRenderer existingRenderer = rankColumn.getHeaderRenderer();
+			if(existingRenderer instanceof ColumnHeaderRankOptionRenderer) {
+				((ColumnHeaderRankOptionRenderer)existingRenderer).dispose(header);
+			}
+		}
+	}
+	
 	private void createTableHeader(int expressionColumnWidth) {
+		JTableHeader header = table.getTableHeader();
+		header.setReorderingAllowed(false);
 		HeatMapTableModel tableModel = (HeatMapTableModel)table.getModel();
 		TableColumnModel columnModel = table.getColumnModel();
 		
@@ -149,8 +166,10 @@ public class HeatMapMainPanel extends JPanel {
 		TableCellRenderer vertRendererPheno2 = new ColumnHeaderVerticalRenderer(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_2);
 		
 		TableColumn rankColumn = columnModel.getColumn(HeatMapTableModel.RANK_COL);
-		rankColumn.setHeaderRenderer(new ColumnHeaderRankOptionRenderer(table));
+
+		rankColumn.setHeaderRenderer(new ColumnHeaderRankOptionRenderer(this, HeatMapTableModel.RANK_COL));
 		rankColumn.setPreferredWidth(100);
+		((TableRowSorter<?>)table.getRowSorter()).setSortable(HeatMapTableModel.RANK_COL, false);
 		
 		int colCount = tableModel.getColumnCount();
 		for(int col = HeatMapTableModel.DESC_COL_COUNT; col < colCount; col++) {
@@ -181,10 +200,8 @@ public class HeatMapMainPanel extends JPanel {
 		operatorCombo = new JComboBox<>();
 		JLabel normLabel = new JLabel("Normalize:");
 		normCombo = new JComboBox<>();
-		JLabel sortLabel = new JLabel("Ranks:");
-		rankOptionCombo = new JComboBox<>();
 		
-		SwingUtil.makeSmall(operatorLabel, operatorCombo, normLabel, normCombo, sortLabel, rankOptionCombo);
+		SwingUtil.makeSmall(operatorLabel, operatorCombo, normLabel, normCombo);
 		
 		operatorCombo.addItem(new ComboItem<>(Operator.UNION, "Union"));
 		operatorCombo.addItem(new ComboItem<>(Operator.INTERSECTION, "Intersection"));
@@ -195,17 +212,14 @@ public class HeatMapMainPanel extends JPanel {
 		normCombo.addItem(new ComboItem<>(Transform.LOG_TRANSFORM, "Log"));
 		normCombo.setSelectedItem(ComboItem.of(Transform.AS_IS));
 		
-		JButton plusButton = createPlusButton();
-		plusButton.setToolTipText("Add Rankings...");
-		plusButton.addActionListener(e -> addRankings());
-		
 		operatorCombo.addActionListener(operatorActionListener = e -> updateSetting_Operator(getOperator()));
 		normCombo.addActionListener(normActionListener = e -> updateSetting_Transform(getTransform()));
-		rankOptionCombo.addActionListener(rankOptionActionListener = e -> updateSetting_RankOption(getRankingOption()));
 		
+		JButton plusButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS, "Add Rankings...");
 		JButton gearButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_GEAR, "Settings");
 		JButton menuButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_EXTERNAL_LINK, "Export");
 		LookAndFeelUtil.equalizeSize(gearButton, menuButton);
+		plusButton.addActionListener(e -> addRankings());
 		gearButton.addActionListener(e -> settingsPanel.popup(gearButton));
 		menuButton.addActionListener(this::showExportMenu);
 		
@@ -224,10 +238,7 @@ public class HeatMapMainPanel extends JPanel {
 			.addComponent(normLabel)
 			.addComponent(normCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			.addGap(5)
-			.addComponent(sortLabel)
-			.addComponent(rankOptionCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			.addComponent(plusButton)
-			.addGap(2)
 			.addComponent(gearButton)
 			.addComponent(menuButton)
 		);
@@ -237,8 +248,6 @@ public class HeatMapMainPanel extends JPanel {
 			.addComponent(operatorCombo)
 			.addComponent(normLabel)
 			.addComponent(normCombo)
-			.addComponent(sortLabel)
-			.addComponent(rankOptionCombo)
 			.addComponent(plusButton)
 			.addComponent(gearButton)
 			.addComponent(menuButton)
@@ -249,18 +258,6 @@ public class HeatMapMainPanel extends JPanel {
 	}
 	
 	
-	private JButton createPlusButton() {
-		JButton button = new JButton(IconManager.ICON_PLUS);
-		button.setFont(iconManager.getIconFont(10.0f));
-		button.setBorder(null);
-		button.setContentAreaFilled(false);
-		button.setBorderPainted(false);
-		int h = rankOptionCombo.getPreferredSize().height;
-		button.setMinimumSize(new Dimension(h, h));
-		button.setPreferredSize(new Dimension(h, h));
-		return button;
-	}
-	
 	public Operator getOperator() {
 		return operatorCombo.getItemAt(operatorCombo.getSelectedIndex()).getValue();
 	}
@@ -270,7 +267,7 @@ public class HeatMapMainPanel extends JPanel {
 	}
 	
 	public RankingOption getRankingOption() {
-		return rankOptionCombo.getItemAt(rankOptionCombo.getSelectedIndex());
+		return selectedRankOption;
 	}
 	
 	public boolean isShowValues() {
@@ -282,7 +279,7 @@ public class HeatMapMainPanel extends JPanel {
 	}
 	
 	public String getRankingOptionName() {
-		return rankOptionCombo.getSelectedItem().toString();
+		return getRankingOption().toString();
 	}
 	
 	public HeatMapParams buildParams() {
@@ -299,6 +296,7 @@ public class HeatMapMainPanel extends JPanel {
 	public void reset(EnrichmentMap map, HeatMapParams params, List<RankingOption> moreRankOptions, Set<String> union, Set<String> intersection) {
 		isResetting = true;
 		this.clusterRankOption = parent.getMediator().getClusterRankOption(map);
+		this.moreRankOptions = moreRankOptions.isEmpty() ? Arrays.asList(RankingOption.none()) : moreRankOptions;
 		
 		unionGenes = new ArrayList<>(union);
 		unionGenes.sort(Comparator.naturalOrder());
@@ -306,52 +304,59 @@ public class HeatMapMainPanel extends JPanel {
 		interGenes.sort(Comparator.naturalOrder());
 		
 		operatorCombo.removeActionListener(operatorActionListener);
-		rankOptionCombo.removeActionListener(rankOptionActionListener);
 		normCombo.removeActionListener(normActionListener);
 		
 		// Update Combo Boxes
 		operatorCombo.removeAllItems();
-		operatorCombo.addItem(new ComboItem<>(Operator.UNION, "Union (" + union.size() + ")"));
-		operatorCombo.addItem(new ComboItem<>(Operator.INTERSECTION, "Intersection (" + intersection.size() + ")"));
+		operatorCombo.addItem(new ComboItem<>(Operator.UNION, "All (" + union.size() + ")"));
+		operatorCombo.addItem(new ComboItem<>(Operator.INTERSECTION, "Common (" + intersection.size() + ")"));
 		operatorCombo.setSelectedItem(ComboItem.of(params.getOperator()));
 		
 		normCombo.setSelectedItem(ComboItem.of(params.getTransform()));
 		
-		rankOptionCombo.removeAllItems();
-		rankOptionCombo.addItem(RankingOption.none());
-		rankOptionCombo.addItem(clusterRankOption);
-		moreRankOptions.forEach(rankOptionCombo::addItem);
-		
-		for(int i = 0; i < rankOptionCombo.getItemCount(); i++) {
-			if(rankOptionCombo.getItemAt(i).toString().equals(params.getRankingOptionName())) {
-				rankOptionCombo.setSelectedIndex(i);
-				break;
-			}
-		}
+		selectedRankOption = getRankOptionFromParams(params);
 
 		// Update the setings panel
 		settingsPanel.update(params);
 		
 		// Update the Table
+		clearTableHeader();
 		List<String> genesToUse = params.getOperator() == Operator.UNION ? unionGenes : interGenes;
 		List<? extends SortKey> sortKeys = table.getRowSorter().getSortKeys();
 		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, genesToUse, params.getTransform());
 		table.setModel(tableModel);
 		
 		updateSetting_ShowValues(settingsPanel.isShowValues());
-		createTableHeader(params.isShowValues() ? COLUMN_WIDTH_VALUE : COLUMN_WIDTH_COLOR);
 		try {
 			table.getRowSorter().setSortKeys(sortKeys);
 		} catch(IllegalArgumentException e) {}
 		
 		// Re-compute the ranking
-		rankOptionActionListener.actionPerformed(null);
+		updateSetting_RankOption(selectedRankOption);
 		
 		operatorCombo.addActionListener(operatorActionListener);
-		rankOptionCombo.addActionListener(rankOptionActionListener);
 		normCombo.addActionListener(normActionListener);
 		
 		isResetting = false;
+	}
+	
+	
+	private RankingOption getRankOptionFromParams(HeatMapParams params) {
+		String name = params.getRankingOptionName();
+		if(name == null) {
+			return moreRankOptions.get(0);
+		}
+		else if(name.equals(clusterRankOption.toString())) {
+			return clusterRankOption;
+		}
+		else {
+			for(RankingOption option : moreRankOptions) {
+				if(name.equals(option.toString())) {
+					return option;
+				}
+			}
+		}
+		return moreRankOptions.get(0);
 	}
 	
 	
@@ -361,26 +366,28 @@ public class HeatMapMainPanel extends JPanel {
 		AddRanksDialog dialog = ranksDialogFactory.create(map);
 		Optional<String> ranksName = dialog.open();
 		if(ranksName.isPresent()) {
-			List<RankingOption> moreRankOptions = parent.getMediator().getDataSetRankOptions(map);
-			
-			rankOptionCombo.removeActionListener(rankOptionActionListener);
-			
-			rankOptionCombo.removeAllItems();
-			rankOptionCombo.addItem(RankingOption.none());
-			rankOptionCombo.addItem(clusterRankOption);
-			moreRankOptions.forEach(rankOptionCombo::addItem);
-			
-			for(int i = 0; i < rankOptionCombo.getItemCount(); i++) {
-				RankingOption ranking = rankOptionCombo.getItemAt(i);
-				if(ranking.getNameInDataSet().filter(ranksName.get()::equals).isPresent()) {
-					rankOptionCombo.setSelectedIndex(i);
-					break;
-				}
-			}
-			rankOptionCombo.addActionListener(rankOptionActionListener);
+			this.moreRankOptions = parent.getMediator().getDataSetRankOptions(map);
 		}
 	}
 
+	public RankingOption getClusterRankingOption() {
+		return clusterRankOption;
+	}
+	
+	public List<RankingOption> getRankingOptions() {
+		return moreRankOptions;
+	}
+	
+	public List<RankingOption> getAllRankingOptions() {
+		List<RankingOption> options = new ArrayList<>(moreRankOptions.size() + 1);
+		options.add(clusterRankOption);
+		options.addAll(moreRankOptions);
+		return options;
+	}
+	
+	public RankingOption getSelectedRankOption() {
+		return selectedRankOption;
+	}
 	
 	private List<String> getGenes(Operator operator) {
 		switch(operator) {
@@ -392,7 +399,7 @@ public class HeatMapMainPanel extends JPanel {
 	
 	private void updateSetting_Distance(Distance distance) {
 		clusterRankOption.setDistance(distance);
-		if(rankOptionCombo.getSelectedItem() == clusterRankOption) {
+		if(selectedRankOption == clusterRankOption) {
 			updateSetting_RankOption(clusterRankOption);
 		}
 		settingChanged();
@@ -404,8 +411,8 @@ public class HeatMapMainPanel extends JPanel {
 		settingChanged();
 	}
 	
-	private void updateSetting_RankOption(RankingOption rankOption) {
-		//rankOptionCombo.setEnabled(false);
+	public void updateSetting_RankOption(RankingOption rankOption) {
+		selectedRankOption = rankOption;
 		List<String> genes = getGenes(getOperator());
 		
 		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();

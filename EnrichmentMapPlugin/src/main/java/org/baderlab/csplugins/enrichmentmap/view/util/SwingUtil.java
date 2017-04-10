@@ -24,6 +24,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -105,6 +106,9 @@ public class SwingUtil {
 						return this;
 					}
 				});
+			}
+			if (c instanceof JMenuItem) {
+				c.setFont(c.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			}
 		}
 	}

@@ -34,7 +34,14 @@ public class BasicRankingOption implements RankingOption {
 	
 	@Override
 	public String toString() {
-		return SwingUtil.abbreviate(rankingName, 15) + " - " + SwingUtil.abbreviate(dataset.getName(), 15);
+		return rankingName + " - " + dataset.getName();
+	}
+	
+	@Override
+	public String getTableHeaderText() {
+		String r = SwingUtil.abbreviate(rankingName, 11);
+		String d = SwingUtil.abbreviate(dataset.getName(), 11);
+		return "<html>" + r + "<br>" + d + "</html>";
 	}
 	
 	@Override
