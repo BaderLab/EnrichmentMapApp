@@ -12,7 +12,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 @SuppressWarnings("serial")
 public class RankValueRenderer extends DefaultTableCellRenderer {
 
-	private static final Color SIGNIFICANT_COLOR = new Color(229, 245, 249);
+	private static final Color SIGNIFICANT_COLOR = Color.YELLOW;
 	
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
