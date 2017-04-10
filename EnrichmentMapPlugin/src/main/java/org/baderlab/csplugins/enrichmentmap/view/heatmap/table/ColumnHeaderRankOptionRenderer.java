@@ -61,7 +61,7 @@ public class ColumnHeaderRankOptionRenderer implements TableCellRenderer {
 		SwingUtil.makeSmall(button);
 		if (isAquaLAF())
 			button.putClientProperty("JButton.buttonType", "gradient");
-		button.addActionListener(e -> menuButtonClicked(table));
+		button.addActionListener(e -> menuButtonClicked(table, button));
 		
 		JPanel buttonPanel = new JPanel(new BorderLayout());
 		buttonPanel.add(button, BorderLayout.CENTER);
@@ -71,7 +71,7 @@ public class ColumnHeaderRankOptionRenderer implements TableCellRenderer {
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(component, BorderLayout.CENTER);
-		panel.add(buttonPanel, BorderLayout.SOUTH);
+		panel.add(buttonPanel, BorderLayout.NORTH);
 		
 		// Add mouse listener
 		if(mouseListener != null) {
@@ -83,7 +83,7 @@ public class ColumnHeaderRankOptionRenderer implements TableCellRenderer {
             public void mouseClicked(MouseEvent e) {
             	int col = header.columnAtPoint(e.getPoint());
             	if(col == colIndex)
-            		if(e.getY() > component.getHeight())
+            		if(e.getY() <= button.getHeight())
             			button.doClick();
 					else
 						sortColumn(table);
@@ -112,7 +112,7 @@ public class ColumnHeaderRankOptionRenderer implements TableCellRenderer {
 	}
 	
 	
-	private void menuButtonClicked(JTable table) {
+	private void menuButtonClicked(JTable table, JButton button) {
 		JTableHeader header = table.getTableHeader();
 		
 		List<RankingOption> rankOptions = mainPanel.getAllRankingOptions();
@@ -128,7 +128,7 @@ public class ColumnHeaderRankOptionRenderer implements TableCellRenderer {
 			);
 		}
 		
-		int y = header.getHeight();
+		int y = button.getHeight();
 		int x = 0;
 		for(int i = 0; i < colIndex; i++) {
 			TableColumn tableColumn = table.getColumnModel().getColumn(i);
