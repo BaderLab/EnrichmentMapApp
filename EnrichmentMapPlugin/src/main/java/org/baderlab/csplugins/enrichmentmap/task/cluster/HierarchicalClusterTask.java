@@ -98,7 +98,7 @@ public class HierarchicalClusterTask extends AbstractTask implements ObservableT
         int[] order = clusterResult.getLeafOrder();
         for(int i = 0; i < order.length; i++) {
             Integer geneId = labels.get(order[i]);
-            ranks.put(geneId, new RankValue(i+1, false));
+            ranks.put(geneId, new RankValue(i+1, null, false));
         }
         
         tm.setStatusMessage("");

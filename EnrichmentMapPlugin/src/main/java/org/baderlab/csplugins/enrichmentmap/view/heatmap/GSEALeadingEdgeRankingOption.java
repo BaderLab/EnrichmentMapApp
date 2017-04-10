@@ -98,7 +98,8 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 			List<Integer> keys = rank2keys.get(ranksSubset[m]);
 			
 			for(Integer key : keys) {
-				result.put(key, new RankValue(currentRanks.get(key).getRank(), significant));
+				Rank rank = currentRanks.get(key);
+				result.put(key, new RankValue(rank.getRank(), rank.getScore(), significant));
 			}
 		}
 		

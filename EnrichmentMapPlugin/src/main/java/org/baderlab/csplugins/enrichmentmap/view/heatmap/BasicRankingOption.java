@@ -49,7 +49,8 @@ public class BasicRankingOption implements RankingOption {
 		Map<Integer,RankValue> result = new HashMap<>();
 		
 		for(Map.Entry<Integer,Rank> entry : ranking.getRanking().entrySet()) {
-			result.put(entry.getKey(), new RankValue(entry.getValue().getRank(), false));
+			Rank rank = entry.getValue();
+			result.put(entry.getKey(), new RankValue(rank.getRank(), rank.getScore(), false));
 		}
 		
 		// Remove genes that we don't need

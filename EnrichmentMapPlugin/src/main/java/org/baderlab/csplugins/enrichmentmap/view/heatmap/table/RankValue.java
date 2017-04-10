@@ -2,6 +2,8 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
 import java.util.Comparator;
 
+import javax.annotation.Nullable;
+
 /**
  * This is a wrapper object for a "rank" that is computed by a RankingOption.
  * We need this object to track which genes are significant (leading edge), 
@@ -9,15 +11,17 @@ import java.util.Comparator;
  */
 public class RankValue implements Comparable<RankValue> {
 
-	public static final RankValue EMPTY = new RankValue(null, false);
+	public static final RankValue EMPTY = new RankValue(null, null, false);
 	
 	
 	private Integer rank; // May be null
 	private final boolean significant;
+	private @Nullable Double score;
 	
-	public RankValue(Integer rank, boolean significant) {
+	public RankValue(Integer rank, @Nullable Double score, boolean significant) {
 		this.rank = rank;
 		this.significant = significant;
+		this.score = score;
 	}
 
 	public Integer getRank() {
@@ -30,6 +34,10 @@ public class RankValue implements Comparable<RankValue> {
 
 	public boolean isSignificant() {
 		return significant;
+	}
+	
+	public @Nullable Double getScore() {
+		return score;
 	}
 	
 	
