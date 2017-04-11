@@ -55,6 +55,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 	private JTextField enrichments1Text;
 	private JTextField enrichments2Text;
 	private JTextField expressionsText;
+	private JTextField gmtText;
 	private JTextField ranksText;
 	private JTextField classesText;
 	private JTextField positiveText;
@@ -115,6 +116,10 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		if(!isNullOrEmpty(expressionFileName))
 			files.setExpressionFileName(expressionFileName);
 		
+		String gmtFileName = gmtText.getText();
+		if(!isNullOrEmpty(gmtFileName))
+			files.setGMTFileName(gmtFileName);
+		
 		String ranksFileName = ranksText.getText();
 		if(!isNullOrEmpty(ranksFileName))
 			files.setRankedFile(ranksFileName);
@@ -165,6 +170,12 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		enrichments2Browse = createBrowseButton(iconManager);
 		enrichments2Browse.addActionListener(e -> browse(enrichments2Text, FileBrowser.Filter.ENRICHMENT));
 		
+		JLabel gmtLabel = new JLabel("GMT:");
+		gmtText = new JTextField();
+		gmtText.setText(initDataSet != null ? initDataSet.getFiles().getGMTFileName() : null);
+		JButton gmtBrowse = createBrowseButton(iconManager);
+		gmtBrowse.addActionListener(e -> browse(gmtText, FileBrowser.Filter.GMT));
+		
 		JLabel expressionsLabel = new JLabel("Expressions:");
 		expressionsText = new JTextField();
 		expressionsText.setText(initDataSet != null ? initDataSet.getFiles().getExpressionFileName() : null);
@@ -175,6 +186,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		makeSmall(enrichmentsLabel, enrichments1Text, enrichmentsBrowse);
 		makeSmall(enrichments2Label, enrichments2Text, enrichments2Browse);
 		makeSmall(expressionsLabel, expressionsText, expressionsBrowse);
+		makeSmall(gmtLabel, gmtText, gmtBrowse);
 		
 		JLabel ranksLabel = new JLabel("Ranks:");
 		ranksText = new JTextField();
@@ -214,6 +226,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 					.addComponent(enrichmentsLabel)
 					.addComponent(enrichments2Label)
 					.addComponent(expressionsLabel)
+					.addComponent(gmtLabel)
 					.addComponent(ranksLabel)
 					.addComponent(classesLabel)
 				)
@@ -223,6 +236,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 					.addComponent(enrichments1Text, 0, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(enrichments2Text, 0, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(expressionsText, 0, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(gmtText, 0, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(ranksText,   0, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(classesText, 0, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addGroup(layout.createSequentialGroup()
@@ -237,6 +251,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 					.addComponent(enrichmentsBrowse)
 					.addComponent(enrichments2Browse)
 					.addComponent(expressionsBrowse)
+					.addComponent(gmtBrowse)
 					.addComponent(ranksBrowse)
 					.addComponent(classesBrowse)
 				)
@@ -266,6 +281,11 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 					.addComponent(expressionsLabel)
 					.addComponent(expressionsText)
 					.addComponent(expressionsBrowse)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(gmtLabel)
+					.addComponent(gmtText)
+					.addComponent(gmtBrowse)
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
 					.addComponent(ranksLabel)
@@ -312,6 +332,9 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		}
 		if(!emptyOrReadable(expressionsText)) {
 			err.add("Expressions file path is not valid.");
+		}
+		if(!emptyOrReadable(gmtText)) {
+			err.add("GMT file path is not valid.");
 		}
 		if(!emptyOrReadable(ranksText)) {
 			err.add("Ranks file path is not valid.");
