@@ -338,7 +338,7 @@ public class ColorGradientWidget extends JPanel {
 
 	private void setConditionValueStrings() {
 		// we only want 2 significant digits
-		final NumberFormat formatter = new DecimalFormat("#,###,###.##");
+		final NumberFormat formatter = new DecimalFormat("#######.##");
 		minimumConditionValueString = formatter.format(colorGradientRange.getMinValue());
 		averageValueString = formatter.format(colorGradientRange.getCenterLowValue() + (colorGradientRange.getCenterHighValue() - colorGradientRange.getCenterLowValue()) / 2);
 		maximumConditionValueString = formatter.format(colorGradientRange.getMaxValue());

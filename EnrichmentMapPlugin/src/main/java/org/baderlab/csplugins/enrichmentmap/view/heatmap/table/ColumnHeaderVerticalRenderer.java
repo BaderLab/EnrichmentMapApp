@@ -93,7 +93,7 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(verticalLabel, BorderLayout.CENTER);
 		
-		Color barColor = dataset.getMap().isDistinctExpressionSets() ? dataset.getColor() : null;
+		Color barColor = dataset.getColor();
 		if(barColor != null) {
 			JPanel barPanel = new JPanel();
 			barPanel.setPreferredSize(new Dimension(verticalLabel.getWidth(), 5));

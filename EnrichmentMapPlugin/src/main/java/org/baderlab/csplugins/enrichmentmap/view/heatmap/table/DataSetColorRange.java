@@ -94,4 +94,8 @@ public class DataSetColorRange {
 		return range;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("Range[min:%f,max:%f]", range.getMinValue(), range.getMaxValue());
+	}
 }
