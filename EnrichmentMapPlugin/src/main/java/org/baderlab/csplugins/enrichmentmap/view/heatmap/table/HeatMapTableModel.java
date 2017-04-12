@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -8,6 +7,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
 
+import javax.annotation.Nullable;
 import javax.swing.table.AbstractTableModel;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -15,12 +15,13 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+
+import cern.colt.list.DoubleArrayList;
+import cern.jet.stat.Descriptive;
 
 
-/**
- * MKTODO GeneExpressionMatrix is still kind of a mess. There are several methods in this class that
- * really should be in GeneExpressionMatrix. Refactoring should be done eventually.
- */
+
 @SuppressWarnings("serial")
 public class HeatMapTableModel extends AbstractTableModel {
 
@@ -30,6 +31,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 	public static final int RANK_COL = 1;
 	
 	private final EnrichmentMap map;
+	
+	// Uncompressed column count
 	private final int colCount;
 	private final NavigableMap<Integer,EMDataSet> colToDataSet = new TreeMap<>();
 	
@@ -52,14 +55,18 @@ public class HeatMapTableModel extends AbstractTableModel {
 		for(EMDataSet dataset : datasets) {
 			GeneExpressionMatrix matrix = dataset.getExpressionSets();
 			colToDataSet.put(rangeFloor, dataset);
-			rangeFloor += getNumCols(matrix);
+			rangeFloor += matrix.getNumConditions() - 2;
 		}
 		colCount = rangeFloor;
 	}
 	
 	
 	public void setTransform(Transform transform) {
+		boolean c1 = this.transform.isCompress();
+		boolean c2 = transform.isCompress();
 		this.transform = transform;
+		if(c1 != c2)
+			fireTableStructureChanged();
 		fireTableDataChanged();
 	}
 
@@ -93,7 +100,10 @@ public class HeatMapTableModel extends AbstractTableModel {
 
 	@Override
 	public int getColumnCount() {
-		return colCount;
+		if(transform.isCompress())
+			return map.getDataSetCount() + DESC_COL_COUNT;
+		else
+			return colCount;
 	}
 	
 	@Override
@@ -104,9 +114,14 @@ public class HeatMapTableModel extends AbstractTableModel {
 			return ranksColName;
 		
 		EMDataSet dataset = getDataSet(col);
-		int index = getIndexInDataSet(col) + 2;
-		String[] columns = dataset.getExpressionSets().getColumnNames();
-		return columns[index];
+		if(transform.isCompress()) {
+			return SwingUtil.abbreviate(dataset.getName(), 40);
+		}
+		else {
+			int index = getIndexInDataSet(col) + 2;
+			String[] columns = dataset.getExpressionSets().getColumnNames();
+			return columns[index];
+		}
 	}
 
 	@Override
@@ -118,11 +133,15 @@ public class HeatMapTableModel extends AbstractTableModel {
 		String gene = genes.get(row);
 		if(col == GENE_COL)
 			return gene;
+		
 		int geneID = map.getHashFromGene(gene);
 		EMDataSet dataset = getDataSet(col);
-		double[] vals = getExpression(dataset, geneID);
-		int index = getIndexInDataSet(col);
-		return vals[index];
+		if(transform.isCompress()) {
+			return getCompressedExpression(dataset, geneID, transform);
+		} else {
+			double[] vals = getExpression(dataset, geneID, transform);
+			return vals == null ? Double.NaN : vals[getIndexInDataSet(col)];
+		}
 	}
 	
 	public RankValue getRankValue(int row) {
@@ -150,6 +169,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	public Optional<String> getPhenotype(int col) {
+		if(transform.isCompress())
+			return Optional.empty();
 		EMDataSet dataset = getDataSet(col);
 		int index = getIndexInDataSet(col);
 		String[] classes = dataset.getExpressionSets().getPhenotypes();
@@ -165,31 +186,41 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	public EMDataSet getDataSet(int col) {
-		return colToDataSet.floorEntry(col).getValue();
+		if(transform.isCompress()) {
+			List<EMDataSet> datasets = map.getDataSetList();
+			return datasets.get(col-DESC_COL_COUNT);
+		}
+		else
+			return colToDataSet.floorEntry(col).getValue();
 	}
 	
-	private static int getNumCols(GeneExpressionMatrix matrix) {
-		return matrix.getNumConditions() - 2;
-	}
-
 	
-	private double[] getExpression(EMDataSet dataset, int geneID) {
+	private static double getCompressedExpression(EMDataSet dataset, int geneID, Transform transform) {
+		double[] vals = getExpression(dataset, geneID, Transform.AS_IS);
+		if(vals == null)
+			return Double.NaN;
+		DoubleArrayList doubleArrayList = new DoubleArrayList(vals);
+		doubleArrayList.sort();
+		switch(transform) {
+			case COMPRESS_MEDIAN: return Descriptive.median(doubleArrayList);
+			case COMPRESS_MAX:    return Descriptive.max(doubleArrayList);
+			case COMPRESS_MIN:    return Descriptive.min(doubleArrayList);
+			default:              return Double.NaN;
+		}
+	}
+	
+	@SuppressWarnings("incomplete-switch")
+	private static @Nullable double[] getExpression(EMDataSet dataset, int geneID, Transform transform) {
 		GeneExpressionMatrix matrix = dataset.getExpressionSets();
 		Map<Integer,GeneExpression> expressions = matrix.getExpressionMatrix();
 		GeneExpression row = expressions.get(geneID);
-		
-		double[] values = null;
 		if(row != null) {
 			switch(transform) {
-				case ROW_NORMALIZE: values = row.rowNormalize();    break;
-				case LOG_TRANSFORM: values = row.rowLogTransform(); break;
-				case AS_IS:         values = row.getExpression();   break;
+				case ROW_NORMALIZE: return row.rowNormalize();
+				case LOG_TRANSFORM: return row.rowLogTransform();
+				case AS_IS:         return row.getExpression();
 			}
 		}
-		if(values == null) {
-			values = new double[matrix.getNumConditions() - 2];
-			Arrays.fill(values, Double.NaN);
-		}
-		return values;
+		return null;
 	}
 }

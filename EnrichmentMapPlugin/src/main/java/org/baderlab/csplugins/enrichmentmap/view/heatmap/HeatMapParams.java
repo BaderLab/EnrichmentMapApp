@@ -10,7 +10,21 @@ public class HeatMapParams {
 	public static enum Transform {
 		AS_IS, 
 		ROW_NORMALIZE, 
-		LOG_TRANSFORM
+		LOG_TRANSFORM,
+		COMPRESS_MEDIAN,
+		COMPRESS_MAX,
+		COMPRESS_MIN;
+		
+		public boolean isCompress() {
+			switch(this) {
+			case COMPRESS_MAX: 
+			case COMPRESS_MEDIAN:
+			case COMPRESS_MIN: 
+				return true;
+			default: 
+				return false;
+			}
+		}
 	}
 	
 	public static enum Operator {
@@ -55,7 +69,7 @@ public class HeatMapParams {
 	
 	
 	public static class Builder {
-		private Transform transform = Transform.AS_IS;
+		private Transform transform = Transform.COMPRESS_MEDIAN;
 		private Operator operator = Operator.UNION;
 		private Distance distanceMetric = Distance.EUCLIDEAN;
 		private boolean showValues = false;

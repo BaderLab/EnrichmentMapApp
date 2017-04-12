@@ -64,6 +64,7 @@ import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 
 
 /**
@@ -87,7 +88,7 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
 		EMDataSet dataset = model.getDataSet(col);
 		
-		JLabel verticalLabel = createVerticalLabel(value);
+		JLabel verticalLabel = createVerticalLabel(value.toString());
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(verticalLabel, BorderLayout.CENTER);
@@ -108,15 +109,17 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 	}
 
 	
-	private JLabel createVerticalLabel(Object value) {
+	private JLabel createVerticalLabel(String value) {
 		JLabel label = new JLabel();
 
 		label.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 		label.setForeground(UIManager.getColor("TableHeader.foreground"));
 		label.setFont(UIManager.getFont("TableHeader.font"));
+		label.setToolTipText(value);
 		
 		// Create vertical text label
-		Icon verticalText = getVerticalText(label, value.toString(), false);
+		String s = SwingUtil.abbreviate(value, 14);
+		Icon verticalText = getVerticalText(label, s, false);
 		label.setIcon(verticalText);
 		label.setVerticalAlignment(JLabel.BOTTOM);
 		label.setHorizontalAlignment(JLabel.CENTER);

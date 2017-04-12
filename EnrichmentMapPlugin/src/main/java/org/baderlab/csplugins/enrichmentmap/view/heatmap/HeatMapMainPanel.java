@@ -28,6 +28,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter.SortKey;
+import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -54,6 +55,7 @@ import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
@@ -198,7 +200,7 @@ public class HeatMapMainPanel extends JPanel {
 		
 		JLabel operatorLabel = new JLabel("Genes:");
 		operatorCombo = new JComboBox<>();
-		JLabel normLabel = new JLabel("Normalize:");
+		JLabel normLabel = new JLabel("Expressions:");
 		normCombo = new JComboBox<>();
 		
 		SwingUtil.makeSmall(operatorLabel, operatorCombo, normLabel, normCombo);
@@ -207,10 +209,13 @@ public class HeatMapMainPanel extends JPanel {
 		operatorCombo.addItem(new ComboItem<>(Operator.INTERSECTION, "Intersection"));
 		operatorCombo.setSelectedItem(ComboItem.of(Operator.UNION));
 		
-		normCombo.addItem(new ComboItem<>(Transform.AS_IS, "None"));
-		normCombo.addItem(new ComboItem<>(Transform.ROW_NORMALIZE, "Row"));
-		normCombo.addItem(new ComboItem<>(Transform.LOG_TRANSFORM, "Log"));
-		normCombo.setSelectedItem(ComboItem.of(Transform.AS_IS));
+		normCombo.addItem(new ComboItem<>(Transform.AS_IS, "Expression Values"));
+		normCombo.addItem(new ComboItem<>(Transform.ROW_NORMALIZE, "Row Normalize"));
+		normCombo.addItem(new ComboItem<>(Transform.LOG_TRANSFORM, "Log Transform"));
+		normCombo.addItem(new ComboItem<>(Transform.COMPRESS_MEDIAN, "Compress (Median)"));
+		normCombo.addItem(new ComboItem<>(Transform.COMPRESS_MIN, "Compress (Min)"));
+		normCombo.addItem(new ComboItem<>(Transform.COMPRESS_MAX, "Compress (Max)"));
+		normCombo.setSelectedItem(ComboItem.of(Transform.COMPRESS_MEDIAN));
 		
 		operatorCombo.addActionListener(operatorActionListener = e -> updateSetting_Operator(getOperator()));
 		normCombo.addActionListener(normActionListener = e -> updateSetting_Transform(getTransform()));
@@ -433,15 +438,26 @@ public class HeatMapMainPanel extends JPanel {
 	private void updateSetting_ShowValues(boolean showValues) {
 		table.setDefaultRenderer(Double.class, showValues ? new ColorAndValueRenderer() : new ColorRenderer());
 		table.setDefaultRenderer(RankValue.class, new RankValueRenderer());
+		clearTableHeader();
 		createTableHeader(showValues ? COLUMN_WIDTH_VALUE : COLUMN_WIDTH_COLOR);
 		table.revalidate();
 		settingChanged();
 	}
 	
 	private void updateSetting_Transform(Transform transform) {
-		updateSetting_ShowValues(settingsPanel.isShowValues()); // clear cached data used by the ColorRenderer
 		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
-		tableModel.setTransform(transform);
+		if(tableModel.getTransform().isCompress() != transform.isCompress()) {
+			HeatMapParams params = this.buildParams();
+			EnrichmentMap map = tableModel.getEnrichmentMap();
+			List<RankingOption> rankOptions = parent.getMediator().getDataSetRankOptions(map);
+			SwingUtilities.invokeLater(() -> {
+				reset(map, params, rankOptions, Sets.newHashSet(unionGenes), Sets.newHashSet(interGenes));
+			});
+		}
+		else {
+			tableModel.setTransform(transform);
+			updateSetting_ShowValues(settingsPanel.isShowValues()); // clear cached data used by the ColorRenderer
+		}
 		settingChanged();
 	}
 	
