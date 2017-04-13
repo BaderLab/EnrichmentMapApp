@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view.util;
 
 import java.awt.Color;
+import java.awt.Paint;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,14 +28,12 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.ui.RectangleInsets;
@@ -190,14 +189,14 @@ public final class ChartUtil {
 		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		
 		for (EMDataSet ds : dataSets)
-			dataset.addValue(1, ds.getName(), options.getData().toString());
+			dataset.addValue(1, options.getData().toString(), ds.getName());
 		
-		final JFreeChart chart = ChartFactory.createStackedBarChart(
+		final JFreeChart chart = ChartFactory.createBarChart(
 				null, // chart title
 				null, // domain axis label
 				null, // range axis label
 				dataset, // data
-				PlotOrientation.VERTICAL,
+				PlotOrientation.HORIZONTAL,
 				false, // include legend
 				false, // tooltips
 				false); // urls
@@ -216,25 +215,15 @@ public final class ChartUtil {
 	    plot.setRangeGridlinesVisible(false);
 		
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
-        domainAxis.setVisible(false);
+        domainAxis.setVisible(true);
+        domainAxis.setAxisLineVisible(false);
+        domainAxis.setTickMarksVisible(false);
+        domainAxis.setTickLabelFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
+        domainAxis.setLabelPaint(UIManager.getColor("Label.foreground"));
+        domainAxis.setCategoryMargin(0.0);
         
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(false);
-		rangeAxis.setInverted(true);
-	    
-	    final BarRenderer renderer = (BarRenderer) plot.getRenderer();
-		renderer.setBarPainter(new StandardBarPainter());
-		renderer.setShadowVisible(false);
-		renderer.setDrawBarOutline(true);
-		renderer.setBaseItemLabelGenerator(new StandardCategoryItemLabelGenerator() {
-			@Override
-			public String generateLabel(CategoryDataset dataset, int row, int column) {
-				return dataSets.size() > row ? dataSets.get(row).getName() : "";
-			}
-		});
-		renderer.setBaseItemLabelsVisible(true);
-		renderer.setBaseItemLabelFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
-		renderer.setBaseItemLabelPaint(UIManager.getColor("Label.foreground"));
 		
 		ColorScheme colorScheme = options != null ?  options.getColorScheme() : null;
 		List<Color> colors = colorScheme != null ? colorScheme.getColors(3) : null;
@@ -242,16 +231,24 @@ public final class ChartUtil {
 		if (colors == null || colors.size() < 3) // UP, ZERO, DOWN:
 			colors = Arrays.asList(new Color[] { Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY });
 		
+		List<Color> itemColors = new ArrayList<>();
 		int total = dataSets.size();
 		int v = total / 2;
 		
-		for (int i = 0; i < total; i++) {
-			renderer.setSeriesPaint(
-					i, 
-					ColorUtil.getColor(v, -total, total, colors.get(2), colors.get(1), colors.get(0))
-			);
-			v--;
-		}
+		for (int i = 0; i < total; i++)
+			itemColors.add(ColorUtil.getColor(v--, -total, total, colors.get(2), colors.get(1), colors.get(0)));
+		
+	    final BarRenderer renderer = new BarRenderer() {
+	    	@Override
+	    	public Paint getItemPaint(int row, int column) {
+	    		return column < itemColors.size() ? itemColors.get(column) : Color.LIGHT_GRAY;
+	    	}
+	    };
+	    plot.setRenderer(renderer);
+		renderer.setBarPainter(new StandardBarPainter());
+		renderer.setDrawBarOutline(true);
+		renderer.setShadowVisible(false);
+		renderer.setItemMargin(0.0);
 		
 		return chart;
 	}
