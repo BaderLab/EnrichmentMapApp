@@ -123,7 +123,7 @@ public class PostAnalysisPanelMediator {
 			currentTasks.append(buildDiseaseSignatureTask);
 
 			EMStyleOptions options = controlPanelMediatorProvider.get().createStyleOptions(netView);
-			CyCustomGraphics2<?> chart = controlPanelMediatorProvider.get().createChart(netView, options);
+			CyCustomGraphics2<?> chart = controlPanelMediatorProvider.get().createChart(options);
 			currentTasks.append(applyStyleTaskFactory.create(options, chart));
 
 			taskManager.execute(currentTasks, new DialogObserver());

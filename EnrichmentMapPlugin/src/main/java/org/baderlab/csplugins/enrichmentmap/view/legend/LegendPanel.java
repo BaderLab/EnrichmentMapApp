@@ -56,6 +56,7 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.text.Collator;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -79,21 +80,30 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Colors;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
+import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -126,12 +136,17 @@ public class LegendPanel extends JPanel {
 	private JLabel nodeShapeDesc1 = new JLabel("Gene Set");
 	private JLabel nodeShapeDesc2 = new JLabel("Signature Set");
 	
-	private JPanel edgeColorPanel;
+	private JPanel nodeChartPanel;
+	private final JPanel chartLegendPanel = new JPanel(new BorderLayout());
 	
-	private CyNetworkView networkView;
+	private JPanel edgeColorPanel;
+
+	private EMStyleOptions options;
 	
 	public LegendPanel() {
 		setLayout(new BorderLayout());
+		
+		chartLegendPanel.setOpaque(false);
 		
 		Border iconBorder = BorderFactory.createEmptyBorder(4, 4, 4, 4);
 		nodeShapeIcon1.setBorder(iconBorder);
@@ -141,19 +156,21 @@ public class LegendPanel extends JPanel {
 		equalizeSize(nodeShapeDesc1, nodeShapeDesc2);
 	}
 	
-	public CyNetworkView getNetworkView() {
-		return networkView;
+	public EMStyleOptions getOptions() {
+		return options;
 	}
 	
 	/**
 	 * Update parameters panel based on given enrichment map parameters
+	 * @param chartType 
 	 */
-	void update(Collection<EMDataSet> filteredDataSets, CyNetworkView netView) {
-		this.networkView = netView;
+	void update(EMStyleOptions options, Collection<EMDataSet> filteredDataSets) {
+		this.options = options;
+		CyNetworkView networkView = options.getNetworkView();
 		
 		removeAll();
 		
-		EnrichmentMap map = netView != null ? emManager.getEnrichmentMap(netView.getModel().getSUID()) : null;
+		EnrichmentMap map = networkView != null ? emManager.getEnrichmentMap(networkView.getModel().getSUID()) : null;
 		EMCreationParameters params = map != null ? map.getParams() : null;
 
 		if (params == null) {
@@ -166,9 +183,17 @@ public class LegendPanel extends JPanel {
 
 			add(infoLabel, BorderLayout.CENTER);
 		} else {
-			updateNodeColorPanel(filteredDataSets, map, netView);
-			updateNodeShapePanel(map, netView);
-			updateEdgeColorPanel(map, netView);
+			nodeLegendPanel = null;
+			nodeColorPanel = null;
+			nodeShapePanel = null;
+			nodeChartPanel = null;
+			edgeLegendPanel = null;
+			edgeColorPanel = null;
+			
+			updateNodeColorPanel(filteredDataSets, map);
+			updateNodeShapePanel(map);
+			updateNodeChartPanel(filteredDataSets, map);
+			updateEdgeColorPanel(map);
 			
 			JPanel panel = new JPanel();
 			final GroupLayout layout = new GroupLayout(panel);
@@ -192,7 +217,7 @@ public class LegendPanel extends JPanel {
 		revalidate();
 	}
 
-	private void updateNodeColorPanel(Collection<EMDataSet> dataSets, EnrichmentMap map, CyNetworkView netView) {
+	private void updateNodeColorPanel(Collection<EMDataSet> dataSets, EnrichmentMap map) {
 		JPanel p = getNodeColorPanel();
 		p.removeAll();
 		
@@ -223,8 +248,11 @@ public class LegendPanel extends JPanel {
 		}
 	}
 	
-	private void updateNodeShapePanel(EnrichmentMap map, CyNetworkView netView) {
+	private void updateNodeShapePanel(EnrichmentMap map) {
 		JPanel p = getNodeShapePanel();
+		p.removeAll();
+		
+		CyNetworkView netView = options.getNetworkView();
 		VisualStyle style = netView != null ? visualMappingManager.getVisualStyle(netView) : null;
 		
 		nodeShapeIcon1.setVisible(style != null);
@@ -245,8 +273,73 @@ public class LegendPanel extends JPanel {
 		p.revalidate();
 	}
 	
-	private void updateEdgeColorPanel(EnrichmentMap map, CyNetworkView netView) {
+	private void updateNodeChartPanel(Collection<EMDataSet> dataSets, EnrichmentMap map) {
+		JPanel p = getNodeChartPanel();
+		chartLegendPanel.removeAll();
+		
+		CyNetworkView netView = options.getNetworkView();
+		VisualStyle style = netView != null ? visualMappingManager.getVisualStyle(netView) : null;
+		NetworkViewRenderer renderer = applicationManager.getCurrentNetworkViewRenderer();
+		
+		if (renderer == null)
+			renderer = applicationManager.getDefaultNetworkViewRenderer();
+		
+		VisualLexicon lexicon = renderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
+				.getVisualLexicon();
+		VisualProperty<?> vp = lexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
+		Object cg = vp != null ? style.getDefaultValue(vp) : null;
+		ChartType chartType = options.getChartOptions() != null ? options.getChartOptions().getType() : null;
+		
+		if (chartType != null && cg instanceof CyCustomGraphics2 && dataSets != null && dataSets.size() > 1) {
+			ChartPanel chart = createChartPanel(dataSets);
+			
+			if (chart != null) {
+				JLabel titleLabel = new JLabel("" + options.getChartOptions().getData());
+				titleLabel.setHorizontalAlignment(JLabel.CENTER);
+				makeSmall(titleLabel);
+				
+				chartLegendPanel.add(chart, BorderLayout.CENTER);
+				chartLegendPanel.add(titleLabel, BorderLayout.SOUTH);
+			}
+			
+			p.setVisible(true);
+		} else {
+			p.setVisible(false);
+		}
+		
+		p.revalidate();
+	}
+	
+	private ChartPanel createChartPanel(Collection<EMDataSet> dataSets) {
+		JFreeChart chart = null;
+		
+		List<EMDataSet> sortedDataSets = ChartUtil.sortDataSets(dataSets);
+		ChartType chartType = options.getChartOptions() != null ? options.getChartOptions().getType() : null;
+		
+		switch (chartType) {
+			case RADIAL_HEAT_MAP:
+				chart = ChartUtil.createRadialHeatMapChart(sortedDataSets, options.getChartOptions());
+				break;
+			case HEAT_MAP:
+				chart = ChartUtil.createHeatMapChart(sortedDataSets, options.getChartOptions());
+				break;
+			case HEAT_STRIPS:
+				chart = ChartUtil.createHeatStripsChart(sortedDataSets, options.getChartOptions());
+				break;
+			case LINE:
+				chart = ChartUtil.createLineChart(sortedDataSets, options.getChartOptions());
+				break;
+			default:
+				break;
+		}
+		
+		return chart != null ? new ChartPanel(chart) : null;
+	}
+
+	private void updateEdgeColorPanel(EnrichmentMap map) {
 		JPanel p = getEdgeColorPanel();
+		
+		CyNetworkView netView = options.getNetworkView();
 		VisualStyle style = netView != null ? visualMappingManager.getVisualStyle(netView) : null;
 		
 		JComponent[][] entries = null;
@@ -331,10 +424,12 @@ public class LegendPanel extends JPanel {
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 					.addComponent(getNodeColorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getNodeShapePanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getNodeChartPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getNodeColorPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getNodeShapePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getNodeChartPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
 			if (isAquaLAF())
@@ -402,6 +497,24 @@ public class LegendPanel extends JPanel {
 		}
 		
 		return nodeShapePanel;
+	}
+	
+	private JPanel getNodeChartPanel() {
+		if (nodeChartPanel == null) {
+			nodeChartPanel = createStyleLegendPanel(null);
+			nodeChartPanel.setToolTipText("Node Charts");
+			
+			GroupLayout layout = (GroupLayout) nodeChartPanel.getLayout();
+
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(chartLegendPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(chartLegendPanel, PREFERRED_SIZE, 200, 200)
+			);
+		}
+		
+		return nodeChartPanel;
 	}
 	
 	private JPanel getEdgeColorPanel() {

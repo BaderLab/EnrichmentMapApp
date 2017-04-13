@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.style.charts.heatpie;
+package org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap;
 
 import java.awt.Color;
 import java.awt.Image;
@@ -22,10 +22,10 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 
-public class HeatPieChart extends AbstractChart<HeatPieLayer> {
+public class RadialHeatMapChart extends AbstractChart<RadialHeatMapLayer> {
 
-	public static final String FACTORY_ID = "org.baderlab.enrichmentmap.HeatPieChart";
-	public static final String DISPLAY_NAME = "Heat Pie Chart";
+	public static final String FACTORY_ID = "org.baderlab.enrichmentmap.RadialHeatMapChart";
+	public static final String DISPLAY_NAME = "Radial Heat Map Chart";
 	
 	public static final String START_ANGLE = "cy_startAngle";
 	
@@ -34,26 +34,26 @@ public class HeatPieChart extends AbstractChart<HeatPieLayer> {
 	static {
 		try {
 			ICON = new ImageIcon(ImageIO.read(
-					HeatPieChart.class.getClassLoader().getResource("images/heatpie-chart.png")));
+					RadialHeatMapChart.class.getClassLoader().getResource("images/radialheatmap-chart.png")));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public HeatPieChart(final Map<String, Object> properties, final CyServiceRegistrar serviceRegistrar) {
+	public RadialHeatMapChart(final Map<String, Object> properties, final CyServiceRegistrar serviceRegistrar) {
 		super(DISPLAY_NAME, properties, serviceRegistrar);
 	}
 	
-	public HeatPieChart(final HeatPieChart chart, final CyServiceRegistrar serviceRegistrar) {
+	public RadialHeatMapChart(final RadialHeatMapChart chart, final CyServiceRegistrar serviceRegistrar) {
 		super(chart, serviceRegistrar);
 	}
 	
-	public HeatPieChart(final String input, final CyServiceRegistrar serviceRegistrar) {
+	public RadialHeatMapChart(final String input, final CyServiceRegistrar serviceRegistrar) {
 		super(DISPLAY_NAME, input, serviceRegistrar);
 	}
 	
 	@Override
-	public List<HeatPieLayer> getLayers(final CyNetworkView networkView, final View<? extends CyIdentifiable> view) {
+	public List<RadialHeatMapLayer> getLayers(final CyNetworkView networkView, final View<? extends CyIdentifiable> view) {
 		final CyNetwork network = networkView.getModel();
 		final CyIdentifiable model = view.getModel();
 		
@@ -74,7 +74,7 @@ public class HeatPieChart extends AbstractChart<HeatPieLayer> {
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
 		final List<Double> range = global ? getList(RANGE, Double.class) : null;
 		
-		final HeatPieLayer layer = new HeatPieLayer(data, labels, showLabels, itemFontSize, colors, borderWidth,
+		final RadialHeatMapLayer layer = new RadialHeatMapLayer(data, labels, showLabels, itemFontSize, colors, borderWidth,
 				borderColor, startAngle, rotation, range, bounds);
 		
 		return Collections.singletonList(layer);

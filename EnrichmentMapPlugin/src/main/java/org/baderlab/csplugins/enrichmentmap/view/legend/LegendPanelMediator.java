@@ -18,6 +18,7 @@ import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
@@ -36,9 +37,9 @@ public class LegendPanelMediator {
 	private JDialog dialog;
 	private JButton creationParamsButton = new JButton("Creation Parameters...");
 	
-	public void showDialog(Collection<EMDataSet> filteredDataSets, CyNetworkView view) {
+	public void showDialog(EMStyleOptions options, Collection<EMDataSet> filteredDataSets) {
 		invokeOnEDT(() -> {
-			updateDialog(filteredDataSets, view, false);
+			updateDialog(options, filteredDataSets, false);
 			
 			if (dialog != null) {
 				dialog.pack();
@@ -58,8 +59,8 @@ public class LegendPanelMediator {
 		return dialog;
 	}
 	
-	public void updateDialog(Collection<EMDataSet> filteredDataSets, CyNetworkView view) {
-		updateDialog(filteredDataSets, view, true);
+	public void updateDialog(EMStyleOptions options, Collection<EMDataSet> filteredDataSets) {
+		updateDialog(options, filteredDataSets, true);
 	}
 	
 	@AfterInjection
@@ -90,13 +91,13 @@ public class LegendPanelMediator {
 		});
 	}
 	
-	private void updateDialog(Collection<EMDataSet> filteredDataSets, CyNetworkView view, boolean onlyIfVisible) {
+	private void updateDialog(EMStyleOptions options, Collection<EMDataSet> filteredDataSets, boolean onlyIfVisible) {
 		if (onlyIfVisible && !dialog.isVisible())
 			return;
 		
 		invokeOnEDT(() -> {
-			creationParamsButton.setEnabled(view != null);
-			legendPanelProvider.get().update(filteredDataSets, view);
+			creationParamsButton.setEnabled(options.getNetworkView() != null);
+			legendPanelProvider.get().update(options, filteredDataSets);
 		});
 	}
 	
@@ -117,7 +118,7 @@ public class LegendPanelMediator {
 		JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
 		d.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
 		
-		CyNetworkView netView = legendPanelProvider.get().getNetworkView();
+		CyNetworkView netView = legendPanelProvider.get().getOptions().getNetworkView();
 		
 		if (netView != null) {
 			EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());

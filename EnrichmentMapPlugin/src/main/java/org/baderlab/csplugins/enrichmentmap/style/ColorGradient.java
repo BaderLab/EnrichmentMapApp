@@ -24,21 +24,6 @@ public enum ColorGradient {
 	YL_GN_B("YlGnB", new Color(44,127,184), new Color(127,205,187), new Color(237,248,177)),
 	YL_OR_BR("YlOrBr", new Color(217,95,14), new Color(254,196,79), new Color(255,247,188)),
 	YL_OR_RD("YlOrRd", new Color(240,59,32), new Color(254,178,76), new Color(255,237,160)),
-	
-	CYAN_YELLOW("Cyan-Yellow", Color.CYAN, null, Color.YELLOW),
-	CYAN_WHITE_YELLOW("Cyan-White-Yellow", Color.CYAN, Color.WHITE, Color.YELLOW),
-	CYAN_BLACK_YELLOW("Cyan-Black-Yellow", Color.CYAN, Color.BLACK, Color.YELLOW),
-	BLUE_RED("Blue-Red", Color.BLUE, null, Color.RED),
-	BLUE_BLACK_RED("Blue-Black-Red", Color.BLUE, Color.BLACK, Color.RED),
-	BLUE_YELLOW("Blue-Yellow", Color.BLUE, null, Color.YELLOW),
-	BLUE_GREEN_YELLOW("Blue-Green-Yellow", Color.BLUE, Color.GREEN, Color.YELLOW),
-	GREEN_PURPLE("Green-Purple", Color.GREEN, null, Color.MAGENTA),
-	GREEN_BLACK_PURPLE("Green-Black_Purple", Color.GREEN, Color.BLACK, Color.MAGENTA),
-	ORANGE_PURPLE("Orange-Purple", Color.ORANGE, null, Color.MAGENTA),
-	PURPLE_YELLOW("Purple-Yellow", Color.MAGENTA, null, Color.YELLOW),
-	PURPLE_BLACK_YELLOW("Purple-Black-Yellow", Color.MAGENTA, Color.BLACK, Color.YELLOW),
-	RED_YELLOW("Red-Yellow", Color.RED, null, Color.YELLOW),
-	RED_BLACK_YELLOW("Red-Black-Yellow", Color.RED, Color.BLACK, Color.YELLOW),
 	;
 
 	private String label;

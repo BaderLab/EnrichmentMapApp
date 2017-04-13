@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.style.charts.heatpie;
+package org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -19,7 +19,7 @@ import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.PieDataset;
 import org.jfree.ui.RectangleInsets;
 
-public class HeatPieLayer extends AbstractChartLayer<PieDataset> {
+public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 	
 	/** Just to prevent the circle's border from being cropped */
 	public static final double INTERIOR_GAP = 0.004;
@@ -30,7 +30,7 @@ public class HeatPieLayer extends AbstractChartLayer<PieDataset> {
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public HeatPieLayer(
+	public RadialHeatMapLayer(
 			final Map<String, List<Double>> data,
 			final List<String> itemLabels,
 			final boolean showLabels,
@@ -132,7 +132,7 @@ public class HeatPieLayer extends AbstractChartLayer<PieDataset> {
 			final int colorsSize = colors != null ? colors.size() : 0;
 			
 			if (colorsSize > 0) upperColor = colors.get(0);
-			if (colorsSize > 1) zeroColor = Color.WHITE;
+			if (colorsSize > 1) zeroColor = colors.get(1);
 			if (colorsSize > 2) lowerColor = colors.get(2);
 			if (colorsSize > 3) nanColor = colors.get(3);
 		}

@@ -16,7 +16,6 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_V
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,6 +49,7 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.NullCustomGraphics;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
@@ -199,8 +199,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	public void updateDataSetList(CyNetworkView netView) {
 		EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
 		viewPanel.updateDataSetSelector();
-		
-		legendPanelMediatorProvider.get().updateDialog(getFilteredDataSets(viewPanel), netView);
+		updateLegends(viewPanel);
 	}
 	
 	public EMStyleOptions createStyleOptions(CyNetworkView netView) {
@@ -210,10 +209,58 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		return createStyleOptions(map, viewPanel);
 	}
 	
-	public CyCustomGraphics2<?> createChart(CyNetworkView netView, EMStyleOptions options) {
-		EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
+	public CyCustomGraphics2<?> createChart(EMStyleOptions options) {
+		CyCustomGraphics2<?> chart = null;
+		ChartOptions chartOptions = options.getChartOptions();
+		ChartData data = chartOptions != null ? chartOptions.getData() : null;
 		
-		return createChart(viewPanel, options);
+		if (data != null && data != ChartData.NONE) {
+			// Ignore Signature Data Sets in charts
+			Set<EMDataSet> dataSets = filterDataSets(options.getDataSets());
+			
+			if (dataSets.size() > 1) {
+				ColumnDescriptor<Double> columnDescriptor = data.getColumnDescriptor();
+				List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
+						dataSets, columnDescriptor, columnIdFactory);
+				ChartType type = chartOptions.getType();
+
+				Map<String, Object> props = new HashMap<>(type.getProperties());
+				props.put("cy_dataColumns", columns);
+				
+				List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
+				props.put("cy_range", range);
+				props.put("cy_autoRange", false);
+				props.put("cy_globalRange", true);
+				props.put("cy_showItemLabels", chartOptions.isShowLabels());
+				
+				ColorScheme colorScheme = chartOptions.getColorScheme();
+				
+				if (colorScheme == ColorScheme.CONTRASTING || colorScheme == ColorScheme.MODULATED
+						|| colorScheme == ColorScheme.RAINBOW) {
+					props.put("cy_colorScheme", colorScheme.getKey());
+				} else {
+					int nColors = columns.size(); 
+					
+					if (type == ChartType.LINE)
+						nColors = 1;
+					else if (type == ChartType.HEAT_STRIPS)
+						nColors = 3;
+					
+					props.put("cy_colors", colorScheme.getColors(nColors));
+				}
+				
+				try {
+					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
+					
+					if (factory != null)
+						chart = factory.getInstance(props);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return chart;
 	}
 	
 	@Override
@@ -223,10 +270,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		
 		invokeOnEDT(() -> {
 			EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(e.getNetworkView());
-			legendPanelMediatorProvider.get().updateDialog(getFilteredDataSets(viewPanel), e.getNetworkView());
+			updateLegends(viewPanel);
 		});
 	}
-	
+
 	@Override
 	public void handleEvent(NetworkViewAddedEvent e) {
 		CyNetworkView netView = e.getNetworkView();
@@ -450,6 +497,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		return filterDataSets(viewPanel.getCheckedDataSets()); // Ignore Signature Data Sets
 	}
 	
+	private ChartType getChartType(EMViewControlPanel viewPanel) {
+		return (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
+	}
+	
 	private void removeSignatureDataSets(EnrichmentMap map, EMViewControlPanel viewPanel) {
 		Set<EMSignatureDataSet> dataSets = viewPanel.getSelectedSignatureDataSets();
 		
@@ -470,16 +521,20 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				@Override
 				public void allFinished(FinishStatus finishStatus) {
 					viewPanel.updateDataSetSelector();
-					legendPanelMediatorProvider.get().updateDialog(getFilteredDataSets(viewPanel),
-							viewPanel.getNetworkView());
+					updateLegends(viewPanel);
 				}
 			});
 		}
 	}
 	
+	private void updateLegends(EMViewControlPanel viewPanel) {
+		legendPanelMediatorProvider.get().updateDialog(createStyleOptions(viewPanel.getNetworkView()),
+				getFilteredDataSets(viewPanel));
+	}
+	
 	private void updateVisualStyle(EnrichmentMap map, EMViewControlPanel viewPanel) {
 		EMStyleOptions options = createStyleOptions(map, viewPanel);
-		CyCustomGraphics2<?> chart = createChart(viewPanel, options);
+		CyCustomGraphics2<?> chart = createChart(options);
 		applyVisualStyle(options, chart);
 	}
 
@@ -492,7 +547,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			@Override
 			public void allFinished(FinishStatus finishStatus) {
 				EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(options.getNetworkView());
-				legendPanelMediatorProvider.get().updateDialog(getFilteredDataSets(viewPanel), options.getNetworkView());
+				updateLegends(viewPanel);
 			}
 		});
 	}
@@ -501,79 +556,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		Set<AbstractDataSet> dataSets = viewPanel.getDataSetSelector().getCheckedItems();
 		boolean publicationReady = viewPanel.getPublicationReadyCheck().isSelected();
 		boolean postAnalysis = map.hasSignatureDataSets();
-		EMStyleOptions options =
-				new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, postAnalysis, publicationReady);
-
-		return options;
-	}
-	
-	private CyCustomGraphics2<?> createChart(EMViewControlPanel viewPanel, EMStyleOptions options) {
+		
 		ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
-		ChartType type = (ChartType) viewPanel.getChartTypeCombo().getSelectedItem();
+		ChartType type = getChartType(viewPanel);
 		ColorScheme colorScheme = (ColorScheme) viewPanel.getChartColorsCombo().getSelectedItem();
 		boolean showLabels = viewPanel.getShowChartLabelsCheck().isSelected();
-		
-		return createChart(data, type, colorScheme, showLabels, options);
-	}
-	
-	private CyCustomGraphics2<?> createChart(ChartData data, ChartType type, ColorScheme colorScheme,
-			boolean showLabels, EMStyleOptions options) {
-		CyCustomGraphics2<?> chart = null;
-		
-		if (data != null && data != ChartData.NONE) {
-			// Ignore Signature Data Sets in charts
-			Set<EMDataSet> dataSets = filterDataSets(options.getDataSets());
-			
-			if (dataSets.size() > 1) {
-				ColumnDescriptor<Double> columnDescriptor = data.getColumnDescriptor();
-				
-				List<CyColumnIdentifier> columns = dataSets
-						.stream()
-						.map(ds -> columnDescriptor.with(options.getAttributePrefix(), ds.getName()))  // column name
-						.map(columnIdFactory::createColumnIdentifier) // column id
-						.collect(Collectors.toList());
-				
-				// Sort the columns by name, so the chart items have the same order as the data set list
-				Collator collator = Collator.getInstance();
-				Collections.sort(columns, (CyColumnIdentifier o1, CyColumnIdentifier o2) -> {
-					return collator.compare(o1.getColumnName(), o2.getColumnName());
-				});
-				
-				Map<String, Object> props = new HashMap<>(type.getProperties());
-				props.put("cy_dataColumns", columns);
-				
-				List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
-				props.put("cy_range", range);
-				props.put("cy_autoRange", false);
-				props.put("cy_globalRange", true);
-				props.put("cy_showItemLabels", showLabels);
-				
-				if (colorScheme == ColorScheme.CONTRASTING || colorScheme == ColorScheme.MODULATED
-						|| colorScheme == ColorScheme.RAINBOW) {
-					props.put("cy_colorScheme", colorScheme.getKey());
-				} else {
-					int nColors = columns.size(); 
-					
-					if (type == ChartType.LINE)
-						nColors = 1;
-					else if (type == ChartType.HEAT_STRIPS)
-						nColors = 3;
-					
-					props.put("cy_colors", colorScheme.getColors(nColors));
-				}
-				
-				try {
-					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
-					
-					if (factory != null)
-						chart = factory.getInstance(props);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		return chart;
+		ChartOptions chartOptions = new ChartOptions(data, type, colorScheme, showLabels);
+
+		return new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, chartOptions, postAnalysis,
+				publicationReady);
 	}
 	
 	/**
@@ -622,7 +613,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				} else {
 					CyNetworkView netView = getCurrentEMView();
 					EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
-					legendPanelMediatorProvider.get().showDialog(getFilteredDataSets(viewPanel), netView);
+					legendPanelMediatorProvider.get().showDialog(createStyleOptions(netView),
+							getFilteredDataSets(viewPanel));
 				}
 			});
 			mi.setSelected(legendPanelMediatorProvider.get().getDialog().isVisible());

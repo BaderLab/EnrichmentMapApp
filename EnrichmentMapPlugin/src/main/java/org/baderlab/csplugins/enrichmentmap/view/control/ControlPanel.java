@@ -22,7 +22,6 @@ import java.awt.Font;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -398,21 +397,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					public List<Color> getColors(int nColors) { return Collections.singletonList(DARK_RED); }
 				}
 		};
-		private final ColorScheme[] HEAT_MAP_SCHEMES = new ColorScheme[] {
-				new ColorScheme("7_PR_GN", "7-class PRGn") {
-					@Override
-					public List<Color> getColors(int nColors) {
-						return Arrays.asList(
-								new Color(27, 120, 55)/*green*/,
-					    		new Color(247, 247, 247)/*almost white*/,
-								new Color(118, 42, 131)/*purple*/,
-								Color.LIGHT_GRAY
-						);
-					}
-				}
-		};
-		
-		private final ColorScheme[] HEAT_STRIP_COLOR_SCHEMES;
+		private final ColorScheme[] HEAT_MAP_SCHEMES;
 		
 		private JRadioButton pValueRadio;
 		private JRadioButton qValueRadio;
@@ -444,16 +429,16 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			setBorder(BorderFactory.createLineBorder(UIManager.getColor(BORDER_COLOR_KEY)));
 			
 			// Init colors
-			final List<ColorScheme> heatStripSchemeList = new ArrayList<>();
+			final List<ColorScheme> heatSchemeList = new ArrayList<>();
 			
 			for (final ColorGradient cg : ColorGradient.values()) {
 				if (cg.getColors().size() == 3)
-					heatStripSchemeList.add(new ColorScheme(cg));
+					heatSchemeList.add(new ColorScheme(cg));
 			}
 			
-			heatStripSchemeList.add(CUSTOM);
+			heatSchemeList.add(CUSTOM);
 			
-			HEAT_STRIP_COLOR_SCHEMES = heatStripSchemeList.toArray(new ColorScheme[heatStripSchemeList.size()]);
+			HEAT_MAP_SCHEMES = heatSchemeList.toArray(new ColorScheme[heatSchemeList.size()]);
 			
 			final JPanel filterPanel = createFilterPanel();
 			final JPanel stylePanel = createStylePanel();
@@ -501,6 +486,12 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			getDataSetSelector().update();
 		}
 		
+		void updateChartCombos() {
+			updateChartTypeCombo();
+			updateChartColorsCombo();
+			updateChartLabelsCheck();
+		}
+		
 		void updateChartDataCombo() {
 			long dsCount = getDataSetSelector().getCheckedItems()
 					.stream()
@@ -514,12 +505,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				getChartDataCombo().setEnabled(b2);
 				updateChartCombos();
 			}
-		}
-		
-		void updateChartCombos() {
-			updateChartTypeCombo();
-			updateChartColorsCombo();
-			updateChartLabelsCheck();
 		}
 		
 		void updateChartTypeCombo() {
@@ -538,12 +523,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				ColorScheme[] colorSchemes = null;
 				
 				switch (type) {
-					case HEAT_PIE:
+					case RADIAL_HEAT_MAP:
 					case HEAT_MAP:
-						colorSchemes = HEAT_MAP_SCHEMES;
-						break;
 					case HEAT_STRIPS:
-						colorSchemes = HEAT_STRIP_COLOR_SCHEMES;
+						colorSchemes = HEAT_MAP_SCHEMES;
 						break;
 					case LINE:
 						colorSchemes = ONE_COLOR_SCHEMES;
@@ -796,7 +779,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 
 		public JComboBox<ChartData> getChartDataCombo() {
 			if (chartDataCombo == null) {
-				chartDataCombo = new JComboBox<ChartData>();
+				chartDataCombo = new JComboBox<>();
 				chartDataCombo.addItem(ChartData.NONE);
 				chartDataCombo.addItem(ChartData.NES_VALUE);
 				chartDataCombo.addItem(ChartData.P_VALUE);

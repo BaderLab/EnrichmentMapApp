@@ -269,7 +269,6 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		return dataset;
 	}
 	
-	// TODO minimumslice: The minimum size of a slice to be considered. All slices smaller than this are grouped together in a single "other" slice
 	public static PieDataset createPieDataset(final List<Double> values) {
 		final DefaultPieDataset dataset = new DefaultPieDataset();
 		

@@ -7,12 +7,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.baderlab.csplugins.enrichmentmap.style.charts.Rotation;
-import org.baderlab.csplugins.enrichmentmap.style.charts.heatpie.HeatPieChart;
+import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChart;
 
 public enum ChartType {
-	HEAT_PIE(
-			HeatPieChart.FACTORY_ID,
-			"Heat Pie",
+	RADIAL_HEAT_MAP(
+			RadialHeatMapChart.FACTORY_ID,
+			"Radial Heat Map",
 			Collections.unmodifiableMap(Stream.of(
 	                new SimpleEntry<>("cy_borderWidth", 0.0f),
 	                new SimpleEntry<>("cy_rotation", Rotation.CLOCKWISE),
@@ -73,8 +73,8 @@ public enum ChartType {
 	public static ChartType toChartType(String chartName) {
 		chartName = chartName != null ? chartName.toLowerCase() : "";
 		
-		if (chartName.startsWith("heat pie"))
-			return HEAT_PIE;
+		if (chartName.startsWith("radial heat map"))
+			return RADIAL_HEAT_MAP;
 		if (chartName.startsWith("heat map"))
 			return HEAT_MAP;
 		if (chartName.startsWith("bar"))

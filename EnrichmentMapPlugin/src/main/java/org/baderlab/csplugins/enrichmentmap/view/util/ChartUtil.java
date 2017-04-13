@@ -1,21 +1,79 @@
 package org.baderlab.csplugins.enrichmentmap.view.util;
 
+import java.awt.Color;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.swing.UIManager;
+
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
+import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions.ChartOptions;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.ui.RectangleInsets;
 
 public final class ChartUtil {
 
+	public static final Color TRANSPARENT_COLOR = new Color(0x00, 0x00, 0x00, 0);
+	
 	private ChartUtil() {
+	}
+	
+	public static List<CyColumnIdentifier> getSortedColumnIdentifiers(String attributePrefix,
+			Collection<EMDataSet> dataSets, ColumnDescriptor<Double> columnDescriptor,
+			CyColumnIdentifierFactory columnIdFactory) {
+		List<CyColumnIdentifier> columns = dataSets
+				.stream()
+				.map(ds -> columnDescriptor.with(attributePrefix, ds.getName()))  // column name
+				.map(columnIdFactory::createColumnIdentifier) // column id
+				.collect(Collectors.toList());
+		
+		// Sort the columns by name, so the chart items have the same order as the data set list
+		Collator collator = Collator.getInstance();
+		Collections.sort(columns, (CyColumnIdentifier o1, CyColumnIdentifier o2) -> {
+			return collator.compare(o1.getColumnName(), o2.getColumnName());
+		});
+		
+		return columns;
+	}
+	
+	public static List<EMDataSet> sortDataSets(Collection<EMDataSet> dataSets) {
+		List<EMDataSet> list = new ArrayList<>(dataSets);
+		
+		// Sort them by name
+		Collator collator = Collator.getInstance();
+		Collections.sort(list, (EMDataSet o1, EMDataSet o2) -> {
+			return collator.compare(o1.getName(), o2.getName());
+		});
+		
+		return list;
 	}
 	
 	/**
@@ -70,6 +128,142 @@ public final class ChartUtil {
 		}
 		
 		return range;
+	}
+	
+	public static JFreeChart createRadialHeatMapChart(List<EMDataSet> dataSets, ChartOptions options) {
+		// All the slices must have the same size
+		final DefaultPieDataset pieDataset = new DefaultPieDataset();
+		
+		for (EMDataSet ds : dataSets)
+			pieDataset.setValue(ds.getName(), 1);
+		
+		JFreeChart chart = ChartFactory.createPieChart(
+				null, // chart title
+				pieDataset, // data
+				false, // include legend
+				false, // tooltips
+				false); // urls
+		
+        chart.setAntiAlias(true);
+        chart.setBorderVisible(false);
+        chart.setBackgroundPaint(UIManager.getColor("Table.background"));
+        chart.setBackgroundImageAlpha(0.0f);
+        chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
+        
+		final PiePlot plot = (PiePlot) chart.getPlot();
+		plot.setCircular(true);
+		plot.setOutlineVisible(false);
+		plot.setBackgroundPaint(UIManager.getColor("Table.background"));
+		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
+		plot.setShadowPaint(TRANSPARENT_COLOR);
+		plot.setShadowXOffset(0.0);
+		plot.setShadowYOffset(0.0);
+		plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}"));
+		plot.setLabelFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
+		plot.setLabelPaint(UIManager.getColor("Label.foreground"));
+		plot.setLabelBackgroundPaint(TRANSPARENT_COLOR);
+		plot.setLabelOutlinePaint(TRANSPARENT_COLOR);
+		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
+		
+		ColorScheme colorScheme = options != null ?  options.getColorScheme() : null;
+		List<Color> colors = colorScheme != null ? colorScheme.getColors(3) : null;
+		
+		if (colors == null || colors.size() < 3) // UP, ZERO, DOWN:
+			colors = Arrays.asList(new Color[] { Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY });
+		
+		int total = dataSets.size();
+		int v = total / -2;
+		
+		for (EMDataSet ds : dataSets) {
+			plot.setSectionPaint(
+					ds.getName(), 
+					ColorUtil.getColor(v, -total, total, colors.get(2), colors.get(1), colors.get(0))
+			);
+			v++;
+		}
+		
+		return chart;
+	}
+	
+	@SuppressWarnings("serial")
+	public static JFreeChart createHeatMapChart(List<EMDataSet> dataSets, ChartOptions options) {
+		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+		
+		for (EMDataSet ds : dataSets)
+			dataset.addValue(1, ds.getName(), options.getData().toString());
+		
+		final JFreeChart chart = ChartFactory.createStackedBarChart(
+				null, // chart title
+				null, // domain axis label
+				null, // range axis label
+				dataset, // data
+				PlotOrientation.VERTICAL,
+				false, // include legend
+				false, // tooltips
+				false); // urls
+		
+		chart.setAntiAlias(true);
+        chart.setBorderVisible(false);
+        chart.setBackgroundPaint(UIManager.getColor("Table.background"));
+        chart.setBackgroundImageAlpha(0.0f);
+        chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
+        
+        final CategoryPlot plot = (CategoryPlot) chart.getPlot();
+		plot.setOutlineVisible(false);
+		plot.setBackgroundPaint(UIManager.getColor("Table.background"));
+		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
+		plot.setDomainGridlinesVisible(false);
+	    plot.setRangeGridlinesVisible(false);
+		
+		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
+        domainAxis.setVisible(false);
+        
+        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+		rangeAxis.setVisible(false);
+		rangeAxis.setInverted(true);
+	    
+	    final BarRenderer renderer = (BarRenderer) plot.getRenderer();
+		renderer.setBarPainter(new StandardBarPainter());
+		renderer.setShadowVisible(false);
+		renderer.setDrawBarOutline(true);
+		renderer.setBaseItemLabelGenerator(new StandardCategoryItemLabelGenerator() {
+			@Override
+			public String generateLabel(CategoryDataset dataset, int row, int column) {
+				return dataSets.size() > row ? dataSets.get(row).getName() : "";
+			}
+		});
+		renderer.setBaseItemLabelsVisible(true);
+		renderer.setBaseItemLabelFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
+		renderer.setBaseItemLabelPaint(UIManager.getColor("Label.foreground"));
+		
+		ColorScheme colorScheme = options != null ?  options.getColorScheme() : null;
+		List<Color> colors = colorScheme != null ? colorScheme.getColors(3) : null;
+		
+		if (colors == null || colors.size() < 3) // UP, ZERO, DOWN:
+			colors = Arrays.asList(new Color[] { Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY });
+		
+		int total = dataSets.size();
+		int v = total / 2;
+		
+		for (int i = 0; i < total; i++) {
+			renderer.setSeriesPaint(
+					i, 
+					ColorUtil.getColor(v, -total, total, colors.get(2), colors.get(1), colors.get(0))
+			);
+			v--;
+		}
+		
+		return chart;
+	}
+	
+	public static JFreeChart createHeatStripsChart(List<EMDataSet> dataSets, ChartOptions options) {
+		
+		return null;
+	}
+	
+	public static JFreeChart createLineChart(List<EMDataSet> dataSets, ChartOptions options) {
+		
+		return null;
 	}
 	
 	private static double[] minMax(double min, double max, final List<? extends Number> values) {

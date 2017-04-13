@@ -10,7 +10,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.io.LegacySessionLoader;
 import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
-import org.baderlab.csplugins.enrichmentmap.style.charts.heatpie.HeatPieChartFactory;
+import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChartFactory;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.cytoscape.application.CyApplicationConfiguration;
@@ -80,8 +80,8 @@ public class CyActivator extends AbstractCyActivator {
 			final Properties chartProps = new Properties();
 			chartProps.setProperty(CyCustomGraphics2Factory.GROUP, "Charts");
 			
-			HeatPieChartFactory heatPieChartFactory = injector.getInstance(HeatPieChartFactory.class);
-			registerService(bc, heatPieChartFactory, CyCustomGraphics2Factory.class, chartProps);
+			RadialHeatMapChartFactory radialHeatMapChartFactory = injector.getInstance(RadialHeatMapChartFactory.class);
+			registerService(bc, radialHeatMapChartFactory, CyCustomGraphics2Factory.class, chartProps);
 			
 			// UI Mediators
 			ControlPanelMediator controlPanelMediator = injector.getInstance(ControlPanelMediator.class);
