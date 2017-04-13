@@ -448,15 +448,7 @@ public class DataSetSelector extends JPanel {
 					if (ds.getColor() != null) {
 						setFont(iconFont);
 						setText(IconManager.ICON_FILE);
-						
-						final Color c;
-						
-						if (map != null && map.getParams().getCreateDistinctEdges() && map.isDistinctExpressionSets())
-							c = ds.getColor();
-						else
-							c = EMStyleBuilder.Colors.COMPOUND_EDGE_COLOR;
-						
-						setForeground(c);
+						setForeground(ds.getColor());
 					}
 				}
 			} else if (column == NAME_COL_IDX) {
