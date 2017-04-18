@@ -98,6 +98,10 @@ public class LegendPanelMediator {
 		invokeOnEDT(() -> {
 			creationParamsButton.setEnabled(options != null && options.getNetworkView() != null);
 			legendPanelProvider.get().update(options, filteredDataSets);
+			
+			if (options != null
+					&& dialog.getWidth() < legendPanelProvider.get().getNodeLegendPanel().getPreferredSize().width)
+				dialog.pack();
 		});
 	}
 	

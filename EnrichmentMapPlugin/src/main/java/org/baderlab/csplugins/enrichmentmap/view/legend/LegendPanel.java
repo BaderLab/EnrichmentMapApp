@@ -408,7 +408,7 @@ public class LegendPanel extends JPanel {
 		updateStyleLegendPanel(entries, p);
 	}
 
-	private BasicCollapsiblePanel getNodeLegendPanel() {
+	BasicCollapsiblePanel getNodeLegendPanel() {
 		if (nodeLegendPanel == null) {
 			nodeLegendPanel = new BasicCollapsiblePanel("Nodes (Gene Sets)");
 			nodeLegendPanel.setCollapsed(false);
@@ -436,7 +436,7 @@ public class LegendPanel extends JPanel {
 		return nodeLegendPanel;
 	}
 	
-	private BasicCollapsiblePanel getEdgeLegendPanel() {
+	BasicCollapsiblePanel getEdgeLegendPanel() {
 		if (edgeLegendPanel == null) {
 			edgeLegendPanel = new BasicCollapsiblePanel("Edges (Similarity Between Gene Sets)");
 			edgeLegendPanel.setCollapsed(false);
@@ -469,7 +469,7 @@ public class LegendPanel extends JPanel {
 		return nodeColorPanel;
 	}
 	
-	private JPanel getNodeShapePanel() {
+	JPanel getNodeShapePanel() {
 		if (nodeShapePanel == null) {
 			nodeShapePanel = createStyleLegendPanel(null);
 			nodeShapePanel.setToolTipText("Node Shape");
