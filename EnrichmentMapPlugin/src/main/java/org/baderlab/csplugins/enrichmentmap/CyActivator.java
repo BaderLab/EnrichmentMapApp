@@ -13,6 +13,7 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChartFactory;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
+import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
@@ -99,10 +100,14 @@ public class CyActivator extends AbstractCyActivator {
 	
 	@Override
 	public void shutDown() {
-		// If the App gets updated or restarted we need to save all the data first
 		if (injector != null) {
+			// If the App gets updated or restarted we need to save all the data first
 			SessionModelListener sessionListener = injector.getInstance(SessionModelListener.class);
 			sessionListener.saveModel();
+			
+			// Also close the legend panel
+			LegendPanelMediator legendPanelMediator = injector.getInstance(LegendPanelMediator.class);
+			legendPanelMediator.hideDialog();
 		}
 	}
 }
