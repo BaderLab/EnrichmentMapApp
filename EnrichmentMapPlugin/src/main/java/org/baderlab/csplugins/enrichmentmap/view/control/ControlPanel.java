@@ -6,10 +6,8 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.CONTRASTING;
-import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.CUSTOM;
 import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.MODULATED;
 import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.RAINBOW;
-import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.RANDOM;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
@@ -364,7 +362,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private final Color DARK_RED = new Color(165, 15, 21);
 		
 		private final ColorScheme[] REGULAR_COLOR_SCHEMES = new ColorScheme[] {
-				CONTRASTING, MODULATED, RAINBOW, RANDOM
+				CONTRASTING, MODULATED, RAINBOW
 		};
 		private final ColorScheme[] HEAT_MAP_SCHEMES;
 		
@@ -404,8 +402,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				if (cg.getColors().size() == 3)
 					heatSchemeList.add(new ColorScheme(cg));
 			}
-			
-			heatSchemeList.add(CUSTOM);
 			
 			HEAT_MAP_SCHEMES = heatSchemeList.toArray(new ColorScheme[heatSchemeList.size()]);
 			

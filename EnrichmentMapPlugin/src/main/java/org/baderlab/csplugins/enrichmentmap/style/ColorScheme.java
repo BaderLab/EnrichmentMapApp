@@ -2,18 +2,14 @@ package org.baderlab.csplugins.enrichmentmap.style;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class ColorScheme {
 	
 	public static final ColorScheme CONTRASTING = new ColorScheme("CONTRASTING", "Contrasting");
 	public static final ColorScheme MODULATED = new ColorScheme("MODULATED", "Modulated");
 	public static final ColorScheme RAINBOW = new ColorScheme("RAINBOW", "Rainbow");
-	public static final ColorScheme RANDOM = new ColorScheme("RANDOM", "Random");
-	public static final ColorScheme CUSTOM = new ColorScheme("CUSTOM", "Custom");
 	
 	public static ColorScheme DEFAULT = CONTRASTING;
 	
@@ -53,8 +49,6 @@ public class ColorScheme {
 					newColors.add(colors.get(2));
 				}
 			} else if (nColors > 0) {
-				if (RANDOM.getKey().equalsIgnoreCase(key) || CUSTOM.getKey().equalsIgnoreCase(key))
-					colors = generateRandomColors(nColors);
 				if (RAINBOW.getKey().equalsIgnoreCase(key))
 					colors = generateRainbowColors(nColors);
 				if (MODULATED.getKey().equalsIgnoreCase(key))
@@ -71,8 +65,6 @@ public class ColorScheme {
 	}
 	
 	public static ColorScheme parse(final String input) {
-		if (RANDOM.getKey().equalsIgnoreCase(input))      return RANDOM;
-		if (CUSTOM.getKey().equalsIgnoreCase(input))      return CUSTOM;
 		if (RAINBOW.getKey().equalsIgnoreCase(input))     return RAINBOW;
 		if (MODULATED.getKey().equalsIgnoreCase(input))   return MODULATED;
 		if (CONTRASTING.getKey().equalsIgnoreCase(input)) return CONTRASTING;
@@ -83,22 +75,6 @@ public class ColorScheme {
 		return CONTRASTING;
 	}
 	
-	public static List<Color> generateRandomColors(int nColors) {
-		Calendar cal = Calendar.getInstance();
-		int seed = cal.get(Calendar.SECOND);
-		Random rand = new Random(seed);
-		List<Color> result = new ArrayList<Color>(nColors);
-		
-		for (int index = 0; index < nColors; index++) {
-			int r = rand.nextInt(255);
-			int g = rand.nextInt(255);
-			int b = rand.nextInt(255);
-			result.add(index, new Color(r, g, b, 255));
-		}
-		
-		return result;
-	}
-
 	// Rainbow colors just divide the Hue wheel into n pieces and return them
 	public static List<Color> generateRainbowColors(int nColors) {
 		List<Color> values = new ArrayList<Color>();
