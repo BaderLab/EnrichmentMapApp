@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.view.util;
 import java.awt.Color;
 import java.awt.Paint;
 import java.text.Collator;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,7 +30,9 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.labels.StandardPieToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
@@ -141,7 +144,7 @@ public final class ChartUtil {
 				null, // chart title
 				pieDataset, // data
 				false, // include legend
-				false, // tooltips
+				true, // tooltips
 				false); // urls
 		
         chart.setAntiAlias(true);
@@ -164,6 +167,7 @@ public final class ChartUtil {
 		plot.setLabelBackgroundPaint(TRANSPARENT_COLOR);
 		plot.setLabelOutlinePaint(TRANSPARENT_COLOR);
 		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
+		plot.setToolTipGenerator(new StandardPieToolTipGenerator("{0}"));
 		
 		ColorScheme colorScheme = options != null ?  options.getColorScheme() : null;
 		List<Color> colors = colorScheme != null ? colorScheme.getColors(3) : null;
@@ -199,7 +203,7 @@ public final class ChartUtil {
 				dataset, // data
 				PlotOrientation.HORIZONTAL,
 				false, // include legend
-				false, // tooltips
+				true, // tooltips
 				false); // urls
 		
 		chart.setAntiAlias(true);
@@ -250,6 +254,7 @@ public final class ChartUtil {
 		renderer.setDrawBarOutline(true);
 		renderer.setShadowVisible(false);
 		renderer.setItemMargin(0.0);
+		renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator("{1}", NumberFormat.getInstance()));
 		
 		return chart;
 	}
@@ -272,7 +277,7 @@ public final class ChartUtil {
 				dataset, // data
 				PlotOrientation.VERTICAL,
 				false, // include legend
-				false, // tooltips
+				true, // tooltips
 				false); // urls
 		
 		chart.setAntiAlias(true);
@@ -294,7 +299,8 @@ public final class ChartUtil {
         domainAxis.setTickMarksVisible(false);
         domainAxis.setTickLabelFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
         domainAxis.setLabelPaint(UIManager.getColor("Label.foreground"));
-        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.DOWN_90);
+        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+        domainAxis.setMaximumCategoryLabelLines(1);
         domainAxis.setCategoryMargin(0.0);
         
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
@@ -325,6 +331,7 @@ public final class ChartUtil {
 		renderer.setDrawBarOutline(true);
 		renderer.setShadowVisible(false);
 		renderer.setItemMargin(0.0);
+		renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator("{1}", NumberFormat.getInstance()));
 		
 		return chart;
 	}
