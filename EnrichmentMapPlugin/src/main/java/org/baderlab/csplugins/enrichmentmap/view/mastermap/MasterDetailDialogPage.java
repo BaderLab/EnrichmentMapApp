@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +39,7 @@ import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.view.mastermap.ErrorMessageDialog.MessageType;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
@@ -52,6 +54,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
 @SuppressWarnings("serial")
@@ -99,9 +102,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	@Override
 	public void finish() {
-		// Validate that we can finish
-		boolean valid = validateInput();
-		if(!valid)
+		if(!validateInput())
 			return;
 		
 		String prefix = legacySupport.getNextAttributePrefix();
@@ -121,6 +122,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		if(!isNullOrEmpty(gmtPath)) {
 			params.setGlobalGmtFile(Paths.get(gmtPath));
 		}
+		
 		params.setCreateDistinctEdges(distinctEdgesCheckbox.isSelected());
 		
 		List<DataSetParameters> dataSets = 
@@ -129,6 +131,14 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				.map(DetailPanel::createDataSetParameters)
 				.filter(x -> x != null)
 				.collect(Collectors.toList());
+		
+		// Overwrite all the expression files if the common file has been provided
+		String exprPath = commonPanel.getExpressionFile();
+		if(!isNullOrEmpty(exprPath)) {
+			for(DataSetParameters dsp : dataSets) {
+				dsp.getFiles().setExpressionFileName(exprPath);
+			}
+		}
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
@@ -325,27 +335,51 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	
 	private boolean validateInput() {
-		boolean valid = true;
 		ErrorMessageDialog dialog = null;
 		
+		// Check for input errors.
 		for(DataSetListItem item : dataSetListModel.toList()) {
 			DetailPanel panel = item.getDetailPanel();
 			List<String> messages = panel.validateInput();
 			if(!messages.isEmpty()) {
-				valid = false;
 				if(dialog == null)
 					dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
-				dialog.addSection(panel.getDisplayName(), panel.getIcon(), messages);
+				dialog.addSection(MessageType.ERROR, panel.getDisplayName(), panel.getIcon(), messages);
+			}
+		}
+		
+		// Check if the user provided a global expression file, warn if there are also per-dataset expression files.
+		if(!Strings.isNullOrEmpty(commonPanel.getExpressionFile())) {
+			for(DataSetListItem item : dataSetListModel.toList()) {
+				DetailPanel panel = item.getDetailPanel();
+				if(panel instanceof EditDataSetPanel) {
+					String exprFile = ((EditDataSetPanel)panel).getExpressionFileName();
+					if(!Strings.isNullOrEmpty(exprFile)) {
+						if(dialog == null)
+							dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
+						
+						List<String> messages = Arrays.asList("A common expression file has been provided. Per-dataset expression files will be ignored.");
+						dialog.addSection(MessageType.WARN, commonPanel.getDisplayName(), commonPanel.getIcon(), messages);
+						break;
+					}
+				}
 			}
 		}
 		
 		if(dialog != null) {
 			dialog.pack();
 			dialog.setLocationRelativeTo(callback.getDialogFrame());
+			dialog.setModal(true);
 			dialog.setVisible(true);
+
+			// This will always return false if the dialog has error messages. 
+			// If the dialog only has warning messages then the user can choose to continue.
+			boolean shouldContinue = dialog.shouldContinue();
+			System.out.println("shouldContinue:" + shouldContinue);
+			return shouldContinue;
 		}
 		
-		return valid;
+		return true;
 	}
 	
 	
