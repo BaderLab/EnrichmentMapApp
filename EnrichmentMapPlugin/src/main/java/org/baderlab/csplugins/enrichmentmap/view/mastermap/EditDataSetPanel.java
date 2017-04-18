@@ -347,10 +347,12 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 	
 	
 	public static boolean emptyOrReadable(JTextField textField) {
-		String text = textField.getText();
-		return Strings.isNullOrEmpty(text) || Files.isReadable(Paths.get(text));
+		return emptyOrReadable(textField.getText());
 	}
 	
+	public static boolean emptyOrReadable(String text) {
+		return Strings.isNullOrEmpty(text) || Files.isReadable(Paths.get(text));
+	}
 	
 	private void updateClasses() {
 		if(positiveText.getText().trim().isEmpty() && negativeText.getText().trim().isEmpty() 
@@ -384,6 +386,10 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 	
 	private Method getMethod() {
 		return analysisTypeCombo.getItemAt(analysisTypeCombo.getSelectedIndex()).getValue();
+	}
+	
+	public String getExpressionFileName() {
+		return expressionsText.getText();
 	}
 
 }

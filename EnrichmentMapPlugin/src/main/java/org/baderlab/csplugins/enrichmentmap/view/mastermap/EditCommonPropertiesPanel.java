@@ -81,10 +81,6 @@ public class EditCommonPropertiesPanel extends JPanel implements DetailPanel {
 		expressionsBrowse.addActionListener(e -> browse(expressionsText, FileBrowser.Filter.EXPRESSION));
 		makeSmall(expressionsLabel, expressionsText);
 		
-		expressionsLabel.setEnabled(false);
-		expressionsText.setEnabled(false);
-		
-		
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
@@ -145,6 +141,10 @@ public class EditCommonPropertiesPanel extends JPanel implements DetailPanel {
 	
 	public String getGmtFile() {
 		return gmtText.getText().trim();
+	}
+	
+	public String getExpressionFile() {
+		return expressionsText.getText().trim();
 	}
 	
 }

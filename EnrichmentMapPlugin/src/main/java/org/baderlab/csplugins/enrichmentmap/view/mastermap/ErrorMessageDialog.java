@@ -2,7 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.mastermap;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
 import java.util.List;
 
@@ -25,8 +25,14 @@ public class ErrorMessageDialog extends JDialog {
 
 	@Inject private IconManager iconManager;
 	
+	public static enum MessageType {
+		WARN, ERROR
+	}
+	
 	private JPanel messagePanel;
 	private int y = 0;
+	private boolean shouldContinue = false;
+	private JButton finishButton;
 	
 	public interface Factory {
 		ErrorMessageDialog create(JDialog parent);
@@ -35,9 +41,8 @@ public class ErrorMessageDialog extends JDialog {
 	@Inject
 	public ErrorMessageDialog(@Assisted JDialog parent) {
 		super(parent);
-		setMinimumSize(new Dimension(300, 350));
 		setResizable(true);
-		setTitle("Create Enrichment Map: Error");
+		setTitle("Create Enrichment Map: Validation");
 	}
 	
 	@AfterInjection
@@ -55,14 +60,33 @@ public class ErrorMessageDialog extends JDialog {
 	}
 	
 	private JPanel createButtonPanel() {
-		JPanel panel = new JPanel(new BorderLayout());
-		JButton cancelButton = new JButton("OK");
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
+		
+		JButton cancelButton = new JButton("Cancel");
+		buttonPanel.add(cancelButton);
 		cancelButton.addActionListener(e -> dispose());
-		panel.add(cancelButton, BorderLayout.EAST);
-		return panel;
+		
+		finishButton = new JButton("Continue to Build");
+		buttonPanel.add(finishButton);
+		finishButton.addActionListener(e -> {
+			System.out.println("Here!");
+			shouldContinue = true;
+			dispose();
+		});
+		
+		return buttonPanel;
 	}
 	
-	public void addSection(String title, String icon, List<String> messages) {
+	public boolean shouldContinue() {
+		return shouldContinue;
+	}
+	
+	public void addSection(MessageType messageType, String title, String icon, List<String> messages) {
+		final boolean isError = messageType == MessageType.ERROR;
+		if(isError) {
+			finishButton.setVisible(false);
+		}
+		
 		JLabel iconLabel = new JLabel(" " + icon + "  ");
 		iconLabel.setFont(iconManager.getIconFont(13.0f));
 		JLabel titleLabel = new JLabel(title);
@@ -73,9 +97,9 @@ public class ErrorMessageDialog extends JDialog {
 		y++;
 		
 		for(String message : messages) {
-			JLabel errorIcon = new JLabel(IconManager.ICON_TIMES_CIRCLE);
+			JLabel errorIcon = new JLabel(isError ? IconManager.ICON_TIMES_CIRCLE : IconManager.ICON_EXCLAMATION_TRIANGLE);
 			errorIcon.setFont(iconManager.getIconFont(13.0f));
-			errorIcon.setForeground(Color.RED.darker());
+			errorIcon.setForeground(isError ? Color.RED.darker() : Color.YELLOW.darker());
 			
 			JLabel messageLabel = new JLabel(message);
 			SwingUtil.makeSmall(messageLabel);
