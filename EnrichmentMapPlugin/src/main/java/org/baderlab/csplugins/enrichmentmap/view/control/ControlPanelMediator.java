@@ -203,7 +203,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	public EMStyleOptions createStyleOptions(CyNetworkView netView) {
-		EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
+		EnrichmentMap map = netView != null ? emManager.getEnrichmentMap(netView.getModel().getSUID()) : null;
 		EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
 
 		return createStyleOptions(map, viewPanel);
@@ -553,6 +553,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	private EMStyleOptions createStyleOptions(EnrichmentMap map, EMViewControlPanel viewPanel) {
+		if (map == null || viewPanel == null)
+			return null;
+		
 		Set<AbstractDataSet> dataSets = viewPanel.getDataSetSelector().getCheckedItems();
 		boolean publicationReady = viewPanel.getPublicationReadyCheck().isSelected();
 		boolean postAnalysis = map.hasSignatureDataSets();

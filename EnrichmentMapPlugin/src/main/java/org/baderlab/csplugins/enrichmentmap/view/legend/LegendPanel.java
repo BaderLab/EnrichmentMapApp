@@ -166,7 +166,7 @@ public class LegendPanel extends JPanel {
 	 */
 	void update(EMStyleOptions options, Collection<EMDataSet> filteredDataSets) {
 		this.options = options;
-		CyNetworkView networkView = options.getNetworkView();
+		CyNetworkView networkView = options != null ? options.getNetworkView() : null;
 		
 		removeAll();
 		

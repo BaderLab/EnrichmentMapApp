@@ -96,7 +96,7 @@ public class LegendPanelMediator {
 			return;
 		
 		invokeOnEDT(() -> {
-			creationParamsButton.setEnabled(options.getNetworkView() != null);
+			creationParamsButton.setEnabled(options != null && options.getNetworkView() != null);
 			legendPanelProvider.get().update(options, filteredDataSets);
 		});
 	}
