@@ -22,7 +22,6 @@ import java.awt.Font;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -367,36 +366,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private final ColorScheme[] REGULAR_COLOR_SCHEMES = new ColorScheme[] {
 				CONTRASTING, MODULATED, RAINBOW, RANDOM
 		};
-		private final ColorScheme[] ONE_COLOR_SCHEMES = new ColorScheme[] {
-				new ColorScheme("BLUE", "Blue") {
-					@Override
-					public List<Color> getColors(int nColors) { return Collections.singletonList(BLUE); }
-				},
-				new ColorScheme("DARK_BLUE", "Dark Blue") {
-					@Override
-					public List<Color> getColors(int nColors) { return Collections.singletonList(DARK_BLUE); }
-				},
-				new ColorScheme("BROWN", "Brown") {
-					@Override
-					public List<Color> getColors(int nColors) { return Collections.singletonList(BROWN); }
-				},
-				new ColorScheme("ORANGE", "Orange") {
-					@Override
-					public List<Color> getColors(int nColors) { return Collections.singletonList(ORANGE); }
-				},
-				new ColorScheme("PURPLE", "Purple") {
-					@Override
-					public List<Color> getColors(int nColors) { return Collections.singletonList(PURPLE); }
-				},
-				new ColorScheme("RED", "Red") {
-					@Override
-					public List<Color> getColors(int nColors) { return Collections.singletonList(RED); }
-				},
-				new ColorScheme("DARK_RED", "Dark Red") {
-					@Override
-					public List<Color> getColors(int nColors) { return Collections.singletonList(DARK_RED); }
-				}
-		};
 		private final ColorScheme[] HEAT_MAP_SCHEMES;
 		
 		private JRadioButton pValueRadio;
@@ -527,9 +496,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					case HEAT_MAP:
 					case HEAT_STRIPS:
 						colorSchemes = HEAT_MAP_SCHEMES;
-						break;
-					case LINE:
-						colorSchemes = ONE_COLOR_SCHEMES;
 						break;
 					default:
 						colorSchemes = REGULAR_COLOR_SCHEMES;

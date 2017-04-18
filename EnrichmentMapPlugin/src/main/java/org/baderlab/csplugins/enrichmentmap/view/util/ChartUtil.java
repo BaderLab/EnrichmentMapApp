@@ -27,6 +27,7 @@ import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
@@ -129,7 +130,7 @@ public final class ChartUtil {
 		return range;
 	}
 	
-	public static JFreeChart createRadialHeatMapChart(List<EMDataSet> dataSets, ChartOptions options) {
+	public static JFreeChart createRadialHeatMapLegend(List<EMDataSet> dataSets, ChartOptions options) {
 		// All the slices must have the same size
 		final DefaultPieDataset pieDataset = new DefaultPieDataset();
 		
@@ -185,7 +186,7 @@ public final class ChartUtil {
 	}
 	
 	@SuppressWarnings("serial")
-	public static JFreeChart createHeatMapChart(List<EMDataSet> dataSets, ChartOptions options) {
+	public static JFreeChart createHeatMapLegend(List<EMDataSet> dataSets, ChartOptions options) {
 		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		
 		for (EMDataSet ds : dataSets)
@@ -253,14 +254,79 @@ public final class ChartUtil {
 		return chart;
 	}
 	
-	public static JFreeChart createHeatStripsChart(List<EMDataSet> dataSets, ChartOptions options) {
+	@SuppressWarnings("serial")
+	public static JFreeChart createHeatStripsLegend(List<EMDataSet> dataSets, ChartOptions options) {
+		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+		int total = dataSets.size();
+		int v = total / -2;
 		
-		return null;
-	}
-	
-	public static JFreeChart createLineChart(List<EMDataSet> dataSets, ChartOptions options) {
+		for (int i = 0; i < total; i++) {
+			if (v == 0.0) v = 1; // Just to make sure there is always a bar for each data set name
+			dataset.addValue(v++, options.getData().toString(), dataSets.get(i).getName());
+		}
 		
-		return null;
+		final JFreeChart chart = ChartFactory.createBarChart(
+				null, // chart title
+				null, // domain axis label
+				null, // range axis label
+				dataset, // data
+				PlotOrientation.VERTICAL,
+				false, // include legend
+				false, // tooltips
+				false); // urls
+		
+		chart.setAntiAlias(true);
+        chart.setBorderVisible(false);
+        chart.setBackgroundPaint(UIManager.getColor("Table.background"));
+        chart.setBackgroundImageAlpha(0.0f);
+        chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
+		
+        final CategoryPlot plot = (CategoryPlot) chart.getPlot();
+		plot.setOutlineVisible(false);
+		plot.setBackgroundPaint(UIManager.getColor("Table.background"));
+		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
+		plot.setDomainGridlinesVisible(false);
+	    plot.setRangeGridlinesVisible(false);
+		
+		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
+        domainAxis.setVisible(true);
+        domainAxis.setAxisLineVisible(false);
+        domainAxis.setTickMarksVisible(false);
+        domainAxis.setTickLabelFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
+        domainAxis.setLabelPaint(UIManager.getColor("Label.foreground"));
+        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.DOWN_90);
+        domainAxis.setCategoryMargin(0.0);
+        
+        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+		rangeAxis.setVisible(false);
+        
+		ColorScheme colorScheme = options != null ?  options.getColorScheme() : null;
+		List<Color> colors = colorScheme != null ? colorScheme.getColors(3) : null;
+		
+		if (colors == null || colors.size() < 3) // UP, ZERO, DOWN:
+			colors = Arrays.asList(new Color[] { Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY });
+		
+		List<Color> itemColors = new ArrayList<>();
+		
+		for (int i = 0; i < total; i++) {
+			Number n = dataset.getValue(options.getData().toString(), dataSets.get(i).getName());
+			itemColors.add(
+					ColorUtil.getColor(n.doubleValue(), -total, total, colors.get(2), colors.get(1), colors.get(0)));
+		}
+		
+	    final BarRenderer renderer = new BarRenderer() {
+	    	@Override
+	    	public Paint getItemPaint(int row, int column) {
+	    		return column < itemColors.size() ? itemColors.get(column) : Color.LIGHT_GRAY;
+	    	}
+	    };
+	    plot.setRenderer(renderer);
+		renderer.setBarPainter(new StandardBarPainter());
+		renderer.setDrawBarOutline(true);
+		renderer.setShadowVisible(false);
+		renderer.setItemMargin(0.0);
+		
+		return chart;
 	}
 	
 	private static double[] minMax(double min, double max, final List<? extends Number> values) {

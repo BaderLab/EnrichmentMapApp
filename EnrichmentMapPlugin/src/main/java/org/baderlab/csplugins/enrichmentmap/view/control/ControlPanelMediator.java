@@ -241,9 +241,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				} else {
 					int nColors = columns.size(); 
 					
-					if (type == ChartType.LINE)
-						nColors = 1;
-					else if (type == ChartType.HEAT_STRIPS)
+					if (type == ChartType.HEAT_STRIPS)
 						nColors = 3;
 					
 					props.put("cy_colors", colorScheme.getColors(nColors));

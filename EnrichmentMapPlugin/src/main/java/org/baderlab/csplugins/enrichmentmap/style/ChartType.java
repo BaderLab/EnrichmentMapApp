@@ -37,15 +37,6 @@ public enum ChartType {
 					new SimpleEntry<>("cy_showDomainAxis", false),
 					new SimpleEntry<>("cy_showRangeAxis", false))
 					.collect(Collectors.toMap((e) -> e.getKey(), (e) -> e.getValue())))
-	),
-	LINE(
-			"org.cytoscape.LineChart",
-			"Line",
-			Collections.unmodifiableMap(Stream.of(
-	                new SimpleEntry<>("cy_lineWidth", 2.0f),
-	                new SimpleEntry<>("cy_showDomainAxis", false),
-					new SimpleEntry<>("cy_showRangeAxis", false))
-	                .collect(Collectors.toMap((e) -> e.getKey(), (e) -> e.getValue())))
 	);
 	
 	private final String id;
@@ -79,8 +70,6 @@ public enum ChartType {
 			return HEAT_MAP;
 		if (chartName.startsWith("bar"))
 			return HEAT_STRIPS;
-		if (chartName.startsWith("line"))
-			return LINE;
 		
 		return null;
 	}

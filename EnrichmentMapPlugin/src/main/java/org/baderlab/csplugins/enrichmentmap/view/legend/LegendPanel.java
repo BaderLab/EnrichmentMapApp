@@ -318,16 +318,13 @@ public class LegendPanel extends JPanel {
 		
 		switch (chartType) {
 			case RADIAL_HEAT_MAP:
-				chart = ChartUtil.createRadialHeatMapChart(sortedDataSets, options.getChartOptions());
+				chart = ChartUtil.createRadialHeatMapLegend(sortedDataSets, options.getChartOptions());
 				break;
 			case HEAT_MAP:
-				chart = ChartUtil.createHeatMapChart(sortedDataSets, options.getChartOptions());
+				chart = ChartUtil.createHeatMapLegend(sortedDataSets, options.getChartOptions());
 				break;
 			case HEAT_STRIPS:
-				chart = ChartUtil.createHeatStripsChart(sortedDataSets, options.getChartOptions());
-				break;
-			case LINE:
-				chart = ChartUtil.createLineChart(sortedDataSets, options.getChartOptions());
+				chart = ChartUtil.createHeatStripsLegend(sortedDataSets, options.getChartOptions());
 				break;
 			default:
 				break;
