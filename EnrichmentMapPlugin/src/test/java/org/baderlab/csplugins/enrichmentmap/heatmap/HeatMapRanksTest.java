@@ -94,7 +94,7 @@ public class HeatMapRanksTest extends BaseNetworkTest {
 		
 		// Run the ranking
 		RankingOption rankingOption = new GSEALeadingEdgeRankingOption(dataset, geneSetName, Ranking.GSEARanking);
-		Map<Integer,RankValue> ranks = rankingOption.computeRanking(gs.getGenes()).get();
+		Map<Integer,RankValue> ranks = rankingOption.computeRanking(gs.getGenes()).get().get();
 		assertEquals(454, ranks.size());
 		
 		// Convert to useful collections

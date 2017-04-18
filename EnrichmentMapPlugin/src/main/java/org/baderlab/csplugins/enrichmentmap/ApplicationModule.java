@@ -19,6 +19,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.ExportPDFAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.ExportTXTAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMainPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParentPanel;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankOptionRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.mastermap.EditCommonPropertiesPanel;
 import org.baderlab.csplugins.enrichmentmap.view.mastermap.EditDataSetPanel;
 import org.baderlab.csplugins.enrichmentmap.view.mastermap.ErrorMessageDialog;
@@ -87,6 +88,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(EditDataSetPanel.Factory.class);
 		installFactory(EditCommonPropertiesPanel.Factory.class);
 		installFactory(ErrorMessageDialog.Factory.class);
+		installFactory(ColumnHeaderRankOptionRenderer.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

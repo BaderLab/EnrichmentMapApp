@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.baderlab.csplugins.brainlib.AvgLinkHierarchicalClustering;
 import org.baderlab.csplugins.brainlib.DistanceMatrix;
@@ -27,7 +28,7 @@ public class HierarchicalClusterTask extends AbstractTask implements ObservableT
 	private final EnrichmentMap map;
 	private final DistanceMetric distanceMetric;
 	
-	private Map<Integer,RankValue> results;
+	private Optional<Map<Integer,RankValue>> results;
 	
 	
 	public HierarchicalClusterTask(EnrichmentMap map, Collection<Integer> genes, DistanceMetric distanceMetric) {
@@ -116,14 +117,20 @@ public class HierarchicalClusterTask extends AbstractTask implements ObservableT
 	
 	@Override
 	public void run(TaskMonitor tm) {
-		results = cluster(tm);
+		try {
+			results = Optional.of(cluster(tm));
+		} catch(Exception e) {
+			results = Optional.empty();
+		}
 	}
 
+	public Optional<Map<Integer,RankValue>> getActualResults() {
+		return results;
+	}
+	
+	/** Use getActualResults() instead */
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
-		if(Map.class.equals(type)) {
-			return type.cast(results);
-		}
 		return null;
 	}
 

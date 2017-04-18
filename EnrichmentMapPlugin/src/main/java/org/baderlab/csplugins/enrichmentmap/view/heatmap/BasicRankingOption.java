@@ -45,7 +45,7 @@ public class BasicRankingOption implements RankingOption {
 	}
 	
 	@Override
-	public CompletableFuture<Map<Integer, RankValue>> computeRanking(Collection<Integer> genes) {
+	public CompletableFuture<Optional<Map<Integer, RankValue>>> computeRanking(Collection<Integer> genes) {
 		Map<Integer,RankValue> result = new HashMap<>();
 		
 		for(Map.Entry<Integer,Rank> entry : ranking.getRanking().entrySet()) {
@@ -58,7 +58,7 @@ public class BasicRankingOption implements RankingOption {
 		
 		normalizeRanks(result);
 		
-		return CompletableFuture.completedFuture(result);
+		return CompletableFuture.completedFuture(Optional.of(result));
 	}
 	
 	

@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Dialog;
@@ -56,23 +57,22 @@ public class ClusterRankingOption implements RankingOption {
 	
 
 	@Override
-	public CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<Integer> genes) {
+	public CompletableFuture<Optional<Map<Integer,RankValue>>> computeRanking(Collection<Integer> genes) {
 		if(genes.size() < 2) {
 			// The HierarchicalClusterTask requires at least 2 genes
-			return CompletableFuture.completedFuture(Collections.emptyMap());
+			return CompletableFuture.completedFuture(Optional.of(Collections.emptyMap()));
 		}
 		
 		HierarchicalClusterTask task = new HierarchicalClusterTask(map, genes, distance.getMetric());
 		
-		CompletableFuture<Map<Integer,RankValue>> future = new CompletableFuture<>();
+		CompletableFuture<Optional<Map<Integer,RankValue>>> future = new CompletableFuture<>();
 		
 		taskManager.execute(new TaskIterator(task), new TaskObserver() {
 			@Override
 			public void taskFinished(ObservableTask task) {
 				if(task instanceof HierarchicalClusterTask) {
 					HierarchicalClusterTask clusterTask = (HierarchicalClusterTask) task;
-					@SuppressWarnings("unchecked")
-					Map<Integer,RankValue> ranking = clusterTask.getResults(Map.class);
+					Optional<Map<Integer,RankValue>> ranking = clusterTask.getActualResults();
 					future.complete(ranking);
 				}
 			}

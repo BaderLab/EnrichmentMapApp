@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -51,7 +52,7 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 	}
 	
 	@Override
-	public CompletableFuture<Map<Integer,RankValue>> computeRanking(Collection<Integer> genes) {
+	public CompletableFuture<Optional<Map<Integer,RankValue>>> computeRanking(Collection<Integer> genes) {
 		initializeLeadingEdge();
 		
 		int topRank = getTopRank();
@@ -108,7 +109,7 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 		
 		BasicRankingOption.normalizeRanks(result);
 		
-		return CompletableFuture.completedFuture(result);
+		return CompletableFuture.completedFuture(Optional.of(result));
 	}
 	
 	
