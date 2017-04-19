@@ -10,12 +10,14 @@ import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -739,6 +741,67 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		JComboBox<ColorScheme> getChartColorsCombo() {
 			if (chartColorsCombo == null) {
 				chartColorsCombo = new JComboBox<>();
+				
+				final JPanel cell = new JPanel();
+				cell.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+				
+				final JLabel nameLabel = new JLabel(" --- ");
+				nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+				
+				final JLabel[] colorLabels = new JLabel[] { new JLabel(), new JLabel(), new JLabel() };
+				int clh = Math.max(10, nameLabel.getPreferredSize().height - 2);
+				int clw = clh;
+				
+				for (int i = 0; i < colorLabels.length; i++) {
+					JLabel lbl = colorLabels[i];
+					lbl.setOpaque(true);
+					lbl.setBorder(BorderFactory.createMatteBorder(1, 1, 1, (i == 2 ? 1 : 0),
+							UIManager.getColor("Label.disabledForeground")));
+					lbl.setPreferredSize(new Dimension(clw, clh));
+				}
+				
+				final GroupLayout layout = new GroupLayout(cell);
+				cell.setLayout(layout);
+				layout.setAutoCreateContainerGaps(false);
+				layout.setAutoCreateGaps(false);
+				
+				layout.setHorizontalGroup(layout.createSequentialGroup()
+						.addComponent(colorLabels[0], PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(colorLabels[1], PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(colorLabels[2], PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addComponent(nameLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				);
+				layout.setVerticalGroup(layout.createSequentialGroup()
+						.addGap(1)
+						.addGroup(layout.createParallelGroup(CENTER, true)
+								.addComponent(colorLabels[0], DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(colorLabels[1], DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(colorLabels[2], DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(nameLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						)
+						.addGap(1)
+				);
+				
+				chartColorsCombo.setRenderer((JList<? extends ColorScheme> list,
+						ColorScheme value, int index, boolean isSelected, boolean cellHasFocus) -> {
+					String bg = isSelected ? "Table.selectionBackground" : "Table.background";
+					String fg = isSelected ? "Table.selectionForeground" : "Table.foreground";
+					cell.setBackground(UIManager.getColor(bg));
+					nameLabel.setForeground(UIManager.getColor(fg));
+
+					nameLabel.setText(value != null ? value.getName() : "-- Select a Color Scheme --");
+					cell.setToolTipText(value != null ? value.getDescription() : null);
+					
+					List<Color> colors = value != null ? value.getColors() : Collections.emptyList();
+					
+					for (int i = 0; i < 3; i++)
+						colorLabels[i].setBackground(colors.size() > 2 ? colors.get(i) : cell.getBackground());
+					
+					cell.revalidate();
+
+					return cell;
+				});
 			}
 			
 			return chartColorsCombo;
