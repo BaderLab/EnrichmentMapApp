@@ -143,6 +143,11 @@
 			<artifactId>jackson-annotations</artifactId>
 			<version>2.2.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.biojava</groupId>
+			<artifactId>jcolorbrewer</artifactId>
+			<version>5.2</version>
+		</dependency>
 		
 		<!-- Dependency Injection -->
 		<dependency>
@@ -219,7 +224,7 @@
 						<Bundle-SymbolicName>${bundle.namespace}.enrichmentmap</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Bundle-Activator>${bundle.namespace}.enrichmentmap.CyActivator</Bundle-Activator>
-						<Embed-Dependency>colt,commons-math3,itext,guava,gson,jsr305,guice,peaberry,javax.inject,aopalliance,guice-multibindings,guice-assistedinject,jatl</Embed-Dependency>
+						<Embed-Dependency>colt,commons-math3,itext,guava,gson,jsr305,guice,peaberry,javax.inject,aopalliance,guice-multibindings,guice-assistedinject,jatl,jcolorbrewer</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Export-Package>org.mskcc.*;prefuse.*;org.apache.*;com.google.*;org.ops4j.peaberry.*;org.baderlab.*;version="${project.version}"</Export-Package>

@@ -51,6 +51,7 @@ import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
+import org.jcolorbrewer.ColorBrewer;
 
 import com.google.inject.Inject;
  
@@ -131,13 +132,9 @@ public class EMStyleBuilder {
 		public static final Color SIG_NODE_BORDER_COLOR = new Color(239, 138, 98);
 		public static final Color SIG_NODE_COLOR = new Color(253, 219, 199);
 
-		// See http://colorbrewer2.org/?type=qualitative&scheme=Dark2&n=8#type=qualitative&scheme=Dark2&n=8
-		public static final Color SIG_EDGE_COLOR = new Color(231,41,138);
-		public static final Color COMPOUND_EDGE_COLOR = new Color(27,158,119);
-		private static final Color[] DISTINCT_EDGE_COLORS = {
-				new Color(217,95,2), new Color(117,112,179), new Color(231,41,138), new Color(102,166,30), 
-				new Color(230,171,2), new Color(166,118,29), new Color(102,102,102)
-		};
+		// See http://colorbrewer2.org/#type=qualitative&scheme=Set2&n=3
+		public static final Color SIG_EDGE_COLOR = new Color(252, 141, 98);
+		public static final Color COMPOUND_EDGE_COLOR = new Color(102, 194, 165);
 		
 		/* See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=9 */
 		public static final Color MAX_PHENOTYPE_1 = new Color(178, 24, 43);
@@ -200,7 +197,6 @@ public class EMStyleBuilder {
 			setNodeChart(vs, chart);
 			
 			if (options.isPublicationReady()) {
-				// TODO review:
 				vs.removeVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
 				vs.setDefaultValue(BasicVisualLexicon.NODE_LABEL, "");
 				vs.removeVisualMappingFunction(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
@@ -243,15 +239,25 @@ public class EMStyleBuilder {
 		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.COMPOUND_EDGE_COLOR);
 		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, Colors.SIG_EDGE_COLOR);
 		
-		int i = 0;
+		List<EMDataSet> dataSets = options.getEnrichmentMap().getDataSetList();
+		final ColorBrewer colorBrewer;
+		
+		// Try colorblind and/or print friendly colours first
+		if (dataSets.size() <= 4) // Try a colorblind safe color scheme first
+			colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=4
+		else if (dataSets.size() <= 5) // Same--more than 5, it adds a RED that can be confused with the edge selection color
+			colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=5
+		else
+			colorBrewer = ColorBrewer.Set3; // http://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12
+			
+		Color[] colors = colorBrewer.getColorPalette(dataSets.size());
 		
 		// Do not use the filtered data sets here, because we don't want edge colours changing when filtering
-		for (AbstractDataSet ds : options.getEnrichmentMap().getDataSetList()) {
-			if (ds instanceof EMDataSet) {
-				Color color = Colors.DISTINCT_EDGE_COLORS[i++ % Colors.DISTINCT_EDGE_COLORS.length];
-				edgePaint.putMapValue(ds.getName(), color);
-				((EMDataSet) ds).setColor(color);
-			}
+		for (int i = 0; i < dataSets.size(); i++) {
+			EMDataSet ds = dataSets.get(i);
+			Color color = colors[i];
+			edgePaint.putMapValue(ds.getName(), color);
+			ds.setColor(color);
 		}
 		
 		return edgePaint;
