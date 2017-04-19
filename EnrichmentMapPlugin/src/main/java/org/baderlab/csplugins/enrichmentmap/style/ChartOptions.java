@@ -4,7 +4,7 @@ public class ChartOptions {
 	
 	private ChartData data;
 	private ChartType type;
-	private volatile ColorScheme colorScheme;
+	private ColorScheme colorScheme;
 	private boolean showLabels;
 	
 	public ChartOptions(ChartData data, ChartType type, ColorScheme colorScheme, boolean showLabels) {

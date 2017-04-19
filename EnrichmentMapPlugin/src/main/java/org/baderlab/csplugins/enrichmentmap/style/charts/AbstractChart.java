@@ -14,11 +14,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.charts.json.ColorJsonDeserializer;
 import org.baderlab.csplugins.enrichmentmap.style.charts.json.ColorJsonSerializer;
-import org.baderlab.csplugins.enrichmentmap.style.charts.json.ColorSchemeJsonDeserializer;
-import org.baderlab.csplugins.enrichmentmap.style.charts.json.ColorSchemeJsonSerializer;
 import org.baderlab.csplugins.enrichmentmap.style.charts.json.CyColumnIdentifierJsonDeserializer;
 import org.baderlab.csplugins.enrichmentmap.style.charts.json.CyColumnIdentifierJsonSerializer;
 import org.baderlab.csplugins.enrichmentmap.style.charts.json.Point2DJsonDeserializer;
@@ -49,7 +46,6 @@ public abstract class AbstractChart<T extends CustomGraphicLayer>
 		implements CyCustomGraphics2<T>, MappableVisualPropertyValue {
 
 	public static final String COLORS = "cy_colors";
-	public static final String COLOR_SCHEME = "cy_colorScheme";
 	public static final String ORIENTATION = "cy_orientation";
 	public static final String ROTATION = "cy_rotation";
 	public static final String DATA_COLUMNS = "cy_dataColumns";
@@ -194,9 +190,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer>
 			final String key = entry.getKey();
 			Object value = entry.getValue();
 			
-			if (value instanceof ColorScheme)
-				value = ((ColorScheme)value).getKey();
-			else if (value instanceof Enum)
+			if (value instanceof Enum)
 				value = value.toString();
 			
 			map.put(key, value);
@@ -462,21 +456,6 @@ public abstract class AbstractChart<T extends CustomGraphicLayer>
 	protected List<Color> getColors(final Map<String, List<Double>> data) {
 		List<Color> colors = getList(COLORS, Color.class);
 		
-		if (colors == null || colors.isEmpty()) {
-			final ColorScheme scheme = get(COLOR_SCHEME, ColorScheme.class);
-			
-			if (scheme != null && data != null && !data.isEmpty()) {
-				int nColors = 0;
-				
-				for (final List<Double> values : data.values()) {
-					if (values != null)
-						nColors = Math.max(nColors, values.size());
-				}
-				
-				colors = scheme.getColors(nColors);
-			}
-		}
-		
 		return colors;
 	}
 	
@@ -579,7 +558,6 @@ public abstract class AbstractChart<T extends CustomGraphicLayer>
 		if (key.equalsIgnoreCase(BORDER_WIDTH)) return Float.class;
 		if (key.equalsIgnoreCase(BORDER_COLOR)) return Color.class;
 		if (key.equalsIgnoreCase(COLORS)) return List.class;
-		if (key.equalsIgnoreCase(COLOR_SCHEME)) return ColorScheme.class;
 		if (key.equalsIgnoreCase(ORIENTATION)) return Orientation.class;
 		if (key.equalsIgnoreCase(ROTATION)) return Rotation.class;
 			
@@ -607,7 +585,6 @@ public abstract class AbstractChart<T extends CustomGraphicLayer>
 	
 	protected void addJsonSerializers(final SimpleModule module) {
 		module.addSerializer(new PropertiesJsonSerializer());
-		module.addSerializer(new ColorSchemeJsonSerializer());
 		module.addSerializer(new ColorJsonSerializer());
 		module.addSerializer(new Point2DJsonSerializer());
 		module.addSerializer(new Rectangle2DJsonSerializer());
@@ -616,7 +593,6 @@ public abstract class AbstractChart<T extends CustomGraphicLayer>
 	
 	protected void addJsonDeserializers(final SimpleModule module) {
 		module.addDeserializer(Map.class, new PropertiesJsonDeserializer(this));
-		module.addDeserializer(ColorScheme.class, new ColorSchemeJsonDeserializer());
 		module.addDeserializer(Color.class, new ColorJsonDeserializer());
 		module.addDeserializer(Point2D.class, new Point2DJsonDeserializer());
 		module.addDeserializer(Rectangle2D.class, new Rectangle2DJsonDeserializer());

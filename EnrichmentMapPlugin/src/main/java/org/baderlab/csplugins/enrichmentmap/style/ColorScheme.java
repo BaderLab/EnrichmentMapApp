@@ -3,161 +3,76 @@ package org.baderlab.csplugins.enrichmentmap.style;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class ColorScheme {
+public enum ColorScheme {
 	
-	public static final ColorScheme CONTRASTING = new ColorScheme("CONTRASTING", "Contrasting");
-	public static final ColorScheme MODULATED = new ColorScheme("MODULATED", "Modulated");
-	public static final ColorScheme RAINBOW = new ColorScheme("RAINBOW", "Rainbow");
+	// 3-color ColorBrewer schemes (color-blind safe and print friendly):
+	// Diverging
+	RD_BU("RdBu",      new Color(103, 169, 207), new Color(247, 247, 247), new Color(239, 138, 98)),
+	BR_BG("BrBG",      new Color(90, 180, 172),  new Color(245, 245, 245), new Color(216, 179, 101)),
+	PI_YG("PiYG",      new Color(161, 215, 106), new Color(247, 247, 247), new Color(233, 163, 201)),
+	PU_OR("PuOr",      new Color(153, 142, 195), new Color(247, 247, 247), new Color(241, 163, 64)),
+	RD_YL_BU("RdYlBu", new Color(145, 191, 219), new Color(255, 255, 191), new Color(252, 141, 89)),
+	// Sequential - Multi-hue
+	BU_PU("BuPu",      new Color(136, 86, 167),  new Color(158, 188, 218), new Color(224, 236, 244)),
+	OR_RD("OrRd",      new Color(227, 74, 51),   new Color(253, 187, 132), new Color(254, 232, 200)),
+	YL_GN("YlGn",      new Color(49, 163, 84),   new Color(173, 221, 142), new Color(247, 252, 185)),
+	YL_GN_B("YlGnB",   new Color(44, 127, 184),  new Color(127, 205, 187), new Color(237, 248, 177)),
+	YL_OR_BR("YlOrBr", new Color(217, 95, 14),   new Color(254, 196, 79),  new Color(255, 247, 188)),
+	;
+
+	private String label;
+	private final Color up, zero, down;
 	
-	public static ColorScheme DEFAULT = CONTRASTING;
-	
-	private final String key;
-	private final String label;
-	private ColorGradient gradient;
-	
-	public ColorScheme(final String key, final String label) {
-		this.key = key;
+	private static Map<String, ColorScheme>cMap;
+
+	ColorScheme(final String label, final Color down, final Color zero, final Color up) {
 		this.label = label;
+		this.up = up;
+		this.down = down;
+		this.zero = zero;
+		addGradient(this);
 	}
-	
-	public ColorScheme(final ColorGradient gradient) {
-		this.key = gradient.name();
-		this.label = gradient.getLabel();
-		this.gradient = gradient;
-	}
-	
-	public String getKey() {
-		return key;
-	}
-	
+
 	public String getLabel() {
 		return label;
 	}
 	
-	public List<Color> getColors(final int nColors) {
-		List<Color> colors = null;
-		
-		if (nColors > 0) {
-			if (gradient != null) {
-				colors = gradient.getColors();
-				
-				if (colors.size() > nColors && nColors == 2) {
-					List<Color> newColors = new ArrayList<Color>();
-					newColors.add(colors.get(0));
-					newColors.add(colors.get(2));
-				}
-			} else if (nColors > 0) {
-				if (RAINBOW.getKey().equalsIgnoreCase(key))
-					colors = generateRainbowColors(nColors);
-				if (MODULATED.getKey().equalsIgnoreCase(key))
-					colors = generateModulatedRainbowColors(nColors);
-				if (CONTRASTING.getKey().equalsIgnoreCase(key))
-					colors = generateContrastingColors(nColors);
-			}
-		}
-		
-		if (colors == null)
-			colors = Collections.emptyList();
+	public List<Color> getColors() {
+		final List<Color> retColors = new ArrayList<>();
+		retColors.add(up);
+		if (zero != null) retColors.add(zero);
+		retColors.add(down);
 
-		return colors;
+		return retColors;
+	}
+
+	public static boolean contains(final String name) {
+		return name != null && cMap.containsKey(normalize(name));
 	}
 	
-	public static ColorScheme parse(final String input) {
-		if (RAINBOW.getKey().equalsIgnoreCase(input))     return RAINBOW;
-		if (MODULATED.getKey().equalsIgnoreCase(input))   return MODULATED;
-		if (CONTRASTING.getKey().equalsIgnoreCase(input)) return CONTRASTING;
-		
-		if (ColorGradient.contains(input))
-			return new ColorScheme(ColorGradient.getGradient(input));
-		
-		return CONTRASTING;
+	public static ColorScheme getGradient(final String name) {
+		return cMap.get(normalize(name));
 	}
 	
-	// Rainbow colors just divide the Hue wheel into n pieces and return them
-	public static List<Color> generateRainbowColors(int nColors) {
-		List<Color> values = new ArrayList<Color>();
+	public static List<Color> getColors(String name) {
+		name = normalize(name);
 		
-		for (float i = 0.0f; i < (float) nColors; i += 1.0f) {
-			values.add(new Color(Color.HSBtoRGB(i / (float) nColors, 1.0f, 1.0f)));
-		}
+		if (name != null && cMap.containsKey(name))
+			return cMap.get(name).getColors();
 		
-		return values;
+		return Collections.emptyList();
 	}
-
-	// Rainbow colors just divide the Hue wheel into n pieces and return them,
-	// but in this case, we're going to change the saturation and intensity
-	public static List<Color> generateModulatedRainbowColors(int nColors) {
-		List<Color> values = new ArrayList<Color>();
-		
-		for (float i = 0.0f; i < (float) nColors; i += 1.0f) {
-			float sat = (Math.abs(((Number) Math.cos((8 * i) / (2 * Math.PI))).floatValue()) * 0.7f) + 0.3f;
-			float br = (Math.abs(((Number) Math.sin(((i) / (2 * Math.PI)) + (Math.PI / 2))).floatValue()) * 0.7f) + 0.3f;
 	
-			values.add(new Color(Color.HSBtoRGB(i / (float) nColors, sat, br)));
-		}
-		
-		return values;
+	private void addGradient(final ColorScheme cg) {
+		if (cMap == null) cMap = new HashMap<>();
+		cMap.put(normalize(cg.name()), cg);
 	}
-
-	// This is like rainbow, but we alternate sides of the color wheel
-	public static List<Color> generateContrastingColors(int nColors) {
-		List<Color> values = new ArrayList<Color>();
-		
-		// We need to special-case the situation where we only have two colors
-		if (nColors == 2) {
-			values.add(new Color(Color.HSBtoRGB(0.0f, 1.0f, 1.0f)));
-			values.add(new Color(Color.HSBtoRGB(0.5f, 1.0f, 1.0f)));
-			return values;
-		}
 	
-		float divs = (float) nColors;
-		for (float i = 0.0f; i < divs; i += 1.0f) {
-			Color rgbColor = new Color(Color.HSBtoRGB(i / divs, 1.0f, 1.0f));
-			values.add(rgbColor);
-			i += 1.0f;
-			if (i >= divs)
-				break;
-			float hue = (i / divs) + 0.5f; // This moves to the opposite side of the color wheel
-			
-			if (hue >= 1.0f)
-				hue = hue - 1.0f;
-			
-			rgbColor = new Color(Color.HSBtoRGB(hue, 1.0f, 1.0f));
-			values.add(rgbColor);
-		}
-		
-		return values;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((key == null) ? 0 : key.toUpperCase().hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ColorScheme other = (ColorScheme) obj;
-		if (key == null) {
-			if (other.key != null)
-				return false;
-		} else if (!key.equalsIgnoreCase(other.key))
-			return false;
-		return true;
-	}
-
-	@Override
-	public String toString() {
-		return label;
+	private static String normalize(final String name) {
+		return name != null ? name.toUpperCase().replaceAll("[-_]", "") : null;
 	}
 }

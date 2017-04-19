@@ -210,8 +210,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				return;
 			
 			try {
-//				viewPanel.update();
-				
 				// TODO Update Filters
 				
 				// Update Style options
@@ -222,7 +220,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				viewPanel.getChartTypeCombo().setSelectedItem(chartOptions != null ? chartOptions.getType() : null);
 //				viewPanel.getChartColorsCombo().setSelectedItem(chartOptions != null ? chartOptions.getColorScheme() : null);
 				viewPanel.getShowChartLabelsCheck().setSelected(chartOptions != null && chartOptions.isShowLabels());
-				
 				
 				updateVisualStyle(map, viewPanel);
 			} finally {
@@ -282,20 +279,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				props.put("cy_autoRange", false);
 				props.put("cy_globalRange", true);
 				props.put("cy_showItemLabels", chartOptions.isShowLabels());
-				
-				ColorScheme colorScheme = chartOptions.getColorScheme();
-				
-				if (colorScheme == ColorScheme.CONTRASTING || colorScheme == ColorScheme.MODULATED
-						|| colorScheme == ColorScheme.RAINBOW) {
-					props.put("cy_colorScheme", colorScheme.getKey());
-				} else {
-					int nColors = columns.size(); 
-					
-					if (type == ChartType.HEAT_STRIPS)
-						nColors = 3;
-					
-					props.put("cy_colors", colorScheme.getColors(nColors));
-				}
+				props.put("cy_colors", chartOptions.getColorScheme().getColors());
 				
 				try {
 					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());

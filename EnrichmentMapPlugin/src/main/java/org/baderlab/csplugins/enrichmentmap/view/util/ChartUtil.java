@@ -170,7 +170,7 @@ public final class ChartUtil {
 		plot.setToolTipGenerator(new StandardPieToolTipGenerator("{0}"));
 		
 		ColorScheme colorScheme = options != null ?  options.getColorScheme() : null;
-		List<Color> colors = colorScheme != null ? colorScheme.getColors(3) : null;
+		List<Color> colors = colorScheme != null ? colorScheme.getColors() : null;
 		
 		if (colors == null || colors.size() < 3) // UP, ZERO, DOWN:
 			colors = Arrays.asList(new Color[] { Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY });
@@ -231,7 +231,7 @@ public final class ChartUtil {
 		rangeAxis.setVisible(false);
 		
 		ColorScheme colorScheme = options != null ?  options.getColorScheme() : null;
-		List<Color> colors = colorScheme != null ? colorScheme.getColors(3) : null;
+		List<Color> colors = colorScheme != null ? colorScheme.getColors() : null;
 		
 		if (colors == null || colors.size() < 3) // UP, ZERO, DOWN:
 			colors = Arrays.asList(new Color[] { Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY });
@@ -307,7 +307,7 @@ public final class ChartUtil {
 		rangeAxis.setVisible(false);
         
 		ColorScheme colorScheme = options != null ?  options.getColorScheme() : null;
-		List<Color> colors = colorScheme != null ? colorScheme.getColors(3) : null;
+		List<Color> colors = colorScheme != null ? colorScheme.getColors() : null;
 		
 		if (colors == null || colors.size() < 3) // UP, ZERO, DOWN:
 			colors = Arrays.asList(new Color[] { Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY });

@@ -5,15 +5,11 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
-import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.CONTRASTING;
-import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.MODULATED;
-import static org.baderlab.csplugins.enrichmentmap.style.ColorScheme.RAINBOW;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -60,7 +56,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
-import org.baderlab.csplugins.enrichmentmap.style.ColorGradient;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
@@ -361,11 +356,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	class EMViewControlPanel extends JPanel {
 		
-		private final ColorScheme[] REGULAR_COLOR_SCHEMES = new ColorScheme[] {
-				CONTRASTING, MODULATED, RAINBOW
-		};
-		private final ColorScheme[] HEAT_MAP_SCHEMES;
-		
 		private JRadioButton pValueRadio;
 		private JRadioButton qValueRadio;
 		private final ButtonGroup nodeCutoffGroup = new ButtonGroup();
@@ -394,16 +384,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			this.networkView = networkView;
 			setName("__EM_VIEW_CONTROL_PANEL_" + networkView.getSUID());
 			setBorder(BorderFactory.createLineBorder(UIManager.getColor(BORDER_COLOR_KEY)));
-			
-			// Init colors
-			final List<ColorScheme> heatSchemeList = new ArrayList<>();
-			
-			for (final ColorGradient cg : ColorGradient.values()) {
-				if (cg.getColors().size() == 3)
-					heatSchemeList.add(new ColorScheme(cg));
-			}
-			
-			HEAT_MAP_SCHEMES = heatSchemeList.toArray(new ColorScheme[heatSchemeList.size()]);
 			
 			final JPanel filterPanel = createFilterPanel();
 			final JPanel stylePanel = createStylePanel();
@@ -484,21 +464,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			getChartColorsCombo().removeAllItems();
 			
 			if (data != ChartData.NONE) {
-				ChartType type = (ChartType) getChartTypeCombo().getSelectedItem();
-				ColorScheme[] colorSchemes = null;
-				
-				switch (type) {
-					case RADIAL_HEAT_MAP:
-					case HEAT_MAP:
-					case HEAT_STRIPS:
-						colorSchemes = HEAT_MAP_SCHEMES;
-						break;
-					default:
-						colorSchemes = REGULAR_COLOR_SCHEMES;
-						break;
-				}
-				
-				for (ColorScheme scheme : colorSchemes)
+				for (ColorScheme scheme : ColorScheme.values())
 					getChartColorsCombo().addItem(scheme);
 				
 				if (selectedItem != null)
@@ -840,23 +806,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				panel.setOpaque(false);
 			
 			return panel;
-		}
-		
-		private List<Color> getColors(final ColorScheme scheme, final Map<String, List<Double>> data) {
-			List<Color> colors = null;
-			
-			if (scheme != null && data != null && !data.isEmpty()) {
-				int nColors = 0;
-				
-				for (final List<Double> values : data.values()) {
-					if (values != null)
-						nColors = Math.max(nColors, values.size());
-				}
-				
-				colors = scheme.getColors(nColors);
-			}
-			
-			return colors;
 		}
 		
 		void updateFilterPanel() {
