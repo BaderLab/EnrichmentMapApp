@@ -61,35 +61,4 @@ public class EMStyleOptions {
 	public boolean isPostAnalysis() {
 		return postAnalysis;
 	}
-	
-	public static class ChartOptions {
-		
-		private final ChartData data;
-		private final ChartType type;
-		private final ColorScheme colorScheme;
-		private final boolean showLabels;
-		
-		public ChartOptions(ChartData data, ChartType type, ColorScheme colorScheme, boolean showLabels) {
-			this.data = data;
-			this.type = type;
-			this.colorScheme = colorScheme;
-			this.showLabels = showLabels;
-		}
-
-		public ChartData getData() {
-			return data;
-		}
-
-		public ChartType getType() {
-			return type;
-		}
-
-		public ColorScheme getColorScheme() {
-			return colorScheme;
-		}
-
-		public boolean isShowLabels() {
-			return showLabels;
-		}
-	}
 }

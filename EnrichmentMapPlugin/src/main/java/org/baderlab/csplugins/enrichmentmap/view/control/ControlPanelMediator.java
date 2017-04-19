@@ -45,16 +45,17 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
+import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
-import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.NullCustomGraphics;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
+import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
@@ -177,9 +178,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	public void reset() {
 		invokeOnEDT(() -> {
-			for (CyNetworkView view : networkViewManager.getNetworkViewSet()) {
+			for (CyNetworkView view : networkViewManager.getNetworkViewSet())
 				getControlPanel().removeEnrichmentMapView(view);
-			}
 
 			Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 			
@@ -187,13 +187,63 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 				Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
 				
-				for (CyNetworkView netView : networkViews) {
+				for (CyNetworkView netView : networkViews)
 					addNetworkView(netView);
-				}
 			}
 
 			setCurrentNetworkView(applicationManager.getCurrentNetworkView());
 		});
+	}
+	
+	public void reset(ViewParams params) {
+		long netViewID = params.getNetworkViewID();
+		
+		invokeOnEDT(() -> {
+			EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netViewID);
+			
+			if (viewPanel == null)
+				return;
+			
+			EnrichmentMap map = emManager.getEnrichmentMap(viewPanel.getNetworkView().getModel().getSUID());
+			
+			if (map == null)
+				return;
+			
+			try {
+//				viewPanel.update();
+				
+				// TODO Update Filters
+				
+				// Update Style options
+				viewPanel.getPublicationReadyCheck().setSelected(params.isPublicationReady());
+				
+				ChartOptions chartOptions = params.getChartOptions();
+				viewPanel.getChartDataCombo().setSelectedItem(chartOptions != null ? chartOptions.getData() : null);
+				viewPanel.getChartTypeCombo().setSelectedItem(chartOptions != null ? chartOptions.getType() : null);
+//				viewPanel.getChartColorsCombo().setSelectedItem(chartOptions != null ? chartOptions.getColorScheme() : null);
+				viewPanel.getShowChartLabelsCheck().setSelected(chartOptions != null && chartOptions.isShowLabels());
+				
+				
+				updateVisualStyle(map, viewPanel);
+			} finally {
+				updating = false;
+			}
+		});
+	}
+	
+	public Map<Long, ViewParams> getAllViewParams() {
+		Map<Long, ViewParams> map = new HashMap<>();
+		
+		getControlPanel().getAllControlPanels().forEach((suid, panel) -> {
+			EMStyleOptions options = createStyleOptions(panel.getNetworkView());
+			ViewParams params = new ViewParams(suid, options.getChartOptions());
+			params.setPublicationReady(panel.getPublicationReadyCheck().isSelected());
+			// TODO set other params...
+			
+			map.put(suid, params);
+		});
+		
+		return map;
 	}
 	
 	public void updateDataSetList(CyNetworkView netView) {
@@ -390,7 +440,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					});
 					
 					viewPanel.getChartDataCombo().addItemListener(evt -> {
-						if (evt.getStateChange() == ItemEvent.SELECTED) {
+						if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
 							updating = true;
 							
 							try {
@@ -421,10 +471,12 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 							updateVisualStyle(map, viewPanel);
 					});
 					viewPanel.getShowChartLabelsCheck().addActionListener(evt -> {
-						updateVisualStyle(map, viewPanel);
+						if (!updating)
+							updateVisualStyle(map, viewPanel);
 					});
 					viewPanel.getPublicationReadyCheck().addActionListener(evt -> {
-						updateVisualStyle(map, viewPanel);
+						if (!updating)
+							updateVisualStyle(map, viewPanel);
 					});
 					viewPanel.getResetStyleButton().addActionListener(evt -> {
 						updateVisualStyle(map, viewPanel);
@@ -526,8 +578,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	private void updateLegends(EMViewControlPanel viewPanel) {
-		legendPanelMediatorProvider.get().updateDialog(createStyleOptions(viewPanel.getNetworkView()),
-				getFilteredDataSets(viewPanel));
+		legendPanelMediatorProvider.get().updateDialog(
+				viewPanel != null ? createStyleOptions(viewPanel.getNetworkView()) : null,
+				getFilteredDataSets(viewPanel)
+		);
 	}
 	
 	private void updateVisualStyle(EnrichmentMap map, EMViewControlPanel viewPanel) {

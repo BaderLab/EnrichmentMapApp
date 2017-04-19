@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 import javax.swing.UIManager;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
-import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions.ChartOptions;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;

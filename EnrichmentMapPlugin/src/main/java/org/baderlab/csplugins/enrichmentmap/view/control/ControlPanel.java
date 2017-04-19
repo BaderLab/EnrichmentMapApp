@@ -337,7 +337,15 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	}
 	
 	EMViewControlPanel getViewControlPanel(CyNetworkView netView) {
-		return netView != null ? emViewCtrlPanels.get(netView.getSUID()) : null;
+		return netView != null ? getViewControlPanel(netView.getSUID()) : null;
+	}
+	
+	EMViewControlPanel getViewControlPanel(Long suid) {
+		return emViewCtrlPanels.get(suid);
+	}
+	
+	public Map<Long, EMViewControlPanel> getAllControlPanels() {
+		return new HashMap<>(emViewCtrlPanels);
 	}
 	
 	private void styleHeaderButton(final AbstractButton btn, final Font font) {
@@ -352,14 +360,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	}
 	
 	class EMViewControlPanel extends JPanel {
-		
-		private final Color BLUE = new Color(44, 123, 182);
-		private final Color DARK_BLUE = new Color(37, 52, 148);
-		private final Color BROWN = new Color(166, 97, 26);
-		private final Color ORANGE = new Color(253, 141, 60);
-		private final Color PURPLE = new Color(118, 42, 131);
-		private final Color RED = new Color(215, 25, 28);
-		private final Color DARK_RED = new Color(165, 15, 21);
 		
 		private final ColorScheme[] REGULAR_COLOR_SCHEMES = new ColorScheme[] {
 				CONTRASTING, MODULATED, RAINBOW
@@ -739,7 +739,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return dataSetSelector;
 		}
 
-		public JComboBox<ChartData> getChartDataCombo() {
+		JComboBox<ChartData> getChartDataCombo() {
 			if (chartDataCombo == null) {
 				chartDataCombo = new JComboBox<>();
 				chartDataCombo.addItem(ChartData.NONE);
@@ -794,7 +794,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return publicationReadyCheck;
 		}
 		
-		public JButton getSetEdgeWidthButton() {
+		JButton getSetEdgeWidthButton() {
 			if (setEdgeWidthButton == null) {
 				setEdgeWidthButton = new JButton("Set Signature Edge Width...");
 				

@@ -30,10 +30,6 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
-import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
-import org.cytoscape.session.events.SessionAboutToBeSavedListener;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -48,7 +44,7 @@ import com.google.inject.Singleton;
  * MKTODO map old node suids to new ones after session is restored
  */
 @Singleton
-public class SessionModelListener implements SessionLoadedListener, SessionAboutToBeSavedListener {
+public class SessionModelIO {
 	
 	private static final int VERSION = 1;
 
@@ -72,19 +68,6 @@ public class SessionModelListener implements SessionLoadedListener, SessionAbout
 	
 	
 	private static final boolean debug = false;
-	
-	
-	@Override
-	public void handleEvent(SessionLoadedEvent event) {
-		CySession session = event.getLoadedSession();
-		restoreModel(session);
-	}
-	
-	@Override
-	public void handleEvent(SessionAboutToBeSavedEvent event) {
-		saveModel();
-	}
-	
 	
 	public void saveModel() {
 		if(debug)

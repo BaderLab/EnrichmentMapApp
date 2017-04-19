@@ -7,8 +7,6 @@ import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.io.LegacySessionLoader;
-import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChartFactory;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
@@ -47,12 +45,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, manager, new Properties());
 		
 		// session save and restore
-		SessionModelListener sessionListener = injector.getInstance(SessionModelListener.class);
+		SessionListener sessionListener = injector.getInstance(SessionListener.class);
 		registerAllServices(bc, sessionListener, new Properties());
 		
-		LegacySessionLoader legacyListener = injector.getInstance(LegacySessionLoader.class);
-		registerAllServices(bc, legacyListener, new Properties());
-
 		// commands
 		TaskFactory buildCommandTask = injector.getInstance(BuildEnrichmentMapTuneableTaskFactory.class);
 		Properties props = new Properties();
@@ -92,8 +87,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerAllServices(bc, expressionViewerMediator, new Properties());
 		}
 		
-		// If the App is updated or restarted then we want to reload the model from the tables
-		sessionListener.restoreModel();
+		// If the App is updated or restarted then we want to reload the model and view from the tables
+		sessionListener.restore(null);
 		
 		Em21Handler.removeVersion21(bc, injector.getInstance(CyApplicationConfiguration.class));
 	}
@@ -102,8 +97,8 @@ public class CyActivator extends AbstractCyActivator {
 	public void shutDown() {
 		if (injector != null) {
 			// If the App gets updated or restarted we need to save all the data first
-			SessionModelListener sessionListener = injector.getInstance(SessionModelListener.class);
-			sessionListener.saveModel();
+			SessionListener sessionListener = injector.getInstance(SessionListener.class);
+			sessionListener.save();
 			
 			// Also close the legend panel
 			LegendPanelMediator legendPanelMediator = injector.getInstance(LegendPanelMediator.class);
