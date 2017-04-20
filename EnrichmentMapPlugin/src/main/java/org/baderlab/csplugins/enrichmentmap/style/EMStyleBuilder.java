@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LINE_TYPE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
@@ -42,6 +43,8 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
+import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -69,7 +72,7 @@ public class EMStyleBuilder {
 	
 	public static final double DEF_NODE_BORDER_WIDTH = 1.0;
 	
-	public final static Integer DEF_EDGE_TRANSPARENCY = 140;
+	public final static Integer DEF_EDGE_TRANSPARENCY = 200;
 	public final static Integer FILTERED_OUT_EDGE_TRANSPARENCY = 10;
 	
 	private static final NodeShape SIGNATURE_NODE_SHAPE = DIAMOND;
@@ -183,6 +186,7 @@ public class EMStyleBuilder {
 			setEdgeDefaults(vs, options);
 			setEdgePaint(vs, options);
 			setEdgeWidth(vs, options);
+			setEdgeLineType(vs, options);
 	 		
 			String chartName = chart != null ? chart.getDisplayName() : null;
 			ChartType chartType = ChartType.toChartType(chartName);
@@ -291,6 +295,18 @@ public class EMStyleBuilder {
 
 			vs.addVisualMappingFunction(edgewidth);
 		}
+	}
+	
+	private void setEdgeLineType(VisualStyle vs, EMStyleOptions options) {
+		String prefix = options.getAttributePrefix();
+		String col = Columns.EDGE_DATASET.with(prefix, null);
+		
+		DiscreteMapping<String, LineType> dm = (DiscreteMapping<String, LineType>) dmFactory
+				.createVisualMappingFunction(col, String.class, EDGE_LINE_TYPE);
+		dm.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, LineTypeVisualProperty.SOLID);
+		dm.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, LineTypeVisualProperty.DOT);
+		
+		vs.addVisualMappingFunction(dm);
 	}
 	
 	private void setNodeDefaults(VisualStyle vs, EMStyleOptions options, ChartType chartType) {
