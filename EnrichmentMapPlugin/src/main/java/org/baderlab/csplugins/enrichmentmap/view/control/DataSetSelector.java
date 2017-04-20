@@ -107,6 +107,10 @@ public class DataSetSelector extends JPanel {
 		updateRemoveButton();
 	}
 
+	public Set<AbstractDataSet> getAllItems() {
+		return new HashSet<>(items);
+	}
+	
 	public Set<AbstractDataSet> getCheckedItems() {
 		Set<AbstractDataSet> set = new HashSet<>();
 		
@@ -116,6 +120,24 @@ public class DataSetSelector extends JPanel {
 		});
 		
 		return set;
+	}
+	
+	public void setCheckedItems(Set<AbstractDataSet> newValue) {
+		final Set<AbstractDataSet> oldValue = getCheckedItems();
+		checkedItems.clear();
+		final int rowCount = getTable().getRowCount();
+		
+		for (int i = 0; i < rowCount; i++) {
+			AbstractDataSet ds = (AbstractDataSet) getTable().getValueAt(i, NAME_COL_IDX);
+			boolean checked = newValue != null && newValue.contains(ds);
+			getTable().setValueAt(checked, i, SELECTED_COL_IDX);
+			
+			checkedItems.put(ds, checked);
+		}
+		
+		getTable().repaint();
+		updateSelectionButtons();
+		firePropertyChange("checkedData", oldValue, getCheckedItems());
 	}
 	
 	public Set<AbstractDataSet> getSelectedItems() {

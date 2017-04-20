@@ -146,7 +146,7 @@ public class SliderBarPanel extends JPanel {
 		slider.setPaintLabels(true);
 		slider.addChangeListener(evt -> {
 			if (!slider.getValueIsAdjusting())
-				setValue(slider.getValue());
+				setRawValue(slider.getValue());
 		});
 		
 		textField = new BoundedTextField(initialValue, min, max, precision, decPrecision, smallNumber);
@@ -213,12 +213,20 @@ public class SliderBarPanel extends JPanel {
 		textField.setEnabled(enabled);
 	}
 	
-    public void setValue(final int newValue) {
+    public void setRawValue(final int newValue) {
     	textField.setValue(newValue);
 	}
     
-    public int getValue() {
+    public int getRawValue() {
 		return slider.getValue();
+	}
+    
+    public double getValue() {
+		return getRawValue() / precision;
+	}
+    
+    public void setValue(double value) {
+    	setRawValue((int) Math.round(value * precision));
 	}
     
     public int getMin() {

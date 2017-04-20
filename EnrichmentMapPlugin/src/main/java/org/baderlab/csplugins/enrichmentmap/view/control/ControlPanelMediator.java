@@ -56,6 +56,7 @@ import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
+import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
@@ -210,18 +211,41 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				return;
 			
 			try {
-				// TODO Update Filters
+				// Update Filters
+				if (params.getPValue() != null && viewPanel.getPValueSliderPanel() != null)
+					viewPanel.getPValueSliderPanel().setValue(params.getPValue());
+				if (params.getQValue() != null && viewPanel.getQValueSliderPanel() != null)
+					viewPanel.getQValueSliderPanel().setValue(params.getQValue());
+				if (params.getSimilarityCoefficient() != null && viewPanel.getSimilaritySliderPanel() != null)
+					viewPanel.getSimilaritySliderPanel().setValue(params.getSimilarityCoefficient());
+				
+				if (params.getNodeCutoffParam() == CutoffParam.P_VALUE)
+					viewPanel.getPValueRadio().doClick();
+				else if (params.getNodeCutoffParam() == CutoffParam.Q_VALUE)
+					viewPanel.getQValueRadio().doClick();
+				
+				Set<String> filteredOutDataSetNames = params.getFilteredOutDataSets();
+				
+				if (filteredOutDataSetNames != null && !filteredOutDataSetNames.isEmpty()) {
+					Set<AbstractDataSet> allDataSets = viewPanel.getAllDataSets();
+					Set<AbstractDataSet> filteredDataSets = allDataSets.stream()
+							.filter(ds -> !filteredOutDataSetNames.contains(ds.getName()))
+							.collect(Collectors.toSet());
+					viewPanel.getDataSetSelector().setCheckedItems(filteredDataSets);
+				}
 				
 				// Update Style options
-				viewPanel.getPublicationReadyCheck().setSelected(params.isPublicationReady());
-				
 				ChartOptions chartOptions = params.getChartOptions();
 				viewPanel.getChartDataCombo().setSelectedItem(chartOptions != null ? chartOptions.getData() : null);
 				viewPanel.getChartTypeCombo().setSelectedItem(chartOptions != null ? chartOptions.getType() : null);
-//				viewPanel.getChartColorsCombo().setSelectedItem(chartOptions != null ? chartOptions.getColorScheme() : null);
+				viewPanel.getChartColorsCombo().setSelectedItem(chartOptions != null ? chartOptions.getColorScheme() : null);
 				viewPanel.getShowChartLabelsCheck().setSelected(chartOptions != null && chartOptions.isShowLabels());
+				viewPanel.getPublicationReadyCheck().setSelected(params.isPublicationReady());
+				
+				viewPanel.updateChartDataCombo();
 				
 				updateVisualStyle(map, viewPanel);
+				filterNodesAndEdges(viewPanel, map);
 			} finally {
 				updating = false;
 			}
@@ -232,10 +256,21 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		Map<Long, ViewParams> map = new HashMap<>();
 		
 		getControlPanel().getAllControlPanels().forEach((suid, panel) -> {
+			CutoffParam cuttofParam = panel.getPValueRadio().isSelected() ? CutoffParam.P_VALUE : CutoffParam.Q_VALUE;
+			Double pVal = panel.getPValueSliderPanel() != null ? panel.getPValueSliderPanel().getValue() : null;
+			Double qVal = panel.getQValueSliderPanel() != null ? panel.getQValueSliderPanel().getValue() : null;
+			Double sCoeff = panel.getSimilaritySliderPanel() != null ? panel.getSimilaritySliderPanel().getValue() : null;
+			
+			Set<AbstractDataSet> uncheckedDataSets = panel.getUncheckedDataSets();
+			Set<String> filteredDataSets = uncheckedDataSets.stream()
+					.map(AbstractDataSet::getName)
+					.collect(Collectors.toSet());
+			
 			EMStyleOptions options = createStyleOptions(panel.getNetworkView());
-			ViewParams params = new ViewParams(suid, options.getChartOptions());
-			params.setPublicationReady(panel.getPublicationReadyCheck().isSelected());
-			// TODO set other params...
+			boolean pubReady = panel.getPublicationReadyCheck().isSelected();
+			
+			ViewParams params = new ViewParams(
+					suid, cuttofParam, pVal, qVal, sCoeff, filteredDataSets, options.getChartOptions(), pubReady);
 			
 			map.put(suid, params);
 		});
@@ -364,11 +399,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					// Add listeners to the new panel's fields
 					viewPanel.getQValueRadio().addActionListener(evt -> {
 						viewPanel.updateFilterPanel();
-						filterNodesAndEdges(viewPanel, map, netView);
+						
+						if (!updating)
+							filterNodesAndEdges(viewPanel, map);
 					});
 					viewPanel.getPValueRadio().addActionListener(evt -> {
 						viewPanel.updateFilterPanel();
-						filterNodesAndEdges(viewPanel, map, netView);
+						
+						if (!updating)
+							filterNodesAndEdges(viewPanel, map);
 					});
 					
 					SliderBarPanel pvSliderPanel = viewPanel.getPValueSliderPanel();
@@ -376,20 +415,26 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					SliderBarPanel sSliderPanel = viewPanel.getSimilaritySliderPanel();
 					
 					if (pvSliderPanel != null)
-						pvSliderPanel.addPropertyChangeListener("value",
-								evt -> filterNodesAndEdges(viewPanel, map, netView));
+						pvSliderPanel.addPropertyChangeListener("value", evt -> {
+							if (!updating)
+								filterNodesAndEdges(viewPanel, map);
+						});
 					if (qvSliderPanel != null)
-						qvSliderPanel.addPropertyChangeListener("value",
-								evt -> filterNodesAndEdges(viewPanel, map, netView));
+						qvSliderPanel.addPropertyChangeListener("value", evt -> {
+							if (!updating)
+								filterNodesAndEdges(viewPanel, map);
+						});
 					if (sSliderPanel != null)
-						sSliderPanel.addPropertyChangeListener("value",
-								evt -> filterNodesAndEdges(viewPanel, map, netView));
+						sSliderPanel.addPropertyChangeListener("value", evt -> {
+							if (!updating)
+								filterNodesAndEdges(viewPanel, map);
+						});
 
 					viewPanel.getDataSetSelector().addPropertyChangeListener("checkedData", evt -> {
 						if (!updating) {
 							viewPanel.updateChartDataCombo();
 							
-							filterNodesAndEdges(viewPanel, map, netView);
+							filterNodesAndEdges(viewPanel, map);
 							ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
 							
 							Set<EMDataSet> oldDataSets = filterDataSets(
@@ -625,7 +670,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		}
 	}
 	
-	private void filterNodesAndEdges(EMViewControlPanel viewPanel, EnrichmentMap map, CyNetworkView netView) {
+	private void filterNodesAndEdges(EMViewControlPanel viewPanel, EnrichmentMap map) {
+		CyNetworkView netView = viewPanel.getNetworkView();
 		Timer timer = filterTimers.get(netView);
 		
 		if (timer == null) {
@@ -775,7 +821,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				Set<String> columnNames, Set<Long> dataSetNodes) {
 			Set<CyNode> nodes = new HashSet<>();
 			
-			Double maxCutoff = (double) sliderPanel.getValue() / sliderPanel.getPrecision();
+			Double maxCutoff = sliderPanel.getValue();
 			Double minCutoff = (double) sliderPanel.getMin() / sliderPanel.getPrecision();
 			
 			CyNetwork network = networkView.getModel();

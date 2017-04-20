@@ -1,19 +1,47 @@
 package org.baderlab.csplugins.enrichmentmap.view.control.io;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 
 public class ViewParams {
 
+	public enum CutoffParam {
+		P_VALUE, Q_VALUE;
+	}
+	
 	private long networkViewID;
+	private CutoffParam nodeCutoffParam;
+	private Double pValue;
+	private Double qValue;
+	private Double similarityCoefficient;
+	private Set<String> filteredOutDataSets;
 	private ChartOptions chartOptions;
 	private boolean publicationReady;
 	
 	public ViewParams() {
 	}
 	
-	public ViewParams(long networkViewID, ChartOptions chartOptions) {
+	public ViewParams(
+			long networkViewID,
+			CutoffParam nodeCutoffParam,
+			Double pValue,
+			Double qValue,
+			Double similarityCoefficient,
+			Collection<String> filteredDataSets,
+			ChartOptions chartOptions,
+			boolean publicationReady
+	) {
 		this.networkViewID = networkViewID;
+		this.nodeCutoffParam = nodeCutoffParam;
+		this.pValue = pValue;
+		this.qValue = qValue;
+		this.similarityCoefficient = similarityCoefficient;
+		this.filteredOutDataSets = filteredDataSets != null ? new HashSet<>(filteredDataSets) : null;
 		this.chartOptions = chartOptions;
+		this.publicationReady = publicationReady;
 	}
 
 	public long getNetworkViewID() {
@@ -22,6 +50,46 @@ public class ViewParams {
 	
 	public void setNetworkViewID(long networkViewID) {
 		this.networkViewID = networkViewID;
+	}
+	
+	public CutoffParam getNodeCutoffParam() {
+		return nodeCutoffParam;
+	}
+	
+	public void setNodeCutoffParam(CutoffParam nodeCutoffParam) {
+		this.nodeCutoffParam = nodeCutoffParam;
+	}
+	
+	public Double getPValue() {
+		return pValue;
+	}
+	
+	public void setPValue(Double pValue) {
+		this.pValue = pValue;
+	}
+	
+	public Double getQValue() {
+		return qValue;
+	}
+
+	public void setQValue(Double qValue) {
+		this.qValue = qValue;
+	}
+
+	public Double getSimilarityCoefficient() {
+		return similarityCoefficient;
+	}
+
+	public void setSimilarityCoefficient(Double similarityCoefficient) {
+		this.similarityCoefficient = similarityCoefficient;
+	}
+
+	public Set<String> getFilteredOutDataSets() {
+		return filteredOutDataSets;
+	}
+	
+	public void setFilteredOutDataSets(Set<String> filteredDataSets) {
+		this.filteredOutDataSets = filteredDataSets;
 	}
 	
 	public ChartOptions getChartOptions() {

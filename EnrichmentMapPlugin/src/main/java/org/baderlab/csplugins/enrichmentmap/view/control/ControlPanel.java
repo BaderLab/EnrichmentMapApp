@@ -410,8 +410,20 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			update();
 		}
 		
+		Set<AbstractDataSet> getAllDataSets() {
+			return getDataSetSelector().getAllItems();
+		}
+		
 		Set<AbstractDataSet> getCheckedDataSets() {
 			return getDataSetSelector().getCheckedItems();
+		}
+		
+		Set<AbstractDataSet> getUncheckedDataSets() {
+			Set<AbstractDataSet> set = getAllDataSets();
+			Set<AbstractDataSet> checkedItems = getCheckedDataSets();
+			set.removeAll(checkedItems);
+			
+			return set;
 		}
 		
 		@SuppressWarnings("unchecked")
