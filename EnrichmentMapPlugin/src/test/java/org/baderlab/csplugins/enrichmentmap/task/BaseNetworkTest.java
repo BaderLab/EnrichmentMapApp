@@ -131,7 +131,7 @@ public abstract class BaseNetworkTest {
 	   	testTaskManager.execute(taskIterator, observer);
 	}
 	
-	protected void runPostAnalysis(CyNetwork emNetwork, PostAnalysisParameters.Builder builder) throws Exception {
+	protected void runPostAnalysis(CyNetwork emNetwork, PostAnalysisParameters.Builder builder, String dataSetName) throws Exception {
 		// Set up mocks
 		when(applicationManager.getCurrentNetwork()).thenReturn(emNetwork);
 		CyNetworkView networkViewMock = mock(CyNetworkView.class);
@@ -151,15 +151,15 @@ public abstract class BaseNetworkTest {
 		LoadSignatureSetsActionListener loader = loadSignatureSetsActionListenerFactory.create(file, new FilterMetric.None());
 		loader.setTaskManager(testTaskManager);
 		
-		loader.setGeneSetCallback(builder::setSignatureGenesets);
-		loader.setLoadedSignatureSetsCallback(builder::addSelectedSignatureSetNames);
+		loader.setGeneSetCallback(builder::setLoadedGMTGeneSets);
+		loader.setLoadedSignatureSetsCallback(builder::addSelectedGeneSetNames);
 
 		loader.actionPerformed(null);
 		
 		PostAnalysisParameters paParams = builder.build();
 		
 		// Run post-analysis
-		CreateDiseaseSignatureTask signatureTask = buildDiseaseSignatureTaskFactory.create(map, paParams);
+		CreateDiseaseSignatureTask signatureTask = buildDiseaseSignatureTaskFactory.create(map, paParams, dataSetName);
 		signatureTask.run(mock(TaskMonitor.class));
 	}
 	

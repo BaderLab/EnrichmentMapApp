@@ -441,6 +441,18 @@ public class EnrichmentMap {
 		
 		return allranks;
 	}
+	
+	/**
+	 * Returns true if every data set contains exactly one Ranks object.
+	 */
+	public boolean isSingleRanksPerDataset() {
+		for(EMDataSet dataset : dataSets.values()) {
+			if(dataset.getExpressionSets().getRanks().size() != 1) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	public Ranking getRanksByName(String ranksName) {
 		// break the ranks file up by "-"

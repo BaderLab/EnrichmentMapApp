@@ -16,10 +16,10 @@ import java.util.Set;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -28,6 +28,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
@@ -106,17 +107,17 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		mockContinuousMappingFactory(cmFactory);
 		
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-		builder.setSignatureDataSet(LegacySupport.DATASET1);
-		builder.setSignatureRankFile(LegacySupport.DATASET1);
 		builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
-		builder.setUniverseSize(11445);
+		builder.setUniverseType(UniverseType.USER_DEFINED);
+		builder.setUserDefinedUniverseSize(11445);
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
+		builder.addDataSetToRankFile(LegacySupport.DATASET1, LegacySupport.DATASET1);
 		
 		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED);
 		builder.setRankTestParameters(rankTest);
 		
-		runPostAnalysis(emNetwork, builder);
+		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
 		// Assert that post-analysis created the new nodes correctly
 		
 		Map<String,CyNode> nodes = TestUtils.getNodes(emNetwork);
@@ -148,17 +149,16 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		mockContinuousMappingFactory(cmFactory);
 		
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-		builder.setSignatureDataSet(LegacySupport.DATASET1);
-		builder.setSignatureRankFile(LegacySupport.DATASET1);
 		builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
-		builder.setUniverseSize(11445);
+		builder.setUniverseType(UniverseType.USER_DEFINED);
+		builder.setUserDefinedUniverseSize(11445);
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
 		
 		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.HYPERGEOM, 0.25);
 		builder.setRankTestParameters(rankTest);
 		
-		runPostAnalysis(emNetwork, builder);
+		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
 		
 		// Assert that post-analysis created the new nodes correctly
 		Map<String,CyNode> nodes = TestUtils.getNodes(emNetwork);

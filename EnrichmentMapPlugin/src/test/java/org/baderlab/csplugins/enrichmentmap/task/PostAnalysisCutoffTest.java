@@ -11,15 +11,16 @@ import java.util.Set;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -52,10 +53,9 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	
 	private PostAnalysisParameters.Builder getBuilder() {
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-    	builder.setSignatureDataSet(LegacySupport.DATASET1);
-    	builder.setSignatureRankFile(LegacySupport.DATASET1);
     	builder.setAnalysisType(PostAnalysisParameters.AnalysisType.KNOWN_SIGNATURE);
-		builder.setUniverseSize(11445);
+    	builder.setUniverseType(UniverseType.USER_DEFINED);
+		builder.setUserDefinedUniverseSize(11445);
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
 		return builder;
@@ -90,7 +90,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.NUMBER, 5);
 		builder.setRankTestParameters(rankTest);
 		
-		runPostAnalysis(emNetwork, builder);
+		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
 	   	
 	   	Map<String,CyEdge> edges = TestUtils.getEdges(emNetwork);
 	   	assertEquals(9, edges.size());
@@ -123,7 +123,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.PERCENT, 7);
 		builder.setRankTestParameters(rankTest);
 		
-		runPostAnalysis(emNetwork, builder);
+		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
 		
 	   	Map<String,CyEdge> edges = TestUtils.getEdges(emNetwork);
 	   	assertEquals(9, edges.size());
@@ -156,7 +156,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.SPECIFIC, 25);
 		builder.setRankTestParameters(rankTest);
 		
-		runPostAnalysis(emNetwork, builder);
+		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
 		
 	   	Map<String,CyEdge> edges = TestUtils.getEdges(emNetwork);
 	   	assertEquals(9, edges.size());

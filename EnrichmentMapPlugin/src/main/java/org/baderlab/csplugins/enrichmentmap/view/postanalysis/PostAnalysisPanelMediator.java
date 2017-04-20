@@ -15,14 +15,18 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTaskResult;
+import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
@@ -108,30 +112,67 @@ public class PostAnalysisPanelMediator {
 	private void addGeneSets(CyNetworkView netView, PostAnalysisParameters params) {
 		// Make sure that the minimum information is set in the current set of parameters
 		EnrichmentMap map = emManager.getEnrichmentMap(applicationManager.getCurrentNetwork().getSUID());
-		StringBuilder errorBuilder = new StringBuilder();
-		params.checkMinimalRequirements(errorBuilder);
 		
+		StringBuilder errorBuilder = new StringBuilder();
+		checkMinimalRequirements(errorBuilder, params);
 		if (params.getRankTestParameters().getType().isMannWhitney() && map.getAllRanks().isEmpty())
 			errorBuilder.append("Mann-Whitney requires ranks. \n");
 		
 		String errors = errorBuilder.toString();
 
 		if (errors.isEmpty()) {
-			TaskIterator currentTasks = new TaskIterator();
+			TaskIterator tasks = new TaskIterator();
 
-			CreateDiseaseSignatureTask buildDiseaseSignatureTask = signatureTaskFactory.create(map, params);
-			currentTasks.append(buildDiseaseSignatureTask);
+			String sdsName = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
+			EMSignatureDataSet sigDataSet = new EMSignatureDataSet(sdsName);
+			map.addSignatureDataSet(sigDataSet);
+			
+			// Run Post-Analysis in batch, once for each data set
+			for(EMDataSet dataset : map.getDataSetList()) {
+				CreateDiseaseSignatureTask task = signatureTaskFactory.create(map, params, dataset.getName());
+				task.setSignatureDataSet(sigDataSet);
+				task.setCreateSeparateEdges(true);
+				tasks.append(task);
+			}
+			
+			ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
+			EMStyleOptions options = controlPanelMediator.createStyleOptions(netView);
+			CyCustomGraphics2<?> chart = controlPanelMediator.createChart(options);
+			tasks.append(applyStyleTaskFactory.create(options, chart));
 
-			EMStyleOptions options = controlPanelMediatorProvider.get().createStyleOptions(netView);
-			CyCustomGraphics2<?> chart = controlPanelMediatorProvider.get().createChart(options);
-			currentTasks.append(applyStyleTaskFactory.create(options, chart));
-
-			taskManager.execute(currentTasks, new DialogObserver());
+			taskManager.execute(tasks, new DialogObserver());
 		} else {
-			JOptionPane.showMessageDialog(swingApplication.getJFrame(), errors, "Invalid Input",
-					JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(swingApplication.getJFrame(), errors, "Invalid Input", JOptionPane.WARNING_MESSAGE);
 		}
 	}
+	
+	
+	/**
+	 * Checks all values of the PostAnalysisInputPanel
+	 * 
+	 * @return String with error messages (one error per line) or empty String if everything is okay.
+	 * @see org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters#checkMinimalRequirements()
+	 */
+	public void checkMinimalRequirements(StringBuilder errors, PostAnalysisParameters params) {
+		errors.append(checkGMTfiles(params));
+		if(params.getSelectedGeneSetNames().isEmpty()) {
+			errors.append("No Signature Genesets selected \n");
+		}
+	}
+
+	/**
+	 * Checks if SignatureGMTFileName is provided and if the file can be read.
+	 * 
+	 * @return String with error messages (one error per line) or empty String
+	 *         if everything is okay.
+	 */
+	public String checkGMTfiles(PostAnalysisParameters params) {
+		String signatureGMTFileName = params.getSignatureGMTFileName();
+		if(signatureGMTFileName == null || signatureGMTFileName.isEmpty() || !EnrichmentMapParameters.checkFile(signatureGMTFileName))
+			return "Signature GMT file can not be found \n";
+		return "";
+	}
+	
 	
 	/**
 	 * Creates a PostAnalysisParameters object based on the user's input.
@@ -148,7 +189,6 @@ public class PostAnalysisPanelMediator {
 		}
 		
 		builder.setAttributePrefix(map.getParams().getAttributePrefix());
-		
 		return builder.build();
 	}
 	

@@ -33,13 +33,10 @@ import javax.swing.event.ListSelectionListener;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.view.util.Messages;
@@ -83,7 +80,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 
 	// used for filtering
 	private int hypergomUniverseSize;
-	private Ranking mannWhitRanks;
+//	private Ranking mannWhitRanks;
     
 	private SetOfGeneSets signatureGenesets;
 	private final Map<PostAnalysisFilterType, Double> savedFilterValues = PostAnalysisFilterType.createMapOfDefaults();
@@ -303,8 +300,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 			
 			if (!value.isPresent()) {
 				filterTextField.setValue(filterType.defaultValue);
-				JOptionPane.showMessageDialog(application.getJFrame(), message.toString(), "Parameter out of bounds",
-						JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(application.getJFrame(), message.toString(), "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
 			}
 		});
 
@@ -317,9 +313,9 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		//    for instance a drug A that targets only X and Y as opposed to drug B that targets X,y,L,M,N,O,P.
 		filterTypeCombo = new JComboBox<>();
 		filterTypeCombo.addItem(PostAnalysisFilterType.NO_FILTER); // default
-		filterTypeCombo.addItem(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED);
-		filterTypeCombo.addItem(PostAnalysisFilterType.MANN_WHIT_GREATER);
-		filterTypeCombo.addItem(PostAnalysisFilterType.MANN_WHIT_LESS);
+//		filterTypeCombo.addItem(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED);
+//		filterTypeCombo.addItem(PostAnalysisFilterType.MANN_WHIT_GREATER);
+//		filterTypeCombo.addItem(PostAnalysisFilterType.MANN_WHIT_LESS);
 		filterTypeCombo.addItem(PostAnalysisFilterType.HYPERGEOM);
 		filterTypeCombo.addItem(PostAnalysisFilterType.NUMBER);
 		filterTypeCombo.addItem(PostAnalysisFilterType.PERCENT);
@@ -455,10 +451,10 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 				return new FilterMetric.Specific(value);
 			case HYPERGEOM:
 				return new FilterMetric.Hypergeom(value, hypergomUniverseSize);
-			case MANN_WHIT_TWO_SIDED:
-			case MANN_WHIT_GREATER:
-			case MANN_WHIT_LESS:
-				return new FilterMetric.MannWhit(value, mannWhitRanks, type);
+//			case MANN_WHIT_TWO_SIDED:
+//			case MANN_WHIT_GREATER:
+//			case MANN_WHIT_LESS:
+//				return new FilterMetric.MannWhit(value, mannWhitRanks, type);
 			default:
 				return new FilterMetric.None();
 		}
@@ -472,28 +468,24 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		weightPanel.initialize(currentMap);
 		hypergomUniverseSize = currentMap.getNumberOfGenes();
 
-		Map<String, EMDataSet> dataSets = currentMap.getDataSets();
-		EMDataSet ds = dataSets.get(weightPanel.getDataSet());
-		mannWhitRanks = new Ranking();
-		
-		if (ds != null)
-			mannWhitRanks = ds.getExpressionSets().getRanks().get(weightPanel.getRankFile());
+//		Map<String, EMDataSet> dataSets = currentMap.getDataSets();
+//		EMDataSet ds = dataSets.get(weightPanel.getDataSet());
+//		mannWhitRanks = new Ranking();
+//		
+//		if (ds != null)
+//			mannWhitRanks = ds.getExpressionSets().getRanks().get(weightPanel.getRankFile());
 	}
     
 	void build(PostAnalysisParameters.Builder builder) {
 		weightPanel.build(builder);
 		
 		for (int i = 0; i < selectedSigSetsModel.size(); i++) {
-			builder.addSelectedSignatureSetName(selectedSigSetsModel.getElementAt(i));
+			builder.addSelectedGeneSetName(selectedSigSetsModel.getElementAt(i));
 		}
-		
-		Number number = (Number) filterTextField.getValue();
-		PostAnalysisFilterParameters filterParameters = new PostAnalysisFilterParameters(getFilterType(), number.doubleValue());
-		builder.setFilterParameters(filterParameters);
 		
 		String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
 		builder.setSignatureGMTFileName(filePath);
-		builder.setSignatureGenesets(signatureGenesets);
+		builder.setLoadedGMTGeneSets(signatureGenesets);
 	}
 	
     /**

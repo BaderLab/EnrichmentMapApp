@@ -143,8 +143,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		// Use the synchronousTaskManager so that this blocks
 		
 		FilterMetric filterMetric = new FilterMetric.None();
-		LoadSignatureSetsActionListener loadAction =
-				loadSignatureSetsActionListenerFactory.create(new File(filePath), filterMetric);
+		LoadSignatureSetsActionListener loadAction = loadSignatureSetsActionListenerFactory.create(new File(filePath), filterMetric);
 		
 		loadAction.setGeneSetCallback(gs -> {
 			this.signatureGenesets = gs;
@@ -153,10 +152,8 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		loadAction.setLoadedSignatureSetsCallback(selected -> {
 			this.selectedGenesetNames = selected;
 		});
-
 		
 		loadAction.actionPerformed(null);
-		
 		return true;
 	}
 
@@ -178,7 +175,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		
 		String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
 		builder.setSignatureGMTFileName(filePath);
-		builder.setSignatureGenesets(signatureGenesets);
-		builder.addSelectedSignatureSetNames(selectedGenesetNames);
+		builder.setLoadedGMTGeneSets(signatureGenesets);
+		builder.addSelectedGeneSetNames(selectedGenesetNames);
 	}
 }

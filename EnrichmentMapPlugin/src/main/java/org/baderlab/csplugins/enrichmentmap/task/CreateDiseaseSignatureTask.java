@@ -100,9 +100,9 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 	private PostAnalysisParameters params;
 	private final EnrichmentMap map;
 	private final String interaction;
+	private final String dataSetName;
 
 	private Map<String, GeneSet> enrichmentGeneSets;
-	private Map<String, GeneSet> signatureGeneSets;
 	private Map<String, GeneSet> selectedSignatureGeneSets;
 
 	private double currentNodeYOffset;
@@ -114,21 +114,45 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 	// Ranks
 	private Ranking ranks;
 	private Map<String, GenesetSimilarity> geneSetSimilarities;
+	
+	private EMSignatureDataSet signatureDataSet;
+	private boolean createSeparateEdges;
 
 	private CreateDiseaseSignatureTaskResult.Builder taskResult = new CreateDiseaseSignatureTaskResult.Builder();
 
 	
 	public interface Factory {
-		CreateDiseaseSignatureTask create(EnrichmentMap map, PostAnalysisParameters paParams);
+		CreateDiseaseSignatureTask create(EnrichmentMap map, PostAnalysisParameters paParams, String dataSetName);
 	}
 	
+	
+	public void setSignatureDataSet(EMSignatureDataSet signatureDataSet) {
+		this.signatureDataSet = signatureDataSet;
+	}
+	
+	private EMSignatureDataSet getSignatureDataSet() {
+		if(signatureDataSet == null) {
+			String sdsName = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
+			signatureDataSet = new EMSignatureDataSet(sdsName);
+			map.addSignatureDataSet(signatureDataSet);
+		}
+		return signatureDataSet;
+	}
+	
+	public void setCreateSeparateEdges(boolean createSeparateEdges) {
+		this.createSeparateEdges = createSeparateEdges;
+	}
+	
+	
 	@Inject
-	public CreateDiseaseSignatureTask(@Assisted EnrichmentMap map, @Assisted PostAnalysisParameters params) {
+	public CreateDiseaseSignatureTask(@Assisted EnrichmentMap map, @Assisted PostAnalysisParameters params, @Assisted String dataSetName) {
 		this.map = map;
 		this.params = params;
+		this.dataSetName = dataSetName;
+		this.interaction = PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
 
-		EMDataSet dataset = map.getDataSet(params.getSignatureDataSet());
-		ranks = dataset.getExpressionSets().getRanks().get(params.getSignatureRankFile());
+		EMDataSet dataset = map.getDataSet(dataSetName);
+		ranks = dataset.getExpressionSets().getRanks().get(params.getDataSetToRankFile().get(dataSetName));
 
 		// we want genesets of interest that are not signature genesets put there by previous runs of post-analysis
 		enrichmentGeneSets = new HashMap<>();
@@ -138,33 +162,41 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 				enrichmentGeneSets.put(gs.getKey(), gs.getValue());
 		}
 		
-		signatureGeneSets = this.params.getSignatureGeneSets().getGeneSets();
+		Map<String, GeneSet> loadedGeneSets = this.params.getLoadedGMTGeneSets().getGeneSets();
 		geneSetSimilarities = new HashMap<>();
 		selectedSignatureGeneSets = new HashMap<>();
 		
-		for (String geneset : params.getSelectedSignatureSetNames())
-			selectedSignatureGeneSets.put(geneset, signatureGeneSets.get(geneset));
+		for (String geneset : params.getSelectedGeneSetNames())
+			selectedSignatureGeneSets.put(geneset, loadedGeneSets.get(geneset));
 
 		// EnrichmentGenes: pool of all genes in Enrichment Gene Sets
 		// TODO: get enrichment map genes from enrichment map parameters now that they are computed there.
 		enrichmentGenes = new HashSet<>();
-		
 		for (GeneSet geneSet : enrichmentGeneSets.values())
 			enrichmentGenes.addAll(geneSet.getGenes());
 		
 		// SignatureGenes: pool of all genes in Signature Gene Sets
 		signatureGenes = new HashSet<>();
-		
-		for (GeneSet geneSet : signatureGeneSets.values())
+		for (GeneSet geneSet : loadedGeneSets.values())
 			signatureGenes.addAll(geneSet.getGenes());
-
-		interaction = getInteraction();
 	}
-
-	private String getInteraction() {
-		return PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
+	
+	
+	private int getUniverseSize() {
+		switch(params.getUniverseType()) {
+			default:
+			case GMT:
+				return map.getNumberOfGenes();
+			case EXPRESSION_SET:
+				return map.getDataSet(dataSetName).getExpressionSets().getExpressionUniverse();
+			case INTERSECTION:
+				return map.getDataSet(dataSetName).getExpressionSets().getExpressionMatrix().size();
+			case USER_DEFINED:
+				return params.getUserDefinedUniverseSize();
+		}
 	}
-
+	
+	
 	public void buildDiseaseSignature(TaskMonitor taskMonitor) {
 		// Calculate Similarity between Signature Gene Sets * and Enrichment Genesets.
 		int maxValue = selectedSignatureGeneSets.size() * enrichmentGeneSets.size();
@@ -188,10 +220,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 				params = PostAnalysisParameters.Builder.from(params).setAttributePrefix(prefix).build();
 			}
 
-			String sdsName = NamingUtil.getUniqueName(params.getSignatureGeneSets().getName(),
-					map.getSignatureDataSets().keySet());
-			EMSignatureDataSet sigDataSet = new EMSignatureDataSet(sdsName);
-			map.addSignatureDataSet(sigDataSet);
+			EMSignatureDataSet sigDataSet = getSignatureDataSet();
 			
 			//get the node attribute and edge attribute tables
 			CyTable edgeTable = createEdgeColumns(currentNetwork, "", prefix);
@@ -273,16 +302,14 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 
 						// Only calculate Mann-Whitney pValue if there is overlap
 						if (intersection.size() > 0) {
-							double coeffecient = ComputeSimilarityTaskParallel.computeSimilarityCoeffecient(
-									map.getParams(), intersection, union, sigGenes, enrGenes);
-							GenesetSimilarity comparison = new GenesetSimilarity(hubName, genesetName, coeffecient,
-									interaction, intersection);
+							double coeffecient = ComputeSimilarityTaskParallel.computeSimilarityCoeffecient(map.getParams(), intersection, union, sigGenes, enrGenes);
+							GenesetSimilarity comparison = new GenesetSimilarity(hubName, genesetName, coeffecient, interaction, intersection);
 
 							PostAnalysisFilterType filterType = params.getRankTestParameters().getType();
 							
 							switch (filterType) {
 								case HYPERGEOM:
-									int universeSize1 = params.getUniverseSize();
+									int universeSize1 = getUniverseSize();
 									hypergeometric(universeSize1, sigGenesInUniverse, enrGenes, intersection, comparison);
 									break;
 								case MANN_WHIT_TWO_SIDED:
@@ -438,7 +465,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 
 		// Add the geneset of the signature node to the GenesetsOfInterest,
 		// as the Heatmap will grep it's data from there.
-		EMDataSet dataSet = map.getDataSet(params.getSignatureDataSet());
+		EMDataSet dataSet = map.getDataSet(dataSetName);
 		Set<Integer> sigGenesInDataSet = ImmutableSet.copyOf(Sets.intersection(sigGeneSet.getGenes(), dataSet.getDataSetGenes()));
 		GeneSet geneSetInDataSet = new GeneSet(sigGeneSet.getName(), sigGeneSet.getDescription(), sigGenesInDataSet);
 		dataSet.getGeneSetsOfInterest().getGeneSets().put(hubName, geneSetInDataSet);
@@ -453,15 +480,16 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 	 */
 	private void createEdge(String edgeName, CyNetwork network, CyNetworkView netView, String prefix, CyTable edgeTable,
 			CyTable nodeTable, boolean passedCutoff, EMSignatureDataSet sigDataSet) {
-		CyEdge edge = NetworkUtil.getEdgeWithValue(network, edgeTable, CyNetwork.NAME, edgeName);
+		
 		GenesetSimilarity genesetSimilarity = geneSetSimilarities.get(edgeName);
-
+		CyEdge edge = null;
+		if(!createSeparateEdges)
+			edge = NetworkUtil.getEdgeWithValue(network, edgeTable, CyNetwork.NAME, edgeName);
+		
 		if (edge == null) {
 			if (passedCutoff) {
-				CyNode hubNode = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME,
-						genesetSimilarity.getGeneset1Name());
-				CyNode geneSet = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME,
-						genesetSimilarity.getGeneset2Name());
+				CyNode hubNode = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME, genesetSimilarity.getGeneset1Name());
+				CyNode geneSet = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME, genesetSimilarity.getGeneset2Name());
 
 				if (hubNode == null || geneSet == null)
 					return;
@@ -489,8 +517,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 
 		for (Integer current : genesHash) {
 			String gene = map.getGeneFromHashKey(current);
-
-			if (gene != null)
+			if (gene != null) 
 				geneList.add(gene);
 		}
 
