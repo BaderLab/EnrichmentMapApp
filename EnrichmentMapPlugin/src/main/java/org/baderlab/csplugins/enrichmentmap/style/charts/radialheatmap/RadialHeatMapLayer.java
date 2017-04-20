@@ -66,7 +66,7 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 		if (equalValues != null)
 			Arrays.fill(equalValues, new Double(1));
 		
-		final PieDataset dataset = createPieDataset(Arrays.asList(equalValues));
+		final PieDataset dataset = createPieDataset(equalValues != null ? Arrays.asList(equalValues) : null);
 		
 		if (showItemLabels && itemLabels != null) {
 			final List<?> keys = dataset.getKeys();
