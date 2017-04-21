@@ -15,6 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
@@ -41,6 +42,8 @@ import com.google.inject.Singleton;
 @Singleton
 public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewListener {
 
+	private static final int COLLAPSE_THRESHOLD = 50;
+	
 	@Inject private HeatMapParentPanel.Factory panelFactory;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private ClusterRankingOption.Factory clusterRankOptionFactory;
@@ -113,25 +116,30 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			return;
 		
 		CyNetwork network = networkView.getModel();
+		final EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
+		if(map == null)
+			return;
+		
 		HeatMapParams params = emManager.getHeatMapParams(network.getSUID());
 		if(params == null) {
-			params = HeatMapParams.defaults();
+			if(map.totalExpressionCount() > COLLAPSE_THRESHOLD)
+				params = HeatMapParams.defaults().setTransform(Transform.COMPRESS_MEDIAN).build();
+			else
+				params = HeatMapParams.defaults().build();
+			
 			emManager.registerHeatMapParams(network.getSUID(), params);
 		}
 		
-		final EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
-		if(map != null) {
-			List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
-			List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
-			
-			String prefix = map.getParams().getAttributePrefix();
-			
-			Set<String> union = unionGenesets(network, selectedNodes, selectedEdges, prefix);
-			Set<String> inter = intersectionGenesets(network, selectedNodes, selectedEdges, prefix);
-			List<RankingOption> rankOptions = getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
-			
-			heatMapPanel.selectGenes(map, params, rankOptions, union, inter);
-		}
+		List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
+		List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
+		
+		String prefix = map.getParams().getAttributePrefix();
+		
+		Set<String> union = unionGenesets(network, selectedNodes, selectedEdges, prefix);
+		Set<String> inter = intersectionGenesets(network, selectedNodes, selectedEdges, prefix);
+		List<RankingOption> rankOptions = getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
+		
+		heatMapPanel.selectGenes(map, params, rankOptions, union, inter);
 	}
 	
 	public ClusterRankingOption getClusterRankOption(EnrichmentMap map) {

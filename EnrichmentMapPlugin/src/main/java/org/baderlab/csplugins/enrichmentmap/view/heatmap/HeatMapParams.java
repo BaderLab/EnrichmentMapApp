@@ -54,22 +54,22 @@ public class HeatMapParams {
 	private final String rankingOptionName; // combo index 
 	
 	
-	public HeatMapParams(Transform transform, Operator operator, String rankingOptionName, Distance distanceMetric, boolean showValues) {
-		this.transform = transform;
-		this.operator = operator;
-		this.distanceMetric = distanceMetric;
-		this.showValues = showValues;
-		this.rankingOptionName = rankingOptionName;
+	private HeatMapParams(Builder builder) {
+		this.transform = builder.transform;
+		this.operator = builder.operator;
+		this.distanceMetric = builder.distanceMetric;
+		this.showValues = builder.showValues;
+		this.rankingOptionName = builder.rankingOptionName;
 	}
 	
 	
-	public static HeatMapParams defaults() {
-		return new Builder().build();
+	public static HeatMapParams.Builder defaults() {
+		return new Builder();
 	}
 	
 	
 	public static class Builder {
-		private Transform transform = Transform.COMPRESS_MEDIAN;
+		private Transform transform = Transform.AS_IS;
 		private Operator operator = Operator.UNION;
 		private Distance distanceMetric = Distance.EUCLIDEAN;
 		private boolean showValues = false;
@@ -83,6 +83,16 @@ public class HeatMapParams {
 			this.distanceMetric = params.distanceMetric;
 			this.showValues = params.showValues;
 			this.rankingOptionName = params.rankingOptionName;
+		}
+		
+		public static Builder from(Builder other) {
+			Builder b = new Builder();
+			b.transform = other.transform;
+			b.operator = other.operator;
+			b.distanceMetric = other.distanceMetric;
+			b.showValues = other.showValues;
+			b.rankingOptionName = other.rankingOptionName;
+			return b;
 		}
 		
 		public Builder setTransform(Transform transform) {
@@ -107,7 +117,7 @@ public class HeatMapParams {
 		}
 		
 		public HeatMapParams build() {
-			return new HeatMapParams(transform, operator, rankingOptionName, distanceMetric, showValues);
+			return new HeatMapParams(this);
 		}
 	}
 

@@ -453,6 +453,19 @@ public class EnrichmentMap {
 		}
 		return true;
 	}
+	
+	
+	/**
+	 * Returns the total number of expressions in the map.
+	 */
+	public int totalExpressionCount() {
+		int count = 0;
+		for(EMDataSet dataset : dataSets.values()) {
+			count += dataset.getExpressionSets().getNumConditions() - 2;
+		}
+		return count;
+	}
+	
 
 	public Ranking getRanksByName(String ranksName) {
 		// break the ranks file up by "-"
