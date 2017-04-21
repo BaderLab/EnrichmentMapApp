@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -80,9 +81,11 @@ public class HeatMapMainPanel extends JPanel {
 	private JScrollPane scrollPane;
 	private JComboBox<ComboItem<Transform>> normCombo;
 	private JComboBox<ComboItem<Operator>> operatorCombo;
+	private JCheckBox showValuesCheck;
 	
 	private ActionListener normActionListener;
 	private ActionListener operatorActionListener;
+	private ActionListener showValueActionListener;
 	
 	private ClusterRankingOption clusterRankOption = null;
 	private List<RankingOption> moreRankOptions;
@@ -104,7 +107,6 @@ public class HeatMapMainPanel extends JPanel {
 		this.parent = parent;
 	}
 	
-	
 	private void settingChanged() {
 		if(!isResetting) {
 			HeatMapParams params = buildParams();
@@ -116,7 +118,6 @@ public class HeatMapMainPanel extends JPanel {
 	@AfterInjection
 	private void createContents() {
 		settingsPanel = new SettingsPopupPanel();
-		settingsPanel.setShowValuesConsumer(this::updateSetting_ShowValues);
 		settingsPanel.setDistanceConsumer(this::updateSetting_Distance);
 		
 		JPanel expressionPanel = createTablePanel(); // must create table first
@@ -199,13 +200,14 @@ public class HeatMapMainPanel extends JPanel {
 	
 	private JPanel createToolbarPanel() {
 		gradientLegendPanel = new GradientLegendPanel(table);
+		showValuesCheck = new JCheckBox("Show Values");
 		
 		JLabel operatorLabel = new JLabel("Genes:");
 		operatorCombo = new JComboBox<>();
 		JLabel normLabel = new JLabel("Expressions:");
 		normCombo = new JComboBox<>();
 		
-		SwingUtil.makeSmall(operatorLabel, operatorCombo, normLabel, normCombo);
+		SwingUtil.makeSmall(operatorLabel, operatorCombo, normLabel, normCombo, showValuesCheck);
 		
 		operatorCombo.addItem(new ComboItem<>(Operator.UNION, "Union"));
 		operatorCombo.addItem(new ComboItem<>(Operator.INTERSECTION, "Intersection"));
@@ -221,6 +223,7 @@ public class HeatMapMainPanel extends JPanel {
 		
 		operatorCombo.addActionListener(operatorActionListener = e -> updateSetting_Operator(getOperator()));
 		normCombo.addActionListener(normActionListener = e -> updateSetting_Transform(getTransform()));
+		showValuesCheck.addActionListener(showValueActionListener = e -> updateSetting_ShowValues(isShowValues()));
 		
 		JButton plusButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS, "Add Rankings...");
 		JButton gearButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_GEAR, "Settings");
@@ -245,6 +248,8 @@ public class HeatMapMainPanel extends JPanel {
 			.addComponent(normLabel)
 			.addComponent(normCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			.addGap(5)
+			.addComponent(showValuesCheck)
+			.addGap(5)
 			.addComponent(plusButton)
 			.addComponent(gearButton)
 			.addComponent(menuButton)
@@ -255,6 +260,7 @@ public class HeatMapMainPanel extends JPanel {
 			.addComponent(operatorCombo)
 			.addComponent(normLabel)
 			.addComponent(normCombo)
+			.addComponent(showValuesCheck)
 			.addComponent(plusButton)
 			.addComponent(gearButton)
 			.addComponent(menuButton)
@@ -278,7 +284,7 @@ public class HeatMapMainPanel extends JPanel {
 	}
 	
 	public boolean isShowValues() {
-		return settingsPanel.isShowValues();
+		return showValuesCheck.isSelected();
 	}
 	
 	public Distance getDistance() {
@@ -312,6 +318,7 @@ public class HeatMapMainPanel extends JPanel {
 		
 		operatorCombo.removeActionListener(operatorActionListener);
 		normCombo.removeActionListener(normActionListener);
+		showValuesCheck.removeActionListener(showValueActionListener);
 		
 		// Update Combo Boxes
 		operatorCombo.removeAllItems();
@@ -325,6 +332,7 @@ public class HeatMapMainPanel extends JPanel {
 
 		// Update the setings panel
 		settingsPanel.update(params);
+		showValuesCheck.setSelected(params.isShowValues());
 		
 		// Update the Table
 		clearTableHeader();
@@ -333,7 +341,7 @@ public class HeatMapMainPanel extends JPanel {
 		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, genesToUse, params.getTransform());
 		table.setModel(tableModel);
 		
-		updateSetting_ShowValues(settingsPanel.isShowValues());
+		updateSetting_ShowValues(params.isShowValues());
 		try {
 			table.getRowSorter().setSortKeys(sortKeys);
 		} catch(IllegalArgumentException e) {}
@@ -343,6 +351,7 @@ public class HeatMapMainPanel extends JPanel {
 		
 		operatorCombo.addActionListener(operatorActionListener);
 		normCombo.addActionListener(normActionListener);
+		showValuesCheck.addActionListener(showValueActionListener);
 		
 		isResetting = false;
 	}
@@ -463,7 +472,7 @@ public class HeatMapMainPanel extends JPanel {
 		}
 		else {
 			tableModel.setTransform(transform);
-			updateSetting_ShowValues(settingsPanel.isShowValues()); // clear cached data used by the ColorRenderer
+			updateSetting_ShowValues(isShowValues()); // clear cached data used by the ColorRenderer
 		}
 		settingChanged();
 	}

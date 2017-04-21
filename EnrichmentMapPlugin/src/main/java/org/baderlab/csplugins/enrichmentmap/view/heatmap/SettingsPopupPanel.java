@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -28,15 +27,11 @@ public class SettingsPopupPanel extends JPanel {
 	private JRadioButton euclideanRadio;
 	private JRadioButton pearsonRadio;
 	
-	private JCheckBox showValuesCheck;
-	
-	private Consumer<Boolean> showValuesConsumer;
 	private Consumer<Distance> distanceConsumer;
 	
 	private ActionListener cosineListener;
 	private ActionListener euclideanListener;
 	private ActionListener pearsonListener;
-	private ActionListener showValuesListener;
 	
 	
 	public SettingsPopupPanel() {
@@ -44,15 +39,9 @@ public class SettingsPopupPanel extends JPanel {
 		setOpaque(false);
 	}
 	
-
-	public void setShowValuesConsumer(Consumer<Boolean> showValuesConsumer) {
-		this.showValuesConsumer = showValuesConsumer;
-	}
-	
 	public void setDistanceConsumer(Consumer<Distance> dmConsumer) {
 		this.distanceConsumer = dmConsumer;
 	}
-	
 	
 	/**
 	 * Cannot use JComboBox on a JPopupMenu because of a bug in swing: 
@@ -65,18 +54,11 @@ public class SettingsPopupPanel extends JPanel {
 		pearsonRadio = new JRadioButton("Pearson Correlation");
 		JPanel distanceRadioPanel = createButtonPanel(cosineRadio, euclideanRadio, pearsonRadio);
 				
-		showValuesCheck = new JCheckBox("Show Values");
-		showValuesCheck.addActionListener(showValuesListener = e -> {
-			if(showValuesConsumer != null) {
-				showValuesConsumer.accept(showValuesCheck.isSelected());
-			}
-		});
-		
 		cosineRadio.addActionListener(cosineListener = dmListenerFor(Distance.COSINE));
 		euclideanRadio.addActionListener(euclideanListener = dmListenerFor(Distance.EUCLIDEAN));
 		pearsonRadio.addActionListener(pearsonListener = dmListenerFor(Distance.PEARSON));
 		
-		SwingUtil.makeSmall(distanceLabel, showValuesCheck);
+		SwingUtil.makeSmall(distanceLabel);
 		
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -84,15 +66,12 @@ public class SettingsPopupPanel extends JPanel {
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
-			.addComponent(showValuesCheck)
 			.addComponent(distanceLabel)
 			.addComponent(distanceRadioPanel)
 		);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
 			.addGap(5)
-			.addComponent(showValuesCheck)
-			.addGap(10)
 			.addComponent(distanceLabel)
 			.addComponent(distanceRadioPanel)
 			.addGap(5)
@@ -113,19 +92,16 @@ public class SettingsPopupPanel extends JPanel {
 		cosineRadio.removeActionListener(cosineListener);
 		euclideanRadio.removeActionListener(euclideanListener);
 		pearsonRadio.removeActionListener(pearsonListener);
-		showValuesCheck.removeActionListener(showValuesListener);
 		
 		switch(params.getDistanceMetric()) {
 			case COSINE:    cosineRadio.setSelected(true);    break;
 			case EUCLIDEAN: euclideanRadio.setSelected(true); break;
 			case PEARSON:   pearsonRadio.setSelected(true);   break;
 		}
-		showValuesCheck.setSelected(params.isShowValues());
 		
 		cosineRadio.addActionListener(cosineListener);
 		euclideanRadio.addActionListener(euclideanListener);
 		pearsonRadio.addActionListener(pearsonListener);
-		showValuesCheck.addActionListener(showValuesListener);
 	}
 	
 	
@@ -135,10 +111,6 @@ public class SettingsPopupPanel extends JPanel {
 		if(euclideanRadio.isSelected())
 			return Distance.EUCLIDEAN;
 		return Distance.PEARSON;
-	}
-	
-	public boolean isShowValues() {
-		return showValuesCheck.isSelected();
 	}
 	
 	private static JPanel createButtonPanel(JRadioButton ... buttons) {
