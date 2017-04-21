@@ -26,10 +26,11 @@ import cern.jet.stat.Descriptive;
 public class HeatMapTableModel extends AbstractTableModel {
 
 	/** Number of columns at the start that don't show expression data (ie. gene name etc..) */
-	public static final int DESC_COL_COUNT = 2; 
+	public static final int DESC_COL_COUNT = 3; 
 	public static final int GENE_COL = 0;
-	public static final int RANK_COL = 1;
-	
+	public static final int DESC_COL = 1;
+	public static final int RANK_COL = 2;
+
 	private final EnrichmentMap map;
 	
 	// Uncompressed column count
@@ -110,6 +111,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 	public String getColumnName(int col) {
 		if(col == GENE_COL)
 			return "Gene";
+		if(col == DESC_COL)
+			return "Description";
 		if(col == RANK_COL)
 			return ranksColName;
 		
@@ -128,13 +131,18 @@ public class HeatMapTableModel extends AbstractTableModel {
 	public Object getValueAt(int row, int col) {
 		if(row < 0)
 			return null; // Why is it passing -1?
+		
 		if(col == RANK_COL)
 			return getRankValue(row);
+		
 		String gene = genes.get(row);
 		if(col == GENE_COL)
 			return gene;
 		
 		int geneID = map.getHashFromGene(gene);
+		if(col == DESC_COL)
+			return getDescription(geneID);
+		
 		EMDataSet dataset = getDataSet(col);
 		if(transform.isCompress()) {
 			return getCompressedExpression(dataset, geneID, transform);
@@ -157,6 +165,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	public Class<?> getColumnClass(int col) {
 		switch(col) {
 			case GENE_COL: return String.class;
+			case DESC_COL: return String.class;
 			case RANK_COL: return RankValue.class;
 			default:       return Double.class;
 		}
@@ -209,11 +218,25 @@ public class HeatMapTableModel extends AbstractTableModel {
 		}
 	}
 	
-	@SuppressWarnings("incomplete-switch")
-	private static @Nullable double[] getExpression(EMDataSet dataset, int geneID, Transform transform) {
+	private String getDescription(int geneID) {
+		for(EMDataSet dataset : map.getDataSetList()) {
+			GeneExpression row = getGeneExpression(dataset, geneID);
+			if(row != null)
+				return row.getDescription();
+		}
+		return null;
+	}
+	
+	private static GeneExpression getGeneExpression(EMDataSet dataset, int geneID) {
 		GeneExpressionMatrix matrix = dataset.getExpressionSets();
 		Map<Integer,GeneExpression> expressions = matrix.getExpressionMatrix();
 		GeneExpression row = expressions.get(geneID);
+		return row;
+	}
+	
+	@SuppressWarnings("incomplete-switch")
+	private static @Nullable double[] getExpression(EMDataSet dataset, int geneID, Transform transform) {
+		GeneExpression row = getGeneExpression(dataset, geneID);
 		if(row != null) {
 			switch(transform) {
 				case ROW_NORMALIZE: return row.rowNormalize();
