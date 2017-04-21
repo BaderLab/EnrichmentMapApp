@@ -476,16 +476,17 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 //			mannWhitRanks = ds.getExpressionSets().getRanks().get(weightPanel.getRankFile());
 	}
     
-	void build(PostAnalysisParameters.Builder builder) {
-		weightPanel.build(builder);
-		
-		for (int i = 0; i < selectedSigSetsModel.size(); i++) {
-			builder.addSelectedGeneSetName(selectedSigSetsModel.getElementAt(i));
+	boolean build(PostAnalysisParameters.Builder builder) {
+		if(weightPanel.build(builder)) {
+			for (int i = 0; i < selectedSigSetsModel.size(); i++) {
+				builder.addSelectedGeneSetName(selectedSigSetsModel.getElementAt(i));
+			}
+			String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
+			builder.setSignatureGMTFileName(filePath);
+			builder.setLoadedGMTGeneSets(signatureGenesets);
+			return true;
 		}
-		
-		String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
-		builder.setSignatureGMTFileName(filePath);
-		builder.setLoadedGMTGeneSets(signatureGenesets);
+		return false;
 	}
 	
     /**

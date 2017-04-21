@@ -170,12 +170,14 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		weightPanel.initialize(currentMap);
 	}
 	
-	public void build(PostAnalysisParameters.Builder builder) {
-		weightPanel.build(builder);
-		
-		String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
-		builder.setSignatureGMTFileName(filePath);
-		builder.setLoadedGMTGeneSets(signatureGenesets);
-		builder.addSelectedGeneSetNames(selectedGenesetNames);
+	public boolean build(PostAnalysisParameters.Builder builder) {
+		if(weightPanel.build(builder)) {
+			String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
+			builder.setSignatureGMTFileName(filePath);
+			builder.setLoadedGMTGeneSets(signatureGenesets);
+			builder.addSelectedGeneSetNames(selectedGenesetNames);
+			return true;
+		}
+		return false;
 	}
 }

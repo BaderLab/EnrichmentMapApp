@@ -183,7 +183,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		scrollPane.setViewportView(dataSetList);
 		
 		dataSetDetailPanel = new JPanel(new BorderLayout());
-		dataSetDetailPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); // MKTODO get the color properly
+		dataSetDetailPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"))); 
 		cardLayout = new CardLayout();
 		dataSetDetailPanel.setLayout(cardLayout);
 		

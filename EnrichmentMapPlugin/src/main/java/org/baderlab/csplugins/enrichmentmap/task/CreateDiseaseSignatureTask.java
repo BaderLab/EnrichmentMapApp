@@ -152,7 +152,9 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		this.interaction = PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
 
 		EMDataSet dataset = map.getDataSet(dataSetName);
-		ranks = dataset.getExpressionSets().getRanks().get(params.getDataSetToRankFile().get(dataSetName));
+		String rankFile = params.getDataSetToRankFile().get(dataSetName);
+		if(rankFile != null)
+			ranks = dataset.getExpressionSets().getRanks().get(rankFile);
 
 		// we want genesets of interest that are not signature genesets put there by previous runs of post-analysis
 		enrichmentGeneSets = new HashMap<>();

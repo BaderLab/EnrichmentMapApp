@@ -16,6 +16,7 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -389,7 +390,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 	}
 	
 	
-	public void build(PostAnalysisParameters.Builder builder) {
+	public boolean build(PostAnalysisParameters.Builder builder) {
 		double value = ((Number) rankTestTextField.getValue()).doubleValue();
 		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(getFilterType(), value);
 		
@@ -397,13 +398,24 @@ public class PostAnalysisWeightPanel extends JPanel {
 		builder.setUserDefinedUniverseSize(getUserDefinedUniverseSize());
 		builder.setRankTestParameters(rankTest);
 		
-		if(getFilterType().isMannWhitney() && map.isSingleRanksPerDataset()) {
-			for(EMDataSet dataset : map.getDataSetList()) {
-				String ranksName = dataset.getExpressionSets().getAllRanksNames().iterator().next();
-				builder.addDataSetToRankFile(dataset.getName(), ranksName);
+		if(getFilterType().isMannWhitney()) {
+			if(map.isSingleRanksPerDataset()) {
+				for(EMDataSet dataset : map.getDataSetList()) {
+					String ranksName = dataset.getExpressionSets().getAllRanksNames().iterator().next();
+					builder.addDataSetToRankFile(dataset.getName(), ranksName);
+				}
+			} else {
+				JFrame jframe = serviceRegistrar.getService(CySwingApplication.class).getJFrame();
+				MannWhitneyRanksDialog dialog = new MannWhitneyRanksDialog(jframe, map);
+				Optional<Map<String,String>> result = dialog.open();
+				if(result.isPresent()) {
+					Map<String,String> dataSetToRank = result.get();
+					dataSetToRank.forEach(builder::addDataSetToRankFile);
+				} else {
+					return false;
+				}
 			}
-		} else {
-			throw new RuntimeException("Too many ranks I don't know which one to use aggghhhh");
 		}
+		return true;
 	}
 }

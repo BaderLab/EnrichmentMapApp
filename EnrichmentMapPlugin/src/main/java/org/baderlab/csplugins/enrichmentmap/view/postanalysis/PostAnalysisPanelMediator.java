@@ -6,6 +6,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog.ModalityType;
 import java.awt.event.ActionEvent;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -68,13 +69,10 @@ public class PostAnalysisPanelMediator {
 		invokeOnEDT(() -> {
 			final PostAnalysisInputPanel panel = panelFactory.create(map);
 			
-			final JDialog dialog = new JDialog(swingApplication.getJFrame(), "Add Signature Gene Sets",
-					ModalityType.APPLICATION_MODAL);
+			final JDialog dialog = new JDialog(swingApplication.getJFrame(), "Add Signature Gene Sets", ModalityType.APPLICATION_MODAL);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			
-			JButton helpButton = SwingUtil.createOnlineHelpButton(EnrichmentMapBuildProperties.USER_MANUAL_URL,
-					"Online Manual...", serviceRegistrar);
-
+			JButton helpButton = SwingUtil.createOnlineHelpButton(EnrichmentMapBuildProperties.USER_MANUAL_URL, "Online Manual...", serviceRegistrar);
 			JButton resetButton = new JButton("Reset");
 			resetButton.addActionListener(e -> panel.reset());
 
@@ -88,8 +86,13 @@ public class PostAnalysisPanelMediator {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (panel.isReady()) {
-						addGeneSets(netView, buildPostAnalysisParameters(panel, map));
-						dialog.dispose();
+						Optional<PostAnalysisParameters> params = buildPostAnalysisParameters(panel, map);
+						if(params.isPresent()) {
+							addGeneSets(netView, params.get());
+							dialog.dispose();
+						} else {
+							JOptionPane.showMessageDialog(panel, "Could not run post analysis.", "EnrichmentMap: Error", JOptionPane.WARNING_MESSAGE);
+						}
 					}
 				}
 			});
@@ -99,12 +102,11 @@ public class PostAnalysisPanelMediator {
 			dialog.getContentPane().add(panel, BorderLayout.CENTER);
 			dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 			
-			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), runButton.getAction(),
-					closeButton.getAction());
+			LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), runButton.getAction(), closeButton.getAction());
 			dialog.getRootPane().setDefaultButton(runButton);
 			
 			dialog.pack();
-			dialog.setLocationRelativeTo(parent);
+			dialog.setLocationRelativeTo(swingApplication.getJFrame());
 			dialog.setVisible(true);
 		});
 	}
@@ -177,19 +179,23 @@ public class PostAnalysisPanelMediator {
 	/**
 	 * Creates a PostAnalysisParameters object based on the user's input.
 	 */
-	private PostAnalysisParameters buildPostAnalysisParameters(PostAnalysisInputPanel panel, EnrichmentMap map) {
+	private Optional<PostAnalysisParameters> buildPostAnalysisParameters(PostAnalysisInputPanel panel, EnrichmentMap map) {
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
 
+		boolean built;
 		if (panel.getKnownSignatureRadio().isSelected()) {
 			builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
-			panel.getKnownSignaturePanel().build(builder);
+			built = panel.getKnownSignaturePanel().build(builder);
 		} else {
 			builder.setAnalysisType(AnalysisType.SIGNATURE_DISCOVERY);
-			panel.getSignatureDiscoveryPanel().build(builder);
+			built = panel.getSignatureDiscoveryPanel().build(builder);
 		}
 		
+		if(!built) {
+			return Optional.empty();
+		}
 		builder.setAttributePrefix(map.getParams().getAttributePrefix());
-		return builder.build();
+		return Optional.of(builder.build());
 	}
 	
 	private class DialogObserver implements TaskObserver {

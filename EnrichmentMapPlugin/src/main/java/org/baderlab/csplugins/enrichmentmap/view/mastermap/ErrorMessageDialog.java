@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
@@ -51,7 +52,7 @@ public class ErrorMessageDialog extends JDialog {
 		JPanel buttonPanel = createButtonPanel();
 		
 		messagePanel.setBorder(BorderFactory.createEmptyBorder(8,8,8,8));
-		buttonPanel .setBorder(BorderFactory.createMatteBorder(1,0,0,0,Color.LIGHT_GRAY));
+		buttonPanel .setBorder(BorderFactory.createMatteBorder(1,0,0,0, UIManager.getColor("Separator.foreground")));
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(messagePanel, BorderLayout.CENTER);
