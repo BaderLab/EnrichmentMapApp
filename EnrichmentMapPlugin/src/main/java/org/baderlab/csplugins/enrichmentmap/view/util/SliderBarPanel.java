@@ -46,224 +46,368 @@ package org.baderlab.csplugins.enrichmentmap.view.util;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
+import static org.cytoscape.util.swing.LookAndFeelUtil.getErrorColor;
 import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.text.DecimalFormat;
+import java.text.ParsePosition;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.IntStream;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
 public class SliderBarPanel extends JPanel {
 
-	private JLabel label = new JLabel();
-	private JSlider slider;
-	private BoundedTextField textField;
+	private final int S_MIN;
+	private final int S_MAX;
+	private final int S_RANGE;
+	private final int PRECISION;
 	
-	// min and max values for the slider
-	private final int min, max, initialValue;
-
-	// flag to indicate very small number
-	private boolean smallNumber;
-
-	/** Precision that the slider can be adjusted to */
-	private double precision = 1000.0;
-	/** The number of decimals for given precision */
-	private int decPrecision = (int) Math.log10(precision);
-
-	private String labelText;
-
-	public SliderBarPanel(double min, double max, String labelText, double initialValue) {
-		if (min <= 1 && max <= 1) {
-			// if the max is a very small number then use the precision to filter the results
-			if (max <= 0.0001) {
-				DecimalFormat df = new DecimalFormat("#.##############################");
-				String text = df.format(max);
-				int integerPlaces = text.indexOf('.');
-				int decimalPlaces = text.length() - integerPlaces - 1;
-				this.precision = decimalPlaces;
-				this.min = (int) (min * Math.pow(10, (this.precision + this.decPrecision)));
-				this.max = (int) (max * Math.pow(10, (this.precision + this.decPrecision)));
-
-				this.initialValue = (int) (initialValue * Math.pow(10, (this.precision + this.decPrecision)));
-				this.smallNumber = true;
-			} else {
-				this.min = (int) (min * precision);
-				this.max = (int) (max * precision);
-				this.initialValue = (int) (initialValue * precision);
-			}
-		} else {
-			this.min = (int) min;
-			this.max = (int) max;
-			this.initialValue = (int) initialValue;
-		}
-
-		this.labelText = labelText;
-
-		initPanel();
-    }
-
-    /**
-     * Initialize panel based on enrichment map parameters and desired attributes
-     *
-     * @param params - enrichment map parameters for current map
-     * @param attrib1 - attribute for dataset 1 that the slider bar is specific to (i.e. p-value or q-value)
-     * @param attrib2 - attribute for dataset 2 that the slider bar is specific to (i.e. p-value or q-value)
-     * @param desiredWidth
-     */
-	private void initPanel() {
-		label = new JLabel(labelText);
-		label.setVisible(labelText != null && !labelText.trim().isEmpty());
+	private JSlider slider;
+	private JFormattedTextField textField;
+	
+	private final double min, max;
+	private double value;
+	
+	private final String title;
+	
+	private final List<Object> listeners;
+	private final DecimalFormat format;
+	private boolean ignore;
+	
+	public SliderBarPanel(double min, double max, double value) {
+		this(min, max, value, null);
+	}
+	
+	public SliderBarPanel(double min, double max, double value, String title) {
+		this.min = min;
+		this.max = max;
+		this.value = value;
+		this.title = title;
+		listeners = new ArrayList<>();
 		
-		slider = new JSlider(JSlider.HORIZONTAL, min, max, initialValue);
-		slider.setMajorTickSpacing((max - min) / 5);
-		slider.setPaintTicks(true);
-
-        //Create the label table
-        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
-        
-		if (smallNumber) {
-			labelTable.put(
-					new Integer(min),
-					new JLabel("" + (int) this.min / Math.pow(10, decPrecision) + "E-" + (int) precision));
-			labelTable.put(
-					new Integer(max),
-					new JLabel("" + (int) this.max / Math.pow(10, decPrecision) + "E-" + (int) precision));
-		} else {
-			labelTable.put(new Integer(min), new JLabel("" + min / precision));
-			labelTable.put(new Integer(max), new JLabel("" + max / precision));
-		}
-        
-		slider.setLabelTable(labelTable);
-		slider.setPaintLabels(true);
-		slider.addChangeListener(evt -> {
-			if (!slider.getValueIsAdjusting())
-				setRawValue(slider.getValue());
-		});
+		String pattern = getFormatPattern(min, max, value);
+		format = new DecimalFormat(pattern);
 		
-		textField = new BoundedTextField(initialValue, min, max, precision, decPrecision, smallNumber);
-		textField.addPropertyChangeListener("value", evt -> {
-			slider.setValue((int) evt.getNewValue());
-			firePropertyChange("value", (int) evt.getOldValue(), (int) evt.getNewValue());
-		});
-
-		makeSmall(label, slider, textField);
+		PRECISION = precision(min, max, value);
+		S_MIN = (int) (min * Math.pow(10, PRECISION + 1));
+		S_MAX = (int) (max * Math.pow(10, PRECISION + 1));
+		S_RANGE = S_MAX - S_MIN;
 		
-        final GroupLayout layout = new GroupLayout(this);
+		init();
+	}
+
+	@SuppressWarnings("unchecked")
+	protected void init() {
+		JLabel titleLabel = new JLabel(title);
+		titleLabel.setVisible(title != null && !title.trim().isEmpty());
+
+		makeSmall(titleLabel, getSlider(), getTextField());
+		
+		final GroupLayout layout = new GroupLayout(this);
        	this.setLayout(layout);
    		layout.setAutoCreateContainerGaps(false);
    		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
    		
    		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-   				.addComponent(label)
+   				.addComponent(titleLabel)
    				.addGroup(layout.createSequentialGroup()
-   						.addComponent(slider, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-   						.addComponent(textField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(getSlider(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   						.addComponent(getTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    		);
    		layout.setVerticalGroup(layout.createSequentialGroup()
-   				.addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				.addComponent(titleLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-   						.addComponent(slider, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   						.addComponent(textField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(getSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(getTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    		);
    		
    		if (LookAndFeelUtil.isAquaLAF())
 			setOpaque(false);
-   		
-		// Change the slider's label sizes -- only works if it's done after the
-		// slider has been added to its parent container and had its UI assigned
-		final Font tickFont = slider.getFont().deriveFont(getSmallFontSize());
-
+		
+		// Change the slider's label sizes -- only works if it's done after the slider has been added to
+		// its parent container and had its UI assigned
+		final Font tickFont = getSlider().getFont().deriveFont(getSmallFontSize());
+		final Dictionary<Integer, JLabel> labelTable = getSlider().getLabelTable();
+		
 		for (Enumeration<Integer> enumeration = labelTable.keys(); enumeration.hasMoreElements();) {
 			int k = enumeration.nextElement();
 			final JLabel label = labelTable.get(k);
 			label.setFont(tickFont); // Updates the font size
 			label.setSize(label.getPreferredSize()); // Updates the label size and slider layout
 		}
-
-        this.revalidate();
-    }
-
-    // Getters and Setters
+		
+		revalidate();
+	}
 	
-	public JSlider getSlider() {
+	public double getMin() {
+		return min;
+	}
+	
+	public double getMax() {
+		return max;
+	}
+	
+	public double getValue(){
+		return value;
+	}
+
+	public void setValue(double value) {
+		ignore = true;
+		this.value = value;
+		setSliderValue();
+		setFieldValue();
+		ignore = false;
+	}
+	
+	public JFormattedTextField getTextField() {
+		if (textField == null) {
+			textField = new JFormattedTextField(format) {
+				@Override
+				public Dimension getPreferredSize() {
+					final Dimension d = super.getPreferredSize();
+					
+					if (this.getGraphics() != null) {
+						// Set the preferred text field size after it gets a Graphics
+						int sw = 16 + this.getGraphics().getFontMetrics().stringWidth(format.format(max));
+						d.width = Math.max(sw, 48);
+					}
+					
+					return d;
+				}
+			};
+			
+			textField.setHorizontalAlignment(JTextField.RIGHT);
+			
+			textField.addActionListener(evt -> {
+				textFieldValueChanged();
+			});
+			textField.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(FocusEvent e) {
+					textFieldValueChanged();
+				}
+			});
+		}
+		
+		return textField;
+	}
+	
+	JSlider getSlider() {
+		if (slider == null) {
+			slider = new JSlider(S_MIN, S_MAX);
+			final Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
+			final double range = max - min;
+			final int originalPrecision = PRECISION - 1;
+			final int intRange = (int) (range * Math.pow(10, originalPrecision));
+			
+			Optional<Integer> result = Arrays.asList(new Integer[]{ 5, 4, 3, 2 }).stream()
+					.filter(n -> intRange % n == 0)
+					.findFirst();
+			
+			int n = result.isPresent() ? result.get() : 10;
+			slider.setMajorTickSpacing(S_RANGE / n);
+			
+			if (S_RANGE / (n * n) > 0)
+				slider.setMinorTickSpacing(S_RANGE / (n * n));
+			else
+				slider.setMinorTickSpacing(S_RANGE / (n * 2));
+			
+			labelTable.put(S_MIN, new JLabel(format.format(min)));
+			
+			if ((S_MIN + S_RANGE / 2) % 2 == 0)
+				labelTable.put(S_MIN + S_RANGE / 2, new JLabel(format.format(min + range / 2)));
+			
+			labelTable.put(S_MAX, new JLabel(format.format(max)));
+			
+			slider.setLabelTable(labelTable);
+			slider.setPaintTicks(true);
+			slider.setPaintLabels(true);
+			setSliderValue();
+			setFieldValue();
+			
+			slider.addChangeListener((ChangeEvent e) -> {
+				if (ignore)
+					return;
+				
+				ignore = true;
+				
+				// update the value
+				double val = getSlider().getValue();
+				val = Math.min(val, S_MAX);
+				val = Math.max(val, S_MIN);
+				val = min + (val - S_MIN) * (max - min) / (double) S_RANGE;
+
+				// Due to small inaccuracies in the slider position, it's possible
+				// to get values less than the min or greater than the max.  If so,
+				// just adjust the value and don't issue a warning.
+				value = clamp(val);
+
+				// set text field value
+				setFieldValue();
+				// fire event
+				fireChangeEvent();
+				ignore = false;
+			});
+		}
+		
 		return slider;
 	}
 	
-	public BoundedTextField getTextField() {
-		return textField;
+	private void setSliderValue() {
+		int val = S_MIN + (int) Math.round(((S_MAX - S_MIN) * (value - min)) / (max - min));
+		getSlider().setValue(val);
 	}
-
-	@Override
-	public void setEnabled(boolean enabled) {
-		super.setEnabled(enabled);
+  
+	private double getFieldValue(){
+		Double val = null;
+		Number n = format.parse(getTextField().getText(), new ParsePosition(0));
+		final Color errColor = getErrorColor();
 		
-		label.setEnabled(enabled);
-		slider.setEnabled(enabled);
-		textField.setEnabled(enabled);
+		if (n == null) {
+			try {
+				val = Double.valueOf(getTextField().getText());
+			} catch (NumberFormatException nfe) {
+				getTextField().setForeground(errColor);
+				JOptionPane.showMessageDialog(
+						null,
+						"Please enter a valid number.",
+						"Invalid Number",
+						JOptionPane.ERROR_MESSAGE);
+				setFieldValue();
+				getTextField().setForeground(UIManager.getColor("TextField.foreground"));
+				val = value;
+			}
+		} else {
+			val = n.doubleValue();
+		}
+		
+		if (val < min) {
+			getTextField().setForeground(errColor);
+			JOptionPane.showMessageDialog(
+					null,
+					"Value ("+val.doubleValue()+") is less than lower limit ("+format.format(min)+").",
+					"Invalid Number",
+					JOptionPane.ERROR_MESSAGE);
+			setFieldValue();
+			getTextField().setForeground(UIManager.getColor("TextField.foreground"));
+			
+			return value;
+		}
+		
+		if (val > max) {
+			getTextField().setForeground(errColor);
+			JOptionPane.showMessageDialog(
+					null,
+					"Value ("+val.doubleValue()+") is more than upper limit ("+format.format(max)+").",
+					"Invalid Number",
+					JOptionPane.ERROR_MESSAGE);
+			setFieldValue();
+			getTextField().setForeground(UIManager.getColor("TextField.foreground"));
+			
+			return value;
+		}
+		
+		return val.doubleValue();
 	}
 	
-    public void setRawValue(final int newValue) {
-    	textField.setValue(newValue);
-	}
-    
-    public int getRawValue() {
-		return slider.getValue();
-	}
-    
-    public double getValue() {
-		return getRawValue() / precision;
-	}
-    
-    public void setValue(double value) {
-    	setRawValue((int) Math.round(value * precision));
-	}
-    
-    public int getMin() {
-		return min;
-	}
-    
-    public int getMax() {
-		return max;
+	private void setFieldValue() {
+		getTextField().setValue(value);
 	}
 
-	public double getPrecision() {
-		return textField.getPrecision();
+	private double clamp(double value) {
+		value = Math.min(value, max);
+		value = Math.max(value, min);
+		
+		return value;
+	}
+	
+	public void addChangeListener(ChangeListener cl) {
+		if (!listeners.contains(cl))
+			listeners.add(cl);
 	}
 
-    //Methods are currently not used.  If they become useful in the future need to add case for smallNumbers case
-    
-    /*public double getMin() {
-        return min/precision;
-    }
-
-    public void setMin(double min) {
-        this.min = (int)(min * precision);
-    }
-
-    public double getMax() {
-        return max/precision;
-    }
-
-    public void setMax(double max) {
-        this.max = (int) (max*precision);
-    }
-
-    public NumberRangeModel getRangeModel() {
-        return rangeModel;
-    }
-
-    public void setRangeModel(NumberRangeModel rangeModel) {
-        this.rangeModel = rangeModel;
-    }*/
+	public void removeChangeListener(ChangeListener cl) {
+		listeners.remove(cl);
+	}
+	
+	protected void fireChangeEvent() {
+		Iterator<Object> iter = listeners.iterator();
+		ChangeEvent evt = new ChangeEvent(this);
+		
+		while (iter.hasNext()) {
+			ChangeListener cl = (ChangeListener) iter.next();
+			cl.stateChanged(evt);
+		}
+	}
+	
+	private void textFieldValueChanged() {
+		if (ignore)
+			return;
+		
+		ignore = true;
+		double v = getFieldValue();
+		
+		if (v != value) {
+			// update the value
+			value = v;
+			// set slider value
+			setSliderValue();
+			// fire event
+			fireChangeEvent();
+		}
+		
+		ignore = false;
+	}
+	
+	private static String getFormatPattern(double... numbers) {
+		StringBuilder sb = new StringBuilder("0.0"); // At least one decimal.
+		int p = precision(numbers);
+		
+		if (p > 0)
+			IntStream.range(0, p).forEach(v -> sb.append("#")); // Optional decimal digits
+		
+		return sb.toString();
+	}
+	
+	private static int precision(double... numbers) {
+		DecimalFormat df = new DecimalFormat("0.##############################");
+		int p = 0;
+		
+		for (double n : numbers) {
+			String text = df.format(n);
+			
+			if (text.indexOf('.') >= 0)
+				p = Math.max(p, text.substring(text.indexOf('.')).length() - 1);
+		}
+		
+		return p;
+	}
 }

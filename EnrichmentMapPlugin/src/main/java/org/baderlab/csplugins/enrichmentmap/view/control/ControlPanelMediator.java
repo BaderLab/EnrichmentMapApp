@@ -32,7 +32,6 @@ import javax.swing.JComboBox;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
-import javax.swing.JSlider;
 import javax.swing.Timer;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
@@ -415,17 +414,17 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					SliderBarPanel sSliderPanel = viewPanel.getSimilaritySliderPanel();
 					
 					if (pvSliderPanel != null)
-						pvSliderPanel.addPropertyChangeListener("value", evt -> {
+						pvSliderPanel.addChangeListener(evt -> {
 							if (!updating)
 								filterNodesAndEdges(viewPanel, map);
 						});
 					if (qvSliderPanel != null)
-						qvSliderPanel.addPropertyChangeListener("value", evt -> {
+						qvSliderPanel.addChangeListener(evt -> {
 							if (!updating)
 								filterNodesAndEdges(viewPanel, map);
 						});
 					if (sSliderPanel != null)
-						sSliderPanel.addPropertyChangeListener("value", evt -> {
+						sSliderPanel.addChangeListener(evt -> {
 							if (!updating)
 								filterNodesAndEdges(viewPanel, map);
 						});
@@ -822,7 +821,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			Set<CyNode> nodes = new HashSet<>();
 			
 			Double maxCutoff = sliderPanel.getValue();
-			Double minCutoff = (double) sliderPanel.getMin() / sliderPanel.getPrecision();
+			Double minCutoff = sliderPanel.getMin();
 			
 			CyNetwork network = networkView.getModel();
 			CyTable table = network.getDefaultNodeTable();
@@ -875,9 +874,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				Set<String> columnNames, Set<Long> dataSetEdges) {
 			Set<CyEdge> edges = new HashSet<>();
 			
-			JSlider slider = sliderPanel.getSlider();
-			Double maxCutoff = slider.getMaximum() / sliderPanel.getPrecision();
-			Double minCutoff = slider.getValue() / sliderPanel.getPrecision();
+			Double maxCutoff = sliderPanel.getMax();
+			Double minCutoff = sliderPanel.getValue();
 			
 			CyNetwork network = networkView.getModel();
 			CyTable table = network.getDefaultEdgeTable();

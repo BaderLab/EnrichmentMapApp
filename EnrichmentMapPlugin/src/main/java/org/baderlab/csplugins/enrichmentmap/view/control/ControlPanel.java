@@ -653,7 +653,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return new SliderBarPanel(
 					(pvalueMin == 1 || pvalueMin >= pvalue ? 0 : pvalueMin),
 					pvalue,
-					null,
 					pvalue
 			);
 		}
@@ -665,7 +664,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return new SliderBarPanel(
 					(qvalueMin == 1 || qvalueMin >= qvalue ? 0 : qvalueMin),
 					qvalue,
-					null,
 					qvalue
 			);
 		}
@@ -676,8 +674,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return new SliderBarPanel(
 					similarityCutOff,
 					1,
-					"Edge Cutoff (Similarity):",
-					similarityCutOff
+					similarityCutOff,
+					"Edge Cutoff (Similarity):"
 			);
 		}
 		
