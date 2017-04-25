@@ -351,7 +351,7 @@ public class LegendPanel extends JPanel {
 		if (map != null) {
 			Dimension iconSize = new Dimension(LEGEND_ICON_SIZE, LEGEND_ICON_SIZE / 2);
 			
-			if (map.getParams().getCreateDistinctEdges() && map.isDistinctExpressionSets()) {
+			if (map.getParams().getCreateDistinctEdges()) {
 				VisualMappingFunction<?, Paint> mf =
 						style.getVisualMappingFunction(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
 				

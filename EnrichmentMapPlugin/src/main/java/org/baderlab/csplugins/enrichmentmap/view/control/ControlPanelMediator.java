@@ -791,7 +791,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 
 		private Set<CyEdge> getFilteredInEdges(Set<AbstractDataSet> selectedDataSets) {
 			EMCreationParameters params = map.getParams();
-			boolean distinct = params.getCreateDistinctEdges() && map.isDistinctExpressionSets();
+			boolean distinct = params.getCreateDistinctEdges();
 
 			// Compound edges are not associated with a specific data set
 			Set<Long> dataSetEdges = distinct ? EnrichmentMap.getEdgesUnion(selectedDataSets) : null;
