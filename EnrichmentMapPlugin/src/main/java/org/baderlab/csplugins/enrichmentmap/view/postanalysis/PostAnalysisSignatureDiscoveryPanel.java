@@ -205,7 +205,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		availSigSetsField.addListSelectionListener(this);
 		selectedSigSetsField.addListSelectionListener(this);
 
-		JButton clearButton = new JButton("Clear Signature Genesets");
+		JButton clearButton = new JButton("Clear Signature Gene Sets");
 
 		clearButton.addActionListener(e -> {
 			availSigSetsModel.clear();
@@ -222,7 +222,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		makeSmall(addSelectedButton, removeSelectedButton, clearButton);
 		
 		JPanel panel = new JPanel();
-        panel.setBorder(LookAndFeelUtil.createTitledBorder("Signature Genesets"));
+        panel.setBorder(LookAndFeelUtil.createTitledBorder("Signature Gene Sets"));
         
         final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -329,7 +329,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		
         //TODO: Maybe move loading SigGMT to File-selection Event add load button
 		JButton loadButton = new JButton();
-		loadButton.setText("Load Genesets");
+		loadButton.setText("Load Gene Sets");
 		loadButton.addActionListener(e -> {
 			String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
 
@@ -501,5 +501,17 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 	 */
 	public void setSelSigCount(int count) {
 		selectedLabel.setText(String.format(SELECTED_FORMAT, count));
+	}
+
+	public boolean isReady() {
+		if (selectedSigSetsField == null || selectedSigSetsField.getModel().getSize() == 0) {
+			String msg = "Please load and select gene sets first.";
+			JOptionPane.showMessageDialog(
+					application.getJFrame(), msg, "Post Analysis Signature Discovery", JOptionPane.WARNING_MESSAGE);
+			
+			return false;
+		}
+		
+		return true;
 	}
 }

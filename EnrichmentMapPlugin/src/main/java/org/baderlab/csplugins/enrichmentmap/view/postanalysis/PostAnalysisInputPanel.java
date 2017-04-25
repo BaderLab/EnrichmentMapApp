@@ -314,7 +314,7 @@ public class PostAnalysisInputPanel extends JPanel {
 		if (knownSignatureRadio.isSelected())
 			return getKnownSignaturePanel().isReady();
 		else
-			return true;
+			return getSignatureDiscoveryPanel().isReady();
 	}
 	
 	/**

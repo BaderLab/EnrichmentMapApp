@@ -131,7 +131,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
 
 		if (!EnrichmentMapParameters.checkFile(filePath)) {
-			String message = "Signature GMT file name not valid.\n";
+			String message = "Signature GMT file name not valid.";
 			knownSignatureGMTFileNameTextField.setForeground(Color.RED);
 			JOptionPane.showMessageDialog(application.getJFrame(), message, "Post Analysis Known Signature", JOptionPane.WARNING_MESSAGE);
 			
