@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -29,6 +28,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
@@ -212,7 +212,7 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		WidthFunction widthFunction = widthFunctionProvider.get();
 		widthFunction.setEdgeWidths(emNetwork, "EM1_", null);
 		
-		String widthCol = WidthFunction.EDGE_WIDTH_FORMULA_COLUMN.with("EM1_", null);
+		String widthCol = Columns.EDGE_WIDTH_FORMULA_COLUMN.with("EM1_", null);
 		
 		double sigWidth1 = emNetwork.getRow(sigEdge1).get(widthCol, Double.class);
 		assertEquals(8.0, sigWidth1, 0.0);

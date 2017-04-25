@@ -124,6 +124,11 @@ public class EMStyleBuilder {
 		public static final ColumnDescriptor<Double> EDGE_MANN_WHIT_CUTOFF = new ColumnDescriptor<>("Overlap_Mann_Whit_cutoff", Double.class);
 		public static final ColumnDescriptor<String> EDGE_CUTOFF_TYPE = new ColumnDescriptor<>("Overlap_cutoff", String.class);
 		
+		/** Column in edge table that holds the formula */
+		public static final ColumnDescriptor<Double> EDGE_WIDTH_FORMULA_COLUMN = new ColumnDescriptor<>("Edge_width_formula", Double.class);
+		/** Column in network table that holds the edge parameters */
+		public static final ColumnDescriptor<String> NETWORK_EDGE_WIDTH_PARAMETERS_COLUMN = new ColumnDescriptor<>("EM_Edge_width_parameters", String.class);
+		
 		public static final ColumnDescriptor<String> NET_REPORT1_DIR = new ColumnDescriptor<>("GSEA_Report_Dataset1_folder", String.class);
 		public static final ColumnDescriptor<String> NET_REPORT2_DIR = new ColumnDescriptor<>("GSEA_Report_Dataset2_folder", String.class);
 	}
@@ -273,7 +278,7 @@ public class EMStyleBuilder {
 		
 		if (options.isPostAnalysis()) {
 			// Replace the edge width mapping that was created by EnrichmentMapVisualStyle
-			String widthAttribute = WidthFunction.EDGE_WIDTH_FORMULA_COLUMN.with(prefix, null);
+			String widthAttribute = Columns.EDGE_WIDTH_FORMULA_COLUMN.with(prefix, null);
 			PassthroughMapping<Double, Double> edgewidth = (PassthroughMapping<Double, Double>) pmFactory
 					.createVisualMappingFunction(widthAttribute, Double.class, BasicVisualLexicon.EDGE_WIDTH);
 			vs.addVisualMappingFunction(edgewidth);

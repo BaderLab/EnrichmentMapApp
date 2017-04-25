@@ -1,11 +1,21 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_CUTOFF_TYPE;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_HYPERGEOM_CUTOFF;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_HYPERGEOM_PVALUE;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_MANN_WHIT_CUTOFF;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_MANN_WHIT_GREATER_PVALUE;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_MANN_WHIT_LESS_PVALUE;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_MANN_WHIT_TWOSIDED_PVALUE;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_SIMILARITY_COEFF;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_WIDTH_FORMULA_COLUMN;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NETWORK_EDGE_WIDTH_PARAMETERS_COLUMN;
+
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -25,13 +35,6 @@ public class WidthFunction {
 	public static final double DEFAULT_WIDTH_PA_LESS_THAN_100 = 8.0;
 	public static final double DEFAULT_WIDTH_PA_LESS_THAN_10 = 4.5;
 	public static final double DEFAULT_WIDTH_PA_GREATER = 1.0;
-	
-	
-	// Column in edge table that holds the formula
-	public static final ColumnDescriptor<Double> EDGE_WIDTH_FORMULA_COLUMN = new ColumnDescriptor<>("Edge_width_formula", Double.class);
-	// Column in network table that holds the edge parameters
-	public static final ColumnDescriptor<String> NETWORK_EDGE_WIDTH_PARAMETERS_COLUMN = new ColumnDescriptor<>("EM_Edge_width_parameters", String.class);
-	
 	
 	private final VisualMappingFunctionFactory vmfFactoryContinuous;
 	private final EnrichmentMapManager emManager;
@@ -81,7 +84,7 @@ public class WidthFunction {
 			String interaction = row.get(CyEdge.INTERACTION, String.class);
 			
 			if (isSignature(interaction)) {
-				String cutoffType = Columns.EDGE_CUTOFF_TYPE.get(row, prefix, null);
+				String cutoffType = EDGE_CUTOFF_TYPE.get(row, prefix, null);
 				PostAnalysisFilterType filterType = PostAnalysisFilterType.fromDisplayString(cutoffType);
 				
 				if (filterType == null) {
@@ -92,20 +95,20 @@ public class WidthFunction {
 				Double pvalue, cutoff;
 				switch(filterType) {
 				case MANN_WHIT_TWO_SIDED:
-					pvalue = Columns.EDGE_MANN_WHIT_TWOSIDED_PVALUE.get(row, prefix);
-					cutoff = Columns.EDGE_MANN_WHIT_CUTOFF.get(row, prefix); 
+					pvalue = EDGE_MANN_WHIT_TWOSIDED_PVALUE.get(row, prefix);
+					cutoff = EDGE_MANN_WHIT_CUTOFF.get(row, prefix); 
 					break;
 				case MANN_WHIT_GREATER:
-					pvalue = Columns.EDGE_MANN_WHIT_GREATER_PVALUE.get(row, prefix);
-					cutoff = Columns.EDGE_MANN_WHIT_CUTOFF.get(row, prefix); 
+					pvalue = EDGE_MANN_WHIT_GREATER_PVALUE.get(row, prefix);
+					cutoff = EDGE_MANN_WHIT_CUTOFF.get(row, prefix); 
 					break;
 				case MANN_WHIT_LESS:
-					pvalue = Columns.EDGE_MANN_WHIT_LESS_PVALUE.get(row, prefix);
-					cutoff = Columns.EDGE_MANN_WHIT_CUTOFF.get(row, prefix); 
+					pvalue = EDGE_MANN_WHIT_LESS_PVALUE.get(row, prefix);
+					cutoff = EDGE_MANN_WHIT_CUTOFF.get(row, prefix); 
 					break;
 				default:
-					pvalue = Columns.EDGE_HYPERGEOM_PVALUE.get(row, prefix);
-					cutoff = Columns.EDGE_HYPERGEOM_CUTOFF.get(row, prefix); 
+					pvalue = EDGE_HYPERGEOM_PVALUE.get(row, prefix);
+					cutoff = EDGE_HYPERGEOM_CUTOFF.get(row, prefix); 
 					break;
 				}
 				
@@ -122,7 +125,7 @@ public class WidthFunction {
 				// Can use a continuous mapping object to perform calculation
 				// even though it won't be added to the visual style.
 				ContinuousMapping<Double, Double> conmapping_edgewidth = (ContinuousMapping<Double, Double>) vmfFactoryContinuous
-						.createVisualMappingFunction(prefix + Columns.EDGE_SIMILARITY_COEFF, Double.class,
+						.createVisualMappingFunction(prefix + EDGE_SIMILARITY_COEFF, Double.class,
 								BasicVisualLexicon.EDGE_WIDTH);
 	
 				Double under_width = 0.5;
