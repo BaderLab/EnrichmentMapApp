@@ -831,14 +831,14 @@ public class EnrichmentMapParameters {
 		// Check to see if the files exist and are readable.
 		// If the file is unreadable change the color of the font to red
 		// otherwise the font should be black.
-		if (filename != null) {
-			File tempfile = new File(filename);
+		if (filename != null && !filename.trim().isEmpty()) {
+			File file = new File(filename.trim());
 			
-			if (!tempfile.canRead())
-				return false;
+			if (file.exists() && file.canRead())
+				return true;
 		}
 		
-		return true;
+		return false;
 	}
 
 	/**
