@@ -330,7 +330,14 @@ public class LegendPanel extends JPanel {
 				break;
 		}
 		
-		return chart != null ? new ChartPanel(chart) : null;
+		ChartPanel chartPanel = chart != null ? new ChartPanel(chart) : null;
+		
+		if (chartPanel != null) {
+			chartPanel.setPopupMenu(null);
+			chartPanel.setMouseZoomable(false);
+		}
+		
+		return chartPanel;
 	}
 
 	private void updateEdgeColorPanel(EnrichmentMap map) {
