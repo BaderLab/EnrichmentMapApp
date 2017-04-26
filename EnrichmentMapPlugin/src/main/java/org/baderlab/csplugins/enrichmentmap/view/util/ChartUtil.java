@@ -210,7 +210,7 @@ public final class ChartUtil {
         chart.setBorderVisible(false);
         chart.setBackgroundPaint(UIManager.getColor("Table.background"));
         chart.setBackgroundImageAlpha(0.0f);
-        chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
+        chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 20.0));
         
         final CategoryPlot plot = (CategoryPlot) chart.getPlot();
 		plot.setOutlineVisible(false);
@@ -281,27 +281,33 @@ public final class ChartUtil {
 				false); // urls
 		
 		chart.setAntiAlias(true);
-        chart.setBorderVisible(false);
-        chart.setBackgroundPaint(UIManager.getColor("Table.background"));
-        chart.setBackgroundImageAlpha(0.0f);
-        chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
-		
-        final CategoryPlot plot = (CategoryPlot) chart.getPlot();
+		chart.setBorderVisible(false);
+		chart.setBackgroundPaint(UIManager.getColor("Table.background"));
+		chart.setBackgroundImageAlpha(0.0f);
+		chart.setPadding(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
+
+		final CategoryPlot plot = (CategoryPlot) chart.getPlot();
 		plot.setOutlineVisible(false);
 		plot.setBackgroundPaint(UIManager.getColor("Table.background"));
 		plot.setInsets(new RectangleInsets(0.0, 0.0, 0.0, 0.0));
 		plot.setDomainGridlinesVisible(false);
-	    plot.setRangeGridlinesVisible(false);
-		
+		plot.setRangeGridlinesVisible(false);
+
 		final CategoryAxis domainAxis = (CategoryAxis) plot.getDomainAxis();
-        domainAxis.setVisible(true);
-        domainAxis.setAxisLineVisible(false);
-        domainAxis.setTickMarksVisible(false);
-        domainAxis.setTickLabelFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
-        domainAxis.setLabelPaint(UIManager.getColor("Label.foreground"));
-        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
-        domainAxis.setMaximumCategoryLabelLines(1);
-        domainAxis.setCategoryMargin(0.0);
+		domainAxis.setVisible(true);
+		domainAxis.setAxisLineVisible(false);
+		domainAxis.setTickMarksVisible(false);
+		domainAxis.setTickLabelFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
+		domainAxis.setLabelPaint(UIManager.getColor("Label.foreground"));
+		domainAxis.setMaximumCategoryLabelLines(1);
+		domainAxis.setCategoryMargin(0.0);
+        
+        if (total > 4) {
+	        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
+	        domainAxis.setMaximumCategoryLabelWidthRatio(0.5f);
+        } else {
+        	domainAxis.setMaximumCategoryLabelLines(2);
+        }
         
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(false);

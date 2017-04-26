@@ -508,13 +508,20 @@ public class LegendPanel extends JPanel {
 			nodeChartPanel = createStyleLegendPanel(null);
 			nodeChartPanel.setToolTipText("Node Charts");
 			
+			int h = 200;
+			
+			if (options.getChartOptions() != null
+					&& options.getChartOptions().getType() == ChartType.HEAT_STRIPS
+					&& options.getDataSets().size() > 4)
+				h = 300;
+			
 			GroupLayout layout = (GroupLayout) nodeChartPanel.getLayout();
 
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addComponent(chartLegendPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(chartLegendPanel, PREFERRED_SIZE, 200, 200)
+					.addComponent(chartLegendPanel, PREFERRED_SIZE, h, h)
 			);
 		}
 		
