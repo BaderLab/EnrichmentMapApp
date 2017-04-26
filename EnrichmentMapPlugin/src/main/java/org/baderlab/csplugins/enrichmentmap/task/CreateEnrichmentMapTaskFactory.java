@@ -57,11 +57,6 @@ public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 		
 		EnrichmentMap map = new EnrichmentMap(params, serviceRegistrar);
 		
-		// Load global GMT file into each dataset
-		if(params.getGlobalGmtFile() != null) {
-			tasks.append(new GMTFileReaderTask(map, params.getGlobalGmtFile().toString(), map.getGlobalGenesets()));
-		}
-
 		for(DataSetParameters dataSetParameters : dataSets) {
 			String datasetName = dataSetParameters.getName();
 			Method method = dataSetParameters.getMethod();

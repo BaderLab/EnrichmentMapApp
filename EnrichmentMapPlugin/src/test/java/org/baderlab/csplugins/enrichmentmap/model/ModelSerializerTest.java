@@ -6,7 +6,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -46,7 +45,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
 		
 		EMCreationParameters params = new EMCreationParameters("ModelSerializer_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.1, 0.1);
-		params.setGlobalGmtFile(Paths.get(PATH + "gene_sets.gmt"));
 		
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 	    assertEquals(0, maps.size());
@@ -80,7 +78,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertEquals(expected.getNetworkID(), actual.getNetworkID());
 		assertEquals(expected.getNumberOfGenes(), actual.getNumberOfGenes());
 		assertEMCreationParametersEquals(expected.getParams(), actual.getParams());
-		assertSetOfGeneSetsEquals(expected.getGlobalGenesets(), actual.getGlobalGenesets());
 		assertMapsEqual(ModelSerializerTest::assertSignatureDataSetsEquals, expected.getSignatureDataSets(), actual.getSignatureDataSets());
 //		assertMapsEqual(ModelSerializerTest::assertGenesetSimilarityEquals, expected.getGenesetSimilarity(), actual.getGenesetSimilarity());
 		assertMapsEqual(ModelSerializerTest::assertDataSetEquals, expected.getDataSets(), actual.getDataSets());
@@ -101,7 +98,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertEquals(expected.getQvalueMin(), actual.getQvalueMin(), 0.0);
 		assertEquals(expected.getPvalueMin(), actual.getPvalueMin(), 0.0);
 		assertEquals(expected.getEnrichmentEdgeType(), actual.getEnrichmentEdgeType()); // MKTODO remove this field
-		assertEquals(expected.getGlobalGmtFile(), actual.getGlobalGmtFile());
 	}
 	
 	private static void assertSignatureDataSetsEquals(EMSignatureDataSet expected, EMSignatureDataSet actual) {

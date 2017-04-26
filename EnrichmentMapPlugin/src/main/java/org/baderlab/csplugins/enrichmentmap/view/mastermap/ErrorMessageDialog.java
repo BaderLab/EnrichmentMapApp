@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.mastermap;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
 import java.util.List;
@@ -44,6 +45,7 @@ public class ErrorMessageDialog extends JDialog {
 		super(parent);
 		setResizable(true);
 		setTitle("Create Enrichment Map: Validation");
+		setMinimumSize(new Dimension(400, 100));
 	}
 	
 	@AfterInjection
@@ -70,7 +72,6 @@ public class ErrorMessageDialog extends JDialog {
 		finishButton = new JButton("Continue to Build");
 		buttonPanel.add(finishButton);
 		finishButton.addActionListener(e -> {
-			System.out.println("Here!");
 			shouldContinue = true;
 			dispose();
 		});

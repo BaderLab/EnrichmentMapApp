@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -40,8 +39,6 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	private boolean createDistinctEdges;
 	private String enrichmentEdgeType = "Geneset_Overlap";
 	
-	private Path globalGmtFile;
-	
 	private final Set<String> pValueColumnNames = new HashSet<>();
 	private final Set<String> qValueColumnNames = new HashSet<>();
 	private final Set<String> similarityCutoffColumnNames = new HashSet<>();
@@ -67,14 +64,6 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		this.combinedConstant = combinedConstant;
 	}
 
-	public void setGlobalGmtFile(Path path) {
-		this.globalGmtFile = path;
-	}
-	
-	public Path getGlobalGmtFile() {
-		return globalGmtFile;
-	}
-	
 	public String getAttributePrefix() {
 		return attributePrefix;
 	}

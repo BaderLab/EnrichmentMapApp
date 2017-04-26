@@ -7,7 +7,6 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -54,8 +53,8 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-import com.google.common.base.Strings;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 @SuppressWarnings("serial")
 public class MasterDetailDialogPage implements CardDialogPage {
@@ -65,12 +64,12 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	@Inject private LegacySupport legacySupport;
 	@Inject private CutoffPropertiesPanel cutoffPanel;
-	@Inject private EditCommonPropertiesPanel.Factory commonPanelFactory;
+	@Inject private Provider<EditCommonPanel> commonPanelProvider;
 	@Inject private EditDataSetPanel.Factory dataSetPanelFactory;
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private ErrorMessageDialog.Factory errorMessageDialogFactory;
 	
-	private EditCommonPropertiesPanel commonPanel;
+	private EditCommonPanel commonPanel;
 	private DataSetListItem commonParams;
 	
 	private DataSetList dataSetList;
@@ -114,14 +113,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		double combined = cutoffPanel.getCombinedConstant();
 		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
 		
-		
 		EMCreationParameters params = 
 			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
-		
-		String gmtPath = commonPanel.getGmtFile();
-		if(!isNullOrEmpty(gmtPath)) {
-			params.setGlobalGmtFile(Paths.get(gmtPath));
-		}
 		
 		params.setCreateDistinctEdges(distinctEdgesCheckbox.isSelected());
 		
@@ -137,6 +130,14 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		if(!isNullOrEmpty(exprPath)) {
 			for(DataSetParameters dsp : dataSets) {
 				dsp.getFiles().setExpressionFileName(exprPath);
+			}
+		}
+		
+		// Overwrite all the gmt files if a common file has been provided
+		String gmtPath = commonPanel.getGmtFile();
+		if(!isNullOrEmpty(gmtPath)) {
+			for(DataSetParameters dsp : dataSets) {
+				dsp.getFiles().setGMTFileName(gmtPath);
 			}
 		}
 		
@@ -157,7 +158,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
 		this.callback = callback;
-		this.commonPanel = commonPanelFactory.create(null);
+		this.commonPanel = commonPanelProvider.get();
 		
 		commonParams = new DataSetListItem(commonPanel);
 				
@@ -333,9 +334,36 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		}
 	}
 	
-	
 	private boolean validateInput() {
 		ErrorMessageDialog dialog = null;
+		
+		// Check if the user provided a global expression file, warn if there are also per-dataset expression files.
+		if(!isNullOrEmpty(commonPanel.getExpressionFile())) {
+			for(DataSetListItem item : dataSetListModel.toList()) {
+				DetailPanel panel = item.getDetailPanel();
+				if(panel instanceof EditDataSetPanel && !isNullOrEmpty(((EditDataSetPanel)panel).getExpressionFileName())) {
+					if(dialog == null)
+						dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
+					List<String> messages = Arrays.asList("A common expression file has been provided. Per-dataset expression files will be ignored.");
+					dialog.addSection(MessageType.WARN, commonPanel.getDisplayName(), commonPanel.getIcon(), messages);
+					break;
+				}
+			}
+		}
+		
+		// Check if the user provided a global gmt file, warn if there are also per-dataset gmt files.
+		if(!isNullOrEmpty(commonPanel.getGmtFile())) {
+			for(DataSetListItem item : dataSetListModel.toList()) {
+				DetailPanel panel = item.getDetailPanel();
+				if(panel instanceof EditDataSetPanel && !isNullOrEmpty(((EditDataSetPanel)panel).getGMTFileName())) {
+					if(dialog == null)
+						dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
+					List<String> messages = Arrays.asList("A common GMT file has been provided. Per-dataset GMT files will be ignored.");
+					dialog.addSection(MessageType.WARN, commonPanel.getDisplayName(), commonPanel.getIcon(), messages);
+					break;
+				}
+			}
+		}
 		
 		// Check for input errors.
 		for(DataSetListItem item : dataSetListModel.toList()) {
@@ -347,25 +375,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				dialog.addSection(MessageType.ERROR, panel.getDisplayName(), panel.getIcon(), messages);
 			}
 		}
-		
-		// Check if the user provided a global expression file, warn if there are also per-dataset expression files.
-		if(!Strings.isNullOrEmpty(commonPanel.getExpressionFile())) {
-			for(DataSetListItem item : dataSetListModel.toList()) {
-				DetailPanel panel = item.getDetailPanel();
-				if(panel instanceof EditDataSetPanel) {
-					String exprFile = ((EditDataSetPanel)panel).getExpressionFileName();
-					if(!Strings.isNullOrEmpty(exprFile)) {
-						if(dialog == null)
-							dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
-						
-						List<String> messages = Arrays.asList("A common expression file has been provided. Per-dataset expression files will be ignored.");
-						dialog.addSection(MessageType.WARN, commonPanel.getDisplayName(), commonPanel.getIcon(), messages);
-						break;
-					}
-				}
-			}
-		}
-		
+				
 		if(dialog != null) {
 			dialog.pack();
 			dialog.setLocationRelativeTo(callback.getDialogFrame());
@@ -374,9 +384,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 
 			// This will always return false if the dialog has error messages. 
 			// If the dialog only has warning messages then the user can choose to continue.
-			boolean shouldContinue = dialog.shouldContinue();
-			System.out.println("shouldContinue:" + shouldContinue);
-			return shouldContinue;
+			return dialog.shouldContinue();
 		}
 		
 		return true;

@@ -6,20 +6,16 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.Nullable;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -32,13 +28,10 @@ import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
-import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
-import com.google.common.base.Strings;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
@@ -46,22 +39,18 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 	 
 	public static final String PROP_NAME = "dataSetName";
 	
-	@Inject private FileUtil fileUtil;
-	@Inject private IconManager iconManager;
-	@Inject private Provider<JFrame> jframe;
+	@Inject private PathTextField.Factory pathTextFactory;
 	
 	private JComboBox<ComboItem<Method>> analysisTypeCombo;
-	private JTextField nameText;
-	private JTextField enrichments1Text;
-	private JTextField enrichments2Text;
-	private JTextField expressionsText;
-	private JTextField gmtText;
-	private JTextField ranksText;
-	private JTextField classesText;
+	private PathTextField nameText;
+	private PathTextField enrichments1Text;
+	private PathTextField enrichments2Text;
+	private PathTextField expressionsText;
+	private PathTextField gmtText;
+	private PathTextField ranksText;
+	private PathTextField classesText;
 	private JTextField positiveText;
 	private JTextField negativeText;
-	private JLabel enrichments2Label;
-	private JButton enrichments2Browse;
 	
 	private String[] classes;
 	
@@ -104,29 +93,18 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		
 		DataSetFiles files = new DataSetFiles();
 		
-		String enrichmentFileName1 = enrichments1Text.getText();
-		if(!isNullOrEmpty(enrichmentFileName1))
-			files.setEnrichmentFileName1(enrichmentFileName1);
-		
-		String enrichmentFileName2 = enrichments2Text.getText();
-		if(!isNullOrEmpty(enrichmentFileName2))
-			files.setEnrichmentFileName2(enrichmentFileName2);
-		
-		String expressionFileName = expressionsText.getText();
-		if(!isNullOrEmpty(expressionFileName))
-			files.setExpressionFileName(expressionFileName);
-		
-		String gmtFileName = gmtText.getText();
-		if(!isNullOrEmpty(gmtFileName))
-			files.setGMTFileName(gmtFileName);
-		
-		String ranksFileName = ranksText.getText();
-		if(!isNullOrEmpty(ranksFileName))
-			files.setRankedFile(ranksFileName);
-		
-		String classesFileName = classesText.getText();
-		if(!isNullOrEmpty(classesFileName))
-			files.setClassFile(classesFileName);
+		if(!enrichments1Text.isEmpty())
+			files.setEnrichmentFileName1(enrichments1Text.getText());
+		if(!enrichments2Text.isEmpty())
+			files.setEnrichmentFileName2(enrichments2Text.getText());
+		if(!expressionsText.isEmpty())
+			files.setExpressionFileName(expressionsText.getText());
+		if(!gmtText.isEmpty())
+			files.setGMTFileName(gmtText.getText());
+		if(!ranksText.isEmpty())
+			files.setRankedFile(ranksText.getText());
+		if(!classesText.isEmpty())
+			files.setClassFile(classesText.getText());
 		
 		String positive = positiveText.getText();
 		String negative = negativeText.getText();
@@ -142,10 +120,9 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 	
 	@AfterInjection
 	private void createContents() {
-		JLabel nameLabel = new JLabel("* Name:");
-		nameText = new JTextField();
+		nameText = pathTextFactory.create("* Name:", null);
 		nameText.setText(initDataSet != null ? initDataSet.getName() : null);
-		nameText.getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(() -> 
+		nameText.getTextField().getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(() -> 
 			firePropertyChange(PROP_NAME, null, getDisplayName())
 		));
 		
@@ -157,52 +134,26 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		analysisTypeCombo.addActionListener(e -> 
 			firePropertyChange(PROP_NAME, null, getDisplayName())
 		);
+		makeSmall(analysisLabel, analysisTypeCombo);
 
-		JLabel enrichmentsLabel = new JLabel("* Enrichments:");
-		enrichments1Text = new JTextField();
+		enrichments1Text = pathTextFactory.create("* Enrichments:", FileBrowser.Filter.ENRICHMENT);
 		enrichments1Text.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName1() : null);
-		JButton enrichmentsBrowse = createBrowseButton(iconManager);
-		enrichmentsBrowse.addActionListener(e -> browse(enrichments1Text, FileBrowser.Filter.ENRICHMENT));
 		
-		enrichments2Label = new JLabel("Enrichments 2:");
-		enrichments2Text = new JTextField();
+		enrichments2Text = pathTextFactory.create("Enrichments 2:", FileBrowser.Filter.ENRICHMENT);
 		enrichments2Text.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName2() : null);
-		enrichments2Browse = createBrowseButton(iconManager);
-		enrichments2Browse.addActionListener(e -> browse(enrichments2Text, FileBrowser.Filter.ENRICHMENT));
 		
-		JLabel gmtLabel = new JLabel("GMT:");
-		gmtText = new JTextField();
+		gmtText = pathTextFactory.create("GMT:", FileBrowser.Filter.GMT);
 		gmtText.setText(initDataSet != null ? initDataSet.getFiles().getGMTFileName() : null);
-		JButton gmtBrowse = createBrowseButton(iconManager);
-		gmtBrowse.addActionListener(e -> browse(gmtText, FileBrowser.Filter.GMT));
 		
-		JLabel expressionsLabel = new JLabel("Expressions:");
-		expressionsText = new JTextField();
+		expressionsText = pathTextFactory.create("Expressions:", FileBrowser.Filter.EXPRESSION);
 		expressionsText.setText(initDataSet != null ? initDataSet.getFiles().getExpressionFileName() : null);
-		JButton expressionsBrowse = createBrowseButton(iconManager);
-		expressionsBrowse.addActionListener(e -> browse(expressionsText, FileBrowser.Filter.EXPRESSION));
 		
-		makeSmall(nameLabel, nameText, analysisLabel, analysisTypeCombo);
-		makeSmall(enrichmentsLabel, enrichments1Text, enrichmentsBrowse);
-		makeSmall(enrichments2Label, enrichments2Text, enrichments2Browse);
-		makeSmall(expressionsLabel, expressionsText, expressionsBrowse);
-		makeSmall(gmtLabel, gmtText, gmtBrowse);
-		
-		JLabel ranksLabel = new JLabel("Ranks:");
-		ranksText = new JTextField();
+		ranksText = pathTextFactory.create("Ranks:", FileBrowser.Filter.RANK);
 		ranksText.setText(initDataSet != null ? initDataSet.getFiles().getRankedFile() : null);
-		JButton ranksBrowse = createBrowseButton(iconManager);
-		ranksBrowse.addActionListener(e -> browse(ranksText, FileBrowser.Filter.RANK));
 		
-		JLabel classesLabel = new JLabel("Classes:");
-		classesText = new JTextField();
+		classesText = pathTextFactory.create("Classes:", FileBrowser.Filter.CLASS);
 		classesText.setText(initDataSet != null ? initDataSet.getFiles().getClassFile() : null);
-		JButton classesBrowse = createBrowseButton(iconManager);
-		classesText.getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(this::updateClasses));
-		classesBrowse.addActionListener(e -> browse(classesText, FileBrowser.Filter.CLASS));
-		
-		makeSmall(ranksLabel, ranksText, ranksBrowse);
-		makeSmall(classesLabel, classesText, classesBrowse);
+		classesText.getTextField().getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(this::updateClasses));
 		
 		JLabel positive = new JLabel("Positive:");
 		JLabel negative = new JLabel("Negative:");
@@ -212,7 +163,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		negativeText.setText(initDataSet != null ? initDataSet.getFiles().getPhenotype2() : null);
 		makeSmall(positive, negative, positiveText, negativeText);
 		
-		
+
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
@@ -221,24 +172,24 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		layout.setHorizontalGroup(
 			layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
-					.addComponent(nameLabel)
+					.addComponent(nameText.getLabel())
 					.addComponent(analysisLabel)
-					.addComponent(enrichmentsLabel)
-					.addComponent(enrichments2Label)
-					.addComponent(expressionsLabel)
-					.addComponent(gmtLabel)
-					.addComponent(ranksLabel)
-					.addComponent(classesLabel)
+					.addComponent(enrichments1Text.getLabel())
+					.addComponent(enrichments2Text.getLabel())
+					.addComponent(expressionsText.getLabel())
+					.addComponent(gmtText.getLabel())
+					.addComponent(ranksText.getLabel())
+					.addComponent(classesText.getLabel())
 				)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-					.addComponent(nameText, 0, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(nameText.getTextField(), 0, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(analysisTypeCombo, 0, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(enrichments1Text, 0, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(enrichments2Text, 0, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(expressionsText, 0, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(gmtText, 0, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(ranksText,   0, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(classesText, 0, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(enrichments1Text.getTextField(), 0, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(enrichments2Text.getTextField(), 0, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(expressionsText.getTextField(), 0, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(gmtText.getTextField(), 0, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(ranksText.getTextField(),   0, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(classesText.getTextField(), 0, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addGroup(layout.createSequentialGroup()
 						.addComponent(positive)
 						.addComponent(positiveText, 75, 75, 75)
@@ -248,54 +199,54 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 					)
 				)
 				.addGroup(layout.createParallelGroup()
-					.addComponent(enrichmentsBrowse)
-					.addComponent(enrichments2Browse)
-					.addComponent(expressionsBrowse)
-					.addComponent(gmtBrowse)
-					.addComponent(ranksBrowse)
-					.addComponent(classesBrowse)
+					.addComponent(enrichments1Text.getBrowseButton())
+					.addComponent(enrichments2Text.getBrowseButton())
+					.addComponent(expressionsText.getBrowseButton())
+					.addComponent(gmtText.getBrowseButton())
+					.addComponent(ranksText.getBrowseButton())
+					.addComponent(classesText.getBrowseButton())
 				)
 		);
 		
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-					.addComponent(nameLabel)
-					.addComponent(nameText)
+					.addComponent(nameText.getLabel())
+					.addComponent(nameText.getTextField())
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
 					.addComponent(analysisLabel)
 					.addComponent(analysisTypeCombo)
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-					.addComponent(enrichmentsLabel)
-					.addComponent(enrichments1Text)
-					.addComponent(enrichmentsBrowse)
+					.addComponent(enrichments1Text.getLabel())
+					.addComponent(enrichments1Text.getTextField())
+					.addComponent(enrichments1Text.getBrowseButton())
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-					.addComponent(enrichments2Label)
-					.addComponent(enrichments2Text)
-					.addComponent(enrichments2Browse)
+					.addComponent(enrichments2Text.getLabel())
+					.addComponent(enrichments2Text.getTextField())
+					.addComponent(enrichments2Text.getBrowseButton())
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-					.addComponent(expressionsLabel)
-					.addComponent(expressionsText)
-					.addComponent(expressionsBrowse)
+					.addComponent(expressionsText.getLabel())
+					.addComponent(expressionsText.getTextField())
+					.addComponent(expressionsText.getBrowseButton())
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-					.addComponent(gmtLabel)
-					.addComponent(gmtText)
-					.addComponent(gmtBrowse)
+					.addComponent(gmtText.getLabel())
+					.addComponent(gmtText.getTextField())
+					.addComponent(gmtText.getBrowseButton())
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-					.addComponent(ranksLabel)
-					.addComponent(ranksText)
-					.addComponent(ranksBrowse)
+					.addComponent(ranksText.getLabel())
+					.addComponent(ranksText.getTextField())
+					.addComponent(ranksText.getBrowseButton())
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-					.addComponent(classesLabel)
-					.addComponent(classesText)
-					.addComponent(classesBrowse)
+					.addComponent(classesText.getLabel())
+					.addComponent(classesText.getTextField())
+					.addComponent(classesText.getBrowseButton())
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
 					.addComponent(positive)
@@ -310,49 +261,28 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 	}
 	
 	
-	private void browse(JTextField textField, FileBrowser.Filter filter) {
-		Optional<Path> path = FileBrowser.browse(fileUtil, jframe.get(), filter);
-		path.map(Path::toString).ifPresent(textField::setText);
-	}
-	
 	@Override
 	public List<String> validateInput() {
 		List<String> err = new ArrayList<>();
-		if(Strings.isNullOrEmpty(nameText.getText())) {
+		if(nameText.isEmpty())
 			err.add("Name field is empty.");
-		}
-		if(Strings.isNullOrEmpty(enrichments1Text.getText())) {
+		if(enrichments1Text.isEmpty())
 			err.add("Enrichments file path is empty.");
-		} 
-		if(!emptyOrReadable(enrichments1Text)) {
+		if(!enrichments1Text.emptyOrReadable())
 			err.add("Enrichments file path is not valid.");
-		}
-		if(!emptyOrReadable(enrichments2Text)) {
+		if(!enrichments2Text.emptyOrReadable())
 			err.add("Enrichments 2 file path is not valid.");
-		}
-		if(!emptyOrReadable(expressionsText)) {
+		if(!expressionsText.emptyOrReadable())
 			err.add("Expressions file path is not valid.");
-		}
-		if(!emptyOrReadable(gmtText)) {
+		if(!gmtText.emptyOrReadable())
 			err.add("GMT file path is not valid.");
-		}
-		if(!emptyOrReadable(ranksText)) {
+		if(!ranksText.emptyOrReadable())
 			err.add("Ranks file path is not valid.");
-		}
-		if(!emptyOrReadable(classesText)) {
+		if(!classesText.emptyOrReadable())
 			err.add("Classes file path is not valid.");
-		}
 		return err;
 	}
 	
-	
-	public static boolean emptyOrReadable(JTextField textField) {
-		return emptyOrReadable(textField.getText());
-	}
-	
-	public static boolean emptyOrReadable(String text) {
-		return Strings.isNullOrEmpty(text) || Files.isReadable(Paths.get(text));
-	}
 	
 	private void updateClasses() {
 		if(positiveText.getText().trim().isEmpty() && negativeText.getText().trim().isEmpty() 
@@ -373,16 +303,6 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		}
 	}
 	
-	public static JButton createBrowseButton(IconManager iconManager) {
-		JButton button = new JButton(IconManager.ICON_ELLIPSIS_H);
-		button.setFont(iconManager.getIconFont(10.0f));
-		button.setToolTipText("Browse...");
-		if(LookAndFeelUtil.isAquaLAF()) {
-			button.putClientProperty("JButton.buttonType", "gradient");
-			button.putClientProperty("JComponent.sizeVariant", "small");
-		}
-		return button;
-	}
 	
 	private Method getMethod() {
 		return analysisTypeCombo.getItemAt(analysisTypeCombo.getSelectedIndex()).getValue();
@@ -390,6 +310,10 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 	
 	public String getExpressionFileName() {
 		return expressionsText.getText();
+	}
+	
+	public String getGMTFileName() {
+		return gmtText.getText();
 	}
 
 }

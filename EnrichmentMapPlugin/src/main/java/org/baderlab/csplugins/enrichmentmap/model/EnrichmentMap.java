@@ -45,8 +45,6 @@ public class EnrichmentMap {
 	/** Post analysis signature genesets associated with this map.*/
 	private Map<String, EMSignatureDataSet> signatureDataSets = new HashMap<>();
 	
-	private SetOfGeneSets globalGenesets = new SetOfGeneSets();
-
 	private int NumberOfGenes = 0;
 	private boolean isLegacy = false;
 	private boolean isDistinctExpressionSets = false;
@@ -222,8 +220,6 @@ public class EnrichmentMap {
 		Map<String, GeneSet> allGeneSets = new HashMap<>();
 		
 		synchronized (lock) {
-			allGeneSets.putAll(globalGenesets.getGeneSets());
-		
 			// If a GeneSet appears in more than one DataSet, then its totally arbitrary which version of it gets picked
 			// If a GeneSet appears in an enrichment file it will override the one with the same name in the global GMT file
 			for (EMDataSet ds : dataSets.values()) {
@@ -300,20 +296,14 @@ public class EnrichmentMap {
 	}
 	
 	public String findGeneSetDescription(String genesetName) {
-		GeneSet gs = globalGenesets.getGeneSets().get(genesetName);
-		if(gs != null)
-			return gs.getDescription();
 		for(EMDataSet ds : dataSets.values()) {
-			gs = ds.getGeneSetsOfInterest().getGeneSets().get(genesetName);
+			GeneSet gs = ds.getGeneSetsOfInterest().getGeneSets().get(genesetName);
 			if(gs != null)
 				return gs.getDescription();
 		}
 		return null;
 	}
 
-	public SetOfGeneSets getGlobalGenesets() {
-		return globalGenesets;
-	}
 	
 	public Map<String, EMDataSet> getDataSets() {
 		return dataSets;

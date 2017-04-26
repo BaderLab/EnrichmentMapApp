@@ -28,7 +28,7 @@ public class ParseGenericEnrichmentResults extends DatasetLineParser {
 
 		//Get the current genesets so we can check that all the results are in the geneset list
 		//and put the size of the genesets into the visual style
-		Map<String, GeneSet> genesets = dataset.getMap().getGlobalGenesets().getGeneSets();
+		Map<String, GeneSet> genesets = dataset.getSetOfGeneSets().getGeneSets();
 
 		int currentProgress = 0;
 		int maxValue = lines.size();
