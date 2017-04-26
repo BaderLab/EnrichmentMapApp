@@ -67,7 +67,7 @@ public class AboutDialog extends JDialog {
 
 	@Inject
 	public AboutDialog(CySwingApplication application, OpenBrowser browser) {
-		super(application.getJFrame(), "About Enrichment Map", false);
+		super(application.getJFrame(), "About EnrichmentMap", false);
 		this.browser = browser;
 		setResizable(false);
 
@@ -80,22 +80,26 @@ public class AboutDialog extends JDialog {
 
 		URL logoURL = this.getClass().getResource("enrichmentmap_logo.png");
 
-		editorPane.setText("<html><body>" +
-		//"<div style=\"float:right;\"><img height=\"77\" width=\"125\" src=\""+ logoURL.toString() +"\" ></div>" +
+		editorPane.setText("<html><body style='font-family:Arial,Helvetica,sans-serif;'>" +
 				"<table border='0'><tr>" + "<td width='125'></td>" + "<td width='200'>"
-				+ "<p align=center><b>Enrichment Map v" + APP_VERSION + "</b><BR>" + "A Cytoscape App<BR>" + "<BR></p>"
+				+ "<p align=center><b>EnrichmentMap v" + APP_VERSION + "</b><BR>" + "A Cytoscape App<BR>" + "<BR></p>"
 				+ "</td>" + "<td width='125'><div align='right'><img height='77' width='125' src=\""
-				+ logoURL.toString() + "\" ></div></td>" + "</tr></table>"
-				+ "<p align=center>Enrichment Map is a network-based method to visualize<BR>"
+				+ logoURL.toString() + "\" ></div></td>" + "</tr>"
+				+ "</table>"
+				+ "<hr size='4' noshade>"
+				+ "<p align=center>EnrichmentMap is a network-based method to visualize<BR>"
 				+ "and interpret gene-set enrichment results.<BR>" + "<BR>"
 				+ "by Gary Bader, Daniele Merico, Ruth Isserlin and Oliver Stueker<BR>"
 				+ "(<a href='http://www.baderlab.org/'>Bader Lab</a>, University of Toronto)<BR>" + "<BR>"
-				+ "App Homepage:<BR>" + "<a href='" + APP_URL + "'>" + APP_URL + "</a><BR>" + "<BR>"
-				+ "If you use this app in your research, please cite:<BR>"
+				+ "App Homepage:<BR>" + "<a href='" + APP_URL + "'>" + APP_URL + "</a></p><BR>"
+				+ "<hr size='4' noshade>"
+				+ "<p style='font-size:small'>If you use this app in your research, please cite:</p>"
+				+ "<p style='font-family:Courier,monospace;font-size:small'>"
 				+ "Merico D, Isserlin R, Stueker O, Emili A, Bader GD<BR>"
 				+ "Enrichment Map: A Network-Based Method for <BR>"
 				+ "Gene-Set Enrichment Visualization and Interpretation<BR>" + "<i>PLoS One. 2010 Nov 15;5(11)</i><BR>"
-				+ "</p></body></html>");
+				+ "</p><BR>"
+				+ "</body></html>");
 
 		setContentPane(editorPane);
 	}

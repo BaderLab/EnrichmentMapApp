@@ -23,7 +23,7 @@ public class ResolverTask extends AbstractTask implements ObservableTask, Cancel
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("Enrichment Map");
+		taskMonitor.setTitle("EnrichmentMap");
 		taskMonitor.setStatusMessage("Scanning Folder for Data Sets");
 		
 		results = DataSetResolver.guessDataSets(root, this);

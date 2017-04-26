@@ -45,7 +45,7 @@ public class RadialHeatMapChartFactory implements CyCustomGraphics2Factory<Radia
 
 	@Override
 	public String getDisplayName() {
-		return "Heat Pie (by Enrichment Map)";
+		return "Heat Pie (by EnrichmentMap)";
 	}
 	
 	@Override
