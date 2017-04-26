@@ -72,7 +72,10 @@ public class PathTextField {
 	}
 	
 	public void setText(String textValue) {
-		textField.setText(textValue);
+		if(textValue != null) {
+			textField.setText(textValue);
+			textField.setCaretPosition(textValue.length());
+		}
 	}
 	
 	public void hideError() {

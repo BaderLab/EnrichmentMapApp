@@ -120,8 +120,15 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 	
 	@AfterInjection
 	private void createContents() {
+		createBody();
+		if(initDataSet != null) {
+			initialize(initDataSet);
+		}
+	}
+	
+	
+	private void createBody() {
 		nameText = pathTextFactory.create("* Name:", null);
-		nameText.setText(initDataSet != null ? initDataSet.getName() : null);
 		nameText.getTextField().getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(() -> 
 			firePropertyChange(PROP_NAME, null, getDisplayName())
 		));
@@ -137,32 +144,18 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		makeSmall(analysisLabel, analysisTypeCombo);
 
 		enrichments1Text = pathTextFactory.create("* Enrichments:", FileBrowser.Filter.ENRICHMENT);
-		enrichments1Text.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName1() : null);
-		
 		enrichments2Text = pathTextFactory.create("Enrichments 2:", FileBrowser.Filter.ENRICHMENT);
-		enrichments2Text.setText(initDataSet != null ? initDataSet.getFiles().getEnrichmentFileName2() : null);
-		
 		gmtText = pathTextFactory.create("GMT:", FileBrowser.Filter.GMT);
-		gmtText.setText(initDataSet != null ? initDataSet.getFiles().getGMTFileName() : null);
-		
 		expressionsText = pathTextFactory.create("Expressions:", FileBrowser.Filter.EXPRESSION);
-		expressionsText.setText(initDataSet != null ? initDataSet.getFiles().getExpressionFileName() : null);
-		
 		ranksText = pathTextFactory.create("Ranks:", FileBrowser.Filter.RANK);
-		ranksText.setText(initDataSet != null ? initDataSet.getFiles().getRankedFile() : null);
-		
 		classesText = pathTextFactory.create("Classes:", FileBrowser.Filter.CLASS);
-		classesText.setText(initDataSet != null ? initDataSet.getFiles().getClassFile() : null);
 		classesText.getTextField().getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(this::updateClasses));
 		
 		JLabel positive = new JLabel("Positive:");
 		JLabel negative = new JLabel("Negative:");
 		positiveText = new JTextField();
 		negativeText = new JTextField();
-		positiveText.setText(initDataSet != null ? initDataSet.getFiles().getPhenotype1() : null);
-		negativeText.setText(initDataSet != null ? initDataSet.getFiles().getPhenotype2() : null);
 		makeSmall(positive, negative, positiveText, negativeText);
-		
 
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -260,6 +253,21 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
    			setOpaque(false);
 	}
 	
+	
+	private void initialize(DataSetParameters initDataSet) {
+		nameText.setText(initDataSet.getName());
+		DataSetFiles files = initDataSet.getFiles();
+		enrichments1Text.setText(files.getEnrichmentFileName1());
+		enrichments2Text.setText(files.getEnrichmentFileName2());
+		gmtText.setText(files.getGMTFileName());
+		expressionsText.setText(files.getExpressionFileName());
+		ranksText.setText(files.getRankedFile());
+		classesText.setText(files.getClassFile());
+		positiveText.setText(files.getPhenotype1());
+		negativeText.setText(files.getPhenotype2());
+		analysisTypeCombo.setSelectedItem(ComboItem.of(initDataSet.getMethod()));
+	}
+
 	
 	@Override
 	public List<String> validateInput() {
