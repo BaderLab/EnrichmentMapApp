@@ -5,10 +5,11 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -18,14 +19,13 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback.Message;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 public class CardDialog {
 	
-	private JPanel message;
 	private JDialog dialog;
 	
 	private JComboBox<ComboItem<CardDialogPage>> pageChooserCombo;
@@ -34,17 +34,13 @@ public class CardDialog {
 	private JButton finishButton;
 	
 	private final CardDialogParameters params;
-	private final IconManager iconManager;
 	
 	
-	public CardDialog(JFrame parent, IconManager iconManager, CardDialogParameters params) {
-		if (iconManager == null)
-			throw new IllegalArgumentException("'iconManager' must not be null.");
+	public CardDialog(JFrame parent, CardDialogParameters params) {
 		if (params == null)
 			throw new IllegalArgumentException("'params' must not be null.");
 		
 		this.params = params;
-		this.iconManager = iconManager;
 		
 		dialog = new JDialog(parent);
 		createComponents();
@@ -66,12 +62,14 @@ public class CardDialog {
 		dialog.setPreferredSize(params.getPreferredSize());
 		dialog.setTitle(params.getTitle());
 		
-		// Create message and button panel first because 
-		// the controller can call callbacks from inside createBodyPanel()
-		JPanel buttonPanel  = createButtonPanel();
-		JPanel bodyPanel    = createBodyPanel();
+		// Create message and button panel first because the controller can call callbacks from inside createBodyPanel()
+		JPanel buttonPanel = createButtonPanel();
+		JPanel bodyPanel   = createBodyPanel();
 	    
-	    buttonPanel .setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
+		Border padding   = BorderFactory.createEmptyBorder(5,5,5,5);
+		Border separator = BorderFactory.createMatteBorder(1,0,0,0,UIManager.getColor("Separator.foreground"));
+		Border border    = BorderFactory.createCompoundBorder(separator, padding);
+	    buttonPanel.setBorder(border);
 	    
 	    dialog.add(bodyPanel,    BorderLayout.CENTER);
 	    dialog.add(buttonPanel,  BorderLayout.SOUTH);
@@ -162,73 +160,36 @@ public class CardDialog {
    		return panel;
 	}
 	
-	
-	private JPanel createMessage(Message severity, String message) {
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-		JLabel icon = getMessageIcon(severity);
-		JLabel messageLabel = new JLabel(message + "  ");
-		panel.add(icon, BorderLayout.WEST);
-		panel.add(messageLabel, BorderLayout.CENTER);
-		panel.setOpaque(false);
-		return panel;
-	}
-	
-	private JLabel getMessageIcon(Message severity) {
-		JLabel icon = new JLabel();
-		switch(severity) {
-			default:
-			case INFO:  
-				icon.setText("");
-				break;
-			case WARN:
-				icon.setText(IconManager.ICON_EXCLAMATION_CIRCLE);
-				icon.setForeground(Color.YELLOW.darker());
-				break;
-			case ERROR:
-				icon.setText(IconManager.ICON_TIMES_CIRCLE);
-				icon.setForeground(Color.RED.darker());
-				break;
+	@SuppressWarnings("serial")
+	private JPanel createButtonPanel() {
+		finishButton = new JButton(new AbstractAction(params.getFinishButtonText()) {
+			public void actionPerformed(ActionEvent e) {
+				currentPage.finish();
+			}
+		});
+		JButton cancelButton = new JButton(new AbstractAction("Cancel") {
+			public void actionPerformed(ActionEvent e) {
+				dialog.setVisible(false);
+			}
+		});
+
+		AbstractButton[] additional = params.getAdditionalButtons();
+		if(additional != null) {
+			for(AbstractButton button : additional) {
+				button.addActionListener(e -> {
+					currentPage.extraButtonClicked(e.getActionCommand());
+				});
+			}
 		}
 		
-		icon.setFont(iconManager.getIconFont(16));
-		icon.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
-		icon.setOpaque(false);
-		return icon;
-	}
-	
-	private JPanel createButtonPanel() {
-		JPanel panel = new JPanel(new BorderLayout());
-		
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
-		
-		JButton cancelButton = new JButton("Cancel");
-		buttonPanel.add(cancelButton);
-		cancelButton.addActionListener(e -> dialog.setVisible(false));
-		
-		finishButton = new JButton(params.getFinishButtonText());
-		buttonPanel.add(finishButton);
-		finishButton.addActionListener(e -> currentPage.finish());
-		
-		message = new JPanel(new BorderLayout());
-		message.setOpaque(false);
-		
-		panel.add(buttonPanel, BorderLayout.EAST);
-		panel.add(message, BorderLayout.WEST);
-		
-		return panel;
+		JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(finishButton, cancelButton, additional);
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), finishButton.getAction(), cancelButton.getAction());
+		dialog.getRootPane().setDefaultButton(finishButton);
+		return buttonPanel;
 	}
 	
 	
 	public class Callback implements CardDialogCallback {
-
-		@Override
-		public void setMessage(Message severity, String text) {
-			JPanel messageContent = createMessage(severity, text);
-			message.removeAll();
-			message.add(messageContent, BorderLayout.CENTER);
-			dialog.revalidate();
-		}
 
 		@Override
 		public void setFinishButtonEnabled(boolean enabled) {

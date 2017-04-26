@@ -104,5 +104,10 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 	public String getExpressionFile() {
 		return expressionsText.getText();
 	}
+
+	public void reset() {
+		gmtText.setText("");
+		expressionsText.setText("");
+	}
 	
 }

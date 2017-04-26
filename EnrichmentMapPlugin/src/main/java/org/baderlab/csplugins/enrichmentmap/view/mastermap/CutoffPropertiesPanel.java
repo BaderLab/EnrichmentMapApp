@@ -114,6 +114,7 @@ public class CutoffPropertiesPanel extends JPanel {
    		);
 	}
 	
+	
 	private JPanel createFilterNodesPanel() {
 		JPanel panel = new JPanel();
 		panel.setBorder(LookAndFeelUtil.createTitledBorder("Gene-Set Filtering (Nodes)"));
@@ -291,6 +292,24 @@ public class CutoffPropertiesPanel extends JPanel {
 			panel.setOpaque(false);
    		
    		return panel;
+	}
+	
+	
+	public void reset() {
+		pvalueText.setValue(propertyManager.getDefaultPvalue());
+		qvalueText.setValue(propertyManager.getDefaultQvalue());
+		nesFilterCombo.setSelectedItem(ComboItem.of(NESFilter.ALL));
+		shouldFilterMinCheckbox.setSelected(false);
+		minExperimentsText.setValue(3);
+		minExperimentsLabel.setEnabled(false);
+		minExperimentsText.setEnabled(false);
+		
+		cutoffValues = new EnumMap<>(SimilarityMetric.class);
+		cutoffValues.put(SimilarityMetric.JACCARD,  propertyManager.getDefaultCutOff(SimilarityMetric.JACCARD));
+		cutoffValues.put(SimilarityMetric.OVERLAP,  propertyManager.getDefaultCutOff(SimilarityMetric.OVERLAP));
+		cutoffValues.put(SimilarityMetric.COMBINED, propertyManager.getDefaultCutOff(SimilarityMetric.COMBINED));
+		cutoffMetricCombo.setSelectedItem(ComboItem.of(SimilarityMetric.JACCARD));
+		combinedConstantSlider.reset();
 	}
 	
 	

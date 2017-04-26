@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.view.util;
 import java.awt.Dimension;
 import java.util.List;
 
+import javax.swing.AbstractButton;
 import javax.swing.Icon;
 
 public interface CardDialogParameters {
@@ -25,5 +26,16 @@ public interface CardDialogParameters {
 	
 	default Dimension getPreferredSize() {
 		return new Dimension(400, 300);
+	}
+	
+	/** 
+	 * Return a list of extra buttons, that will go in the bottom left area of the button bar. 
+	 * An ActionListener will be attached to each button that will call 
+	 * CardDialogPage.extraButtonClicked(button.getActionCommand()) when the button is clicked.
+	 * 
+	 * @see AbstractButton#setActionCommand(String)
+	 */
+	default AbstractButton[] getAdditionalButtons() {
+		return null;
 	}
 }

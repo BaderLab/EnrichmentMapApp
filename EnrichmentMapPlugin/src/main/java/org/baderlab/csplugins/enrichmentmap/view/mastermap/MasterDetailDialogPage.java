@@ -21,6 +21,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
@@ -236,9 +237,9 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		JLabel label = new JLabel("Data Sets:");
 		SwingUtil.makeSmall(label);
 		
-		JButton addButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS,     "Add Data Set");
+		JButton addButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS, "Add Data Set");
 		scanButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_FOLDER_O, "Scan Folder for Data Sets");
-		deleteButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_TRASH_O,  "Delete Data Set");
+		deleteButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_TRASH_O, "Delete Data Set");
 		
 		addButton.addActionListener(e -> addNewDataSetToList());
 		deleteButton.addActionListener(e -> deleteSelectedItems());
@@ -306,6 +307,30 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		callback.setFinishButtonEnabled(dataSetListModel.size() > 1);
 	}
 	
+	
+	@Override
+	public void extraButtonClicked(String actionCommand) {
+		if(MasterMapDialogParameters.RESET_BUTTON_ACTION_COMMAND.equals(actionCommand)) {
+			reset();
+		}
+	}
+	
+	private void reset() {
+		int result = JOptionPane.showConfirmDialog(callback.getDialogFrame(), 
+				"Clear inputs and restore default values?", "EnrichmentMap: Reset", JOptionPane.OK_CANCEL_OPTION);
+		if(result == JOptionPane.OK_OPTION) {
+			distinctEdgesCheckbox.setSelected(false);
+			cutoffPanel.reset();
+			commonPanel.reset();
+			for(DataSetListItem item : dataSetListModel.toList()) {
+				if(item != commonParams) {
+					dataSetListModel.removeElement(item);
+					dataSetDetailPanel.remove(item.getDetailPanel().getPanel());
+				}
+			}
+			callback.setFinishButtonEnabled(false);
+		}
+	}
 	
 	private void scan() {
 		Optional<File> rootFolder = FileBrowser.browseForRootFolder(callback.getDialogFrame());

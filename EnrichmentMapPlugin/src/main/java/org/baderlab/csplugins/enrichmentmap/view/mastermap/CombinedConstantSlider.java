@@ -10,12 +10,14 @@ import javax.swing.JSlider;
 public class CombinedConstantSlider extends JPanel {
 
 	private JSlider slider;
+	private final int defaultValue;
 	
 	public CombinedConstantSlider(int defaultValue) {
 		if(defaultValue < 0)
 			defaultValue = 0;
 		if(defaultValue > 100)
 			defaultValue = 100;
+		this.defaultValue = defaultValue;
 		
 		JLabel jaccardLabel = new JLabel(mkLabel("Jaccard", 100-defaultValue));
 		JLabel overlapLabel = new JLabel(mkLabel("Overlap", defaultValue));
@@ -46,6 +48,9 @@ public class CombinedConstantSlider extends JPanel {
 		return slider.getValue();
 	}
 	
+	public void reset() {
+		slider.setValue(defaultValue);
+	}
 	
 	private static String mkLabel(String name, int percent) {
 		return name + " (" + percent + "%)";
