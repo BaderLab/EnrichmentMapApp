@@ -6,6 +6,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -24,6 +25,8 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
@@ -199,35 +202,27 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		distinctEdgesCheckbox = new JCheckBox("Create separate edges for each dataset");
 		SwingUtil.makeSmall(distinctEdgesCheckbox);
 		
-		JPanel panel = new JPanel();
-		GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
-		layout.setAutoCreateGaps(true);
-		layout.setAutoCreateContainerGaps(true);
+		JPanel checkboxPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+		checkboxPanel.add(distinctEdgesCheckbox);
 		
-		layout.setHorizontalGroup(
-			layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup()
-					.addComponent(titlePanel)
-					.addComponent(scrollPane, 250, 250, 250)
-				)
-				.addGroup(layout.createParallelGroup()
-					.addComponent(distinctEdgesCheckbox, Alignment.TRAILING)
-					.addComponent(dataSetDetailPanel, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
-				)
-		);
+		// Make the NORTH area of both panels the same size
+		titlePanel.doLayout();
+		checkboxPanel.setPreferredSize(titlePanel.getPreferredSize());
 		
-		layout.setVerticalGroup(
-			layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
-					.addComponent(titlePanel)
-					.addComponent(distinctEdgesCheckbox)
-				)
-				.addGroup(layout.createParallelGroup()
-					.addComponent(scrollPane)
-					.addComponent(dataSetDetailPanel)
-				)
-		);
+		JPanel leftPanel = new JPanel(new BorderLayout());
+		leftPanel.add(titlePanel, BorderLayout.NORTH);
+		leftPanel.add(scrollPane, BorderLayout.CENTER);
+		
+		JPanel rightPanel = new JPanel(new BorderLayout());
+		rightPanel.add(checkboxPanel, BorderLayout.NORTH);
+		rightPanel.add(dataSetDetailPanel, BorderLayout.CENTER);
+		
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
+		splitPane.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
+		splitPane.setResizeWeight(0.3);
+		
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(splitPane, BorderLayout.CENTER);
 		
 		return panel;
 	}
@@ -253,6 +248,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 			.addComponent(label)
+			.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 			.addComponent(scanButton)
 			.addComponent(addButton)
 			.addComponent(deleteButton)

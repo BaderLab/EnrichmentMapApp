@@ -48,6 +48,11 @@ public class MasterMapDialogParameters implements CardDialogParameters {
 	}
 	
 	@Override
+	public Dimension getMinimumSize() {
+		return new Dimension(650, 500);
+	}
+	
+	@Override
 	public AbstractButton[] getAdditionalButtons() {
 		JButton resetButton = new JButton("Reset");
 		resetButton.setActionCommand(RESET_BUTTON_ACTION_COMMAND);

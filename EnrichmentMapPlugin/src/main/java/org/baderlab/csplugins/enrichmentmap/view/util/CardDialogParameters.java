@@ -28,6 +28,10 @@ public interface CardDialogParameters {
 		return new Dimension(400, 300);
 	}
 	
+	default Dimension getMinimumSize() {
+		return null;
+	}
+	
 	/** 
 	 * Return a list of extra buttons, that will go in the bottom left area of the button bar. 
 	 * An ActionListener will be attached to each button that will call 
