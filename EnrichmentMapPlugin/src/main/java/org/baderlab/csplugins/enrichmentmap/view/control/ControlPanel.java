@@ -796,17 +796,22 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 						ColorScheme value, int index, boolean isSelected, boolean cellHasFocus) -> {
 					String bg = isSelected ? "Table.selectionBackground" : "Table.background";
 					String fg = isSelected ? "Table.selectionForeground" : "Table.foreground";
+					
+					if (!chartColorsCombo.isEnabled())
+						fg = "ComboBox.disabledForeground";
+					
 					cell.setBackground(UIManager.getColor(bg));
 					nameLabel.setForeground(UIManager.getColor(fg));
 
 					nameLabel.setText(value != null ? value.getName() : " ");
 					cell.setToolTipText(value != null ? value.getDescription() : null);
 					
-					List<Color> colors = value != null ? value.getColors() : Collections.emptyList();
+					List<Color> colors = value != null && chartColorsCombo.isEnabled() ?
+							value.getColors() : Collections.emptyList();
 					
 					for (int i = 0; i < 3; i++) {
 						colorLabels[i].setBackground(colors.size() > 2 ? colors.get(i) : cell.getBackground());
-						colorLabels[i].setVisible(value != null);
+						colorLabels[i].setVisible(value != null && chartColorsCombo.isEnabled());
 					}
 					
 					cell.revalidate();
