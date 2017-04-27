@@ -390,7 +390,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		invokeOnEDT(() -> {
 			EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
 			
-			// Is the new view an Enrichment Map one?
+			// Is the new view an EnrichmentMap one?
 			if (map != null) {
 				EMViewControlPanel viewPanel = getControlPanel().addEnrichmentMapView(netView);
 				

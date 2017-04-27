@@ -1,17 +1,12 @@
 package org.baderlab.csplugins.enrichmentmap.view.mastermap;
 
 import java.awt.Dimension;
-import java.awt.Image;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.AbstractButton;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
-import org.baderlab.csplugins.enrichmentmap.view.AboutDialog;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogParameters;
 
@@ -50,14 +45,6 @@ public class MasterMapDialogParameters implements CardDialogParameters {
 	@Override
 	public Dimension getPreferredSize() {
 		return new Dimension(750, 700);
-	}
-	
-	@Override
-	public Icon getIcon() {
-		URL iconURL = AboutDialog.class.getResource("enrichmentmap_logo.png");
-		ImageIcon original = new ImageIcon(iconURL);
-		Image scaled = original.getImage().getScaledInstance(80, 49, Image.SCALE_SMOOTH);
-		return new ImageIcon(scaled);
 	}
 	
 	@Override

@@ -115,8 +115,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 
 	@Override
 	public Icon getIcon() {
-		String path = "org/baderlab/csplugins/enrichmentmap/view/enrichmentmap_logo_notext_small.png";
-		URL url = getClass().getClassLoader().getResource(path);
+		URL url = getClass().getClassLoader().getResource("images/enrichmentmap_logo_16.png");
 		return url == null ? null : new ImageIcon(url);
 	}
 

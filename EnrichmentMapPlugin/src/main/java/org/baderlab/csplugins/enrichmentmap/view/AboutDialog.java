@@ -71,27 +71,32 @@ public class AboutDialog extends JDialog {
 		this.browser = browser;
 		setResizable(false);
 
-		//main panel for dialog box
 		JEditorPane editorPane = new JEditorPane();
 		editorPane.setMargin(new Insets(10, 10, 10, 10));
 		editorPane.setEditable(false);
 		editorPane.setEditorKit(new HTMLEditorKit());
 		editorPane.addHyperlinkListener(new HyperlinkAction(editorPane));
 
-		URL logoURL = this.getClass().getResource("enrichmentmap_logo.png");
+		URL logoURL = getClass().getClassLoader().getResource("images/enrichmentmap_logo.png");
 
 		editorPane.setText("<html><body style='font-family:Arial,Helvetica,sans-serif;'>" +
-				"<table border='0'><tr>" + "<td width='125'></td>" + "<td width='200'>"
-				+ "<p align=center><b>EnrichmentMap v" + APP_VERSION + "</b><BR>" + "A Cytoscape App<BR>" + "<BR></p>"
-				+ "</td>" + "<td width='125'><div align='right'><img height='77' width='125' src=\""
-				+ logoURL.toString() + "\" ></div></td>" + "</tr>"
-				+ "</table>"
+				"<table border='0'><tr>"
+				+ "<td width='92' valign='top'><img height='46' width='92' src='" + logoURL.toString() + "'></td>"
+				+ "<td width='209'>"
+				+ "<p align=center>"
+				+ "<b style='font-size:1.5em;'><span style='color:#1f78b4;'>Enrichment</span><span style='color:#33a02c;'>Map</span></b>"
+				+ "<BR><span style='font-size:small;'><b>version " + APP_VERSION + "</b>"
+				+ "<BR><BR>A Cytoscape App</span>"
+				+ "</p>"
+				+ "</td>"
+				+ "<td width='92'> </td>"
+				+ "</tr></table>"
 				+ "<hr size='4' noshade>"
 				+ "<p align=center>EnrichmentMap is a network-based method to visualize<BR>"
-				+ "and interpret gene-set enrichment results.<BR>" + "<BR>"
+				+ "and interpret gene-set enrichment results.<BR><BR>"
 				+ "by Gary Bader, Daniele Merico, Ruth Isserlin and Oliver Stueker<BR>"
-				+ "(<a href='http://www.baderlab.org/'>Bader Lab</a>, University of Toronto)<BR>" + "<BR>"
-				+ "App Homepage:<BR>" + "<a href='" + APP_URL + "'>" + APP_URL + "</a></p><BR>"
+				+ "(<a href='http://www.baderlab.org/'>Bader Lab</a>, University of Toronto)<BR><BR>"
+				+ "App Homepage:<BR><a href='" + APP_URL + "'>" + APP_URL + "</a></p><BR>"
 				+ "<hr size='4' noshade>"
 				+ "<p style='font-size:small'>If you use this app in your research, please cite:</p>"
 				+ "<p style='font-family:Courier,monospace;font-size:small'>"
@@ -105,6 +110,7 @@ public class AboutDialog extends JDialog {
 	}
 
 	private class HyperlinkAction implements HyperlinkListener {
+		
 		@SuppressWarnings("unused")
 		JEditorPane pane;
 
@@ -112,10 +118,10 @@ public class AboutDialog extends JDialog {
 			this.pane = pane;
 		}
 
+		@Override
 		public void hyperlinkUpdate(HyperlinkEvent event) {
-			if(event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+			if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
 				browser.openURL(event.getURL().toString());
-			}
 		}
 	}
 }
