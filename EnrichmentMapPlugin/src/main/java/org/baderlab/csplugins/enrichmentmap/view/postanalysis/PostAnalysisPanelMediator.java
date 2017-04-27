@@ -140,7 +140,7 @@ public class PostAnalysisPanelMediator {
 			ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
 			EMStyleOptions options = controlPanelMediator.createStyleOptions(netView);
 			CyCustomGraphics2<?> chart = controlPanelMediator.createChart(options);
-			tasks.append(applyStyleTaskFactory.create(options, chart));
+			tasks.append(applyStyleTaskFactory.create(options, chart, false));
 
 			taskManager.execute(tasks, new DialogObserver());
 		} else {

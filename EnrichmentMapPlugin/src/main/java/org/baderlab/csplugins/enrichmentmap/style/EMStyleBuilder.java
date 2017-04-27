@@ -46,12 +46,14 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.events.VisualStyleChangeRecord;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.jcolorbrewer.ColorBrewer;
@@ -181,6 +183,9 @@ public class EMStyleBuilder {
 		return chartType == null || chartType == ChartType.RADIAL_HEAT_MAP ? ELLIPSE : RECTANGLE;
 	}
 	
+	/**
+	 * Updates the whole EM style.
+	 */
 	public void updateProperties(VisualStyle vs, EMStyleOptions options, CyCustomGraphics2<?> chart) {
 		eventHelper.silenceEventSource(vs);
 		
@@ -208,9 +213,25 @@ public class EMStyleBuilder {
 			if (options.isPublicationReady()) {
 				vs.removeVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
 				vs.setDefaultValue(BasicVisualLexicon.NODE_LABEL, "");
-				vs.removeVisualMappingFunction(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
 				vs.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, Color.WHITE);
 			}
+		} finally {
+			eventHelper.unsilenceEventSource(vs);
+			eventHelper.addEventPayload(vs, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+		}
+	}
+	
+	public void updateNodeChart(VisualStyle vs, EMStyleOptions options, CyCustomGraphics2<?> chart) {
+		eventHelper.silenceEventSource(vs);
+		
+		try {
+			String chartName = chart != null ? chart.getDisplayName() : null;
+			ChartType chartType = ChartType.toChartType(chartName);
+			
+			setNodeChartDefaults(vs, chartType);
+			setNodeShapes(vs, options, chartType);
+			setNodeSize(vs, options, chartType);
+			setNodeChart(vs, chart);
 		} finally {
 			eventHelper.unsilenceEventSource(vs);
 			eventHelper.addEventPayload(vs, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
@@ -318,23 +339,53 @@ public class EMStyleBuilder {
 		// Set the default node appearance
 		vs.setDefaultValue(NODE_FILL_COLOR, Colors.DEF_NODE_COLOR);
 		vs.setDefaultValue(NODE_BORDER_PAINT, Colors.DEF_NODE_BORDER_COLOR);
-		vs.setDefaultValue(NODE_SHAPE, getDefaultNodeShape(chartType));
-		vs.setDefaultValue(NODE_SIZE, chartType == ChartType.RADIAL_HEAT_MAP ? MIN_NODE_SIZE : (MAX_NODE_SIZE + MIN_NODE_SIZE) / 2);
 		vs.setDefaultValue(NODE_BORDER_WIDTH, DEF_NODE_BORDER_WIDTH);
 		vs.setDefaultValue(NODE_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
 		vs.setDefaultValue(NODE_BORDER_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
 		vs.setDefaultValue(NODE_LABEL_TRANSPARENCY, DEF_NODE_TRANSPARENCY);
+		setNodeChartDefaults(vs, chartType);
+	}
+
+	/**
+	 * Sets default node visual properties that can be affected by the chart type.
+	 */
+	private void setNodeChartDefaults(VisualStyle vs, ChartType chartType) {
+		vs.setDefaultValue(NODE_SHAPE, getDefaultNodeShape(chartType));
+		vs.setDefaultValue(NODE_SIZE, chartType == ChartType.RADIAL_HEAT_MAP ? MIN_NODE_SIZE : (MAX_NODE_SIZE + MIN_NODE_SIZE) / 2);
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void setNodeShapes(VisualStyle vs, EMStyleOptions options, ChartType chartType) {
 		String prefix = options.getAttributePrefix();
+		String columnName = Columns.NODE_GS_TYPE.with(prefix, null);
+		NodeShape enrShape = getDefaultNodeShape(chartType);
 		
-		// Add mapping function for node shape
-		DiscreteMapping<String, NodeShape> nodeShape = (DiscreteMapping<String, NodeShape>) dmFactory
-				.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_SHAPE);
-		nodeShape.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, getDefaultNodeShape(chartType));
-		nodeShape.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, SIGNATURE_NODE_SHAPE);
-		vs.addVisualMappingFunction(nodeShape);
+		VisualMappingFunction<?, NodeShape> oldMapping = vs.getVisualMappingFunction(NODE_SHAPE);
+		
+		// This is done for performance optimization only!
+		boolean update = oldMapping instanceof DiscreteMapping == false;
+		
+		if (!update) {
+			// Also test the mapped column name
+			update = !columnName.equals(oldMapping.getMappingColumnName());
+			
+			if (!update) {
+				// Finally test the mapping values
+				Object enrVal = ((DiscreteMapping) oldMapping).getMapValue(Columns.NODE_GS_TYPE_ENRICHMENT);
+				Object sigVal = ((DiscreteMapping) oldMapping).getMapValue(Columns.NODE_GS_TYPE_SIGNATURE);
+				
+				update = !enrShape.equals(enrVal) || !SIGNATURE_NODE_SHAPE.equals(sigVal);
+			}
+		}
+		
+		if (update) {
+			// Add mapping function for node shape
+			DiscreteMapping<String, NodeShape> nodeShape = (DiscreteMapping<String, NodeShape>) dmFactory
+					.createVisualMappingFunction(columnName, String.class, NODE_SHAPE);
+			nodeShape.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, enrShape);
+			nodeShape.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, SIGNATURE_NODE_SHAPE);
+			vs.addVisualMappingFunction(nodeShape);
+		}
 	}
 	
 	private void setNodeBorderColors(VisualStyle vs, EMStyleOptions options) {
@@ -440,18 +491,54 @@ public class EMStyleBuilder {
 		vs.addVisualMappingFunction(nodeLabel);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private void setNodeSize(VisualStyle vs, EMStyleOptions options, ChartType chartType) {
 		if (chartType == null || chartType == ChartType.RADIAL_HEAT_MAP) {
 			String prefix = options.getAttributePrefix();
-			ContinuousMapping<Integer, Double> nodeSize = (ContinuousMapping<Integer, Double>) cmFactory
-					.createVisualMappingFunction(Columns.NODE_GS_SIZE.with(prefix,null), Integer.class, NODE_SIZE);
-	
-			BoundaryRangeValues<Double> bv0 = new BoundaryRangeValues<Double>(MIN_NODE_SIZE, MIN_NODE_SIZE, MIN_NODE_SIZE);
-			BoundaryRangeValues<Double> bv1 = new BoundaryRangeValues<Double>(MAX_NODE_SIZE, MAX_NODE_SIZE, MAX_NODE_SIZE);
-			nodeSize.addPoint(10, bv0);
-			nodeSize.addPoint(474, bv1);
-	
-			vs.addVisualMappingFunction(nodeSize);
+			String columnName = Columns.NODE_GS_SIZE.with(prefix, null);
+			int val0 = 10;
+			int val1 = 474;
+			
+			VisualMappingFunction<?, Double> oldMapping = vs.getVisualMappingFunction(NODE_SIZE);
+			
+			// This is done for performance optimization only!
+			boolean update = oldMapping instanceof ContinuousMapping == false;
+			
+			if (!update) {
+				try {
+					// Also test the mapped column name and number of points
+					update = !columnName.equals(oldMapping.getMappingColumnName())
+							|| ((ContinuousMapping) oldMapping).getPointCount() != 2;
+					
+					if (!update) {
+						// And the mapping values
+						ContinuousMappingPoint pt0 = ((ContinuousMapping) oldMapping).getPoint(0);
+						ContinuousMappingPoint pt1 = ((ContinuousMapping) oldMapping).getPoint(1);
+						
+						update = val0 != (Integer) pt0.getValue();
+						update = update || val1 != (Integer) pt1.getValue();
+						
+						if (!update) // Finally test the boundary ranges
+							update = MIN_NODE_SIZE != pt0.getRange().equalValue
+									|| MAX_NODE_SIZE != pt1.getRange().equalValue;
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					update = true;
+				}
+			}
+			
+			if (update) {
+				ContinuousMapping<Integer, Double> mapping = (ContinuousMapping<Integer, Double>) cmFactory
+						.createVisualMappingFunction(columnName, Integer.class, NODE_SIZE);
+		
+				BoundaryRangeValues<Double> bv0 = new BoundaryRangeValues<>(MIN_NODE_SIZE, MIN_NODE_SIZE, MIN_NODE_SIZE);
+				BoundaryRangeValues<Double> bv1 = new BoundaryRangeValues<>(MAX_NODE_SIZE, MAX_NODE_SIZE, MAX_NODE_SIZE);
+				mapping.addPoint(val0, bv0);
+				mapping.addPoint(val1, bv1);
+		
+				vs.addVisualMappingFunction(mapping);
+			}
 		} else {
 			vs.removeVisualMappingFunction(NODE_SIZE);
 		}

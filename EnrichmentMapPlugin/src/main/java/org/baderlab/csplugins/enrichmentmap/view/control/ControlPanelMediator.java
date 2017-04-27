@@ -477,7 +477,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 								updating = false;
 							}
 							
-							updateVisualStyle(map, viewPanel);
+							updateVisualStyle(map, viewPanel, true);
 						}
 					});
 					viewPanel.getChartTypeCombo().addItemListener(evt -> {
@@ -491,16 +491,16 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 								updating = false;
 							}
 							
-							updateVisualStyle(map, viewPanel);
+							updateVisualStyle(map, viewPanel, true);
 						}
 					});
 					viewPanel.getChartColorsCombo().addItemListener(evt -> {
 						if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
-							updateVisualStyle(map, viewPanel);
+							updateVisualStyle(map, viewPanel, true);
 					});
 					viewPanel.getShowChartLabelsCheck().addActionListener(evt -> {
 						if (!updating)
-							updateVisualStyle(map, viewPanel);
+							updateVisualStyle(map, viewPanel, true);
 					});
 					viewPanel.getPublicationReadyCheck().addActionListener(evt -> {
 						if (!updating)
@@ -613,13 +613,17 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	private void updateVisualStyle(EnrichmentMap map, EMViewControlPanel viewPanel) {
+		updateVisualStyle(map, viewPanel, false);
+	}
+	
+	private void updateVisualStyle(EnrichmentMap map, EMViewControlPanel viewPanel, boolean updateChartOnly) {
 		EMStyleOptions options = createStyleOptions(map, viewPanel);
 		CyCustomGraphics2<?> chart = createChart(options);
-		applyVisualStyle(options, chart);
+		applyVisualStyle(options, chart, updateChartOnly);
 	}
 
-	private void applyVisualStyle(EMStyleOptions options, CyCustomGraphics2<?> chart) {
-		ApplyEMStyleTask task = applyStyleTaskFactory.create(options, chart);
+	private void applyVisualStyle(EMStyleOptions options, CyCustomGraphics2<?> chart, boolean updateChartOnly) {
+		ApplyEMStyleTask task = applyStyleTaskFactory.create(options, chart, updateChartOnly);
 		dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
 			@Override
 			public void taskFinished(ObservableTask task) {

@@ -54,7 +54,7 @@ public class CreateEMViewTask extends AbstractTask {
 		if (layout == null)
 			layout = layoutManager.getDefaultLayout();
 		
-		Task styleTask = applyStyleTaskFactory.create(new EMStyleOptions(view, map), null);
+		Task styleTask = applyStyleTaskFactory.create(new EMStyleOptions(view, map), null, false);
 		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(),
 				CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
 		

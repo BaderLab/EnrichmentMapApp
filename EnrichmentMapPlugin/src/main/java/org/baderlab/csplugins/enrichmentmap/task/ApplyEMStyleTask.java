@@ -26,15 +26,18 @@ public class ApplyEMStyleTask extends AbstractTask {
 
 	private final EMStyleOptions options;
 	private final CyCustomGraphics2<?> chart;
+	private final boolean updateChartOnly;
 
 	public interface Factory {
-		ApplyEMStyleTask create(EMStyleOptions options, CyCustomGraphics2<?> chart);
+		ApplyEMStyleTask create(EMStyleOptions options, CyCustomGraphics2<?> chart, boolean updateChartOnly);
 	}
 
 	@Inject
-	public ApplyEMStyleTask(@Assisted EMStyleOptions options, @Assisted @Nullable CyCustomGraphics2<?> chart) {
+	public ApplyEMStyleTask(@Assisted EMStyleOptions options, @Assisted @Nullable CyCustomGraphics2<?> chart,
+			@Assisted boolean updateChartOnly) {
 		this.options = options;
 		this.chart = chart;
+		this.updateChartOnly = updateChartOnly;
 	}
 
 	@Override
@@ -47,7 +50,11 @@ public class ApplyEMStyleTask extends AbstractTask {
 	private void applyVisualStyle() {
 		CyNetworkView view = options.getNetworkView();
 		VisualStyle vs = getVisualStyle(options.getEnrichmentMap());
-		styleBuilderProvider.get().updateProperties(vs, options, chart);
+		
+		if (updateChartOnly)
+			styleBuilderProvider.get().updateNodeChart(vs, options, chart);
+		else
+			styleBuilderProvider.get().updateProperties(vs, options, chart);
 
 		if (!vs.equals(visualMappingManager.getVisualStyle(view)))
 			visualMappingManager.setVisualStyle(vs, view);
