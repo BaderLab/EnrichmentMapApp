@@ -5,6 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
@@ -60,6 +61,10 @@ public class CardDialog {
 	private void createComponents() {
 		dialog.setLayout(new BorderLayout());
 		dialog.setPreferredSize(params.getPreferredSize());
+		Dimension minimumSize = params.getMinimumSize();
+		if(minimumSize != null) {
+			dialog.setMinimumSize(minimumSize);
+		}
 		dialog.setTitle(params.getTitle());
 		
 		// Create message and button panel first because the controller can call callbacks from inside createBodyPanel()

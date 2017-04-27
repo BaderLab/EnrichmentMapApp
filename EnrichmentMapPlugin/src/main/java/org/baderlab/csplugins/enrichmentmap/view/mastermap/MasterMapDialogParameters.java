@@ -53,6 +53,11 @@ public class MasterMapDialogParameters implements CardDialogParameters {
 	}
 	
 	@Override
+	public Dimension getMinimumSize() {
+		return new Dimension(650, 500);
+	}
+	
+	@Override
 	public Icon getIcon() {
 		URL iconURL = AboutDialog.class.getResource("enrichmentmap_logo.png");
 		ImageIcon original = new ImageIcon(iconURL);
