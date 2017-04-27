@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.mastermap;
+package org.baderlab.csplugins.enrichmentmap.view.creation;
 
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 

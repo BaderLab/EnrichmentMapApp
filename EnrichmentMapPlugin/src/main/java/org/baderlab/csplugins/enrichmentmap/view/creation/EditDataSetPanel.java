@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.mastermap;
+package org.baderlab.csplugins.enrichmentmap.view.creation;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;

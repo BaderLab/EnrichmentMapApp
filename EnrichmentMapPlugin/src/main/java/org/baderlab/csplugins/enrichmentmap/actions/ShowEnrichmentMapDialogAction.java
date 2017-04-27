@@ -4,7 +4,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
-import org.baderlab.csplugins.enrichmentmap.view.mastermap.MasterMapDialogParameters;
+import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogParameters;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialog;
 import org.cytoscape.application.swing.CySwingApplication;
 
@@ -14,7 +14,7 @@ import com.google.inject.Provider;
 @SuppressWarnings("serial")
 public class ShowEnrichmentMapDialogAction extends AbstractAction {
 
-	@Inject private Provider<MasterMapDialogParameters> dialogParametersProvider;
+	@Inject private Provider<CreationDialogParameters> dialogParametersProvider;
 	@Inject private CySwingApplication application;
 	
 	private CardDialog masterMapDialog;
@@ -26,7 +26,7 @@ public class ShowEnrichmentMapDialogAction extends AbstractAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (masterMapDialog == null) {
-			MasterMapDialogParameters params = dialogParametersProvider.get();
+			CreationDialogParameters params = dialogParametersProvider.get();
 			masterMapDialog = new CardDialog(application.getJFrame(), params);
 		}
 		

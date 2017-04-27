@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.mastermap;
+package org.baderlab.csplugins.enrichmentmap.view.creation;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

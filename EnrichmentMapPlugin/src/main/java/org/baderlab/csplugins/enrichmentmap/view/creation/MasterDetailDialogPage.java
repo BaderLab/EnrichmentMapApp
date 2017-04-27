@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.mastermap;
+package org.baderlab.csplugins.enrichmentmap.view.creation;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
@@ -42,7 +42,7 @@ import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.view.mastermap.ErrorMessageDialog.MessageType;
+import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog.MessageType;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
@@ -306,7 +306,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	@Override
 	public void extraButtonClicked(String actionCommand) {
-		if(MasterMapDialogParameters.RESET_BUTTON_ACTION_COMMAND.equals(actionCommand)) {
+		if(CreationDialogParameters.RESET_BUTTON_ACTION_COMMAND.equals(actionCommand)) {
 			reset();
 		}
 	}

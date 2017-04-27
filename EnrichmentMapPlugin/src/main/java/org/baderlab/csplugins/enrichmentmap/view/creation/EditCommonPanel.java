@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.mastermap;
+package org.baderlab.csplugins.enrichmentmap.view.creation;
 
 import java.util.ArrayList;
 import java.util.List;

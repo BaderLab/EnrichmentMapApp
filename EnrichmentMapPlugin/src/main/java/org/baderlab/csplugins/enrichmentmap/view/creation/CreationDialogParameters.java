@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.mastermap;
+package org.baderlab.csplugins.enrichmentmap.view.creation;
 
 import java.awt.Dimension;
 import java.util.Arrays;
@@ -13,7 +13,7 @@ import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogParameters;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-public class MasterMapDialogParameters implements CardDialogParameters {
+public class CreationDialogParameters implements CardDialogParameters {
 
 	static final String RESET_BUTTON_ACTION_COMMAND = "reset";
 	
