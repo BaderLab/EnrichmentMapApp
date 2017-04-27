@@ -104,5 +104,7 @@ public class CyActivator extends AbstractCyActivator {
 			LegendPanelMediator legendPanelMediator = injector.getInstance(LegendPanelMediator.class);
 			legendPanelMediator.hideDialog();
 		}
+		
+		super.shutDown();
 	}
 }
