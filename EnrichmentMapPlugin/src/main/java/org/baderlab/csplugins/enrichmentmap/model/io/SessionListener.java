@@ -1,7 +1,8 @@
-package org.baderlab.csplugins.enrichmentmap;
+package org.baderlab.csplugins.enrichmentmap.model.io;
 
-import org.baderlab.csplugins.enrichmentmap.model.io.SessionModelIO;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.SessionViewIO;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
@@ -12,15 +13,16 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public class SessionListener implements SessionLoadedListener, SessionAboutToBeSavedListener {
+public class SessionListener implements SessionLoadedListener, SessionAboutToBeSavedListener, CyShutdownListener {
 
 	@Inject private SessionModelIO modelIO;
 	@Inject private SessionViewIO viewIO;
 	
+	private boolean cytoscapeShuttingDown = false;
+	
 	@Override
 	public void handleEvent(SessionLoadedEvent event) {
-		CySession session = event.getLoadedSession();
-		restore(session);
+		restore(event.getLoadedSession());
 	}
 
 	@Override
@@ -36,5 +38,17 @@ public class SessionListener implements SessionLoadedListener, SessionAboutToBeS
 	public void restore(CySession session) {
 		modelIO.restoreModel(session);
 		viewIO.restoreView(session);
+	}
+	
+	@Override
+	public void handleEvent(CyShutdownEvent e) {
+		cytoscapeShuttingDown = e.actuallyShutdown();
+	}
+
+	public void appShutdown() {
+		if(!cytoscapeShuttingDown) {
+			// the App is being updated or restarted, we want to save all the data first
+			save();
+		}
 	}
 }

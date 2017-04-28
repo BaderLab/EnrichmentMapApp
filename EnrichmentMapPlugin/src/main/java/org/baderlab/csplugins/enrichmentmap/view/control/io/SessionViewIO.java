@@ -64,10 +64,6 @@ public class SessionViewIO {
 		});
 	}
 	
-	public void restoreView() {
-		restoreView(null);
-	}
-	
 	public void restoreView(CySession session) {
 		if (!headless) {
 			CyTable table = getPrivateTable();

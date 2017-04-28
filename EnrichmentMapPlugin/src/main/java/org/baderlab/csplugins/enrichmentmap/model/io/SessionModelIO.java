@@ -1,8 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.model.io;
 
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +14,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
-import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -89,10 +86,6 @@ public class SessionModelIO {
 				id[0]++;
 			}
 		});
-	}
-	
-	public void restoreModel() {
-		restoreModel(null);
 	}
 	
 	public void restoreModel(CySession session) {
@@ -239,16 +232,4 @@ public class SessionModelIO {
 		table.deleteRows(rowKeys);
 	}
 	
-	
-	@SuppressWarnings("serial")
-	public List<AbstractCyAction> getDebugActions() {
-		return Arrays.asList(
-			new AbstractCyAction(CyActivator.APP_NAME + ": Save Model") {
-				{setPreferredMenu("Apps");}
-				public void actionPerformed(ActionEvent e) {
-					saveModel();
-				}
-			}
-		);
-	}
 }

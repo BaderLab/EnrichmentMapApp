@@ -7,6 +7,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.io.SessionListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChartFactory;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
@@ -93,18 +94,21 @@ public class CyActivator extends AbstractCyActivator {
 		Em21Handler.removeVersion21(bc, injector.getInstance(CyApplicationConfiguration.class));
 	}
 	
+	
 	@Override
 	public void shutDown() {
-		if (injector != null) {
-			// If the App gets updated or restarted we need to save all the data first
-			SessionListener sessionListener = injector.getInstance(SessionListener.class);
-			sessionListener.save();
-			
-			// Also close the legend panel
-			LegendPanelMediator legendPanelMediator = injector.getInstance(LegendPanelMediator.class);
-			legendPanelMediator.hideDialog();
+		try {
+			if (injector != null) {
+				// If the App gets updated or restarted we need to save all the data first
+				SessionListener sessionListener = injector.getInstance(SessionListener.class);
+				sessionListener.appShutdown();
+				
+				// Close the legend panel
+				LegendPanelMediator legendPanelMediator = injector.getInstance(LegendPanelMediator.class);
+				legendPanelMediator.hideDialog();
+			}
+		} finally {
+			super.shutDown();
 		}
-		
-		super.shutDown();
 	}
 }
