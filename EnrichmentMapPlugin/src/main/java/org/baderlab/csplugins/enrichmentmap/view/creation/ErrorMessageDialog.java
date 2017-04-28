@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -81,6 +82,14 @@ public class ErrorMessageDialog extends JDialog {
 	
 	public boolean shouldContinue() {
 		return shouldContinue;
+	}
+	
+	public boolean isEmpty() {
+		return y == 0;
+	}
+	
+	public void addSection(MessageType messageType, String title, String icon, String message) {
+		addSection(messageType, title, icon, Arrays.asList(message));
 	}
 	
 	public void addSection(MessageType messageType, String title, String icon, List<String> messages) {

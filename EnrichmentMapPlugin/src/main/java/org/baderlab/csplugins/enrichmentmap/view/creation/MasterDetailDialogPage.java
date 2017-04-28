@@ -8,10 +8,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.io.File;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -356,17 +358,15 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	}
 	
 	private boolean validateInput() {
-		ErrorMessageDialog dialog = null;
+		ErrorMessageDialog dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
 		
 		// Check if the user provided a global expression file, warn if there are also per-dataset expression files.
 		if(!isNullOrEmpty(commonPanel.getExpressionFile())) {
 			for(DataSetListItem item : dataSetListModel.toList()) {
 				DetailPanel panel = item.getDetailPanel();
 				if(panel instanceof EditDataSetPanel && !isNullOrEmpty(((EditDataSetPanel)panel).getExpressionFileName())) {
-					if(dialog == null)
-						dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
-					List<String> messages = Arrays.asList("A common expression file has been provided. Per-dataset expression files will be ignored.");
-					dialog.addSection(MessageType.WARN, commonPanel.getDisplayName(), commonPanel.getIcon(), messages);
+					String message = "A common expression file has been provided. Per-dataset expression files will be ignored.";
+					dialog.addSection(MessageType.WARN, commonPanel.getDisplayName(), commonPanel.getIcon(), message);
 					break;
 				}
 			}
@@ -377,12 +377,30 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			for(DataSetListItem item : dataSetListModel.toList()) {
 				DetailPanel panel = item.getDetailPanel();
 				if(panel instanceof EditDataSetPanel && !isNullOrEmpty(((EditDataSetPanel)panel).getGMTFileName())) {
-					if(dialog == null)
-						dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
-					List<String> messages = Arrays.asList("A common GMT file has been provided. Per-dataset GMT files will be ignored.");
-					dialog.addSection(MessageType.WARN, commonPanel.getDisplayName(), commonPanel.getIcon(), messages);
+					String message = "A common GMT file has been provided. Per-dataset GMT files will be ignored.";
+					dialog.addSection(MessageType.WARN, commonPanel.getDisplayName(), commonPanel.getIcon(), message);
 					break;
 				}
+			}
+		}
+		
+		{ // Check for duplicate data set names
+			Map<String,Long> dataSetNameCount = dataSetListModel.stream()
+				.map(DataSetListItem::getDetailPanel)
+				.filter(panel -> panel instanceof EditDataSetPanel)
+				.map(panel -> (EditDataSetPanel)panel)
+				.map(EditDataSetPanel::getDataSetName)
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+			
+			List<String> messages = new ArrayList<>();
+			dataSetNameCount.forEach((name,count) -> {
+				if(count > 1) {
+					messages.add("Duplicate data set name:  '" + name + "'");
+				}
+			});
+			
+			if(!messages.isEmpty()) {
+				dialog.addSection(MessageType.ERROR, "Duplicate Data Set Names", commonPanel.getIcon(), messages);
 			}
 		}
 		
@@ -391,18 +409,15 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			DetailPanel panel = item.getDetailPanel();
 			List<String> messages = panel.validateInput();
 			if(!messages.isEmpty()) {
-				if(dialog == null)
-					dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
 				dialog.addSection(MessageType.ERROR, panel.getDisplayName(), panel.getIcon(), messages);
 			}
 		}
 				
-		if(dialog != null) {
+		if(!dialog.isEmpty()) {
 			dialog.pack();
 			dialog.setLocationRelativeTo(callback.getDialogFrame());
 			dialog.setModal(true);
 			dialog.setVisible(true);
-
 			// This will always return false if the dialog has error messages. 
 			// If the dialog only has warning messages then the user can choose to continue.
 			return dialog.shouldContinue();
