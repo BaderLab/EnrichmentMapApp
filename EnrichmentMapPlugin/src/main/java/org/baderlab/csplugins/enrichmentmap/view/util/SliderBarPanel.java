@@ -235,10 +235,12 @@ public class SliderBarPanel extends JPanel {
 			int n = result.isPresent() ? result.get() : 10;
 			slider.setMajorTickSpacing(S_RANGE / n);
 			
-			if (S_RANGE / (n * n) > 0)
-				slider.setMinorTickSpacing(S_RANGE / (n * n));
-			else
-				slider.setMinorTickSpacing(S_RANGE / (n * 2));
+			if (n <= 5) {
+				if (S_RANGE / (n * n) > 0)
+					slider.setMinorTickSpacing(S_RANGE / (n * n));
+				else
+					slider.setMinorTickSpacing(S_RANGE / (n * 2));
+			}
 			
 			labelTable.put(S_MIN, new JLabel(format.format(min)));
 			
