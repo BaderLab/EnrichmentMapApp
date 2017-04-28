@@ -1,17 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.view.control;
 
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.FILTERED_OUT_EDGE_TRANSPARENCY;
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.FILTERED_OUT_NODE_TRANSPARENCY;
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE;
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE_ENRICHMENT;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,9 +40,10 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
-import org.baderlab.csplugins.enrichmentmap.style.NullCustomGraphics;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
+import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
+import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask.FilterMode;
 import org.baderlab.csplugins.enrichmentmap.task.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
@@ -76,14 +68,10 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
@@ -102,23 +90,6 @@ import com.google.inject.Singleton;
 public class ControlPanelMediator implements SetCurrentNetworkViewListener, NetworkViewAddedListener,
 		NetworkViewAboutToBeDestroyedListener {
 
-	private enum FilterMode {
-		HIDE("Hide filtered out nodes and edges"),
-		HIGHLIGHT("Highlight filtered nodes and edges"),
-		SELECT("Select filtered nodes and edges");
-		
-		private final String label;
-
-		private FilterMode(String label) {
-			this.label = label;
-		}
-		
-		@Override
-		public String toString() {
-			return label;
-		}
-	}
-
 	@Inject private Provider<ControlPanel> controlPanelProvider;
 	@Inject private Provider<LegendPanelMediator> legendPanelMediatorProvider;
 	@Inject private Provider<PostAnalysisPanelMediator> postAnalysisPanelMediatorProvider;
@@ -131,9 +102,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private CySwingApplication swingApplication;
 	@Inject private CyNetworkViewManager networkViewManager;
 	@Inject private CyNetworkManager networkManager;
-	@Inject private RenderingEngineManager renderingEngineManager;
 	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
 	@Inject private RemoveSignatureDataSetsTask.Factory removeDataSetsTaskFactory;
+	@Inject private FilterNodesEdgesTask.Factory filterNodesEdgesTaskFactory;
 	@Inject private DialogTaskManager dialogTaskManager;
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private ChartFactoryManager chartFactoryManager;
@@ -683,6 +654,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			timer.setCoalesce(true);
 			filterTimers.put(netView, timer);
 		} else {
+			for (ActionListener listener : timer.getActionListeners()) {
+				if (listener instanceof FilterActionListener)
+					((FilterActionListener) listener).cancel();
+			}
+			
 			timer.stop();
 		}
 		
@@ -739,6 +715,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		private final EMViewControlPanel viewPanel;
 		private final EnrichmentMap map;
 		private final CyNetworkView netView;
+		private FilterNodesEdgesTask task;
+		
+		private boolean cancelled;
+		private Object lock = new Object();
 		
 		public FilterActionListener(EMViewControlPanel viewPanel, EnrichmentMap map, CyNetworkView netView) {
 			this.viewPanel = viewPanel;
@@ -748,21 +728,50 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		
 		@Override
 		public void actionPerformed(ActionEvent evt) {
+			task = null;
+			cancelled = false;
+			
 			Set<AbstractDataSet> selectedDataSets = viewPanel.getCheckedDataSets();
 			
 			// Find nodes and edges that must be displayed
 			Set<CyNode> filteredInNodes = getFilteredInNodes(selectedDataSets);
+			
+			if (cancelled)
+				return;
+			
 			Set<CyEdge> filteredInEdges = getFilteredInEdges(selectedDataSets);
 			
-			// Hide or show nodes and their edges
-			showOrHideNodes(filteredInNodes);
-			showOrHideEdges(filteredInNodes, filteredInEdges);
-			netView.updateView();
+			if (cancelled)
+				return;
 			
-			Timer timer = filterTimers.get(netView);
+			// Run Task
+			task = filterNodesEdgesTaskFactory.create(netView, filteredInNodes, filteredInEdges, filterMode);
+			dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
+				@Override
+				public void taskFinished(ObservableTask task) {
+				}
+				
+				@Override
+				public void allFinished(FinishStatus finishStatus) {
+					synchronized (lock) {
+						task = null;
+						
+						if (!cancelled)
+							netView.updateView();
+					}
+				}
+			});
+		}
+		
+		public void cancel() {
+			cancelled = true;
 			
-			if (timer != null)
-				timer.stop();
+			synchronized (lock) {
+				if (task != null) {
+					task.cancel();
+					task = null;
+				}
+			}
 		}
 
 		private Set<CyNode> getFilteredInNodes(Set<AbstractDataSet> selectedDataSets) {
@@ -933,91 +942,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			}
 			
 			return filteredNames;
-		}
-		
-		private void showOrHideNodes(Set<CyNode> filteredInNodes) {
-			CyNetwork net = netView.getModel();
-			
-			for (CyNode n : net.getNodeList()) {
-				final View<CyNode> nv = netView.getNodeView(n);
-				
-				if (nv == null)
-					continue; // Should never happen!
-				
-				boolean filteredIn = filteredInNodes.contains(n);
-				
-				VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon(); 
-				VisualProperty<?> customGraphics1 = lexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
-				
-				// Don't forget to remove all previous locked values first!
-				nv.clearValueLock(NODE_VISIBLE);
-				nv.clearValueLock(NODE_TRANSPARENCY);
-				nv.clearValueLock(NODE_BORDER_TRANSPARENCY);
-				nv.clearValueLock(NODE_LABEL_TRANSPARENCY);
-				
-				if (customGraphics1 != null)
-					nv.clearValueLock(customGraphics1);
-				
-				if (filteredIn) {
-					if (filterMode == FilterMode.SELECT)
-						net.getRow(n).set(CyNetwork.SELECTED, true);
-				} else {
-					switch (filterMode) {
-						case HIDE:
-							net.getRow(n).set(CyNetwork.SELECTED, false);
-							nv.setLockedValue(NODE_VISIBLE, false);
-							break;
-						case HIGHLIGHT:
-							nv.setLockedValue(NODE_TRANSPARENCY, FILTERED_OUT_NODE_TRANSPARENCY);
-							nv.setLockedValue(NODE_BORDER_TRANSPARENCY, FILTERED_OUT_NODE_TRANSPARENCY);
-							nv.setLockedValue(NODE_LABEL_TRANSPARENCY, 0);
-							if (customGraphics1 != null)
-								nv.setLockedValue(customGraphics1, NullCustomGraphics.getNullObject());
-							break;
-						case SELECT:
-							net.getRow(n).set(CyNetwork.SELECTED, false);
-							break;
-					}
-				}
-			}
-		}
-		
-		private void showOrHideEdges(Set<CyNode> filteredInNodes, Set<CyEdge> filteredInEdges) {
-			CyNetwork net = netView.getModel();
-			
-			for (CyEdge e : net.getEdgeList()) {
-				final View<CyEdge> ev = netView.getEdgeView(e);
-				
-				if (ev == null)
-					continue; // Should never happen!
-				
-				boolean filteredIn = filteredInEdges.contains(e) && filteredInNodes.contains(e.getSource())
-						&& filteredInNodes.contains(e.getTarget());
-
-				// Don't forget to remove all locked values first!
-				ev.clearValueLock(EDGE_VISIBLE);
-				ev.clearValueLock(EDGE_TRANSPARENCY);
-				ev.clearValueLock(EDGE_LABEL_TRANSPARENCY);
-				
-				if (filteredIn) {
-					if (filterMode == FilterMode.SELECT)
-						net.getRow(e).set(CyNetwork.SELECTED, true);
-				} else {
-					switch (filterMode) {
-						case HIDE:
-							net.getRow(e).set(CyNetwork.SELECTED, false);
-							ev.setLockedValue(EDGE_VISIBLE, false);
-							break;
-						case HIGHLIGHT:
-							ev.setLockedValue(EDGE_TRANSPARENCY, FILTERED_OUT_EDGE_TRANSPARENCY);
-							ev.setLockedValue(EDGE_LABEL_TRANSPARENCY, FILTERED_OUT_EDGE_TRANSPARENCY);
-							break;
-						case SELECT:
-							net.getRow(e).set(CyNetwork.SELECTED, false);
-							break;
-					}
-				}
-			}
 		}
 	}
 }

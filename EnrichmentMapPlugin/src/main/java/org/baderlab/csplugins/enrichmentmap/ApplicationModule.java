@@ -12,6 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMViewTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.view.creation.EditDataSetPanel;
 import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog;
@@ -79,6 +80,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(CreateEMNetworkTask.Factory.class);
 		installFactory(CreateEMViewTask.Factory.class);
 		installFactory(ApplyEMStyleTask.Factory.class);
+		installFactory(FilterNodesEdgesTask.Factory.class);
 		installFactory(ClusterRankingOption.Factory.class);
 		installFactory(HeatMapParentPanel.Factory.class);
 		installFactory(HeatMapMainPanel.Factory.class);
