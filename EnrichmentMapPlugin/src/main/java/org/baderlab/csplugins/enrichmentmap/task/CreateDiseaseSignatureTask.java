@@ -116,7 +116,6 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 	private Map<String, GenesetSimilarity> geneSetSimilarities;
 	
 	private EMSignatureDataSet signatureDataSet;
-	private boolean createSeparateEdges;
 
 	private CreateDiseaseSignatureTaskResult.Builder taskResult = new CreateDiseaseSignatureTaskResult.Builder();
 
@@ -138,11 +137,6 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		}
 		return signatureDataSet;
 	}
-	
-	public void setCreateSeparateEdges(boolean createSeparateEdges) {
-		this.createSeparateEdges = createSeparateEdges;
-	}
-	
 	
 	@Inject
 	public CreateDiseaseSignatureTask(@Assisted EnrichmentMap map, @Assisted PostAnalysisParameters params, @Assisted String dataSetName) {
@@ -485,7 +479,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		
 		GenesetSimilarity genesetSimilarity = geneSetSimilarities.get(edgeName);
 		CyEdge edge = null;
-		if(!createSeparateEdges)
+		if(!map.getParams().getCreateDistinctEdges())
 			edge = NetworkUtil.getEdgeWithValue(network, edgeTable, CyNetwork.NAME, edgeName);
 		
 		if (edge == null) {
@@ -497,7 +491,8 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 					return;
 
 				edge = network.addEdge(hubNode, geneSet, false);
-				sigDataSet.addEdgeSuid(edge.getSUID());
+//				sigDataSet.addEdgeSuid(edge.getSUID());
+				map.getDataSet(dataSetName).addEdgeSuid(edge.getSUID());
 				taskResult.addNewEdge(edge);
 			} else {
 				return; // edge does not exist and does not pass cutoff, do nothing
@@ -528,7 +523,7 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 		Columns.EDGE_OVERLAP_GENES.set(row, prefix, null, geneList);
 		Columns.EDGE_OVERLAP_SIZE.set(row, prefix, null, genesetSimilarity.getSizeOfOverlap());
 		Columns.EDGE_SIMILARITY_COEFF.set(row, prefix, null, genesetSimilarity.getSimilarityCoeffecient());
-		Columns.EDGE_DATASET.set(row, prefix, null, Columns.EDGE_DATASET_VALUE_SIG);
+		Columns.EDGE_DATASET.set(row, prefix, null, dataSetName /* Columns.EDGE_DATASET_VALUE_SIG */);
 		
 		if (passedCutoff)
 			Columns.EDGE_CUTOFF_TYPE.set(row, prefix, null, params.getRankTestParameters().getType().display);

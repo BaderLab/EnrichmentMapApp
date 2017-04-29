@@ -133,7 +133,6 @@ public class PostAnalysisPanelMediator {
 			for(EMDataSet dataset : map.getDataSetList()) {
 				CreateDiseaseSignatureTask task = signatureTaskFactory.create(map, params, dataset.getName());
 				task.setSignatureDataSet(sigDataSet);
-				task.setCreateSeparateEdges(true);
 				tasks.append(task);
 			}
 			

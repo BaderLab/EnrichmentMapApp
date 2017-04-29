@@ -34,6 +34,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
@@ -112,6 +113,7 @@ public class EMStyleBuilder {
 		public static final ColumnDescriptor<String> EDGE_DATASET = new ColumnDescriptor<>("Data Set", String.class);
 		public static final String EDGE_DATASET_VALUE_COMPOUND = "compound"; 
 		public static final String EDGE_DATASET_VALUE_SIG = "signature"; // post-analysis edges
+		public static final String EDGE_INTERACTION_VALUE_SIG = "sig"; // post-analysis edges
 		
 		// Post-analysis Edge Attributes
 		public static final ColumnDescriptor<Double> EDGE_HYPERGEOM_PVALUE = new ColumnDescriptor<>("Overlap_Hypergeom_pVal", Double.class);
@@ -324,13 +326,14 @@ public class EMStyleBuilder {
 	}
 	
 	private void setEdgeLineType(VisualStyle vs, EMStyleOptions options) {
-		String prefix = options.getAttributePrefix();
-		String col = Columns.EDGE_DATASET.with(prefix, null);
+//		String prefix = options.getAttributePrefix();
+		String col = CyEdge.INTERACTION;
+//		String col = Columns.EDGE_DATASET.with(prefix, null);
 		
 		DiscreteMapping<String, LineType> dm = (DiscreteMapping<String, LineType>) dmFactory
 				.createVisualMappingFunction(col, String.class, EDGE_LINE_TYPE);
 		dm.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, LineTypeVisualProperty.SOLID);
-		dm.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, LineTypeVisualProperty.DOT);
+		dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_SIG, LineTypeVisualProperty.DOT);
 		
 		vs.addVisualMappingFunction(dm);
 	}
