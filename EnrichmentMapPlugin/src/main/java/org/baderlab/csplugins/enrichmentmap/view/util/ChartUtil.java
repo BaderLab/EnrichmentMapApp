@@ -224,7 +224,8 @@ public final class ChartUtil {
         domainAxis.setAxisLineVisible(false);
         domainAxis.setTickMarksVisible(false);
         domainAxis.setTickLabelFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
-        domainAxis.setLabelPaint(UIManager.getColor("Label.foreground"));
+        domainAxis.setTickLabelPaint(UIManager.getColor("Label.foreground"));
+        domainAxis.setTickLabelInsets(new RectangleInsets(0.0, 0.0, 0.0, 15.0));
         domainAxis.setCategoryMargin(0.0);
         
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();

@@ -510,10 +510,12 @@ public class LegendPanel extends JPanel {
 			
 			int h = 200;
 			
-			if (options.getChartOptions() != null
-					&& options.getChartOptions().getType() == ChartType.HEAT_STRIPS
-					&& options.getDataSets().size() > 4)
-				h = 300;
+			if (options.getChartOptions() != null) {
+				if (options.getChartOptions().getType() == ChartType.HEAT_STRIPS && options.getDataSets().size() > 4)
+					h = 300;
+				else if (options.getChartOptions().getType() == ChartType.HEAT_MAP)
+					h = Math.max(180, 62 + options.getDataSets().size() * 24);
+			}
 			
 			GroupLayout layout = (GroupLayout) nodeChartPanel.getLayout();
 
