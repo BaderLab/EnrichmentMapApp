@@ -54,6 +54,11 @@ public class CardDialog {
 		dialog.setVisible(true);
 	}
 	
+	public void dispose() {
+		dialog.setVisible(false);
+		dialog.dispose();
+	}
+	
 	public boolean isVisible() {
 		return dialog != null && dialog.isVisible();
 	}

@@ -53,13 +53,14 @@ public class GeneSet {
 
 	private final String name;
 	private final String description;
-	private final Set<Integer> genes;
+	// ImmutableSet uses less memory than a HashSet, also this forces GSON to deserialize using ImmutableSet.
+	private final ImmutableSet<Integer> genes;
 	private final Optional<String> source;
 	
 	public GeneSet(String name, String description, Set<Integer> genes) {
 		this.name = name;
 		this.description = description;
-		this.genes = genes;
+		this.genes = ImmutableSet.copyOf(genes);
 		
 		String[] name_tokens = name.split("%");
 		if(name_tokens.length > 1)

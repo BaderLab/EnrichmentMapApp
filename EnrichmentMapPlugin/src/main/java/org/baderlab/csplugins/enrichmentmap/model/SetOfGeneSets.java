@@ -13,10 +13,15 @@ public class SetOfGeneSets {
 	//name of results (ie. Dataset1 or name specified by user)
 	private String name;
 
-	//the set of genesets
-	// Hash Key = name of gene set
-	// Hash Value = Gene set
-	private Map<String, GeneSet> geneSets;
+	/** 
+	 * The set of genesets
+	 * Hash Key = name of gene set
+	 * Hash Value = Gene set
+	 * 
+	 * Note: Must declare the type as HashMap because it forces GSON to deserialize using 
+	 * an actual HashMap, otherwise it wants to use a LinkedTreeMap which uses much more memory.
+	 */
+	private HashMap<String, GeneSet> geneSets;
 
 	//filename
 	private String filename;
@@ -48,7 +53,7 @@ public class SetOfGeneSets {
 	 * the genes found in the expression file.
 	 */
 	public void filterGeneSets(Set<Integer> datasetGenes) {
-		Map<String, GeneSet> filteredGenesets = new HashMap<>();
+		HashMap<String, GeneSet> filteredGenesets = new HashMap<>();
 
 		//iterate through each geneset and filter each one
 		for (String geneSetName : geneSets.keySet()) {

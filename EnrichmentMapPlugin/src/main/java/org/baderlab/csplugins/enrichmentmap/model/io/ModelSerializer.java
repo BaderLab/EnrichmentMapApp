@@ -15,8 +15,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -25,6 +27,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.google.gson.reflect.TypeToken;
 
 public class ModelSerializer {
 	
@@ -44,10 +47,13 @@ public class ModelSerializer {
 	
 	
 	public static EnrichmentMap deserialize(String json) {
+		Type immutableIntSetType = new TypeToken<ImmutableSet<Integer>>() {}.getType();
+		
 		Gson gson = new GsonBuilder()
 				.registerTypeAdapter(BiMap.class, new BiMapAdapter())
 				.registerTypeHierarchyAdapter(Path.class, new PathAdapter())
 				.registerTypeAdapter(EnrichmentResult.class, new EnrichmentResultAdapter())
+				.registerTypeAdapter(immutableIntSetType, new ImmutableIntSetAdapter())
 				.create();
 		
 		try {
@@ -74,6 +80,19 @@ public class ModelSerializer {
             }
             return mapping;
         }
+	}
+	
+	private static class ImmutableIntSetAdapter implements JsonDeserializer<ImmutableSet<Integer>> {
+	    @Override
+	    public ImmutableSet<Integer> deserialize(JsonElement json, Type type, JsonDeserializationContext context) {
+	    	ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
+	    	JsonArray array = (JsonArray) json;
+	    	for(JsonElement element : array) {
+	    		int gene = element.getAsInt();
+	    		builder.add(gene);
+	    	}
+	    	return builder.build();
+	    }
 	}
 	
 	private static class PathAdapter implements JsonDeserializer<Path>, JsonSerializer<Path> {

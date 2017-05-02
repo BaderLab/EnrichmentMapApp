@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
+import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -106,6 +107,10 @@ public class CyActivator extends AbstractCyActivator {
 				// Close the legend panel
 				LegendPanelMediator legendPanelMediator = injector.getInstance(LegendPanelMediator.class);
 				legendPanelMediator.hideDialog();
+				
+				// Dispose the creation dialog, or else lots of memory leaks.
+				ShowEnrichmentMapDialogAction dialogAction = injector.getInstance(ShowEnrichmentMapDialogAction.class);
+				dialogAction.dispose();
 			}
 		} finally {
 			super.shutDown();
