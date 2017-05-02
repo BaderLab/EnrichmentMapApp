@@ -571,6 +571,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				public void allFinished(FinishStatus finishStatus) {
 					viewPanel.updateDataSetSelector();
 					updateLegends(viewPanel);
+					viewPanel.getNetworkView().updateView();
 				}
 			});
 		}
