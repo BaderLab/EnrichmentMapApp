@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.control;
 
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_INTERACTION_VALUE_SIG;
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE;
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE_ENRICHMENT;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
@@ -902,22 +903,25 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					show = false;
 				} else {
 					CyRow row = network.getRow(e);
+					String interaction = row.get(CyEdge.INTERACTION, String.class);
 					
-					for (String colName : columnNames) {
-						if (table.getColumn(colName) == null)
-							continue; // Ignore this column name (maybe the user deleted it)
-		
-						Double value = row.get(colName, Double.class);
-		
-						// Possible that there isn't value for this interaction
-						if (value == null)
-							continue;
-		
-						if (value >= minCutoff && value <= maxCutoff) {
-							show = true;
-							break;
-						} else {
-							show = false;
+					if (!EDGE_INTERACTION_VALUE_SIG.equals(interaction)) { // Do not filter signature edges
+						for (String colName : columnNames) {
+							if (table.getColumn(colName) == null)
+								continue; // Ignore this column name (maybe the user deleted it)
+			
+							Double value = row.get(colName, Double.class);
+			
+							// Possible that there isn't value for this interaction
+							if (value == null)
+								continue;
+			
+							if (value >= minCutoff && value <= maxCutoff) {
+								show = true;
+								break;
+							} else {
+								show = false;
+							}
 						}
 					}
 				}
