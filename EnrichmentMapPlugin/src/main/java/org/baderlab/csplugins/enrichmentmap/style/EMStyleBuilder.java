@@ -265,34 +265,44 @@ public class EMStyleBuilder {
 		String prefix = options.getAttributePrefix();
 		String col = Columns.EDGE_DATASET.with(prefix, null);
 		
-		DiscreteMapping<String, Paint> edgePaint = (DiscreteMapping<String, Paint>) dmFactory
+		DiscreteMapping<String, Paint> dm = (DiscreteMapping<String, Paint>) dmFactory
 				.createVisualMappingFunction(col, String.class, vp);
 		
-		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.COMPOUND_EDGE_COLOR);
-		edgePaint.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, Colors.SIG_EDGE_COLOR);
+		// Silence events fired by this mapping, or it will fire too many VisualMappingFunctionChangedEvents,
+		// which can be captured by VisualStyle later and cause unnecessary view updates,
+		// even though this mapping has not been set to a style yet
+		// (unfortunately that's just how Cytoscape's event payloads work).
+		eventHelper.silenceEventSource(dm);
 		
-		List<EMDataSet> dataSets = options.getEnrichmentMap().getDataSetList();
-		final ColorBrewer colorBrewer;
-		
-		// Try colorblind and/or print friendly colours first
-		if (dataSets.size() <= 4) // Try a colorblind safe color scheme first
-			colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=4
-		else if (dataSets.size() <= 5) // Same--more than 5, it adds a RED that can be confused with the edge selection color
-			colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=5
-		else
-			colorBrewer = ColorBrewer.Set3; // http://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12
+		try {
+			dm.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.COMPOUND_EDGE_COLOR);
+			dm.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, Colors.SIG_EDGE_COLOR);
 			
-		Color[] colors = colorBrewer.getColorPalette(dataSets.size());
-		
-		// Do not use the filtered data sets here, because we don't want edge colours changing when filtering
-		for (int i = 0; i < dataSets.size(); i++) {
-			EMDataSet ds = dataSets.get(i);
-			Color color = colors[i];
-			edgePaint.putMapValue(ds.getName(), color);
-			ds.setColor(color);
+			List<EMDataSet> dataSets = options.getEnrichmentMap().getDataSetList();
+			final ColorBrewer colorBrewer;
+			
+			// Try colorblind and/or print friendly colours first
+			if (dataSets.size() <= 4) // Try a colorblind safe color scheme first
+				colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=4
+			else if (dataSets.size() <= 5) // Same--more than 5, it adds a RED that can be confused with the edge selection color
+				colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=5
+			else
+				colorBrewer = ColorBrewer.Set3; // http://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12
+				
+			Color[] colors = colorBrewer.getColorPalette(dataSets.size());
+			
+			// Do not use the filtered data sets here, because we don't want edge colours changing when filtering
+			for (int i = 0; i < dataSets.size(); i++) {
+				EMDataSet ds = dataSets.get(i);
+				Color color = colors[i];
+				dm.putMapValue(ds.getName(), color);
+				ds.setColor(color);
+			}
+		} finally {
+			eventHelper.unsilenceEventSource(dm);
 		}
 		
-		return edgePaint;
+		return dm;
 	}
 	
 	private void setEdgeWidth(VisualStyle vs, EMStyleOptions options) {
@@ -307,7 +317,7 @@ public class EMStyleBuilder {
 			vs.addVisualMappingFunction(edgewidth);
 		} else {
 			// Continous Mapping - set edge line thickness based on the number of genes in the overlap
-			ContinuousMapping<Double, Double> edgewidth = (ContinuousMapping<Double, Double>) cmFactory
+			ContinuousMapping<Double, Double> cm = (ContinuousMapping<Double, Double>) cmFactory
 					.createVisualMappingFunction(Columns.EDGE_SIMILARITY_COEFF.with(prefix, null), Double.class, EDGE_WIDTH);
 			
 			Double underWidth = 0.5;
@@ -315,25 +325,38 @@ public class EMStyleBuilder {
 			Double maxWidth   = 5.0;
 			Double overWidth  = 6.0;
 	
-			// Create boundary conditions                  less than,   equals,  greater than
+			// Create boundary conditions
 			BoundaryRangeValues<Double> bv4 = new BoundaryRangeValues<>(underWidth, minWidth, minWidth);
 			BoundaryRangeValues<Double> bv5 = new BoundaryRangeValues<>(maxWidth, maxWidth, overWidth);
-			edgewidth.addPoint(map.getParams().getSimilarityCutoff(), bv4);
-			edgewidth.addPoint(1.0, bv5);
+			
+			// Silence events fired by this mapping to prevent unnecessary style and view updates
+			eventHelper.silenceEventSource(cm);
+			
+			try {
+				cm.addPoint(map.getParams().getSimilarityCutoff(), bv4);
+				cm.addPoint(1.0, bv5);
+			} finally {
+				eventHelper.unsilenceEventSource(cm);
+			}
 
-			vs.addVisualMappingFunction(edgewidth);
+			vs.addVisualMappingFunction(cm);
 		}
 	}
 	
 	private void setEdgeLineType(VisualStyle vs, EMStyleOptions options) {
-//		String prefix = options.getAttributePrefix();
 		String col = CyEdge.INTERACTION;
-//		String col = Columns.EDGE_DATASET.with(prefix, null);
-		
 		DiscreteMapping<String, LineType> dm = (DiscreteMapping<String, LineType>) dmFactory
 				.createVisualMappingFunction(col, String.class, EDGE_LINE_TYPE);
-		dm.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, LineTypeVisualProperty.SOLID);
-		dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_SIG, LineTypeVisualProperty.DOT);
+		
+		// Silence events fired by this mapping to prevent unnecessary style and view updates
+		eventHelper.silenceEventSource(dm);
+		
+		try {
+			dm.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, LineTypeVisualProperty.SOLID);
+			dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_SIG, LineTypeVisualProperty.DOT);
+		} finally {
+			eventHelper.unsilenceEventSource(dm);
+		}
 		
 		vs.addVisualMappingFunction(dm);
 	}
@@ -383,11 +406,20 @@ public class EMStyleBuilder {
 		
 		if (update) {
 			// Add mapping function for node shape
-			DiscreteMapping<String, NodeShape> nodeShape = (DiscreteMapping<String, NodeShape>) dmFactory
+			DiscreteMapping<String, NodeShape> dm = (DiscreteMapping<String, NodeShape>) dmFactory
 					.createVisualMappingFunction(columnName, String.class, NODE_SHAPE);
-			nodeShape.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, enrShape);
-			nodeShape.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, SIGNATURE_NODE_SHAPE);
-			vs.addVisualMappingFunction(nodeShape);
+			
+			// Silence events fired by this mapping to prevent unnecessary style and view updates
+			eventHelper.silenceEventSource(dm);
+			
+			try {
+				dm.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, enrShape);
+				dm.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, SIGNATURE_NODE_SHAPE);
+			} finally {
+				eventHelper.unsilenceEventSource(dm);
+			}
+			
+			vs.addVisualMappingFunction(dm);
 		}
 	}
 	
@@ -395,11 +427,20 @@ public class EMStyleBuilder {
 		String prefix = options.getAttributePrefix();
 		
 		// Add mapping function for node border color
-		DiscreteMapping<String, Paint> nodePaint = (DiscreteMapping<String, Paint>) dmFactory
+		DiscreteMapping<String, Paint> dm = (DiscreteMapping<String, Paint>) dmFactory
 				.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_BORDER_PAINT);
-		nodePaint.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_BORDER_COLOR);
-		nodePaint.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, Colors.SIG_NODE_BORDER_COLOR);
-		vs.addVisualMappingFunction(nodePaint);
+		
+		// Silence events fired by this mapping to prevent unnecessary style and view updates
+		eventHelper.silenceEventSource(dm);
+		
+		try {
+			dm.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_BORDER_COLOR);
+			dm.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, Colors.SIG_NODE_BORDER_COLOR);
+		} finally {
+			eventHelper.unsilenceEventSource(dm);
+		}
+		
+		vs.addVisualMappingFunction(dm);
 	}
 	
 	private void setNodeColors(VisualStyle vs, EMStyleOptions options) {
@@ -438,16 +479,23 @@ public class EMStyleBuilder {
 					.createVisualMappingFunction(Columns.NODE_COLOURING.with(prefix, ds.getName()), Double.class,
 							BasicVisualLexicon.NODE_FILL_COLOR);
 	
-			// Set the attribute point values associated with the boundary values
-			cm.addPoint(-1.0, bv3a);
-			cm.addPoint(-0.995, bv3b);
-			cm.addPoint(-0.95, bv3c);
-			cm.addPoint(-0.9, bv3d);
-			cm.addPoint(0.0, bv3e);
-			cm.addPoint(0.9, bv3f);
-			cm.addPoint(0.95, bv3g);
-			cm.addPoint(0.995, bv3h);
-			cm.addPoint(1.0, bv3i);
+			// Silence events fired by this mapping to prevent unnecessary style and view updates
+			eventHelper.silenceEventSource(cm);
+			
+			try {
+				// Set the attribute point values associated with the boundary values
+				cm.addPoint(-1.0, bv3a);
+				cm.addPoint(-0.995, bv3b);
+				cm.addPoint(-0.95, bv3c);
+				cm.addPoint(-0.9, bv3d);
+				cm.addPoint(0.0, bv3e);
+				cm.addPoint(0.9, bv3f);
+				cm.addPoint(0.95, bv3g);
+				cm.addPoint(0.995, bv3h);
+				cm.addPoint(1.0, bv3i);
+			} finally {
+				eventHelper.unsilenceEventSource(cm);
+			}
 	
 			vs.addVisualMappingFunction(cm);
 			
@@ -473,9 +521,17 @@ public class EMStyleBuilder {
 			// Add mapping function for node fill color
 			DiscreteMapping<String, Paint> dm = (DiscreteMapping<String, Paint>) dmFactory.createVisualMappingFunction(
 					Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_FILL_COLOR);
-			dm.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_COLOR);
-			dm.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, Colors.SIG_NODE_COLOR);
 			
+			// Silence events fired by this mapping to prevent unnecessary style and view updates
+			eventHelper.silenceEventSource(dm);
+			
+			try {
+				dm.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_COLOR);
+				dm.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, Colors.SIG_NODE_COLOR);
+			} finally {
+				eventHelper.unsilenceEventSource(dm);
+			}
+				
 			vs.addVisualMappingFunction(dm);
 		}
 	}
@@ -532,15 +588,23 @@ public class EMStyleBuilder {
 			}
 			
 			if (update) {
-				ContinuousMapping<Integer, Double> mapping = (ContinuousMapping<Integer, Double>) cmFactory
+				ContinuousMapping<Integer, Double> cm = (ContinuousMapping<Integer, Double>) cmFactory
 						.createVisualMappingFunction(columnName, Integer.class, NODE_SIZE);
 		
 				BoundaryRangeValues<Double> bv0 = new BoundaryRangeValues<>(MIN_NODE_SIZE, MIN_NODE_SIZE, MIN_NODE_SIZE);
 				BoundaryRangeValues<Double> bv1 = new BoundaryRangeValues<>(MAX_NODE_SIZE, MAX_NODE_SIZE, MAX_NODE_SIZE);
-				mapping.addPoint(val0, bv0);
-				mapping.addPoint(val1, bv1);
+				
+				// Silence events fired by this mapping to prevent unnecessary style and view updates
+				eventHelper.silenceEventSource(cm);
+				
+				try {
+					cm.addPoint(val0, bv0);
+					cm.addPoint(val1, bv1);
+				} finally {
+					eventHelper.unsilenceEventSource(cm);
+				}
 		
-				vs.addVisualMappingFunction(mapping);
+				vs.addVisualMappingFunction(cm);
 			}
 		} else {
 			vs.removeVisualMappingFunction(NODE_SIZE);
