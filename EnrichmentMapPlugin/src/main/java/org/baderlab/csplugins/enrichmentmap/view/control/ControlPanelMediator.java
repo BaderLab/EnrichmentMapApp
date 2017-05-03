@@ -150,17 +150,23 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	public void reset() {
 		invokeOnEDT(() -> {
-			for (CyNetworkView view : networkViewManager.getNetworkViewSet())
-				getControlPanel().removeEnrichmentMapView(view);
-
-			Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
+			updating = true;
 			
-			for (EnrichmentMap map : maps.values()) {
-				CyNetwork network = networkManager.getNetwork(map.getNetworkID());
-				Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
+			try {
+				for (CyNetworkView view : networkViewManager.getNetworkViewSet())
+					getControlPanel().removeEnrichmentMapView(view);
+	
+				Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 				
-				for (CyNetworkView netView : networkViews)
-					addNetworkView(netView);
+				for (EnrichmentMap map : maps.values()) {
+					CyNetwork network = networkManager.getNetwork(map.getNetworkID());
+					Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
+					
+					for (CyNetworkView netView : networkViews)
+						addNetworkView(netView);
+				}
+			} finally {
+				updating = false;	
 			}
 
 			setCurrentNetworkView(applicationManager.getCurrentNetworkView());
