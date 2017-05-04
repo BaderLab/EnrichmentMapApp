@@ -72,7 +72,10 @@ import com.google.inject.assistedinject.AssistedInject;
  * manipulate, explore and save an individual Enrichment map. It stores the
  * parsed files used to create it, all genes in the network, all enrichment
  * results, cuts-offs, expression files, and ranks
+ * 
+ * @deprecated Use EMCreationParameters instead.
  */
+@Deprecated
 public class EnrichmentMapParameters {
 
 	@Inject private StreamUtil streamUtil;

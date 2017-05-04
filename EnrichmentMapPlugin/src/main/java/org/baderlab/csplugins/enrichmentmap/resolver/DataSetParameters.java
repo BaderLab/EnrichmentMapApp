@@ -1,7 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.resolver;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
+
+import com.google.common.base.MoreObjects;
 
 public class DataSetParameters {
 
@@ -25,6 +27,22 @@ public class DataSetParameters {
 	
 	public Method getMethod() {
 		return method;
+	}
+	
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this)
+			.add("name", name)
+			.add("method", method)
+			.add("gmt", files.getGMTFileName())
+			.add("enrichments1", files.getEnrichmentFileName1())
+			.add("enrichments2", files.getEnrichmentFileName2())
+			.add("expressions", files.getExpressionFileName())
+			.add("ranks", files.getRankedFile())
+			.add("classes", files.getClassFile())
+			.add("phenotype1", files.getPhenotype1())
+			.add("phenotype2", files.getPhenotype2())
+			.toString();
 	}
 	
 }

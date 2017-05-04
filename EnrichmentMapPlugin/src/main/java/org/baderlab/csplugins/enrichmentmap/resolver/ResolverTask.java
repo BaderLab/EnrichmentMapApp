@@ -39,6 +39,10 @@ public class ResolverTask extends AbstractTask implements ObservableTask, Cancel
 		}
 		return null;
 	}
+	
+	public List<DataSetParameters> getDataSetResults() {
+		return results;
+	}
 
 	@Override
 	public boolean isCancelled() {

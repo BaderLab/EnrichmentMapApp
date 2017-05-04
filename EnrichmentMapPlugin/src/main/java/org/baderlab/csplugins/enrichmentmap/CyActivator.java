@@ -7,6 +7,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.commands.ResolverCommandTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.io.SessionListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
@@ -52,16 +53,11 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// commands
 		TaskFactory buildCommandTask = injector.getInstance(BuildEnrichmentMapTuneableTaskFactory.class);
-		Properties props = new Properties();
-		props.put(ServiceProperties.COMMAND, "build");
-		props.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
-		registerService(bc, buildCommandTask, TaskFactory.class, props);
-
-		TaskFactory gseaCommandTask = injector.getInstance(EnrichmentMapGSEACommandHandlerTaskFactory.class);
-		props = new Properties();
-		props.put(ServiceProperties.COMMAND, "gseabuild");
-		props.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
-		registerService(bc, gseaCommandTask, TaskFactory.class, props);
+		TaskFactory gseaCommandTask  = injector.getInstance(EnrichmentMapGSEACommandHandlerTaskFactory.class);
+		TaskFactory resolverCommand  = injector.getInstance(ResolverCommandTaskFactory.class);
+		registerCommand(bc, "gseabuild", gseaCommandTask);
+		registerCommand(bc, "build", buildCommandTask);
+		registerCommand(bc, "resolve", resolverCommand);
 
 		// Don't load UI services if running headless
 		boolean headless = injector.getInstance(Key.get(Boolean.class, Headless.class));
@@ -93,6 +89,14 @@ public class CyActivator extends AbstractCyActivator {
 		sessionListener.restore(null);
 		
 		Em21Handler.removeVersion21(bc, injector.getInstance(CyApplicationConfiguration.class));
+	}
+	
+	
+	private void registerCommand(BundleContext bc, String command, TaskFactory taskFactory) {
+		Properties props = new Properties();
+		props.put(ServiceProperties.COMMAND, command);
+		props.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
+		registerService(bc, taskFactory, TaskFactory.class, props);
 	}
 	
 	

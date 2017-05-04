@@ -4,9 +4,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * MKTODO This class should only contain filtering parameters, to make it more cohesive.
- */
+
 public class EMCreationParameters implements EnrichmentResultFilterParams {
 
 	public static enum SimilarityMetric {
