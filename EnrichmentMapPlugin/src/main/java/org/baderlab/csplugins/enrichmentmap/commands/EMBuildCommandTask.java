@@ -49,10 +49,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -76,8 +76,10 @@ import com.google.inject.Inject;
  * contain additional parameters that would not be available to a generic
  * enrichment analysis including an Enrichment score (ES), normalized Enrichment
  * score(NES).
+ * 
+ * This command is maintained for backwards compatibility, it has been replaced with the Resolver command.
  */
-public class BuildEnrichmentMapTuneableTask extends AbstractTask {
+public class EMBuildCommandTask extends AbstractTask {
 
 	@Tunable(description = "Analysis Type", groups = { "Analysis Type" }, gravity = 1.0)
 	public ListSingleSelection<String> analysisType;
@@ -160,7 +162,7 @@ public class BuildEnrichmentMapTuneableTask extends AbstractTask {
 	@Inject private PropertyManager propertyManager;
 	
 
-	public BuildEnrichmentMapTuneableTask() {
+	public EMBuildCommandTask() {
 		analysisType = new ListSingleSelection<String>(EnrichmentMapParameters.method_GSEA,
 				EnrichmentMapParameters.method_generic, EnrichmentMapParameters.method_Specialized);
 

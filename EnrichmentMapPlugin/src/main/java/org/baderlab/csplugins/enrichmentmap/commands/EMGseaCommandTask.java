@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -22,8 +22,10 @@ import org.cytoscape.work.util.ListSingleSelection;
 
 import com.google.inject.Inject;
 
-
-public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
+/**
+ * This command is maintained for backwards compatibility, it has been replaced with the Resolver command.
+ */
+public class EMGseaCommandTask extends AbstractTask {
 	
 	@Tunable(description="edbdir")		
 	public String edbdir;
@@ -57,7 +59,7 @@ public class EnrichmentMapGSEACommandHandlerTask extends AbstractTask {
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private LegacySupport legacySupport;
 	
-	public EnrichmentMapGSEACommandHandlerTask() {
+	public EMGseaCommandTask() {
 		similaritymetric = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP, EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
 	}
 

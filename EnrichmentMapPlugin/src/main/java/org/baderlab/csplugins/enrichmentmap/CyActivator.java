@@ -5,9 +5,11 @@ import java.util.Properties;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
-import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.commands.EnrichmentMapGSEACommandHandlerTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.commands.ResolverCommandTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.commands.CommandModule;
+import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.BuildCommand;
+import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.GSEACommand;
+import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.PACommand;
+import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.ResolveCommand;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.io.SessionListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
@@ -38,7 +40,8 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) {
 		injector = Guice.createInjector(new OSGiModule(bc), new AfterInjectionModule(), 
-										new CytoscapeServiceModule(), new ApplicationModule());
+										new CytoscapeServiceModule(), new ApplicationModule(), 
+										new CommandModule());
 		
 		// register the injector as an OSGi service so the integration tests can access it
 		registerService(bc, injector, Injector.class, new Properties());
@@ -52,13 +55,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, sessionListener, new Properties());
 		
 		// commands
-		TaskFactory buildCommandTask = injector.getInstance(BuildEnrichmentMapTuneableTaskFactory.class);
-		TaskFactory gseaCommandTask  = injector.getInstance(EnrichmentMapGSEACommandHandlerTaskFactory.class);
-		TaskFactory resolverCommand  = injector.getInstance(ResolverCommandTaskFactory.class);
-		registerCommand(bc, "gseabuild", gseaCommandTask);
-		registerCommand(bc, "build", buildCommandTask);
-		registerCommand(bc, "resolve", resolverCommand);
-
+		registerCommand(bc, "build",   injector.getInstance(Key.get(TaskFactory.class, BuildCommand.class)));
+		registerCommand(bc, "gsea",    injector.getInstance(Key.get(TaskFactory.class, GSEACommand.class)));
+		registerCommand(bc, "resolve", injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
+		registerCommand(bc, "pa",      injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
+		
 		// Don't load UI services if running headless
 		boolean headless = injector.getInstance(Key.get(Boolean.class, Headless.class));
 		
