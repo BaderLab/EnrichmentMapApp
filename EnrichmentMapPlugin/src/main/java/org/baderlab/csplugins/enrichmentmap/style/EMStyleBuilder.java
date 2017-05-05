@@ -70,8 +70,8 @@ public class EMStyleBuilder {
 	public final static Integer DEF_NODE_TRANSPARENCY = 220;
 	public final static Integer FILTERED_OUT_NODE_TRANSPARENCY = 40;
 	
-	private final static Double MIN_NODE_SIZE = 20.0;
-	private final static Double MAX_NODE_SIZE = 60.0;
+	private final static double MIN_NODE_SIZE = 20.0;
+	private final static double MAX_NODE_SIZE = 60.0;
 	
 	public static final double DEF_NODE_BORDER_WIDTH = 1.0;
 	
@@ -578,11 +578,10 @@ public class EMStyleBuilder {
 						update = update || val1 != (Integer) pt1.getValue();
 						
 						if (!update) // Finally test the boundary ranges
-							update = MIN_NODE_SIZE != pt0.getRange().equalValue
-									|| MAX_NODE_SIZE != pt1.getRange().equalValue;
+							update = MIN_NODE_SIZE != (Double) pt0.getRange().equalValue
+									|| MAX_NODE_SIZE != (Double) pt1.getRange().equalValue;
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (NullPointerException | ClassCastException e) {
 					update = true;
 				}
 			}
