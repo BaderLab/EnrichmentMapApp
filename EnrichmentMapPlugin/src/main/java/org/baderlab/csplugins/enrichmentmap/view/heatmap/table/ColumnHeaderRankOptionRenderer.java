@@ -75,7 +75,7 @@ public class ColumnHeaderRankOptionRenderer implements TableCellRenderer {
 		Component component = delegate.getTableCellRendererComponent(table, text, isSelected, hasFocus, row, col);
 		
 		// Create the panel
-		JButton button = new JButton("Change");
+		JButton button = new JButton("Sort");
 		SwingUtil.makeSmall(button);
 		if (isAquaLAF())
 			button.putClientProperty("JButton.buttonType", "gradient");
