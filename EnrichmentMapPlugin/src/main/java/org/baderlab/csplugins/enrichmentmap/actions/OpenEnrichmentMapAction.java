@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskMonitor;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -12,7 +14,7 @@ import com.google.inject.Singleton;
 
 @SuppressWarnings("serial")
 @Singleton
-public class OpenEnrichmentMapAction extends AbstractCyAction {
+public class OpenEnrichmentMapAction extends AbstractCyAction implements Task {
 	
 	public static final String NAME = "EnrichmentMap";
 
@@ -24,9 +26,22 @@ public class OpenEnrichmentMapAction extends AbstractCyAction {
 		setPreferredMenu("Apps");
 	}
 
-	@Override
-	public synchronized void actionPerformed(ActionEvent e) {
+	public synchronized void showPanels() {
 		controlPanelMediatorProvider.get().showControlPanel();
 		expressionViewerMediatorProvider.get().showHeatMapPanel();
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		showPanels();
+	}
+
+	@Override
+	public void run(TaskMonitor taskMonitor) {
+		showPanels();
+		
+	}
+	@Override
+	public void cancel() {
 	}
 }

@@ -230,8 +230,6 @@ public class EMBuildCommandTask extends AbstractTask {
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
 		insertTasksAfterCurrentTask(taskFactory.createTaskIterator());
-
-//		emManager.showPanels();
 	}
 
 

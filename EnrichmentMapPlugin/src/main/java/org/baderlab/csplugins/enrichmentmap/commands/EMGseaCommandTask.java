@@ -85,8 +85,6 @@ public class EMGseaCommandTask extends AbstractTask {
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
 		insertTasksAfterCurrentTask(taskFactory.createTaskIterator());
-		
-//		emManager.showPanels();
 	}
 	
 	private DataSetFiles initializeFiles(String edb, String exp){

@@ -4,6 +4,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 
+import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
@@ -27,31 +28,31 @@ public class CommandModule extends AbstractModule {
 	}
 	
 	@Provides @BuildCommand
-	public TaskFactory provideBuild(Provider<EMBuildCommandTask> taskProvider) {
-		return createTaskFactory(taskProvider);
+	public TaskFactory provideBuild(Provider<EMBuildCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+		return createTaskFactory(taskProvider, showTask);
 	}
 	
 	@Provides @GSEACommand
-	public TaskFactory provideGSEA(Provider<EMGseaCommandTask> taskProvider) {
-		return createTaskFactory(taskProvider);
+	public TaskFactory provideGSEA(Provider<EMGseaCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+		return createTaskFactory(taskProvider, showTask);
 	}
 	
 	@Provides @ResolveCommand
-	public TaskFactory provideResolve(Provider<ResolverCommandTask> taskProvider) {
-		return createTaskFactory(taskProvider);
+	public TaskFactory provideResolve(Provider<ResolverCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+		return createTaskFactory(taskProvider, showTask);
 	}
 	
 	@Provides @PACommand
-	public TaskFactory providePA(Provider<PostAnalysisCommandTask> taskProvider) {
-		return createTaskFactory(taskProvider);
+	public TaskFactory providePA(Provider<PostAnalysisCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+		return createTaskFactory(taskProvider, showTask);
 	}
 
 	
-	private static TaskFactory createTaskFactory(Provider<? extends Task> taskProvider) {
+	private static TaskFactory createTaskFactory(Provider<? extends Task> taskProvider, OpenEnrichmentMapAction showTask) {
 		return new AbstractTaskFactory() {
 			@Override
 			public TaskIterator createTaskIterator() {
-				return new TaskIterator(taskProvider.get());
+				return new TaskIterator(taskProvider.get(), showTask);
 			}
 		};
 	}
