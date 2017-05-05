@@ -114,7 +114,7 @@ public class ResolverCommandTask extends AbstractTask {
 	}
 	
 	
-	private static ListSingleSelection<String> enumNames(Enum<?>[] values) {
+	public static ListSingleSelection<String> enumNames(Enum<?>[] values) {
 		List<String> names = new ArrayList<>(values.length);
 		for(Enum<?> value : values) {
 			names.add(value.name());

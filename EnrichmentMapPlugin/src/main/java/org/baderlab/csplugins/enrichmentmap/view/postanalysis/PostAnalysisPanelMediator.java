@@ -16,28 +16,21 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
-import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
-import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTaskResult;
-import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
@@ -53,14 +46,12 @@ public class PostAnalysisPanelMediator {
 
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private PostAnalysisInputPanel.Factory panelFactory;
-	@Inject private CreateDiseaseSignatureTask.Factory signatureTaskFactory;
-	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
-	
 	@Inject private CyServiceRegistrar serviceRegistrar;
-	@Inject private CyApplicationManager applicationManager;
-	@Inject private DialogTaskManager taskManager;
 	@Inject private CySwingApplication swingApplication;
+	@Inject private DialogTaskManager taskManager;
+	@Inject private CreateDiseaseSignatureTaskFactory.Factory signatureTaskFactoryFactory;
+	
 	
 	@SuppressWarnings("serial")
 	public void showDialog(Component parent, CyNetworkView netView) {
@@ -111,67 +102,18 @@ public class PostAnalysisPanelMediator {
 		});
 	}
 	
+	
 	private void addGeneSets(CyNetworkView netView, PostAnalysisParameters params) {
-		// Make sure that the minimum information is set in the current set of parameters
-		EnrichmentMap map = emManager.getEnrichmentMap(applicationManager.getCurrentNetwork().getSUID());
+		CreateDiseaseSignatureTaskFactory taskFactory = signatureTaskFactoryFactory.create(netView, params);
+		TaskIterator tasks = taskFactory.createTaskIterator();
 		
-		StringBuilder errorBuilder = new StringBuilder();
-		checkMinimalRequirements(errorBuilder, params);
-		if (params.getRankTestParameters().getType().isMannWhitney() && map.getAllRanks().isEmpty())
-			errorBuilder.append("Mann-Whitney requires ranks. \n");
-		
-		String errors = errorBuilder.toString();
-
-		if (errors.isEmpty()) {
-			TaskIterator tasks = new TaskIterator();
-
-			String sdsName = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
-			EMSignatureDataSet sigDataSet = new EMSignatureDataSet(sdsName);
-			map.addSignatureDataSet(sigDataSet);
-			
-			// Run Post-Analysis in batch, once for each data set
-			for(EMDataSet dataset : map.getDataSetList()) {
-				CreateDiseaseSignatureTask task = signatureTaskFactory.create(map, params, dataset.getName());
-				task.setSignatureDataSet(sigDataSet);
-				tasks.append(task);
-			}
-			
-			ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
-			EMStyleOptions options = controlPanelMediator.createStyleOptions(netView);
-			CyCustomGraphics2<?> chart = controlPanelMediator.createChart(options);
-			tasks.append(applyStyleTaskFactory.create(options, chart, false));
-
+		String errors = taskFactory.getErrors();
+		if(errors.isEmpty()) {
 			taskManager.execute(tasks, new DialogObserver());
-		} else {
+		}
+		else {
 			JOptionPane.showMessageDialog(swingApplication.getJFrame(), errors, "Invalid Input", JOptionPane.WARNING_MESSAGE);
 		}
-	}
-	
-	
-	/**
-	 * Checks all values of the PostAnalysisInputPanel
-	 * 
-	 * @return String with error messages (one error per line) or empty String if everything is okay.
-	 * @see org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters#checkMinimalRequirements()
-	 */
-	public void checkMinimalRequirements(StringBuilder errors, PostAnalysisParameters params) {
-		errors.append(checkGMTfiles(params));
-		if(params.getSelectedGeneSetNames().isEmpty()) {
-			errors.append("No Signature Genesets selected \n");
-		}
-	}
-
-	/**
-	 * Checks if SignatureGMTFileName is provided and if the file can be read.
-	 * 
-	 * @return String with error messages (one error per line) or empty String
-	 *         if everything is okay.
-	 */
-	public String checkGMTfiles(PostAnalysisParameters params) {
-		String signatureGMTFileName = params.getSignatureGMTFileName();
-		if(signatureGMTFileName == null || signatureGMTFileName.isEmpty() || !EnrichmentMapParameters.checkFile(signatureGMTFileName))
-			return "Signature GMT file can not be found \n";
-		return "";
 	}
 	
 	
@@ -196,6 +138,7 @@ public class PostAnalysisPanelMediator {
 		builder.setAttributePrefix(map.getParams().getAttributePrefix());
 		return Optional.of(builder.build());
 	}
+	
 	
 	private class DialogObserver implements TaskObserver {
 

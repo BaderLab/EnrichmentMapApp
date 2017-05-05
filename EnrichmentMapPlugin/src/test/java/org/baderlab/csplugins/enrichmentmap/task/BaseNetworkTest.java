@@ -37,6 +37,7 @@ import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
+import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -96,6 +97,7 @@ public abstract class BaseNetworkTest {
 	@Inject private @Passthrough VisualMappingFunctionFactory pmFactory;
 	
     @Inject private CyApplicationManager applicationManager;
+    @Inject private OpenBrowser openBrowser;
     @Inject private EnrichmentMapManager emManager;
     
     @Inject private CreateEnrichmentMapTaskFactory.Factory masterMapTaskFactoryFactory;
@@ -152,7 +154,7 @@ public abstract class BaseNetworkTest {
 		loader.setTaskManager(testTaskManager);
 		
 		loader.setGeneSetCallback(builder::setLoadedGMTGeneSets);
-		loader.setLoadedSignatureSetsCallback(builder::addSelectedGeneSetNames);
+		loader.setFilteredSignatureSetsCallback(builder::addSelectedGeneSetNames);
 
 		loader.actionPerformed(null);
 		

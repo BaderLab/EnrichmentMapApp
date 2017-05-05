@@ -149,7 +149,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 			this.signatureGenesets = gs;
 		});
 		
-		loadAction.setLoadedSignatureSetsCallback(selected -> {
+		loadAction.setFilteredSignatureSetsCallback(selected -> {
 			this.selectedGenesetNames = selected;
 		});
 		

@@ -356,7 +356,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 				this.signatureGenesets = gs;
 			});
 			
-			action.setLoadedSignatureSetsCallback(selected -> {
+			action.setFilteredSignatureSetsCallback(selected -> {
 				availSigSetsModel.clear();
 				selectedSigSetsModel.clear();
 

@@ -37,7 +37,7 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 	private final FilterMetric filterMetric;
 	
 	private Consumer<SetOfGeneSets> geneSetCallback = x -> {};
-	private Consumer<Set<String>> loadedSignatureSetsCallback = x -> {};
+	private Consumer<Set<String>> filteredSignatureSetsCallback = x -> {};
 	
 	
 	public interface Factory {
@@ -62,8 +62,8 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 		this.geneSetCallback = geneSetCallback;
 	}
 	
-	public void setLoadedSignatureSetsCallback(Consumer<Set<String>> loadedSignatureSetsCallback) {
-		this.loadedSignatureSetsCallback = loadedSignatureSetsCallback;
+	public void setFilteredSignatureSetsCallback(Consumer<Set<String>> filteredSignatureSetsCallback) {
+		this.filteredSignatureSetsCallback = filteredSignatureSetsCallback;
 	}
 	
 	@Override
@@ -77,20 +77,20 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 
 			TaskObserver taskObserver = new ResultTaskObserver() {
 				private SetOfGeneSets resultGeneSets;
-				private Set<String> loadedSignatureSets;
+				private Set<String> filteredSignatureSets;
 
 				@Override
 				public void taskFinished(ObservableTask task) {
 					if (task instanceof FilterSignatureGSTask) {
 						resultGeneSets = task.getResults(SetOfGeneSets.class);
-						loadedSignatureSets = task.getResults(Set.class);
+						filteredSignatureSets = task.getResults(Set.class);
 					}
 				}
 				
 				@Override
 				public void allFinished(FinishStatus finishStatus) {
 					geneSetCallback.accept(resultGeneSets);
-					loadedSignatureSetsCallback.accept(loadedSignatureSets);
+					filteredSignatureSetsCallback.accept(filteredSignatureSets);
 				}
 			};
 			

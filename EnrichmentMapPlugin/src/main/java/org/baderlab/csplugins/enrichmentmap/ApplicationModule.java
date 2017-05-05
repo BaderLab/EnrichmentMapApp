@@ -9,6 +9,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMViewTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
@@ -91,6 +92,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(ErrorMessageDialog.Factory.class);
 		installFactory(ColumnHeaderRankOptionRenderer.Factory.class);
 		installFactory(PathTextField.Factory.class);
+		installFactory(CreateDiseaseSignatureTaskFactory.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {
