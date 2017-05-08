@@ -65,7 +65,12 @@ public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 		if (errors.isEmpty()) {
 			TaskIterator tasks = new TaskIterator();
 
-			String sdsName = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
+			String sdsName;
+			if(params.getName() == null || params.getName().trim().isEmpty()) {
+				sdsName = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
+			} else {
+				sdsName = params.getName();
+			}
 			EMSignatureDataSet sigDataSet = new EMSignatureDataSet(sdsName);
 			map.addSignatureDataSet(sigDataSet);
 			

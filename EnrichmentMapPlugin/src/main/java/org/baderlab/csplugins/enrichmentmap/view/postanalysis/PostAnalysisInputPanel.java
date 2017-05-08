@@ -50,6 +50,7 @@ import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall
 import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -61,11 +62,14 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
@@ -87,6 +91,8 @@ public class PostAnalysisInputPanel extends JPanel {
 
 	private PostAnalysisSignatureDiscoveryPanel signatureDiscoveryPanel;
 	private PostAnalysisKnownSignaturePanel knownSignaturePanel;
+	
+	private JTextField nameText;
 	
 	private final EnrichmentMap map;
 	private final PostAnalysisKnownSignaturePanel.Factory knownSignaturePanelFactory;
@@ -110,9 +116,14 @@ public class PostAnalysisInputPanel extends JPanel {
 		this.signatureDiscoveryPanelFactory = signatureDiscoveryPanelFactory;
 	}
 	
+	public EnrichmentMap getEnrichmentMap() {
+		return map;
+	}
+	
 	@AfterInjection
 	private void createContent() {
 		JPanel analysisTypePanel = createAnalysisTypePanel();
+		JPanel namePanel = createNamePanel();
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -121,10 +132,12 @@ public class PostAnalysisInputPanel extends JPanel {
 
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
    				.addComponent(analysisTypePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   				.addComponent(namePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    				.addComponent(getUserInputScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
    		layout.setVerticalGroup(layout.createSequentialGroup()
    				.addComponent(analysisTypePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				.addComponent(namePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				.addComponent(getUserInputScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    		);
 
@@ -178,6 +191,31 @@ public class PostAnalysisInputPanel extends JPanel {
 		if (LookAndFeelUtil.isAquaLAF())
 			panel.setOpaque(false);
 
+		return panel;
+	}
+	
+	
+	private JPanel createNamePanel() {
+		nameText = new JTextField();
+		makeSmall(nameText);
+		JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Data Set Name (optional)"));
+		
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+   		
+   		layout.setHorizontalGroup(layout.createSequentialGroup()
+   				.addComponent(nameText, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   		);
+   		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
+   				.addComponent(nameText, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   		);
+   		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		
 		return panel;
 	}
 	
@@ -239,8 +277,7 @@ public class PostAnalysisInputPanel extends JPanel {
 		List<FileChooserFilter> all_filters = Arrays.asList(filter);
 
 		// Get the file name
-		File file = fileUtil.getFile(SwingUtil.getWindowInstance(this), "Import Signature GMT File", FileUtil.LOAD,
-				all_filters);
+		File file = fileUtil.getFile(SwingUtil.getWindowInstance(this), "Import Signature GMT File", FileUtil.LOAD, all_filters);
 
 		if (file != null) {
 			String absolutePath = file.getAbsolutePath();
@@ -325,12 +362,38 @@ public class PostAnalysisInputPanel extends JPanel {
 		getSignatureDiscoveryPanel().reset();
 	}
 
-//	/**
-//	 * Set available signature gene set count to specified value
-//	 */
-//	public void setAvSigCount(int avSigCount) {
-//		if (getSignatureDiscoveryRadio().isSelected()) {
-//			getSignatureDiscoveryPanel().setAvSigCount(avSigCount);
-//		}
-//	}
+	
+	public List<String> validateInput() {
+		List<String> messages = new ArrayList<>();
+		
+		String name = nameText.getText();
+		if(!name.trim().isEmpty() && (map.getDataSet(name) != null || map.getSignatureDataSet(name) != null)) {
+			messages.add("Data Set name already in use.");
+		}
+		
+		if(getKnownSignatureRadio().isSelected()) {
+			messages.addAll(getKnownSignaturePanel().validateInput());
+		} else {
+			messages.addAll(getSignatureDiscoveryPanel().validateInput());
+		}
+		
+		return messages;
+	}
+	
+	
+	public boolean build(PostAnalysisParameters.Builder builder) {
+		String name = nameText.getText();
+		if(!name.trim().isEmpty()) {
+			builder.setName(name);
+		}
+		
+		if (getKnownSignatureRadio().isSelected()) {
+			builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
+			return getKnownSignaturePanel().build(builder);
+		} else {
+			builder.setAnalysisType(AnalysisType.SIGNATURE_DISCOVERY);
+			return getSignatureDiscoveryPanel().build(builder);
+		}
+	}
+	
 }

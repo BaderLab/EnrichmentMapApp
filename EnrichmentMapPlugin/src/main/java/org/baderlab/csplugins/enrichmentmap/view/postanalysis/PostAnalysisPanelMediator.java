@@ -6,6 +6,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog.ModalityType;
 import java.awt.event.ActionEvent;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,16 +20,18 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTaskResult;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog;
+import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog.MessageType;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.FinishStatus;
@@ -51,6 +54,7 @@ public class PostAnalysisPanelMediator {
 	@Inject private CySwingApplication swingApplication;
 	@Inject private DialogTaskManager taskManager;
 	@Inject private CreateDiseaseSignatureTaskFactory.Factory signatureTaskFactoryFactory;
+	@Inject private ErrorMessageDialog.Factory errorMessageDialogFactory;
 	
 	
 	@SuppressWarnings("serial")
@@ -77,7 +81,7 @@ public class PostAnalysisPanelMediator {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (panel.isReady()) {
-						Optional<PostAnalysisParameters> params = buildPostAnalysisParameters(panel, map);
+						Optional<PostAnalysisParameters> params = buildPostAnalysisParameters(panel, map, dialog);
 						if(params.isPresent()) {
 							addGeneSets(netView, params.get());
 							dialog.dispose();
@@ -120,21 +124,25 @@ public class PostAnalysisPanelMediator {
 	/**
 	 * Creates a PostAnalysisParameters object based on the user's input.
 	 */
-	private Optional<PostAnalysisParameters> buildPostAnalysisParameters(PostAnalysisInputPanel panel, EnrichmentMap map) {
+	private Optional<PostAnalysisParameters> buildPostAnalysisParameters(PostAnalysisInputPanel inputPanel, EnrichmentMap map, JDialog parent) {
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-
-		boolean built;
-		if (panel.getKnownSignatureRadio().isSelected()) {
-			builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
-			built = panel.getKnownSignaturePanel().build(builder);
-		} else {
-			builder.setAnalysisType(AnalysisType.SIGNATURE_DISCOVERY);
-			built = panel.getSignatureDiscoveryPanel().build(builder);
+		
+		List<String> messages = inputPanel.validateInput();
+		if(!messages.isEmpty()) {
+			ErrorMessageDialog dialog = errorMessageDialogFactory.create(parent);
+			dialog.addSection(MessageType.ERROR, "Post Analysis: Error", IconManager.ICON_FILE_O, messages);
+			dialog.pack();
+			dialog.setLocationRelativeTo(parent);
+			dialog.setModal(true);
+			dialog.setVisible(true);
+			return Optional.empty();
 		}
 		
+		boolean built = inputPanel.build(builder);
 		if(!built) {
 			return Optional.empty();
 		}
+		
 		builder.setAttributePrefix(map.getParams().getAttributePrefix());
 		return Optional.of(builder.build());
 	}

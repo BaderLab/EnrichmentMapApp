@@ -485,6 +485,10 @@ public class EnrichmentMap {
 		return null;
 	}
 
+	public EMSignatureDataSet getSignatureDataSet(String name) {
+		return signatureDataSets.get(name);
+	}
+	
 	public void setSignatureDataSets(Collection<EMSignatureDataSet> newValue) {
 		synchronized (lock) {
 			signatureDataSets.clear();

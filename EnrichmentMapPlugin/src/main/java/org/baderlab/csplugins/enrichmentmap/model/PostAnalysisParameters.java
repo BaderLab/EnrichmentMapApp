@@ -67,6 +67,7 @@ public class PostAnalysisParameters {
 		GMT, EXPRESSION_SET, INTERSECTION, USER_DEFINED
 	}
 	
+	private final String name;
 	private final AnalysisType analysisType;
 	private final UniverseType universeType;
 	private final PostAnalysisFilterParameters rankTestParameters;
@@ -78,6 +79,7 @@ public class PostAnalysisParameters {
 	private final String attributePrefix;
 	
 	private PostAnalysisParameters(PostAnalysisParameters.Builder builder) {
+		this.name = builder.name;
 		this.analysisType = builder.analysisType;
 		this.universeType = builder.universeType;
 		this.rankTestParameters = builder.rankTestParameters;
@@ -89,6 +91,10 @@ public class PostAnalysisParameters {
 		this.attributePrefix = builder.attributePrefix;
 	}
 
+	public String getName() {
+		return name;
+	}
+	
 	public AnalysisType getAnalysisType() {
 		return analysisType;
 	}
@@ -130,6 +136,7 @@ public class PostAnalysisParameters {
 	
 	public static class Builder {
 		
+		private String name;
 		private AnalysisType analysisType;
 		private UniverseType universeType;
 		private PostAnalysisFilterParameters rankTestParameters;
@@ -147,6 +154,7 @@ public class PostAnalysisParameters {
 
 		public static Builder from(PostAnalysisParameters other) {
 			Builder b = new Builder();
+			b.setName(other.name);
 			b.setAnalysisType(other.analysisType);
 			b.setRankTestParameters(other.rankTestParameters);
 			b.setSignatureGMTFileName(other.signatureGMTFileName);
@@ -156,6 +164,11 @@ public class PostAnalysisParameters {
 			b.setUserDefinedUniverseSize(other.userDefinedUniverseSize);
 			b.setAttributePrefix(other.attributePrefix);
 			return b;
+		}
+		
+		public Builder setName(String name) {
+			this.name = name;
+			return this;
 		}
 		
 		public Builder addSelectedGeneSetNames(Collection<String> names) {

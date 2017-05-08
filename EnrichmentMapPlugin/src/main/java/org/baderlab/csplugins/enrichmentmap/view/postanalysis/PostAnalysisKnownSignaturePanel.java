@@ -8,19 +8,22 @@ import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
@@ -29,6 +32,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
@@ -130,14 +134,6 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 	public boolean isReady() {
 		String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
 
-		if (!EnrichmentMapParameters.checkFile(filePath)) {
-			String message = "Signature GMT file name not valid.";
-			knownSignatureGMTFileNameTextField.setForeground(Color.RED);
-			JOptionPane.showMessageDialog(application.getJFrame(), message, "Post Analysis Known Signature", JOptionPane.WARNING_MESSAGE);
-			
-			return false;
-		}
-
 		// Load in the GMT file
 		// Manually fire the same action listener that is used by the signature discovery panel.
 		// Use the synchronousTaskManager so that this blocks
@@ -169,6 +165,23 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 	void initialize(EnrichmentMap currentMap) {
 		weightPanel.initialize(currentMap);
 	}
+	
+	
+	public List<String> validateInput() {
+		List<String> messages = new ArrayList<>();
+		messages.addAll(weightPanel.validateInput());
+		
+		String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
+		try {
+			if(Strings.isNullOrEmpty(filePath) || !Files.isReadable(Paths.get(filePath))) {
+				messages.add("GMT file path is not valid.");
+			}
+		} catch(InvalidPathException e) {
+			messages.add("GMT file path is not valid.");
+		}
+		return messages;
+	}
+	
 	
 	public boolean build(PostAnalysisParameters.Builder builder) {
 		if(weightPanel.build(builder)) {

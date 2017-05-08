@@ -8,6 +8,8 @@ import java.awt.CardLayout;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -387,6 +389,11 @@ public class PostAnalysisWeightPanel extends JPanel {
 	
 	protected int getUserDefinedUniverseSize() {
 		return ((Number)universeSelectionTextField.getValue()).intValue();
+	}
+	
+	
+	public List<String> validateInput() {
+		return Collections.emptyList();
 	}
 	
 	

@@ -10,6 +10,10 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +49,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
@@ -475,8 +480,34 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 //		if (ds != null)
 //			mannWhitRanks = ds.getExpressionSets().getRanks().get(weightPanel.getRankFile());
 	}
+	
+	
+	public boolean isReady() {
+		return true;
+	}
     
-	boolean build(PostAnalysisParameters.Builder builder) {
+	public List<String> validateInput() {
+		List<String> messages = new ArrayList<>();
+		messages.addAll(weightPanel.validateInput());
+		
+		String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
+		try {
+			if(Strings.isNullOrEmpty(filePath) || !Files.isReadable(Paths.get(filePath))) {
+				messages.add("GMT file path is not valid.");
+			}
+		} catch(InvalidPathException e) {
+			messages.add("GMT file path is not valid.");
+		}
+		
+		if(selectedSigSetsField == null || selectedSigSetsField.getModel().getSize() == 0) {
+			messages.add("Please load and select gene sets first.");
+		}
+			
+		return messages;
+	}
+	
+	
+	public boolean build(PostAnalysisParameters.Builder builder) {
 		if(weightPanel.build(builder)) {
 			for (int i = 0; i < selectedSigSetsModel.size(); i++) {
 				builder.addSelectedGeneSetName(selectedSigSetsModel.getElementAt(i));
@@ -503,15 +534,4 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		selectedLabel.setText(String.format(SELECTED_FORMAT, count));
 	}
 
-	public boolean isReady() {
-		if (selectedSigSetsField == null || selectedSigSetsField.getModel().getSize() == 0) {
-			String msg = "Please load and select gene sets first.";
-			JOptionPane.showMessageDialog(
-					application.getJFrame(), msg, "Post Analysis Signature Discovery", JOptionPane.WARNING_MESSAGE);
-			
-			return false;
-		}
-		
-		return true;
-	}
 }

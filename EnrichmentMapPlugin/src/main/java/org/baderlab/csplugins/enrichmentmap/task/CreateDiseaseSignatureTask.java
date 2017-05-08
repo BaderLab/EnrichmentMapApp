@@ -131,7 +131,12 @@ public class CreateDiseaseSignatureTask extends AbstractTask implements Observab
 	
 	private EMSignatureDataSet getSignatureDataSet() {
 		if(signatureDataSet == null) {
-			String sdsName = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
+			String sdsName;
+			if(params.getName() == null || params.getName().trim().isEmpty()) {
+				sdsName = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
+			} else {
+				sdsName = params.getName();
+			}
 			signatureDataSet = new EMSignatureDataSet(sdsName);
 			map.addSignatureDataSet(signatureDataSet);
 		}

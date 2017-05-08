@@ -14,6 +14,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
@@ -47,6 +48,7 @@ public class ErrorMessageDialog extends JDialog {
 		setResizable(true);
 		setTitle("Create Enrichment Map: Validation");
 		setMinimumSize(new Dimension(400, 100));
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	}
 	
 	@AfterInjection
