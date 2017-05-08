@@ -58,6 +58,7 @@ public class EnrichmentMapManager {
 		
 	private Map<Long, EnrichmentMap> enrichmentMaps = new HashMap<>();
 	private Map<Long, HeatMapParams> heatMapParams = new HashMap<>();
+	private Map<Long, HeatMapParams> heatMapParamsEdges = new HashMap<>();
 
 	/**
 	 * Registers a newly created Network.
@@ -87,12 +88,18 @@ public class EnrichmentMapManager {
 	}
 	
 	
-	public void registerHeatMapParams(Long networkId, HeatMapParams params) {
-		heatMapParams.put(networkId, params);
+	public void registerHeatMapParams(Long networkId, boolean edges, HeatMapParams params) {
+		if(edges)
+			heatMapParamsEdges.put(networkId, params);
+		else
+			heatMapParams.put(networkId, params);
 	}
 	
-	public HeatMapParams getHeatMapParams(Long networkId) {
-		return heatMapParams.get(networkId);
+	public HeatMapParams getHeatMapParams(Long networkId, boolean edges) {
+		if(edges)
+			return heatMapParamsEdges.get(networkId);
+		else
+			return heatMapParams.get(networkId);
 	}
 	
 	

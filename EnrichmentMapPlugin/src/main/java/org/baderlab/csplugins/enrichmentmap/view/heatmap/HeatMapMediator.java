@@ -15,6 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -54,6 +55,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@Inject private CyApplicationManager applicationManager;
 	
 	private HeatMapParentPanel heatMapPanel = null;
+	private boolean onlyEdges;
 	
 	
 	public void showHeatMapPanel() {
@@ -103,10 +105,21 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		}
 	}
 	
+	/**
+	 * Callback that HeatMapMainPanel calls.
+	 */
 	public void heatMapParamsChanged(HeatMapParams params) {
 		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
 		if(networkView != null) {
-			emManager.registerHeatMapParams(networkView.getModel().getSUID(), params);
+			Long suid = networkView.getModel().getSUID();
+			
+			// Overwrite all the params of the other one except 'operator'.
+			// The 'operator' field is the only param that is kept separate.
+			HeatMapParams otherParams = emManager.getHeatMapParams(suid, !onlyEdges);
+			HeatMapParams newOtherParams = new HeatMapParams.Builder(params).setOperator(otherParams.getOperator()).build();
+			
+			emManager.registerHeatMapParams(suid, !onlyEdges, newOtherParams);
+			emManager.registerHeatMapParams(suid, onlyEdges, params);
 		}
 	}
 	
@@ -120,27 +133,38 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		if(map == null)
 			return;
 		
-		HeatMapParams params = emManager.getHeatMapParams(network.getSUID());
-		if(params == null) {
-			if(map.totalExpressionCount() > COLLAPSE_THRESHOLD)
-				params = HeatMapParams.defaults().setTransform(Transform.COMPRESS_MEDIAN).build();
-			else
-				params = HeatMapParams.defaults().build();
-			
-			emManager.registerHeatMapParams(network.getSUID(), params);
-		}
-		
 		List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 		List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
 		
 		String prefix = map.getParams().getAttributePrefix();
+		this.onlyEdges = selectedNodes.isEmpty() && !selectedEdges.isEmpty();
 		
 		Set<String> union = unionGenesets(network, selectedNodes, selectedEdges, prefix);
 		Set<String> inter = intersectionGenesets(network, selectedNodes, selectedEdges, prefix);
 		List<RankingOption> rankOptions = getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
 		
+		HeatMapParams params = getHeatMapParams(map, network, onlyEdges);
+		
 		heatMapPanel.selectGenes(map, params, rankOptions, union, inter);
 	}
+	
+	
+	private HeatMapParams getHeatMapParams(EnrichmentMap map, CyNetwork network, boolean onlyEdges) {
+		HeatMapParams params = emManager.getHeatMapParams(network.getSUID(), onlyEdges);
+		if(params == null) {
+			HeatMapParams.Builder builder = new HeatMapParams.Builder();
+			
+			if(map.totalExpressionCount() > COLLAPSE_THRESHOLD) 
+				builder.setTransform(Transform.COMPRESS_MEDIAN);
+			if(onlyEdges)
+				builder.setOperator(Operator.INTERSECTION);
+			
+			params = builder.build();
+			emManager.registerHeatMapParams(network.getSUID(), onlyEdges, params);
+		}
+		return params;
+	}
+	
 	
 	public ClusterRankingOption getClusterRankOption(EnrichmentMap map) {
 		return clusterRankOptionFactory.create(map);

@@ -63,11 +63,6 @@ public class HeatMapParams {
 	}
 	
 	
-	public static HeatMapParams.Builder defaults() {
-		return new Builder();
-	}
-	
-	
 	public static class Builder {
 		private Transform transform = Transform.AS_IS;
 		private Operator operator = Operator.UNION;
