@@ -183,7 +183,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		dataSetListModel = new IterableListModel<>();
 		dataSetList = new DataSetList(dataSetListModel);
-		dataSetList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		dataSetList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		dataSetList.addListSelectionListener(e -> selectItem(dataSetList.getSelectedValue()));
 		
 		JScrollPane scrollPane = new JScrollPane();

@@ -49,6 +49,9 @@ public class PostAnalysisCommandTask extends AbstractTask {
 	@Tunable
 	public int userDefinedUniverseSize = 0;
 	
+	@Tunable
+	public String name;
+	
 	
 	@Inject private LoadSignatureSetsActionListener.Factory loadSignatureSetsActionListenerFactory;
 	@Inject private CreateDiseaseSignatureTaskFactory.Factory taskFactoryFactory;
@@ -107,6 +110,7 @@ public class PostAnalysisCommandTask extends AbstractTask {
 		builder.setUniverseType(universe);
 		builder.setUserDefinedUniverseSize(userDefinedUniverseSize);
 		builder.setRankTestParameters(new PostAnalysisFilterParameters(filter, cutoff));
+		builder.setName(name);
 		
 		if(filter.isMannWhitney()) {
 			if(map.isSingleRanksPerDataset()) {

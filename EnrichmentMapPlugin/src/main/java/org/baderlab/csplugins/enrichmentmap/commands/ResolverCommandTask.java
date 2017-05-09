@@ -30,6 +30,12 @@ public class ResolverCommandTask extends AbstractTask {
 	public File rootFolder;
 	
 	@Tunable
+	public File commonGMTFile;
+	
+	@Tunable
+	public File commonExpressionFile;
+	
+	@Tunable
 	public boolean distinctEdges = false;
 	
 	// Parameter Tuneables
@@ -84,30 +90,48 @@ public class ResolverCommandTask extends AbstractTask {
 		// Scan root folder (note: throws exception if no data sets were found)
 		ResolverTask resolverTask = new ResolverTask(rootFolder);
 		taskManager.execute(new TaskIterator(resolverTask)); // blocks
-
 		List<DataSetParameters> dataSets = resolverTask.getDataSetResults();
+		
 		logger.info("resolved " + dataSets.size() + " data sets");
-
 		dataSets.forEach(params -> logger.info(params.toString()));
 		
+		
+		// Common gmt and expression files
+		// Overwrite all the expression files if the common file has been provided
+		if(commonExpressionFile != null) {
+			if(!commonExpressionFile.canRead()) {
+				throw new IllegalArgumentException("Cannot read commonExpressionFile: " + commonExpressionFile);
+			}
+			for(DataSetParameters dsp : dataSets) {
+				dsp.getFiles().setExpressionFileName(commonExpressionFile.getAbsolutePath());
+			}
+		}
+		
+		// Overwrite all the gmt files if a common file has been provided
+		if(commonGMTFile != null) {
+			if(!commonGMTFile.canRead()) {
+				throw new IllegalArgumentException("Cannot read commonGMTFile: " + commonGMTFile);
+			}
+			for(DataSetParameters dsp : dataSets) {
+				dsp.getFiles().setGMTFileName(commonGMTFile.getAbsolutePath());
+			}
+		}
 		
 		// Create Enrichment Map
 		String prefix = legacySupport.getNextAttributePrefix();
 		SimilarityMetric sm = SimilarityMetric.valueOf(similarityMetric.getSelectedValue());
 		NESFilter nesf = NESFilter.valueOf(nesFilter.getSelectedValue());
 		
-		String info = String.format("prefix:%s, pvalue:%f, qvalue:%f, nesFilter:%s, minExperiments:%d, similarityMetric:%s, similarityCutoff:%f, combinedConstant:%f", 
-									prefix, pvalue, qvalue, nesf, minExperiments, sm, similarityCutoff, combinedConstant);
+		String info = String.format(
+			"prefix:%s, pvalue:%f, qvalue:%f, nesFilter:%s, minExperiments:%d, similarityMetric:%s, similarityCutoff:%f, combinedConstant:%f", 
+			prefix, pvalue, qvalue, nesf, minExperiments, sm, similarityCutoff, combinedConstant);
 		logger.info(info);
 		
-		EMCreationParameters params = new EMCreationParameters(prefix, pvalue, qvalue, nesf, Optional.ofNullable(minExperiments),
-				sm, similarityCutoff, combinedConstant);
-
+		EMCreationParameters params = new EMCreationParameters(prefix, pvalue, qvalue, nesf, Optional.ofNullable(minExperiments), sm, similarityCutoff, combinedConstant);
 		params.setCreateDistinctEdges(distinctEdges);
 
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
-
 		taskManager.execute(tasks);
 		
 		logger.info("Done.");

@@ -55,10 +55,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, sessionListener, new Properties());
 		
 		// commands
-		registerCommand(bc, "build",   injector.getInstance(Key.get(TaskFactory.class, BuildCommand.class)));
-		registerCommand(bc, "gsea",    injector.getInstance(Key.get(TaskFactory.class, GSEACommand.class)));
-		registerCommand(bc, "resolve", injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
-		registerCommand(bc, "pa",      injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
+		registerCommand(bc, "build",     injector.getInstance(Key.get(TaskFactory.class, BuildCommand.class)));
+		registerCommand(bc, "gsea",      injector.getInstance(Key.get(TaskFactory.class, GSEACommand.class)));
+		registerCommand(bc, "mastermap", injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
+		registerCommand(bc, "pa",        injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
 		
 		// Don't load UI services if running headless
 		boolean headless = injector.getInstance(Key.get(Boolean.class, Headless.class));
