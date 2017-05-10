@@ -22,6 +22,7 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -67,6 +68,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 
 	@Inject private IconManager iconManager;
 	@Inject private DialogTaskManager dialogTaskManager;
+	@Inject private Provider<JFrame> jframeProvider;
+	@Inject private FileBrowser fileBrowser;
 	
 	@Inject private LegacySupport legacySupport;
 	@Inject private CutoffPropertiesPanel cutoffPanel;
@@ -331,7 +334,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	}
 	
 	private void scan() {
-		Optional<File> rootFolder = FileBrowser.browseForRootFolder(callback.getDialogFrame());
+		Optional<File> rootFolder = fileBrowser.browseForRootFolder(jframeProvider.get());
 		if(rootFolder.isPresent()) {
 			scanButton.setEnabled(false);
 			ResolverTask task = new ResolverTask(rootFolder.get());

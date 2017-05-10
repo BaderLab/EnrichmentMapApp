@@ -3,21 +3,30 @@ package org.baderlab.csplugins.enrichmentmap.view.util;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.FileDialog;
+import java.awt.Frame;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
 import javax.swing.JFileChooser;
 
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
+
+import com.google.inject.Inject;
 
 /**
  * Because the Cytoscape FileUtil service doesn't let you browse for directories :(
  */
 public class FileBrowser {
+	
+	@Inject private CyServiceRegistrar serviceRegistrar;
+	
 
 	public static enum Filter {
 		GMT("GMT Files",
@@ -66,7 +75,7 @@ public class FileBrowser {
 	}
 	
 	
-	public static Optional<File> browseForRootFolder(Dialog parent) {
+	public Optional<File> browseForRootFolder(Component parent) {
 		final String osName = System.getProperty("os.name");
 		if(osName.startsWith("Mac"))
 			return browseForRootFolderMac(parent);
@@ -75,11 +84,20 @@ public class FileBrowser {
 	}
 	
 	
-	private static Optional<File> browseForRootFolderMac(Dialog parent) {
+	private Optional<File> browseForRootFolderMac(Component parent) {
 		final String property = System.getProperty("apple.awt.fileDialogForDirectories");
 		System.setProperty("apple.awt.fileDialogForDirectories", "true");
 		try {
-			FileDialog chooser = new FileDialog(parent, "Choose Root Folder", FileDialog.LOAD);
+			FileDialog chooser;
+			if(parent instanceof Dialog)
+				chooser = new FileDialog((Dialog)parent, "Choose Root Folder", FileDialog.LOAD);
+			else if(parent instanceof Frame)
+				chooser = new FileDialog((Frame)parent, "Choose Root Folder", FileDialog.LOAD);
+			else
+				throw new IllegalArgumentException("parent must be Dialog or Frame");
+			
+			chooser.setDirectory(getCurrentDirectory().getAbsolutePath());
+			
 			chooser.setModal(true);
 			chooser.setLocationRelativeTo(parent);
 			chooser.setVisible(true);
@@ -90,6 +108,8 @@ public class FileBrowser {
 			if(file == null || dir == null) {
 				return Optional.empty();
 			}
+			
+			setCurrentDirectory(new File(dir));
 			return Optional.of(new File(dir + File.separator + file));
 		} finally {
 			if(property != null) {
@@ -98,15 +118,53 @@ public class FileBrowser {
 		}
 	}
 	
-	private static Optional<File> browseForRootFolderSwing(Dialog parent) {
-		JFileChooser chooser = new JFileChooser(); 
+	private Optional<File> browseForRootFolderSwing(Component parent) {
+		JFileChooser chooser = new JFileChooser(getCurrentDirectory()); 
 	    chooser.setDialogTitle("Select Root Folder");
 	    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 	    chooser.setAcceptAllFileFilterUsed(false);
 	    if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) { 
+	    	setCurrentDirectory(chooser.getCurrentDirectory());
 	    	return Optional.of(chooser.getSelectedFile());
 	    }
 	    return Optional.empty();
+	}
+	
+	
+	/**
+	 * This is a copy of CyApplicationManager.getCurrentDirectory() from the cytoscape 3.5 API.
+	 * If the API dependency of EnrichmentMap is increased to 3.5 then this code can be removed.
+	 */
+	public File getCurrentDirectory() {
+		final Properties props = (Properties) serviceRegistrar
+				.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
+		String lastDir = props.getProperty(FileUtil.LAST_DIRECTORY);
+		File dir = (lastDir != null) ? new File(lastDir) : null;
+		
+		if (dir == null || !dir.exists() || !dir.isDirectory()) {
+			dir = new File(System.getProperty("user.dir"));
+			
+			if (dir != null) // if path exists but is not valid, remove the property
+				props.remove(FileUtil.LAST_DIRECTORY);
+		}
+		
+		return dir;
+	}
+	
+	
+	/**
+	 * This is a copy of CyApplicationManager.setCurrentDirectory() from the cytoscape 3.5 API.
+	 * If the API dependency of EnrichmentMap is increased to 3.5 then this code can be removed.
+	 */
+	public boolean setCurrentDirectory(File dir) {
+		if (dir == null || !dir.exists() || !dir.isDirectory())
+			return false;
+		
+		final Properties props = (Properties) serviceRegistrar
+				.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
+		props.setProperty(FileUtil.LAST_DIRECTORY, dir.getAbsolutePath());
+		
+		return true;
 	}
 	
 }
