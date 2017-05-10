@@ -112,10 +112,11 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
 		if(networkView != null) {
 			Long suid = networkView.getModel().getSUID();
+			EnrichmentMap map = emManager.getEnrichmentMap(suid);
 			
 			// Overwrite all the params of the other one except 'operator'.
 			// The 'operator' field is the only param that is kept separate.
-			HeatMapParams otherParams = emManager.getHeatMapParams(suid, !onlyEdges);
+			HeatMapParams otherParams = getHeatMapParams(map, suid, !onlyEdges);
 			HeatMapParams newOtherParams = new HeatMapParams.Builder(params).setOperator(otherParams.getOperator()).build();
 			
 			emManager.registerHeatMapParams(suid, !onlyEdges, newOtherParams);
@@ -129,7 +130,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			return;
 		
 		CyNetwork network = networkView.getModel();
-		final EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
+		EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
 		if(map == null)
 			return;
 		
@@ -143,14 +144,14 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		Set<String> inter = intersectionGenesets(network, selectedNodes, selectedEdges, prefix);
 		List<RankingOption> rankOptions = getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
 		
-		HeatMapParams params = getHeatMapParams(map, network, onlyEdges);
+		HeatMapParams params = getHeatMapParams(map, network.getSUID(), onlyEdges);
 		
 		heatMapPanel.selectGenes(map, params, rankOptions, union, inter);
 	}
 	
 	
-	private HeatMapParams getHeatMapParams(EnrichmentMap map, CyNetwork network, boolean onlyEdges) {
-		HeatMapParams params = emManager.getHeatMapParams(network.getSUID(), onlyEdges);
+	private HeatMapParams getHeatMapParams(EnrichmentMap map, Long networkSUID, boolean onlyEdges) {
+		HeatMapParams params = emManager.getHeatMapParams(networkSUID, onlyEdges);
 		if(params == null) {
 			HeatMapParams.Builder builder = new HeatMapParams.Builder();
 			
@@ -160,7 +161,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 				builder.setOperator(Operator.INTERSECTION);
 			
 			params = builder.build();
-			emManager.registerHeatMapParams(network.getSUID(), onlyEdges, params);
+			emManager.registerHeatMapParams(networkSUID, onlyEdges, params);
 		}
 		return params;
 	}
