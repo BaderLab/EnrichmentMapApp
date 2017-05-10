@@ -133,4 +133,11 @@ public class PathTextField {
 		icon.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
 		return icon;
 	}
+
+
+	public void setVisible(boolean visible) {
+		label.setVisible(visible);
+		textField.setVisible(visible);
+		browseButton.setVisible(visible);
+	}
 }

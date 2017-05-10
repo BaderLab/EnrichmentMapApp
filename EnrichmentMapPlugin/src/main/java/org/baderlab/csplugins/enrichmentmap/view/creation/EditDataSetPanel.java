@@ -95,7 +95,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		
 		if(!enrichments1Text.isEmpty())
 			files.setEnrichmentFileName1(enrichments1Text.getText());
-		if(!enrichments2Text.isEmpty())
+		if(!enrichments2Text.isEmpty() && method == Method.GSEA)
 			files.setEnrichmentFileName2(enrichments2Text.getText());
 		if(!expressionsText.isEmpty())
 			files.setExpressionFileName(expressionsText.getText());
@@ -138,24 +138,30 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		analysisTypeCombo.addItem(new ComboItem<>(Method.GSEA, Method.GSEA.getLabel()));
 		analysisTypeCombo.addItem(new ComboItem<>(Method.Generic, Method.Generic.getLabel()));
 		analysisTypeCombo.addItem(new ComboItem<>(Method.Specialized, Method.Specialized.getLabel()));
-		analysisTypeCombo.addActionListener(e -> 
-			firePropertyChange(PROP_NAME, null, getDisplayName())
-		);
+		analysisTypeCombo.addActionListener(e -> {
+			analysisTypeChanged();
+			firePropertyChange(PROP_NAME, null, getDisplayName());
+		});
 		makeSmall(analysisLabel, analysisTypeCombo);
 
 		enrichments1Text = pathTextFactory.create("* Enrichments:", FileBrowser.Filter.ENRICHMENT);
-		enrichments2Text = pathTextFactory.create("Enrichments 2:", FileBrowser.Filter.ENRICHMENT);
+		enrichments2Text = pathTextFactory.create("Enrichments Neg:", FileBrowser.Filter.ENRICHMENT);
 		gmtText = pathTextFactory.create("GMT:", FileBrowser.Filter.GMT);
 		expressionsText = pathTextFactory.create("Expressions:", FileBrowser.Filter.EXPRESSION);
 		ranksText = pathTextFactory.create("Ranks:", FileBrowser.Filter.RANK);
 		classesText = pathTextFactory.create("Classes:", FileBrowser.Filter.CLASS);
 		classesText.getTextField().getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(this::updateClasses));
 		
-		JLabel positive = new JLabel("Positive:");
+		enrichments2Text.getLabel().setVisible(false);
+		enrichments2Text.getTextField().setVisible(false);
+		enrichments2Text.getBrowseButton().setVisible(false);
+		
+		JLabel phenotypesLabel = new JLabel("Phenotypes:");
+		JLabel positive = new JLabel("  Positive:");
 		JLabel negative = new JLabel("Negative:");
 		positiveText = new JTextField();
 		negativeText = new JTextField();
-		makeSmall(positive, negative, positiveText, negativeText);
+		makeSmall(phenotypesLabel, positive, negative, positiveText, negativeText);
 
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -173,6 +179,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 					.addComponent(gmtText.getLabel())
 					.addComponent(ranksText.getLabel())
 					.addComponent(classesText.getLabel())
+					.addComponent(phenotypesLabel)
 				)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addComponent(nameText.getTextField(), 0, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -185,10 +192,10 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 					.addComponent(classesText.getTextField(), 0, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addGroup(layout.createSequentialGroup()
 						.addComponent(positive)
-						.addComponent(positiveText, 75, 75, 75)
-						.addGap(20)
+						.addComponent(positiveText, 90, 90, Short.MAX_VALUE)
+						.addGap(10)
 						.addComponent(negative)
-						.addComponent(negativeText, 75, 75, 75)
+						.addComponent(negativeText, 90, 90, Short.MAX_VALUE)
 					)
 				)
 				.addGroup(layout.createParallelGroup()
@@ -242,6 +249,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 					.addComponent(classesText.getBrowseButton())
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(phenotypesLabel)
 					.addComponent(positive)
 					.addComponent(positiveText, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(negative)
@@ -253,6 +261,20 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
    			setOpaque(false);
 	}
 	
+	
+	private void analysisTypeChanged() {
+		switch(getMethod()) {
+			case Generic:
+			case Specialized:
+				enrichments1Text.getLabel().setText("* Enrichments:");
+				enrichments2Text.setVisible(false);
+				break;
+			case GSEA:
+				enrichments1Text.getLabel().setText("* Enrichments Pos:");
+				enrichments2Text.setVisible(true);
+				break;
+		}
+	}
 	
 	private void initialize(DataSetParameters initDataSet) {
 		nameText.setText(initDataSet.getName());
@@ -276,10 +298,12 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 			err.add("Name field is empty.");
 		if(enrichments1Text.isEmpty())
 			err.add("Enrichments file path is empty.");
-		if(!enrichments1Text.emptyOrReadable())
+		if(!enrichments1Text.emptyOrReadable() && getMethod() == Method.GSEA)
+			err.add("Enrichments Pos file path is not valid.");
+		if(!enrichments1Text.emptyOrReadable() && getMethod() != Method.GSEA)
 			err.add("Enrichments file path is not valid.");
 		if(!enrichments2Text.emptyOrReadable())
-			err.add("Enrichments 2 file path is not valid.");
+			err.add("Enrichments Neg file path is not valid.");
 		if(!expressionsText.emptyOrReadable())
 			err.add("Expressions file path is not valid.");
 		if(!gmtText.emptyOrReadable())
