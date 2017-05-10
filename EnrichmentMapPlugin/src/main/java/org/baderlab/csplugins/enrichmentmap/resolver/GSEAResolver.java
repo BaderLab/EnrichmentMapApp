@@ -100,9 +100,13 @@ public class GSEAResolver {
 			return Optional.empty();
 		}
 		
-		Path exprfile = Paths.get(data);
-		if(Files.exists(exprfile))
-			return Optional.of(exprfile);
+		try {
+			Path exprfile = Paths.get(data);
+			if(Files.exists(exprfile))
+				return Optional.of(exprfile);
+		} catch(InvalidPathException e) {
+			e.printStackTrace();
+		}
 		return Optional.empty();
 	}
 	
@@ -119,14 +123,23 @@ public class GSEAResolver {
 		String job_dir_name = label + "." + method + "." + timestamp;
 		
 		// attempt to find the file using the path in the RPT file
-		Path abs = Paths.get(out_dir, job_dir_name, fileName);
-		if(Files.exists(abs)) {
-			return Optional.of(abs);
+		try {
+			Path abs = Paths.get(out_dir, job_dir_name, fileName);
+			if(Files.exists(abs)) {
+				return Optional.of(abs);
+			}
+		} catch(InvalidPathException e) {
+			e.printStackTrace();
 		}
-		// attempt to find the file under the folder containing the RPT file
-		Path rel = root.resolve(fileName);
-		if(Files.exists(rel)) {
-			return Optional.of(rel);
+		
+		try {
+			// attempt to find the file under the folder containing the RPT file
+			Path rel = root.resolve(fileName);
+			if(Files.exists(rel)) {
+				return Optional.of(rel);
+			}
+		} catch(InvalidPathException e) {
+			e.printStackTrace();
 		}
 		
 		return Optional.empty();
@@ -159,6 +172,10 @@ public class GSEAResolver {
 			Path rptGmtPath = Paths.get(gmtParam);
 			if(Files.exists(rptGmtPath))
 				return Optional.of(rptGmtPath);
+		} catch(InvalidPathException e) {
+			e.printStackTrace();
+		}
+		try {
 			Path edbGmtPath = root.resolve("edb/gene_sets.gmt");
 			if(Files.exists(edbGmtPath))
 				return Optional.of(edbGmtPath);
@@ -210,9 +227,13 @@ public class GSEAResolver {
 
 		if (classes != null && method.equalsIgnoreCase("Gsea")) {
 			String[] classes_split = classes.split("#");
-			Path path = Paths.get(classes_split[0]);
-			if(Files.exists(path)) {
-				return Optional.of(path);
+			try {
+				Path path = Paths.get(classes_split[0]);
+				if(Files.exists(path)) {
+					return Optional.of(path);
+				}
+			} catch(InvalidPathException e) {
+				e.printStackTrace();
 			}
 		}		
 		return Optional.empty();
