@@ -35,19 +35,21 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 	
 	private final File file;
 	private final FilterMetric filterMetric;
+	private final EnrichmentMap map;
 	
 	private Consumer<SetOfGeneSets> geneSetCallback = x -> {};
 	private Consumer<Set<String>> filteredSignatureSetsCallback = x -> {};
 	
 	
 	public interface Factory {
-		LoadSignatureSetsActionListener create(File file, FilterMetric filterMetric);
+		LoadSignatureSetsActionListener create(File file, FilterMetric filterMetric, EnrichmentMap map);
 	}
 	
 	@Inject
-	public LoadSignatureSetsActionListener(@Assisted File file, @Assisted FilterMetric filterMetric) {
+	public LoadSignatureSetsActionListener(@Assisted File file, @Assisted FilterMetric filterMetric, @Assisted EnrichmentMap map) {
 		this.file = file;
 		this.filterMetric = filterMetric;
+		this.map = map;
 	}
 	
 	/**
@@ -69,11 +71,9 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		// make sure that the minimum information is set in the current set of parameters
-		EnrichmentMap currentMap = emManager.getEnrichmentMap(applicationManager.getCurrentNetwork().getSUID());
-
 		if (file.canRead()) {
 			// MKTODO warning LoadSignatureGMTFilesTask is side-effecting, it pulls the loaded genes into the EnrichmentMap object
-			LoadSignatureGMTFilesTask loadGMTs = new LoadSignatureGMTFilesTask(file, currentMap, filterMetric);
+			LoadSignatureGMTFilesTask loadGMTs = new LoadSignatureGMTFilesTask(file, map, filterMetric);
 
 			TaskObserver taskObserver = new ResultTaskObserver() {
 				private SetOfGeneSets resultGeneSets;

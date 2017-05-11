@@ -43,7 +43,7 @@ public class CommandModule extends AbstractModule {
 	}
 	
 	@Provides @PACommand
-	public TaskFactory providePA(Provider<PostAnalysisCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+	public TaskFactory providePA(Provider<PAKnownSignatureCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
 		return createTaskFactory(taskProvider, showTask);
 	}
 

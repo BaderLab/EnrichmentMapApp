@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.commands;
 import static org.baderlab.csplugins.enrichmentmap.commands.ResolverCommandTask.enumNames;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
@@ -20,6 +21,7 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
@@ -31,7 +33,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-public class PostAnalysisCommandTask extends AbstractTask {
+public class PAKnownSignatureCommandTask extends AbstractTask {
 
 	
 	@Tunable
@@ -52,10 +54,15 @@ public class PostAnalysisCommandTask extends AbstractTask {
 	@Tunable
 	public String name;
 	
+	@Tunable
+	public CyNetwork network;
+	
+	
+	@Inject private CyApplicationManager applicationManager;
+	@Inject private CyNetworkViewManager networkViewManager;
 	
 	@Inject private LoadSignatureSetsActionListener.Factory loadSignatureSetsActionListenerFactory;
 	@Inject private CreateDiseaseSignatureTaskFactory.Factory taskFactoryFactory;
-	@Inject private CyApplicationManager applicationManager;
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	@Inject private EnrichmentMapManager emManager;
 	
@@ -64,15 +71,15 @@ public class PostAnalysisCommandTask extends AbstractTask {
 	private Set<String> selectedGenesetNames = null; // result of filtering, but since we are using FilterNetric.None() this will be all the genesets
 	
 	
-	public PostAnalysisCommandTask() {
+	public PAKnownSignatureCommandTask() {
 		filterType   = enumNames(PostAnalysisFilterType.values());
 		hypergeomUniverseType = enumNames(UniverseType.values());
 	}
 	
 	
-	private void loadGeneSets() {
+	private void loadGeneSets(EnrichmentMap map) {
 		FilterMetric filterMetric = new FilterMetric.None();
-		LoadSignatureSetsActionListener loadAction = loadSignatureSetsActionListenerFactory.create(gmtFile, filterMetric);
+		LoadSignatureSetsActionListener loadAction = loadSignatureSetsActionListenerFactory.create(gmtFile, filterMetric, map);
 		loadAction.setGeneSetCallback(gs -> {
 			signatureGenesets = gs;
 		});
@@ -88,16 +95,28 @@ public class PostAnalysisCommandTask extends AbstractTask {
 		if(gmtFile == null || !gmtFile.canRead())
 			throw new IllegalArgumentException("Signature GMT file name not valid");
 		
-		CyNetwork currentNetwork = applicationManager.getCurrentNetwork();
-		CyNetworkView currentView = applicationManager.getCurrentNetworkView();
-		if(currentNetwork == null || currentView == null)
-			throw new IllegalArgumentException("Current network not available.");
+		CyNetwork selectedNetwork;
+		CyNetworkView selectedView;
+		if(network == null) {
+			selectedNetwork = applicationManager.getCurrentNetwork();
+			selectedView = applicationManager.getCurrentNetworkView();
+			if(selectedNetwork == null || selectedView == null) {
+				throw new IllegalArgumentException("Current network not available.");
+			}
+		} else {
+			selectedNetwork = network;
+			Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
+			if(networkViews == null || networkViews.isEmpty()) {
+				throw new IllegalArgumentException("No network view for: " + network);
+			}
+			selectedView = networkViews.iterator().next();
+		}
 		
-		EnrichmentMap map = emManager.getEnrichmentMap(currentNetwork.getSUID());
+		EnrichmentMap map = emManager.getEnrichmentMap(selectedNetwork.getSUID());
 		if(map == null)
-			throw new IllegalArgumentException("Current network is not an Enrichment Map.");
+			throw new IllegalArgumentException("Network is not an Enrichment Map.");
 		
-		loadGeneSets();
+		loadGeneSets(map);
 		
 		PostAnalysisFilterType filter = PostAnalysisFilterType.valueOf(filterType.getSelectedValue());
 		UniverseType universe = UniverseType.valueOf(hypergeomUniverseType.getSelectedValue());
@@ -134,8 +153,8 @@ public class PostAnalysisCommandTask extends AbstractTask {
 		Task updatePanelTask = new AbstractTask() {
 			@Override
 			public void run(TaskMonitor taskMonitor) throws Exception {
-				controlPanelMediatorProvider.get().updateDataSetList(currentView);
-				currentView.updateView();
+				controlPanelMediatorProvider.get().updateDataSetList(selectedView);
+				selectedView.updateView();
 			}
 		};
 		

@@ -28,7 +28,6 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.view.util.Messages;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -42,7 +41,6 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 	private final PostAnalysisInputPanel parentPanel;
 
 	@Inject private CyServiceRegistrar serviceRegistrar;
-	@Inject private CySwingApplication application;
 	@Inject private LoadSignatureSetsActionListener.Factory loadSignatureSetsActionListenerFactory;
 
 	private SetOfGeneSets signatureGenesets;
@@ -139,7 +137,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		// Use the synchronousTaskManager so that this blocks
 		
 		FilterMetric filterMetric = new FilterMetric.None();
-		LoadSignatureSetsActionListener loadAction = loadSignatureSetsActionListenerFactory.create(new File(filePath), filterMetric);
+		LoadSignatureSetsActionListener loadAction = loadSignatureSetsActionListenerFactory.create(new File(filePath), filterMetric, parentPanel.getEnrichmentMap());
 		
 		loadAction.setGeneSetCallback(gs -> {
 			this.signatureGenesets = gs;

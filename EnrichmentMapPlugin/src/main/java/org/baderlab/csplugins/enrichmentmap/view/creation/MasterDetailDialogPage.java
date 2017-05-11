@@ -150,6 +150,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			}
 		}
 		
+		dataSets.forEach(System.out::println);
+		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
 		
