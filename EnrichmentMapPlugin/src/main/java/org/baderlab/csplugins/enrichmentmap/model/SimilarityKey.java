@@ -4,10 +4,10 @@ import java.util.Objects;
 
 public class SimilarityKey {
 
-	private final String geneSet1;
-	private final String geneSet2;
-	private final String interaction;
-	private final String name;
+	public final String geneSet1;
+	public final String geneSet2;
+	public final String interaction;
+	public final String name;
 	
 	
 	public SimilarityKey(String geneSet1, String geneSet2, String interaction, String name) {
@@ -65,12 +65,15 @@ public class SimilarityKey {
 			||	(geneSet1.equals(other.geneSet2) && geneSet2.equals(other.geneSet1));
 	}
 	
+	public String getCompoundName() {
+		return String.format("%s (%s) %s", geneSet1, interaction, geneSet2);
+	}
+	
 	@Override
 	public String toString() {
-		if(isCompound())
-			return String.format("%s (%s) %s", geneSet1, interaction, geneSet2);
-		else
-			return String.format("%s (%s_set%s) %s", geneSet1, interaction, name, geneSet2);
+		return isCompound() 
+			? getCompoundName()
+			: String.format("%s (%s_set%s) %s", geneSet1, interaction, name, geneSet2);
 	}
 	
 }

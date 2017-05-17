@@ -103,6 +103,11 @@ public class GenesetSimilarity {
 		this.hypergeomPValue = -1.0;
 	}
 
+	@Override
+	public String toString() {
+		return "GenesetSimilarity [geneset1Name=" + geneset1Name + ", geneset2Name=" + geneset2Name + "]";
+	}
+
 	/**
 	 * @param geneset1Name - gene set 1 name
 	 * @param geneset2Name - gene set 2 name

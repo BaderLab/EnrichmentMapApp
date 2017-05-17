@@ -19,6 +19,7 @@ import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -39,6 +40,7 @@ import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -49,7 +51,6 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.jukito.JukitoModule;
 import org.jukito.JukitoRunner;
@@ -97,12 +98,13 @@ public abstract class BaseNetworkTest {
 	@Inject private @Passthrough VisualMappingFunctionFactory pmFactory;
 	
     @Inject private CyApplicationManager applicationManager;
+    @Inject private CyNetworkViewManager networkViewManager;
     @Inject private OpenBrowser openBrowser;
     @Inject private EnrichmentMapManager emManager;
     
     @Inject private CreateEnrichmentMapTaskFactory.Factory masterMapTaskFactoryFactory;
     @Inject private LoadSignatureSetsActionListener.Factory  loadSignatureSetsActionListenerFactory;
-    @Inject private CreateDiseaseSignatureTask.Factory buildDiseaseSignatureTaskFactory;
+    @Inject private CreateDiseaseSignatureTaskParallel.Factory buildDiseaseSignatureTaskFactory;
     
     
 	@Before
@@ -138,6 +140,7 @@ public abstract class BaseNetworkTest {
 		when(applicationManager.getCurrentNetwork()).thenReturn(emNetwork);
 		CyNetworkView networkViewMock = mock(CyNetworkView.class);
 		when(applicationManager.getCurrentNetworkView()).thenReturn(networkViewMock);
+		when(networkViewManager.getNetworkViews(emNetwork)).thenReturn(Arrays.asList(networkViewMock));
 		@SuppressWarnings("unchecked")
 		View<CyNode> nodeViewMock = Mockito.mock(View.class);
 		
@@ -152,17 +155,17 @@ public abstract class BaseNetworkTest {
 		File file = new File(builder.getSignatureGMTFileName());
 		LoadSignatureSetsActionListener loader = loadSignatureSetsActionListenerFactory.create(file, new FilterMetric.None(), map);
 		loader.setTaskManager(testTaskManager);
-		
 		loader.setGeneSetCallback(builder::setLoadedGMTGeneSets);
 		loader.setFilteredSignatureSetsCallback(builder::addSelectedGeneSetNames);
-
 		loader.actionPerformed(null);
 		
 		PostAnalysisParameters paParams = builder.build();
 		
 		// Run post-analysis
-		CreateDiseaseSignatureTask signatureTask = buildDiseaseSignatureTaskFactory.create(map, paParams, dataSetName);
-		signatureTask.run(mock(TaskMonitor.class));
+		EMDataSet dataSet = map.getDataSet(dataSetName);
+		CreateDiseaseSignatureTaskParallel signatureTask = buildDiseaseSignatureTaskFactory.create(paParams, map, Arrays.asList(dataSet));
+		testTaskManager = new SerialTestTaskManager();
+		testTaskManager.execute(new TaskIterator(signatureTask));
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })

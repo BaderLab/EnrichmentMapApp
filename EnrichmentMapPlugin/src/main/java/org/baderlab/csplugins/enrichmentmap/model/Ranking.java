@@ -42,11 +42,6 @@ public class Ranking {
 		return ranking.get(gene);
 	}
 	
-	public void addRank(Integer geneKey, Integer rank) {
-		ranking.put(geneKey, new Rank(geneKey.toString(), 0.0, rank));
-		invalidateLazyValues();
-	}
-
 	public void addRank(Integer gene, Rank rank) {
 		ranking.put(gene, rank);
 		invalidateLazyValues();
@@ -83,7 +78,7 @@ public class Ranking {
 	 * 
 	 * @return HashMap gene2score
 	 */
-	private Map<Integer, Double> getGene2Score() {
+	private synchronized Map<Integer, Double> getGene2Score() {
 		if(gene2score == null) {
 			gene2score = new HashMap<>();
 			ranking.forEach((gene,rank) -> gene2score.put(gene, rank.getScore()));
@@ -96,7 +91,7 @@ public class Ranking {
 	}
 
 	
-	private Map<Integer,Integer> getRank2Gene() {
+	private synchronized Map<Integer,Integer> getRank2Gene() {
 		if(rank2gene == null) {
 			rank2gene = new HashMap<>();
 			ranking.forEach((gene,rank) -> rank2gene.put(rank.getRank(), gene));
@@ -117,7 +112,7 @@ public class Ranking {
 	 * 
 	 * @return double[] scores
 	 */
-	public double[] getScores() {
+	public synchronized double[] getScores() {
 		if(scores == null) {
 			Map<Integer, Double> gene2score = getGene2Score();
 			scores = new double[gene2score.size()];
@@ -129,7 +124,7 @@ public class Ranking {
 		return scores;
 	}
 
-	private void invalidateLazyValues() {
+	private synchronized void invalidateLazyValues() {
 		rank2gene = null;
 		gene2score = null;
 		scores = null;

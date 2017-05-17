@@ -20,7 +20,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTaskResult;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
@@ -154,7 +154,7 @@ public class PostAnalysisPanelMediator {
 
 		@Override
 		public void taskFinished(ObservableTask task) {
-			if (task instanceof CreateDiseaseSignatureTask)
+			if (task instanceof CreateDiseaseSignatureNetworkTask)
 				result = task.getResults(CreateDiseaseSignatureTaskResult.class);
 		}
 

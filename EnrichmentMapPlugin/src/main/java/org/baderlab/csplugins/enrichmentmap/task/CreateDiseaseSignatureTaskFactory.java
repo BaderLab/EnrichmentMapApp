@@ -1,13 +1,10 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
-import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -25,7 +22,7 @@ public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private CyApplicationManager applicationManager;
-	@Inject private CreateDiseaseSignatureTask.Factory signatureTaskFactory;
+	@Inject private CreateDiseaseSignatureTaskParallel.Factory signatureTaskFactory;
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
 	
@@ -62,30 +59,14 @@ public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 		
 		this.errors = errorBuilder.toString();
 
-		if (errors.isEmpty()) {
-			TaskIterator tasks = new TaskIterator();
-
-			String sdsName;
-			if(params.getName() == null || params.getName().trim().isEmpty()) {
-				sdsName = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
-			} else {
-				sdsName = params.getName();
-			}
-			EMSignatureDataSet sigDataSet = new EMSignatureDataSet(sdsName);
-			map.addSignatureDataSet(sigDataSet);
-			
-			// Run Post-Analysis in batch, once for each data set
-			for(EMDataSet dataset : map.getDataSetList()) {
-				CreateDiseaseSignatureTask task = signatureTaskFactory.create(map, params, dataset.getName());
-				task.setSignatureDataSet(sigDataSet);
-				tasks.append(task);
-			}
-			
+		if(errors.isEmpty()) {
 			ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
 			EMStyleOptions options = controlPanelMediator.createStyleOptions(netView);
 			CyCustomGraphics2<?> chart = controlPanelMediator.createChart(options);
-			tasks.append(applyStyleTaskFactory.create(options, chart, false));
 			
+			TaskIterator tasks = new TaskIterator();
+			tasks.append(signatureTaskFactory.create(params, map));
+			tasks.append(applyStyleTaskFactory.create(options, chart, false));
 			return tasks;
 		} else {
 			// MKTODO not entirely sure what to do in this case, just return an empty iterator I guess...

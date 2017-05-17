@@ -128,8 +128,12 @@ public class EnrichmentMap {
 		return genes.inverse().get(gene);
 	}
 	
-	public Collection<String> getAllGenes() {
-		return Collections.unmodifiableCollection(genes.values());
+	/**
+	 * Returns ALL of the genes that have ever been loaded. Warning: this is probably not what you
+	 * want because you probably want a set of genes that has been filtered somehow.
+	 */
+	public Set<String> getAllGenes() {
+		return Collections.unmodifiableSet(genes.values());
 	}
 	
 	public Optional<Integer> addGene(String gene) {
@@ -251,22 +255,6 @@ public class EnrichmentMap {
 		return allGeneSets;
 	}
 
-	@Deprecated
-	public Map<String, GeneSet> getAllGeneSetsOfInterest() {
-		//go through each dataset and get the genesets from each
-		Map<String, GeneSet> allGeneSets = new HashMap<>();
-		
-		for (EMDataSet ds : dataSets.values())
-			allGeneSets.putAll(ds.getGeneSetsOfInterest().getGeneSets());
-		
-		// if there are post analysis genesets, add them to the set of all genesets
-		if (signatureDataSets != null) {
-			for (EMSignatureDataSet sds : signatureDataSets.values())
-				allGeneSets.putAll(sds.getGeneSetsOfInterest().getGeneSets());
-		}
-		
-		return allGeneSets;
-	}
 	
 	// MKTODO write a JUnit
 	public Map<String, Set<Integer>> unionAllGeneSetsOfInterest() {
@@ -282,6 +270,23 @@ public class EnrichmentMap {
 
 		return allGeneSets;
 	}
+	
+	
+	/**
+	 * Returns a set of all genes in the map that are of interest and not from a signature data set.
+	 */
+	public Set<Integer> getAllEnrichmentGenes() {
+		Set<Integer> genes = new HashSet<>();
+		for(EMDataSet ds : getDataSetList()) {
+			Map<String,GeneSet> geneSets = ds.getGeneSetsOfInterest().getGeneSets();
+			for(GeneSet geneSet : geneSets.values()) {
+				genes.addAll(geneSet.getGenes());
+			}
+		}
+		return genes;
+	}
+	
+	
 	
 	// MKTODO write a JUnit
 	public Set<String> getAllGeneSetOfInterestNames() {

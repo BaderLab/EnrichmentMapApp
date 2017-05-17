@@ -8,8 +8,9 @@ import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListe
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
-import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.CreateDiseaseSignatureTaskParallel;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMViewTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
@@ -71,7 +72,8 @@ class FactoryModule extends AbstractModule {
 	protected void configure() {
 		// Factories using AssistedInject
 		installFactory(PostAnalysisInputPanel.Factory.class);
-		installFactory(CreateDiseaseSignatureTask.Factory.class);
+		installFactory(CreateDiseaseSignatureNetworkTask.Factory.class);
+		installFactory(CreateDiseaseSignatureTaskParallel.Factory.class);
 		installFactory(RemoveSignatureDataSetsTask.Factory.class);
 		installFactory(LoadSignatureSetsActionListener.Factory.class);
 		installFactory(PostAnalysisKnownSignaturePanel.Factory.class);
