@@ -3,12 +3,15 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
@@ -21,9 +24,11 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
+import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
@@ -56,6 +61,10 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	private final EMSignatureDataSet sigDataSet;
 	private final Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities;
 	
+	// Cache edges that have been created to avoid having to look them up in the network again.
+	private @Nullable Map<String,CyEdge> compoundEdgeCache;
+	private final Map<String,CyNode> nodeCache = new LinkedHashMap<>(); // maintain insertion order so layout is deterministic
+	
 	private CreateDiseaseSignatureTaskResult.Builder taskResult = new CreateDiseaseSignatureTaskResult.Builder();
 	
 	
@@ -72,9 +81,14 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		this.geneSetSimilarities = geneSetSimilarities;
 	}
 	
-	
+
+	/**
+	 * This task is NOT cancellable.
+	 */
 	@Override
 	public void run(TaskMonitor tm) {
+		tm.setTitle("Post Analysis Geneset Similarities...");
+		
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		CyNetworkView networkView = getNetworKView(network);
 		taskResult.setNetwork(network);
@@ -85,44 +99,52 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		String prefix = params.getAttributePrefix();
 		
 		//get the node attribute and edge attribute tables
+		tm.setStatusMessage("Creating Columns");
 		CyTable edgeTable = createEdgeColumns(network, "", prefix);
 		CyTable nodeTable = createNodeColumns(network, "", prefix);
+		tm.setProgress(0.1);
 		
-		// Create the data set
+		// If we are creating compound edges then cache them for performance reasons
+		if(!map.getParams().getCreateDistinctEdges()) {
+			tm.setStatusMessage("Caching Nodes");
+			compoundEdgeCache = createCompoundEdgeCache(prefix, network, edgeTable);
+			tm.setProgress(0.2);
+		}
+				
+		// Get the gene sets
 		Map<String,GeneSet> signatureGeneSets = sigDataSet.getGeneSetsOfInterest().getGeneSets();
 		
 		// Create Signature Hub Nodes
-		Set<CyNode> hubNodes = new LinkedHashSet<>(); // maintain insertion order
-		for(Map.Entry<String,GeneSet> entry : signatureGeneSets.entrySet()) {
-			String hubName = entry.getKey();
-			GeneSet sigGeneSet = entry.getValue();
-			CyNode hubNode = createHubNode(hubName, network, networkView, prefix, edgeTable, nodeTable, geneUniverse, sigDataSet, sigGeneSet);
-			hubNodes.add(hubNode);
-		}		
+		tm.setStatusMessage("Creating Nodes");
+		signatureGeneSets.forEach((hubName, sigGeneSet) ->
+			createHubNode(hubName, network, networkView, prefix, edgeTable, nodeTable, geneUniverse, sigGeneSet)
+		);
+		tm.setProgress(0.3);
 		
 		// Layout nodes
-		// MKTODO wtf is going on here?
-		eventHelper.flushPayloadEvents(); // make sure node views have been created
-		double currentNodeYOffset = 0;
-		for(CyNode node : hubNodes) {
-			// add currentNodeY_offset to initial Y position of the Node and increase currentNodeY_offset for the next Node
-			View<CyNode> hubNodeView = networkView.getNodeView(node);
-			double hubNodeY = hubNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-			hubNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, hubNodeY + currentNodeYOffset);
-			currentNodeYOffset += currentNodeYIncrement;
-		}
+		tm.setStatusMessage("Laying out Nodes");
+		layoutHubNodes(networkView);
+		tm.setProgress(0.4);
 		
 		// Create Signature Hub Edges
+		tm.setStatusMessage("Creating Edges");
+		DiscreteTaskMonitor dtm = new DiscreteTaskMonitor(tm, geneSetSimilarities.size(), 0.4, 0.9);
+		dtm.setStatusMessageTemplate("Creating Edge {0} of {1}");
 		for(SimilarityKey similarityKey : geneSetSimilarities.keySet()) {
 			boolean passedCutoff = passesCutoff(similarityKey);
-			createEdge(similarityKey, network, networkView, prefix, edgeTable, nodeTable, passedCutoff, sigDataSet);
+			createEdge(similarityKey, network, networkView, prefix, edgeTable, nodeTable, passedCutoff);
+			dtm.inc();
 		}
 
 		// Set edge widths
+		tm.setStatusMessage("Setting Edge Widths");
 		widthFunctionProvider.get().setEdgeWidths(network, prefix, tm);
+		tm.setProgress(1.0);
 		
 		// Add the new data set to the map
-		map.addSignatureDataSet(sigDataSet);
+		if(!map.hasSignatureDataSets()) {
+			map.addSignatureDataSet(sigDataSet);
+		}
 	}
 	
 	
@@ -135,13 +157,26 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	}
 	
 	
+	private static Map<String,CyEdge> createCompoundEdgeCache(String prefix, CyNetwork network, CyTable edgeTable) {
+		Map<String,CyEdge> cache = new HashMap<>();
+		// Get rows for signature edges
+		Collection<CyRow> rows = edgeTable.getMatchingRows(CyEdge.INTERACTION, CreateDiseaseSignatureTaskParallel.INTERACTION);
+		for(CyRow row : rows) {
+			String name = row.get(CyNetwork.NAME, String.class);
+			Long suid = row.get(CyIdentifiable.SUID, Long.class);
+			CyEdge edge = network.getEdge(suid);
+			cache.put(name, edge);
+		}
+		return cache;
+	}
+	
+	
 	/**
-	 * Returns true if a hub-node was actually created, false if the existing
-	 * one was reused.
+	 * Creates a signature hub node if it doesn't already exist.
+	 * Otherwise it updates the attributes of the existing node.
 	 */
-	private CyNode createHubNode(String hubName, CyNetwork network, CyNetworkView netView,
-									String prefix, CyTable edgeTable, CyTable nodeTable, Set<Integer> geneUniverse, 
-									EMSignatureDataSet sigDataSet, GeneSet sigGeneSet) {
+	private void createHubNode(String hubName, CyNetwork network, CyNetworkView netView, String prefix, 
+								 CyTable edgeTable, CyTable nodeTable, Set<Integer> geneUniverse, GeneSet sigGeneSet) {
 		
 		// Test for existing node first
 		CyNode hubNode = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME, hubName);
@@ -185,7 +220,20 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 //		GeneSet geneSetInDataSet = new GeneSet(sigGeneSet.getName(), sigGeneSet.getDescription(), sigGenesInDataSet);
 //		dataSet.getGeneSetsOfInterest().getGeneSets().put(hubName, geneSetInDataSet);
 
-		return hubNode;
+		nodeCache.put(hubName, hubNode);
+	}
+	
+	
+	private void layoutHubNodes(CyNetworkView networkView) {
+		eventHelper.flushPayloadEvents(); // make sure node views have been created
+		double currentNodeYOffset = 0;
+		for(CyNode node : nodeCache.values()) {
+			// add currentNodeY_offset to initial Y position of the Node and increase currentNodeY_offset for the next Node
+			View<CyNode> hubNodeView = networkView.getNodeView(node);
+			double hubNodeY = hubNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+			hubNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, hubNodeY + currentNodeYOffset);
+			currentNodeYOffset += currentNodeYIncrement;
+		}
 	}
 	
 	
@@ -195,18 +243,20 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	 * returned, if the edge had to be created it will not be returned.
 	 */
 	private void createEdge(SimilarityKey similarityKey, CyNetwork network, CyNetworkView netView, String prefix, CyTable edgeTable,
-			CyTable nodeTable, boolean passedCutoff, EMSignatureDataSet sigDataSet) {
+			CyTable nodeTable, boolean passedCutoff) {
 		
 		String edgeName = similarityKey.getCompoundName();
 		GenesetSimilarity genesetSimilarity = geneSetSimilarities.get(similarityKey);
 		
 		CyEdge edge = null;
-		if(!map.getParams().getCreateDistinctEdges())
-			edge = NetworkUtil.getEdgeWithValue(network, edgeTable, CyNetwork.NAME, edgeName);
+		if(compoundEdgeCache != null) {
+			// much faster than scanning the edge table
+			edge = compoundEdgeCache.get(edgeName);
+		}
 		
 		if (edge == null) {
 			if (passedCutoff) {
-				CyNode hubNode = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME, genesetSimilarity.getGeneset1Name());
+				CyNode hubNode = nodeCache.get(genesetSimilarity.getGeneset1Name());
 				CyNode geneSet = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME, genesetSimilarity.getGeneset2Name());
 
 				if (hubNode == null || geneSet == null)
@@ -215,6 +265,9 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 				edge = network.addEdge(hubNode, geneSet, false);
 //				sigDataSet.addEdgeSuid(edge.getSUID());
 				map.getDataSet(similarityKey.getName()).addEdgeSuid(edge.getSUID());
+				if(compoundEdgeCache != null) {
+					compoundEdgeCache.put(edgeName, edge);
+				}
 				taskResult.addNewEdge(edge);
 			} else {
 				return; // edge does not exist and does not pass cutoff, do nothing

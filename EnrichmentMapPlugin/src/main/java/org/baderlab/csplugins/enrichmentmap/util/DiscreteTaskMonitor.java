@@ -8,15 +8,24 @@ import org.cytoscape.work.TaskMonitor;
 public class DiscreteTaskMonitor implements TaskMonitor {
 
 	private final TaskMonitor delegate;
+	private final double low;
+	private final double high;
+	
 	
 	private final int totalWork;
 	private AtomicInteger currentWork = new AtomicInteger(0);
 	private String messageTemplate;
 	
 	
-	public DiscreteTaskMonitor(TaskMonitor delegate, int totalWork) {
+	public DiscreteTaskMonitor(TaskMonitor delegate, int totalWork, double low, double high) {
 		this.delegate = delegate;
 		this.totalWork = totalWork;
+		this.low = low;
+		this.high = high;
+	}
+	
+	public DiscreteTaskMonitor(TaskMonitor delegate, int totalWork) {
+		this(delegate, totalWork, 0.0, 1.0);
 	}
 	
 	public void setStatusMessageTemplate(String template) {
@@ -30,7 +39,7 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 	
 	@Override
 	public void setProgress(double progress) {
-		double mappedProgress = map(progress, 0.0, 1.0, 0.0, 1.0);
+		double mappedProgress = map(progress, 0.0, 1.0, low, high);
 		delegate.setProgress(mappedProgress);
 		if(messageTemplate != null) {
 			String message = MessageFormat.format(messageTemplate, getCurrentWork(), getTotalWork());

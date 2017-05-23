@@ -47,7 +47,7 @@ import com.google.inject.assistedinject.AssistedInject;
  */
 public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 
-	private static final String INTERACTION = PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
+	public static final String INTERACTION = PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
 
 	
 	@Inject private CreateDiseaseSignatureNetworkTask.Factory networkTaskFactory;
@@ -92,7 +92,7 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
  		Map<String,GeneSet> signatureGeneSets = getSignatureGeneSets();
  		handleDuplicateNames(enrichmentGeneSetNames, signatureGeneSets);
      		
- 		EMSignatureDataSet sigDataSet = createSignatureDataSet();
+ 		EMSignatureDataSet sigDataSet = getOrCreateSignatureDataSet();
 		signatureGeneSets.forEach(sigDataSet.getGeneSetsOfInterest()::addGeneSet);
 		
         Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities = startBuildDiseaseSignatureParallel(tm, executor, enrichmentGeneSetNames, signatureGeneSets);
@@ -185,11 +185,19 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 	}
 	
 	
-	private EMSignatureDataSet createSignatureDataSet() {
+	/**
+	 * Note: This method does not add the data set to the map. This task can be cancelled so it should be added at the end.
+	 */
+	private EMSignatureDataSet getOrCreateSignatureDataSet() {
 		String name = params.getName();
 		if(name == null || name.trim().isEmpty())
 			name = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
-		return new EMSignatureDataSet(name);
+		
+		// To emulate EM2 behaviour there can only be one signature data set
+		if(map.hasSignatureDataSets())
+			return map.getSignatureDataSets().values().iterator().next();
+		else
+			return new EMSignatureDataSet(name);
 	}
 	
 	

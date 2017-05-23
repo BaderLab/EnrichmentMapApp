@@ -17,7 +17,7 @@ public class TestUtils {
 	public static Map<String,CyNode> getNodes(CyNetwork network) {
 		Map<String,CyNode> nodes = new HashMap<>();
 	   	for(CyNode node : network.getNodeList()) {
-	   		nodes.put(network.getRow(node).get("name", String.class), node);
+	   		nodes.put(network.getRow(node).get(CyNetwork.NAME, String.class), node);
 	   	}
 	   	return nodes;
 	}
@@ -25,7 +25,7 @@ public class TestUtils {
 	public static Map<String,CyEdge> getEdges(CyNetwork network) {
 		Map<String,CyEdge> edges = new HashMap<>();
 	   	for(CyEdge edge : network.getEdgeList()) {
-	   		edges.put(network.getRow(edge).get("name", String.class), edge);
+	   		edges.put(network.getRow(edge).get(CyNetwork.NAME, String.class), edge);
 	   	}
 	   	return edges;
 	}
@@ -33,7 +33,7 @@ public class TestUtils {
 	public static EdgeSimilarities getEdgeSimilarities(CyNetwork network) {
 		EdgeSimilarities edges = new EdgeSimilarities();
 	   	for(CyEdge edge : network.getEdgeList()) {
-	   		edges.addEdge(network.getRow(edge).get("name", String.class), edge);
+	   		edges.addEdge(network.getRow(edge).get(CyNetwork.NAME, String.class), edge);
 	   	}
 	   	return edges;
 	}
