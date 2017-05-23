@@ -24,12 +24,6 @@ import org.cytoscape.work.TaskMonitor;
 
 import com.google.common.collect.Sets;
 
-/**
- * Three cases:
- * - single edges
- * - multiple edges
- * - compound edges
- */
 public class ComputeSimilarityTaskParallel extends AbstractTask {
 
 	private final EnrichmentMap map;
@@ -81,7 +75,10 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 		for(final String geneset1Name : names) {
 			// Compute similarities in batches, creating a Runnable for every similarity pair would create too many objects
 			executor.execute(() -> {
+				loop:
 				for(final String geneset2Name : names) {
+					if(Thread.interrupted())
+						break loop;
 					if (geneset1Name.equalsIgnoreCase(geneset2Name))
 						continue; //don't compare two identical gene sets
 					

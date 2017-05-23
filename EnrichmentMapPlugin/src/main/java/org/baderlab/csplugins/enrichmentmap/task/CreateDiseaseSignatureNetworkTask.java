@@ -21,7 +21,6 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
-import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -54,22 +53,22 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	private final EnrichmentMap map;
 	private final PostAnalysisParameters params;
 	
-	private final Map<String,GeneSet> signatureGeneSets;
+	private final EMSignatureDataSet sigDataSet;
 	private final Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities;
 	
 	private CreateDiseaseSignatureTaskResult.Builder taskResult = new CreateDiseaseSignatureTaskResult.Builder();
 	
 	
 	public static interface Factory {
-		CreateDiseaseSignatureNetworkTask create(EnrichmentMap map, PostAnalysisParameters params, Map<String,GeneSet> signatureGeneSets, Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities);
+		CreateDiseaseSignatureNetworkTask create(EnrichmentMap map, PostAnalysisParameters params, EMSignatureDataSet sigDataSet, Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities);
 	}
 	
 	@Inject
 	public CreateDiseaseSignatureNetworkTask(@Assisted EnrichmentMap map, @Assisted PostAnalysisParameters params, 
-			@Assisted Map<String,GeneSet> signatureGeneSets, @Assisted Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities) {
+			@Assisted EMSignatureDataSet sigDataSet, @Assisted Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities) {
 		this.map = map;
 		this.params = params;
-		this.signatureGeneSets = signatureGeneSets;
+		this.sigDataSet = sigDataSet;
 		this.geneSetSimilarities = geneSetSimilarities;
 	}
 	
@@ -90,7 +89,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		CyTable nodeTable = createNodeColumns(network, "", prefix);
 		
 		// Create the data set
-		EMSignatureDataSet sigDataSet = createSignatureDataSet();
+		Map<String,GeneSet> signatureGeneSets = sigDataSet.getGeneSetsOfInterest().getGeneSets();
 		
 		// Create Signature Hub Nodes
 		Set<CyNode> hubNodes = new LinkedHashSet<>(); // maintain insertion order
@@ -119,23 +118,14 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 			createEdge(similarityKey, network, networkView, prefix, edgeTable, nodeTable, passedCutoff, sigDataSet);
 		}
 
+		// Set edge widths
 		widthFunctionProvider.get().setEdgeWidths(network, prefix, tm);
+		
+		// Add the new data set to the map
+		map.addSignatureDataSet(sigDataSet);
 	}
 	
 	
-	private EMSignatureDataSet createSignatureDataSet() {
-		String sdsName;
-		if(params.getName() == null || params.getName().trim().isEmpty()) {
-			sdsName = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
-		} else {
-			sdsName = params.getName();
-		}
-		EMSignatureDataSet signatureDataSet = new EMSignatureDataSet(sdsName);
-		map.addSignatureDataSet(signatureDataSet);
-		return signatureDataSet;
-	}
-	
-
 	private CyNetworkView getNetworKView(CyNetwork network) {
 		Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
 		if(networkViews == null || networkViews.isEmpty()) {
@@ -308,7 +298,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 				return relative_per >= filterParams.getValue() / 100.0;
 			case SPECIFIC:
 				String hubName = similarity.getGeneset1Name();
-				GeneSet sigGeneSet = signatureGeneSets.get(hubName);
+				GeneSet sigGeneSet = sigDataSet.getGeneSetsOfInterest().getGeneSetByName(hubName);
 				int sigGeneSetSize = sigGeneSet.getGenes().size();
 				double relativePer2 = (double) similarity.getSizeOfOverlap() / (double) sigGeneSetSize;
 				return relativePer2 >= filterParams.getValue() / 100.0;

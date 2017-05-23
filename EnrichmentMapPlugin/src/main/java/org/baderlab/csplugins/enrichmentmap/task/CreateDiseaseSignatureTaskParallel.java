@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
@@ -22,7 +23,9 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
-import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
+import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
+import org.baderlab.csplugins.mannwhit.MannWhitneyMemoized;
+import org.baderlab.csplugins.mannwhit.MannWhitneyTestResult;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
@@ -32,6 +35,16 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
+/**
+ * Post Analysis.
+ * Computes similarities between the signature gene sets that are being added and the 
+ * existing gene sets in the enrichment map network.
+ * 
+ * Note: This task does not have side effects and is safely cancellable.
+ * This task creates the EMSignatureDataSet and GenesetSimilarity objects, the next
+ * task, CreateDiseaseSignatureNetworkTask has all the side effects of adding
+ * nodes/edges to the network.
+ */
 public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 
 	private static final String INTERACTION = PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
@@ -42,6 +55,9 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 	private final EnrichmentMap map;
 	private final PostAnalysisParameters params;
 	private final List<EMDataSet> dataSets;
+	
+	private final MannWhitneyMemoized mannWhitneyCache = new MannWhitneyMemoized();
+	
 	
 	public static interface Factory {
 		CreateDiseaseSignatureTaskParallel create(PostAnalysisParameters params, EnrichmentMap map);
@@ -76,6 +92,9 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
  		Map<String,GeneSet> signatureGeneSets = getSignatureGeneSets();
  		handleDuplicateNames(enrichmentGeneSetNames, signatureGeneSets);
      		
+ 		EMSignatureDataSet sigDataSet = createSignatureDataSet();
+		signatureGeneSets.forEach(sigDataSet.getGeneSetsOfInterest()::addGeneSet);
+		
         Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities = startBuildDiseaseSignatureParallel(tm, executor, enrichmentGeneSetNames, signatureGeneSets);
 
         // Support cancellation
@@ -94,7 +113,7 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 		
 		// create the network here
 		if(!cancelled) {
-			Task networkTask = networkTaskFactory.create(map, params, signatureGeneSets, geneSetSimilarities);
+			Task networkTask = networkTaskFactory.create(map, params, sigDataSet, geneSetSimilarities);
 			insertTasksAfterCurrentTask(networkTask);
 		}
 	}
@@ -108,8 +127,7 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 		
 		DiscreteTaskMonitor taskMonitor = discreteTaskMonitor(tm, signatureGeneSets.size());
 		
-		// Gene universe is all enrichment genes in the map
-		Set<Integer> geneUniverse = map.getAllEnrichmentGenes();
+		Set<Integer> geneUniverse = map.getAllEnrichmentGenes(); // Gene universe is all enrichment genes in the map
 		
 		Map<SimilarityKey, GenesetSimilarity> geneSetSimilarities = new ConcurrentHashMap<>();
 		
@@ -119,8 +137,12 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 			
 			// Compute similarities in batches
 			executor.execute(() -> {
+				loop:
 				for(String geneSetName : enrichmentGeneSetNames) {
 					for(EMDataSet dataSet : dataSets) {
+						if(Thread.interrupted())
+							break loop;
+						
 						GeneSet enrGeneSet = dataSet.getSetOfGeneSets().getGeneSetByName(geneSetName);
 						if(enrGeneSet != null) {
 							// restrict to a common gene universe
@@ -160,6 +182,14 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 		}
 		
 		return geneSetSimilarities;
+	}
+	
+	
+	private EMSignatureDataSet createSignatureDataSet() {
+		String name = params.getName();
+		if(name == null || name.trim().isEmpty())
+			name = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
+		return new EMSignatureDataSet(name);
 	}
 	
 	
@@ -225,14 +255,10 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 			comparison.setMannWhitMissingRanks(true);
 		} else {
 			double[] scores = ranks.getScores();
-			// MKTODO could modify MannWHitneyUTestSided to return all three values from one call
-			MannWhitneyUTestSided mannWhit = new MannWhitneyUTestSided();
-			double mannPvalTwoSided = mannWhit.mannWhitneyUTest(overlapGeneScores, scores, MannWhitneyUTestSided.Type.TWO_SIDED);
-			comparison.setMannWhitPValueTwoSided(mannPvalTwoSided);
-			double mannPvalGreater = mannWhit.mannWhitneyUTest(overlapGeneScores, scores, MannWhitneyUTestSided.Type.GREATER);
-			comparison.setMannWhitPValueGreater(mannPvalGreater);
-			double mannPvalLess = mannWhit.mannWhitneyUTest(overlapGeneScores, scores, MannWhitneyUTestSided.Type.LESS);
-			comparison.setMannWhitPValueLess(mannPvalLess);
+			MannWhitneyTestResult result = mannWhitneyCache.mannWhitneyUTestBatch(overlapGeneScores, scores);
+			comparison.setMannWhitPValueTwoSided(result.twoSided);
+			comparison.setMannWhitPValueGreater(result.greater);
+			comparison.setMannWhitPValueLess(result.less);
 		}
 	}
 	

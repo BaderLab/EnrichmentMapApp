@@ -132,7 +132,7 @@ public class MannWhitneyUTestSided {
      * @throws NullArgumentException if {@code x} or {@code y} are {@code null}.
      * @throws NoDataException if {@code x} or {@code y} are zero-length.
      */
-    public double mannWhitneyU(final double[] x, final double[] y)
+    private double mannWhitneyU(final double[] x, final double[] y)
         throws NullArgumentException, NoDataException {
 
         ensureDataConformance(x, y);
@@ -188,7 +188,7 @@ public class MannWhitneyUTestSided {
      * @throws NullArgumentException if {@code x} or {@code y} are {@code null}.
      * @throws NoDataException if {@code x} or {@code y} are zero-length.
      */
-    public double mannWhitneyU1(final double[] x, final double[] y)
+    private double mannWhitneyU1(final double[] x, final double[] y)
             throws NullArgumentException, NoDataException {
 
             ensureDataConformance(x, y);
@@ -303,9 +303,7 @@ public class MannWhitneyUTestSided {
      * @throws MaxCountExceededException if the maximum number of iterations
      * is exceeded
      */
-    public double mannWhitneyUTest(final double[] x, final double[] y, Type side)
-        throws NullArgumentException, NoDataException,
-        ConvergenceException, MaxCountExceededException {
+    public double mannWhitneyUTest(final double[] x, final double[] y, Type side) throws NullArgumentException, NoDataException, ConvergenceException, MaxCountExceededException {
 
         ensureDataConformance(x, y);
 
@@ -316,11 +314,36 @@ public class MannWhitneyUTestSided {
          */
         final double Umin = x.length * y.length - Umax;
         
-      //we require the U1 and U2 values in order to determine which p-value to calculate for the sided tests
+        //we require the U1 and U2 values in order to determine which p-value to calculate for the sided tests
         final double U1 = mannWhitneyU1(x, y);
         final double U2 = x.length * y.length - U1;
 
         return calculateAsymptoticPValue(Umin, U1, U2, x.length, y.length, side);
+    }
+    
+    
+    /*
+     * An optimized batch version of the above method that calculates TWO_SIDED, GREATER and LESS at the same time.
+     */
+    public MannWhitneyTestResult mannWhitneyUTestBatch(final double[] x, final double[] y) throws NullArgumentException, NoDataException, ConvergenceException, MaxCountExceededException {
+    	ensureDataConformance(x, y);
+
+        final double Umax = mannWhitneyU(x, y);
+
+        /*
+         * It can be shown that U1 + U2 = n1 * n2
+         */
+        final double Umin = x.length * y.length - Umax;
+        
+        //we require the U1 and U2 values in order to determine which p-value to calculate for the sided tests
+        final double U1 = mannWhitneyU1(x, y);
+        final double U2 = x.length * y.length - U1;
+
+        return new MannWhitneyTestResult(
+        	calculateAsymptoticPValue(Umin, U1, U2, x.length, y.length, Type.TWO_SIDED),
+        	calculateAsymptoticPValue(Umin, U1, U2, x.length, y.length, Type.GREATER),
+        	calculateAsymptoticPValue(Umin, U1, U2, x.length, y.length, Type.LESS)
+        );
     }
 
 }
