@@ -50,7 +50,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.Scanner;
 
-import org.baderlab.csplugins.enrichmentmap.task.Hypergeometric;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.Hypergeometric;
 import org.junit.Test;
 
 /**

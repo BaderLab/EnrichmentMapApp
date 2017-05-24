@@ -45,7 +45,7 @@ import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask.FilterMode;
-import org.baderlab.csplugins.enrichmentmap.task.RemoveSignatureDataSetsTask;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;

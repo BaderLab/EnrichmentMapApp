@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.task;
+package org.baderlab.csplugins.enrichmentmap.task.postanalysis;
 
 import java.util.Collections;
 import java.util.HashSet;

@@ -25,6 +25,8 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSignatureTaskParallel;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;

@@ -26,7 +26,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListe
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
-import org.baderlab.csplugins.enrichmentmap.task.FilterMetric;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.view.util.Messages;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;

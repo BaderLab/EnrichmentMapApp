@@ -1,10 +1,12 @@
-package org.baderlab.csplugins.enrichmentmap.task;
+package org.baderlab.csplugins.enrichmentmap.task.postanalysis;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
+import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
+import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask.Factory;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.model.CyNetworkView;

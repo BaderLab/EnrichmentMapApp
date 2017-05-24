@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.task;
+package org.baderlab.csplugins.enrichmentmap.task.postanalysis;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,6 +22,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
+import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTaskParallel;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
 import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.mannwhit.MannWhitneyMemoized;

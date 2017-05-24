@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.task;
+package org.baderlab.csplugins.enrichmentmap.task.postanalysis;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,6 +23,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
+import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
@@ -61,8 +62,9 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	private final EMSignatureDataSet sigDataSet;
 	private final Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities;
 	
-	// Cache edges that have been created to avoid having to look them up in the network again.
-	private @Nullable Map<String,CyEdge> compoundEdgeCache;
+	// Some caches for performance reasons
+	private Map<String,CyEdge> existingEdgeCache;
+	private @Nullable Map<String,CyEdge> createdEdgeCache;
 	private final Map<String,CyNode> nodeCache = new LinkedHashMap<>(); // maintain insertion order so layout is deterministic
 	
 	private CreateDiseaseSignatureTaskResult.Builder taskResult = new CreateDiseaseSignatureTaskResult.Builder();
@@ -104,11 +106,14 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		CyTable nodeTable = createNodeColumns(network, "", prefix);
 		tm.setProgress(0.1);
 		
+		tm.setStatusMessage("Caching Nodes");
+		existingEdgeCache = createExistingEdgeCache(prefix, network, edgeTable);
+		tm.setProgress(0.2);
+		
 		// If we are creating compound edges then cache them for performance reasons
 		if(!map.getParams().getCreateDistinctEdges()) {
-			tm.setStatusMessage("Caching Nodes");
-			compoundEdgeCache = createCompoundEdgeCache(prefix, network, edgeTable);
-			tm.setProgress(0.2);
+			// Cache compound edges that have been created to avoid having to look them up in the network again.
+			createdEdgeCache = new HashMap<>();
 		}
 				
 		// Get the gene sets
@@ -129,7 +134,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		// Create Signature Hub Edges
 		tm.setStatusMessage("Creating Edges");
 		DiscreteTaskMonitor dtm = new DiscreteTaskMonitor(tm, geneSetSimilarities.size(), 0.4, 0.9);
-		dtm.setStatusMessageTemplate("Creating Edge {0} of {1}");
+		dtm.setStatusMessageTemplate("Similarity {0} of {1}");
 		for(SimilarityKey similarityKey : geneSetSimilarities.keySet()) {
 			boolean passedCutoff = passesCutoff(similarityKey);
 			createEdge(similarityKey, network, networkView, prefix, edgeTable, nodeTable, passedCutoff);
@@ -157,7 +162,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	}
 	
 	
-	private static Map<String,CyEdge> createCompoundEdgeCache(String prefix, CyNetwork network, CyTable edgeTable) {
+	private static Map<String,CyEdge> createExistingEdgeCache(String prefix, CyNetwork network, CyTable edgeTable) {
 		Map<String,CyEdge> cache = new HashMap<>();
 		// Get rows for signature edges
 		Collection<CyRow> rows = edgeTable.getMatchingRows(CyEdge.INTERACTION, CreateDiseaseSignatureTaskParallel.INTERACTION);
@@ -245,13 +250,12 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	private void createEdge(SimilarityKey similarityKey, CyNetwork network, CyNetworkView netView, String prefix, CyTable edgeTable,
 			CyTable nodeTable, boolean passedCutoff) {
 		
-		String edgeName = similarityKey.getCompoundName();
+		final String edgeName = similarityKey.getCompoundName();
 		GenesetSimilarity genesetSimilarity = geneSetSimilarities.get(similarityKey);
 		
-		CyEdge edge = null;
-		if(compoundEdgeCache != null) {
-			// much faster than scanning the edge table
-			edge = compoundEdgeCache.get(edgeName);
+		CyEdge edge = existingEdgeCache.get(edgeName);
+		if(edge == null && createdEdgeCache != null) {
+			edge = createdEdgeCache.get(edgeName); // much faster than scanning the edge table
 		}
 		
 		if (edge == null) {
@@ -265,15 +269,16 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 				edge = network.addEdge(hubNode, geneSet, false);
 //				sigDataSet.addEdgeSuid(edge.getSUID());
 				map.getDataSet(similarityKey.getName()).addEdgeSuid(edge.getSUID());
-				if(compoundEdgeCache != null) {
-					compoundEdgeCache.put(edgeName, edge);
+				
+				if(createdEdgeCache != null) {
+					createdEdgeCache.put(edgeName, edge);
 				}
 				taskResult.addNewEdge(edge);
 			} else {
 				return; // edge does not exist and does not pass cutoff, do nothing
 			}
 		} else {
-			if (!passedCutoff)
+			if (!passedCutoff && existingEdgeCache.containsKey(edgeName))
 				taskResult.addExistingEdgeFailsCutoff(edge);
 		}
 
