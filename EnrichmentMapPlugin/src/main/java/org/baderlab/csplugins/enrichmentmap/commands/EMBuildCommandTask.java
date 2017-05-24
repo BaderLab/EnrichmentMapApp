@@ -227,6 +227,8 @@ public class EMBuildCommandTask extends AbstractTask {
 				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), 
 						metric, similaritycutoff, propertyManager.getDefaultCombinedConstant());
 		
+		// There's only 2 datasets max with this command, and EM2 created distinct edges.
+		creationParams.setCreateDistinctEdges(true);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
 		insertTasksAfterCurrentTask(taskFactory.createTaskIterator());

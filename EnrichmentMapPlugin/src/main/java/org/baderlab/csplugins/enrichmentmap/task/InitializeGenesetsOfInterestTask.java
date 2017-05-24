@@ -133,20 +133,19 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 					updateRankAtMax((GSEAResult)result, ranks);
 				}
 				
-				GeneSet geneset = genesets.get(genesetName);
-				if(geneset != null) {
-					// while we are checking, update the size of the genesets based on post filtered data
-					result.setGsSize(geneset.getGenes().size());
-					
-					if(result.geneSetOfInterest(map.getParams())) {
+				if(result.geneSetOfInterest(map.getParams())) {
+					GeneSet geneset = genesets.get(genesetName);
+					if(geneset != null) {
+						// while we are checking, update the size of the genesets based on post filtered data
+						result.setGsSize(geneset.getGenes().size());
 						if(occurrences != null) {
 							occurrences.merge(genesetName, 1, (v,d) -> v + 1);
 						}
 						genesetsOfInterest.put(genesetName, geneset);
 					}
-				}
-				else if(throwIfMissing) { // TEMPORARY
-					throw new IllegalThreadStateException("The Geneset: " + genesetName + " is not found in the GMT file.");
+					else if(throwIfMissing) {
+						throw new IllegalThreadStateException("The Geneset: " + genesetName + " is not found in the GMT file.");
+					}
 				}
 			}
 		}
