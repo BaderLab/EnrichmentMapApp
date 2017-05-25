@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
 import javax.swing.Action;
@@ -77,6 +78,8 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
@@ -97,6 +100,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private Provider<EdgeWidthDialog> dialogProvider;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private ShowEnrichmentMapDialogAction masterMapDialogAction;
+	@Inject private VisualMappingManager visualMappingManager;
 	
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyApplicationManager applicationManager;
@@ -533,7 +537,14 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	private void setCurrentView(CyNetworkView netView) {
-		applicationManager.setCurrentNetworkView(netView);
+		ForkJoinPool.commonPool().submit(() -> {
+			// Work around a bug in Cytoscape.
+			// When the current network view is changed it can lose its style, so set it back.
+			CyNetworkView prevNetView = applicationManager.getCurrentNetworkView();
+			VisualStyle visualStyle = visualMappingManager.getVisualStyle(prevNetView);
+			applicationManager.setCurrentNetworkView(netView);
+			visualMappingManager.setVisualStyle(visualStyle, prevNetView);
+		});
 	}
 	
 	private CyNetworkView getCurrentEMView() {
