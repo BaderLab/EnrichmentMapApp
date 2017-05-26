@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -208,14 +209,31 @@ public class HeatMapTableModel extends AbstractTableModel {
 		double[] vals = getExpression(dataset, geneID, Transform.AS_IS);
 		if(vals == null)
 			return Double.NaN;
-		DoubleArrayList doubleArrayList = new DoubleArrayList(vals);
-		doubleArrayList.sort();
+		
 		switch(transform) {
-			case COMPRESS_MEDIAN: return Descriptive.median(doubleArrayList);
-			case COMPRESS_MAX:    return Descriptive.max(doubleArrayList);
-			case COMPRESS_MIN:    return Descriptive.min(doubleArrayList);
+			case COMPRESS_MEDIAN: return median(vals);
+			case COMPRESS_MAX:    return max(vals);
+			case COMPRESS_MIN:    return min(vals);
 			default:              return Double.NaN;
 		}
+	}
+	
+	private static double max(double[] vals) {
+		return Arrays.stream(vals).max().orElse(0.0);
+	}
+	
+	private static double min(double[] vals) {
+		return Arrays.stream(vals).min().orElse(0.0);
+	}
+	
+	private static double median(double[] vals) {
+		if(vals.length == 0)
+			return 0.0;
+		// DoubleArrayList is just a wrapper for vals, we must make a copy of the array 
+		// before sorting or else the expression values will be moved to the wrong order.
+		double[] copy = Arrays.copyOf(vals, vals.length);
+		Arrays.sort(copy);
+		return Descriptive.median(new DoubleArrayList(copy));
 	}
 	
 	private String getDescription(int geneID) {

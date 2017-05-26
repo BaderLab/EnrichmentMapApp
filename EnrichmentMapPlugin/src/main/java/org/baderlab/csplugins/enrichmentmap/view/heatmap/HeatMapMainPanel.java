@@ -466,9 +466,9 @@ public class HeatMapMainPanel extends JPanel {
 			HeatMapParams params = this.buildParams();
 			EnrichmentMap map = tableModel.getEnrichmentMap();
 			List<RankingOption> rankOptions = parent.getMediator().getDataSetRankOptions(map);
-			SwingUtilities.invokeLater(() -> {
-				reset(map, params, rankOptions, Sets.newHashSet(unionGenes), Sets.newHashSet(interGenes));
-			});
+			SwingUtilities.invokeLater(() ->
+				reset(map, params, rankOptions, Sets.newHashSet(unionGenes), Sets.newHashSet(interGenes))
+			);
 		}
 		else {
 			tableModel.setTransform(transform);
