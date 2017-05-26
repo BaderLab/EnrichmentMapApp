@@ -51,7 +51,7 @@ public class ColorRenderer implements TableCellRenderer {
 	private static Color getColor(ColorGradientTheme theme, ColorGradientRange range, Double measurement) {
 		if (theme == null || range == null || measurement == null)
 			return Color.GRAY;
-		if(Double.isNaN(measurement))
+		if(!Double.isFinite(measurement)) // missing data can result in NaN, log transformed value of -1 can result in -Infinity
 			return theme.getNoDataColor();
 
 		float rLow = (float)theme.getMinColor().getRed()   / 255f;
