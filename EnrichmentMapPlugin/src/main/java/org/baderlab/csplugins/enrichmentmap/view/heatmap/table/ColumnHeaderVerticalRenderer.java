@@ -88,7 +88,8 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
 		EMDataSet dataset = model.getDataSet(col);
 		
-		JLabel verticalLabel = createVerticalLabel(value.toString());
+		String labelText = SwingUtil.abbreviate(value.toString(), 40);
+		JLabel verticalLabel = createVerticalLabel(labelText);
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(verticalLabel, BorderLayout.CENTER);
@@ -105,6 +106,7 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 	        panel.setBackground(labelBackgroundColor.get()); 
         }
 		
+		panel.setToolTipText(value.toString());
 		return panel;
 	}
 

@@ -16,7 +16,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
-import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
@@ -119,9 +118,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 		
 		EMDataSet dataset = getDataSet(col);
 		if(transform.isCompress()) {
-			return SwingUtil.abbreviate(dataset.getName(), 40);
-		}
-		else {
+			return dataset.getName();
+		} else {
 			int index = getIndexInDataSet(col) + 2;
 			String[] columns = dataset.getExpressionSets().getColumnNames();
 			return columns[index];
