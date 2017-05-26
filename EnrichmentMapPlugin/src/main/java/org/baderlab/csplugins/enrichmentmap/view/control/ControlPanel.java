@@ -293,15 +293,12 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		if (!emMap.isEmpty()) {
 			Set<CyNetworkView> allViews = networkViewManager.getNetworkViewSet();
 			List<CyNetworkView> emViews = allViews.stream()
-			        .filter(v -> emManager.isEnrichmentMap(v))
-			        .collect(Collectors.toCollection(ArrayList::new));
+			        .filter(emManager::isEnrichmentMap)
+			        .collect(Collectors.toList());
 			
 			Collator collator = Collator.getInstance(Locale.getDefault());
-			emViews.sort((CyNetworkView v1, CyNetworkView v2) -> {
-				return collator.compare(NetworkUtil.getTitle(v1), NetworkUtil.getTitle(v2));
-			});
-			
-			emViews.forEach((item) -> getEmViewCombo().addItem(item));
+			emViews.sort((v1, v2) -> collator.compare(NetworkUtil.getTitle(v1), NetworkUtil.getTitle(v2)));
+			emViews.forEach(getEmViewCombo()::addItem);
 			
 			getEmViewCombo().setSelectedItem(selectedItem);
 		}
