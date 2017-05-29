@@ -28,8 +28,6 @@ public class ClassFileReaderTask extends AbstractTask {
 	
 	
 	public static String[] parseClasses(String classFile) {
-		System.out.println("ClassFileReaderTask.parseClasses(): " + classFile);
-		
 		if (isNullOrEmpty(classFile))
 			return new String[] {"NA_pos", "NA_neg"};
 

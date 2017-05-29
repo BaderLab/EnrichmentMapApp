@@ -330,6 +330,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 					Iterator<String> iter = distinctOrdererd.iterator();
 					positiveText.setText(iter.next());
 					negativeText.setText(iter.next());
+					classes = phenotypes;
 				}
 			}
 		}
