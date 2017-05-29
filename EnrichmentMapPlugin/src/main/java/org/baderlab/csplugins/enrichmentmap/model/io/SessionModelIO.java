@@ -9,6 +9,7 @@ import java.util.Set;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.CyActivator;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
@@ -118,7 +119,8 @@ public class SessionModelIO {
 			emManager.getAllEnrichmentMaps().forEach((suid, em) -> {
 				System.out.println("suid:" + suid);
 				System.out.println("datasets:");
-				em.getDataSetList().forEach(dataset -> System.out.println(dataset.getName()));
+				em.getDataSetList().forEach(ds -> System.out.println(ds.getName()));
+				em.getSignatureSetList().forEach(ds -> System.out.println(ds.getName()));
 			});
 			System.out.println();
 		}
@@ -169,6 +171,10 @@ public class SessionModelIO {
 			ds.setNodeSuids(mapSuids(ds.getNodeSuids(), session, CyNode.class));
 			ds.setEdgeSuids(mapSuids(ds.getEdgeSuids(), session, CyEdge.class));
 		}
+ 		for(EMSignatureDataSet ds : map.getSignatureSetList()) {
+ 			ds.setNodeSuids(mapSuids(ds.getNodeSuids(), session, CyNode.class));
+			ds.setEdgeSuids(mapSuids(ds.getEdgeSuids(), session, CyEdge.class));
+ 		}
 	}
 
 	private CyTable getPrivateTable() {
