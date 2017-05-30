@@ -24,6 +24,7 @@ import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.R
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
@@ -38,6 +39,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -353,8 +355,20 @@ public class EMStyleBuilder {
 		eventHelper.silenceEventSource(dm);
 		
 		try {
+			LineType sigLineType = LineTypeVisualProperty.DOT;
+			
+			if (EDGE_LINE_TYPE.getRange().isDiscrete()) {
+				DiscreteRange<LineType> range = (DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange();
+				Optional<LineType> first = range.values().stream()
+					.filter(v -> "MARQUEE_EQUAL".equalsIgnoreCase(v.getSerializableString()))
+					.findFirst();
+				
+				if (first.isPresent())
+					sigLineType = first.get();
+			}
+			
 			dm.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, LineTypeVisualProperty.SOLID);
-			dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_SIG, LineTypeVisualProperty.DOT);
+			dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_SIG, sigLineType);
 		} finally {
 			eventHelper.unsilenceEventSource(dm);
 		}
