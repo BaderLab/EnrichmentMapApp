@@ -48,7 +48,8 @@ import com.google.inject.assistedinject.Assisted;
 
 public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements ObservableTask {
 
-	private static final double currentNodeYIncrement = 150.0;
+	private static final double HUB_NODE_X_GAP = 450.0;
+	private static final double HUB_NODE_Y_GAP = 150.0;
 	
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyNetworkViewManager networkViewManager;
@@ -232,19 +233,32 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		nodeCache.put(hubName, hubNode);
 	}
 	
-	
 	private void layoutHubNodes(CyNetworkView networkView) {
 		eventHelper.flushPayloadEvents(); // make sure node views have been created
-		double currentNodeYOffset = 0;
-		for(CyNode node : nodeCache.values()) {
+		
+		Collection<CyNode> hubNodes = nodeCache.values();
+		double xOffset = Double.POSITIVE_INFINITY;
+		double yOffset = 0;
+		
+		// Get the most left position among all other nodes (excluding the new ones)
+		for (View<CyNode> nv : networkView.getNodeViews()) {
+			if (!hubNodes.contains(nv.getModel())) {
+				double x = nv.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+				xOffset = Math.min(xOffset, x);
+			}
+		}
+		
+		xOffset -= HUB_NODE_X_GAP;
+		
+		for (CyNode node : hubNodes) {
 			// add currentNodeY_offset to initial Y position of the Node and increase currentNodeY_offset for the next Node
 			View<CyNode> hubNodeView = networkView.getNodeView(node);
-			double hubNodeY = hubNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-			hubNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, hubNodeY + currentNodeYOffset);
-			currentNodeYOffset += currentNodeYIncrement;
+			double nodeY = hubNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+			hubNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, xOffset);
+			hubNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, nodeY + yOffset);
+			yOffset += HUB_NODE_Y_GAP;
 		}
 	}
-	
 	
 	/**
 	 * Returns true iff the user should be warned about an existing edge that
