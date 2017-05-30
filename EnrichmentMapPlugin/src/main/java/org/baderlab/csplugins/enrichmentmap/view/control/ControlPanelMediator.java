@@ -507,12 +507,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	private void init() {
 		ControlPanel ctrlPanel = getControlPanel();
 		
-		JComboBox<CyNetworkView> cmb = ctrlPanel.getEmViewCombo();
-		cmb.addActionListener(evt -> {
-			if (!updating)
-				setCurrentView((CyNetworkView) cmb.getSelectedItem());
-		});
-		
 		ctrlPanel.getCreateEmButton().addActionListener(evt -> {
 			masterMapDialogAction.actionPerformed(evt);
 		});
@@ -527,6 +521,13 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		});
 		
 		ctrlPanel.update(applicationManager.getCurrentNetworkView());
+		
+		// Wait until the UI is initialized to add this listener to the combo box
+		JComboBox<CyNetworkView> cmb = ctrlPanel.getEmViewCombo();
+		cmb.addActionListener(evt -> {
+			if (!updating)
+				setCurrentView((CyNetworkView) cmb.getSelectedItem());
+		});
 	}
 	
 	private ControlPanel getControlPanel() {
