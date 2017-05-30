@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
@@ -28,6 +29,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
@@ -49,6 +51,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 	
 	private EnrichmentMap map;
 	
+	private JComboBox<String> datasetCombo;
 	private JComboBox<PostAnalysisFilterType> rankTestCombo;
 	private JFormattedTextField rankTestTextField;
 	
@@ -58,6 +61,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 	private JRadioButton userDefinedRadioButton;
 	private JFormattedTextField universeSelectionTextField;
 	
+	private DefaultComboBoxModel<String> datasetModel;
 	private EnablementComboBoxRenderer<PostAnalysisFilterType> rankingEnablementRenderer;
     private JPanel cardPanel;
     private Map<PostAnalysisFilterType,Double> savedFilterValues = PostAnalysisFilterType.createMapOfDefaults();
@@ -158,6 +162,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 	private JPanel createRankTestSelectPanel() {
 		JLabel testLabel = new JLabel(LABEL_TEST);
 		JLabel cuttofLabel = new JLabel(LABEL_CUTOFF);
+		JLabel dataSetLabel = new JLabel("Data Set:");
 
 		DecimalFormat decFormat = new DecimalFormat();
 		decFormat.setParseIntegerOnly(false);
@@ -204,8 +209,16 @@ public class PostAnalysisWeightPanel extends JPanel {
 				cardLayout.show(cardPanel, filterType.name());
 		});
 		
+		datasetCombo = new JComboBox<>();
+		// Dataset model is already initialized
+		datasetModel = new DefaultComboBoxModel<>();
+		datasetCombo.setModel(datasetModel);
+		datasetCombo.addActionListener(e -> {
+			updateUniverseSize(getDataSet());
+		});
         
 		makeSmall(testLabel, cuttofLabel, rankTestCombo, rankTestTextField);
+		makeSmall(dataSetLabel, datasetCombo);
         
         JPanel panel = new JPanel();
         final GroupLayout layout = new GroupLayout(panel);
@@ -218,10 +231,12 @@ public class PostAnalysisWeightPanel extends JPanel {
 						.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
 								.addComponent(testLabel)
 								.addComponent(cuttofLabel)
+								.addComponent(dataSetLabel)
 						)
 						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 								.addComponent(rankTestCombo, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 								.addComponent(rankTestTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+								.addComponent(datasetCombo, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						)
 				)
 		);
@@ -233,6 +248,11 @@ public class PostAnalysisWeightPanel extends JPanel {
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(cuttofLabel)
 						.addComponent(rankTestTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+						.addComponent(dataSetLabel)
+						.addComponent(datasetCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 		);
 
@@ -340,6 +360,25 @@ public class PostAnalysisWeightPanel extends JPanel {
 		return panel;
 	}	
 	
+	private void updateUniverseSize(String dataset) {
+		if(dataset == null) {
+			gmtRadioButton.setText("GMT");
+			expressionSetRadioButton.setText("Expression Set");
+			intersectionRadioButton.setText("Intersection");
+			universeSelectionTextField.setValue(0);
+		}
+		else {
+			GeneExpressionMatrix expressionSets = map.getDataSet(dataset).getExpressionSets();
+			int universeGmt = map.getNumberOfGenes();
+			int universeExpression = expressionSets.getExpressionUniverse();
+			int universeIntersection = expressionSets.getExpressionMatrix().size();
+	
+			gmtRadioButton.setText("GMT (" + universeGmt + ")");
+			expressionSetRadioButton.setText("Expression Set (" + universeExpression + ")");
+			intersectionRadioButton.setText("Intersection (" + universeIntersection + ")");
+			universeSelectionTextField.setValue(universeExpression);
+		}
+	}
 	
 	void reset() {
 		gmtRadioButton.setSelected(true);
@@ -353,6 +392,16 @@ public class PostAnalysisWeightPanel extends JPanel {
 
 	void initialize(EnrichmentMap currentMap) {
 		this.map = currentMap;
+		
+		datasetModel.removeAllElements();
+		datasetModel.addElement("-- All Data Sets --");
+		for (String dataset : map.getDataSetNames()) {
+			datasetModel.addElement(dataset);
+		}
+		datasetCombo.setEnabled(datasetModel.getSize() > 2);
+		if (datasetModel.getSize() > 0) {
+			datasetCombo.setSelectedIndex(0);
+		}
 
 		Map<String, Ranking> rankingMap = map.getAllRanks();
 		String[] rankingArray = rankingMap.keySet().toArray(new String[rankingMap.size()]);
@@ -373,6 +422,13 @@ public class PostAnalysisWeightPanel extends JPanel {
 	
 	protected PostAnalysisFilterType getFilterType() {
 		return (PostAnalysisFilterType) rankTestCombo.getSelectedItem();
+	}
+	
+	protected String getDataSet() {
+		if(datasetCombo.getSelectedIndex() == 0)
+			return null;
+		else
+			return (String)datasetCombo.getSelectedItem();
 	}
 	
 	protected UniverseType getUniverseType() {
@@ -401,6 +457,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 		double value = ((Number) rankTestTextField.getValue()).doubleValue();
 		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(getFilterType(), value);
 		
+		builder.setDataSetName(getDataSet());
 		builder.setUniverseType(getUniverseType());
 		builder.setUserDefinedUniverseSize(getUserDefinedUniverseSize());
 		builder.setRankTestParameters(rankTest);

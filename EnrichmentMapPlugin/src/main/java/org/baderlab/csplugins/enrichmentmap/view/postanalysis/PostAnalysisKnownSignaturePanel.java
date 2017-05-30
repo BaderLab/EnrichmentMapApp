@@ -131,6 +131,8 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 
 	public boolean isReady() {
 		String filePath = (String) knownSignatureGMTFileNameTextField.getValue();
+		if(filePath == null)
+			return false;
 
 		// Load in the GMT file
 		// Manually fire the same action listener that is used by the signature discovery panel.

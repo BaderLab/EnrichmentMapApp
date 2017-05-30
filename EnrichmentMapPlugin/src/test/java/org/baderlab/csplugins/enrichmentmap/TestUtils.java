@@ -6,10 +6,12 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class TestUtils {
@@ -26,6 +28,18 @@ public class TestUtils {
 		Map<String,CyEdge> edges = new HashMap<>();
 	   	for(CyEdge edge : network.getEdgeList()) {
 	   		edges.put(network.getRow(edge).get(CyNetwork.NAME, String.class), edge);
+	   	}
+	   	return edges;
+	}
+	
+	public static Map<String,CyEdge> getSignatureEdges(CyNetwork network, String prefix, String sigSetName) {
+		Map<String,CyEdge> edges = new HashMap<>();
+	   	for(CyEdge edge : network.getEdgeList()) {
+	   		CyRow row = network.getRow(edge);
+	   		String sigName = Columns.EDGE_SIG_DATASET.get(row,prefix);
+			if(sigName != null && sigName.equals(sigSetName)) {
+	   			edges.put(row.get(CyNetwork.NAME, String.class), edge);
+	   		}
 	   	}
 	   	return edges;
 	}

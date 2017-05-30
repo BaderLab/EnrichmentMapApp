@@ -11,8 +11,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -23,9 +21,10 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
-import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
+import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
+import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -59,27 +58,26 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	private final EnrichmentMap map;
 	private final PostAnalysisParameters params;
 	
-	private final EMSignatureDataSet sigDataSet;
+	private final Map<String,GeneSet> signatureGeneSets;
 	private final Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities;
 	
 	// Some caches for performance reasons
-	private Map<String,CyEdge> existingEdgeCache;
-	private @Nullable Map<String,CyEdge> createdEdgeCache;
+	private Map<EdgeCacheKey,CyEdge> existingEdgeCache;
 	private final Map<String,CyNode> nodeCache = new LinkedHashMap<>(); // maintain insertion order so layout is deterministic
 	
 	private CreateDiseaseSignatureTaskResult.Builder taskResult = new CreateDiseaseSignatureTaskResult.Builder();
 	
 	
 	public static interface Factory {
-		CreateDiseaseSignatureNetworkTask create(EnrichmentMap map, PostAnalysisParameters params, EMSignatureDataSet sigDataSet, Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities);
+		CreateDiseaseSignatureNetworkTask create(EnrichmentMap map, PostAnalysisParameters params, Map<String,GeneSet> signatureGeneSets, Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities);
 	}
 	
 	@Inject
 	public CreateDiseaseSignatureNetworkTask(@Assisted EnrichmentMap map, @Assisted PostAnalysisParameters params, 
-			@Assisted EMSignatureDataSet sigDataSet, @Assisted Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities) {
+			@Assisted Map<String,GeneSet> signatureGeneSets, @Assisted Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities) {
 		this.map = map;
 		this.params = params;
-		this.sigDataSet = sigDataSet;
+		this.signatureGeneSets = signatureGeneSets;
 		this.geneSetSimilarities = geneSetSimilarities;
 	}
 	
@@ -110,19 +108,13 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		existingEdgeCache = createExistingEdgeCache(prefix, network, edgeTable);
 		tm.setProgress(0.2);
 		
-		// If we are creating compound edges then cache them for performance reasons
-		if(!map.getParams().getCreateDistinctEdges()) {
-			// Cache compound edges that have been created to avoid having to look them up in the network again.
-			createdEdgeCache = new HashMap<>();
-		}
-				
-		// Get the gene sets
-		Map<String,GeneSet> signatureGeneSets = sigDataSet.getGeneSetsOfInterest().getGeneSets();
+		EMSignatureDataSet sigDataSet = createSignatureDataSet();
 		
 		// Create Signature Hub Nodes
 		tm.setStatusMessage("Creating Nodes");
+		signatureGeneSets.forEach(sigDataSet.getGeneSetsOfInterest()::addGeneSet);
 		signatureGeneSets.forEach((hubName, sigGeneSet) ->
-			createHubNode(hubName, network, networkView, prefix, edgeTable, nodeTable, geneUniverse, sigGeneSet)
+			createHubNode(hubName, network, networkView, prefix, edgeTable, nodeTable, geneUniverse, sigGeneSet, sigDataSet)
 		);
 		tm.setProgress(0.3);
 		
@@ -136,8 +128,8 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		DiscreteTaskMonitor dtm = new DiscreteTaskMonitor(tm, geneSetSimilarities.size(), 0.4, 0.9);
 		dtm.setStatusMessageTemplate("Similarity {0} of {1}");
 		for(SimilarityKey similarityKey : geneSetSimilarities.keySet()) {
-			boolean passedCutoff = passesCutoff(similarityKey);
-			createEdge(similarityKey, network, networkView, prefix, edgeTable, nodeTable, passedCutoff);
+			boolean passedCutoff = passesCutoff(similarityKey, sigDataSet);
+			createEdge(similarityKey, network, networkView, prefix, edgeTable, nodeTable, passedCutoff, sigDataSet);
 			dtm.inc();
 		}
 
@@ -147,9 +139,18 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		tm.setProgress(1.0);
 		
 		// Add the new data set to the map
-		if(!map.hasSignatureDataSets()) {
-			map.addSignatureDataSet(sigDataSet);
-		}
+		map.addSignatureDataSet(sigDataSet);
+	}
+	
+	
+	/**
+	 * Note: This method does not add the data set to the map. This task can be cancelled so it should be added at the end.
+	 */
+	private EMSignatureDataSet createSignatureDataSet() {
+		String name = params.getName();
+		if(name == null || name.trim().isEmpty())
+			name = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
+		return new EMSignatureDataSet(name);
 	}
 	
 	
@@ -162,15 +163,18 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	}
 	
 	
-	private static Map<String,CyEdge> createExistingEdgeCache(String prefix, CyNetwork network, CyTable edgeTable) {
-		Map<String,CyEdge> cache = new HashMap<>();
+	private static Map<EdgeCacheKey,CyEdge> createExistingEdgeCache(String prefix, CyNetwork network, CyTable edgeTable) {
+		Map<EdgeCacheKey,CyEdge> cache = new HashMap<>();
 		// Get rows for signature edges
 		Collection<CyRow> rows = edgeTable.getMatchingRows(CyEdge.INTERACTION, CreateDiseaseSignatureTaskParallel.INTERACTION);
 		for(CyRow row : rows) {
 			String name = row.get(CyNetwork.NAME, String.class);
 			Long suid = row.get(CyIdentifiable.SUID, Long.class);
+			String signatureDataSetName = Columns.EDGE_SIG_DATASET.get(row, prefix);
 			CyEdge edge = network.getEdge(suid);
-			cache.put(name, edge);
+			
+			// we are assuming that the EM data set name is part of the edge name
+			cache.put(new EdgeCacheKey(name, signatureDataSetName), edge);
 		}
 		return cache;
 	}
@@ -181,7 +185,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	 * Otherwise it updates the attributes of the existing node.
 	 */
 	private void createHubNode(String hubName, CyNetwork network, CyNetworkView netView, String prefix, 
-								 CyTable edgeTable, CyTable nodeTable, Set<Integer> geneUniverse, GeneSet sigGeneSet) {
+								 CyTable edgeTable, CyTable nodeTable, Set<Integer> geneUniverse, GeneSet sigGeneSet, EMSignatureDataSet sigDataSet) {
 		
 		// Test for existing node first
 		CyNode hubNode = NetworkUtil.getNodeWithValue(network, nodeTable, CyNetwork.NAME, hubName);
@@ -189,8 +193,8 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		if (hubNode == null) {
 			hubNode = network.addNode();
 			taskResult.addNewNode(hubNode);
-			sigDataSet.addNodeSuid(hubNode.getSUID());
 		}
+		sigDataSet.addNodeSuid(hubNode.getSUID());
 		
 		network.getRow(hubNode).set(CyNetwork.NAME, hubName);
 
@@ -247,16 +251,13 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	 * does not pass the new cutoff. If the edge already exists it will be
 	 * returned, if the edge had to be created it will not be returned.
 	 */
-	private void createEdge(SimilarityKey similarityKey, CyNetwork network, CyNetworkView netView, String prefix, CyTable edgeTable,
-			CyTable nodeTable, boolean passedCutoff) {
+	private void createEdge(SimilarityKey similarityKey, CyNetwork network, CyNetworkView netView, String prefix, CyTable edgeTable, CyTable nodeTable, boolean passedCutoff, EMSignatureDataSet sigDataSet) {
 		
-		final String edgeName = similarityKey.getCompoundName();
+		// PA always generates distinct edges
+		final String edgeName = similarityKey.toString();
 		GenesetSimilarity genesetSimilarity = geneSetSimilarities.get(similarityKey);
 		
-		CyEdge edge = existingEdgeCache.get(edgeName);
-		if(edge == null && createdEdgeCache != null) {
-			edge = createdEdgeCache.get(edgeName); // much faster than scanning the edge table
-		}
+		CyEdge edge = existingEdgeCache.get(new EdgeCacheKey(edgeName, sigDataSet.getName()));
 		
 		if (edge == null) {
 			if (passedCutoff) {
@@ -267,12 +268,9 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 					return;
 
 				edge = network.addEdge(hubNode, geneSet, false);
-//				sigDataSet.addEdgeSuid(edge.getSUID());
-				map.getDataSet(similarityKey.getName()).addEdgeSuid(edge.getSUID());
-				
-				if(createdEdgeCache != null) {
-					createdEdgeCache.put(edgeName, edge);
-				}
+				// We actually add the edges to the EM data sets, not the signature data set
+				sigDataSet.addEdgeSuid(edge.getSUID());
+//				map.getDataSet(similarityKey.getName()).addEdgeSuid(edge.getSUID());
 				taskResult.addNewEdge(edge);
 			} else {
 				return; // edge does not exist and does not pass cutoff, do nothing
@@ -303,7 +301,8 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		Columns.EDGE_OVERLAP_GENES.set(row, prefix, null, geneList);
 		Columns.EDGE_OVERLAP_SIZE.set(row, prefix, null, genesetSimilarity.getSizeOfOverlap());
 		Columns.EDGE_SIMILARITY_COEFF.set(row, prefix, null, genesetSimilarity.getSimilarityCoeffecient());
-		Columns.EDGE_DATASET.set(row, prefix, null, similarityKey.getName() /* Columns.EDGE_DATASET_VALUE_SIG */);
+		Columns.EDGE_DATASET.set(row, prefix, null, similarityKey.getName());
+		Columns.EDGE_SIG_DATASET.set(row, prefix, null, sigDataSet.getName());
 		
 		if (passedCutoff)
 			Columns.EDGE_CUTOFF_TYPE.set(row, prefix, null, params.getRankTestParameters().getType().display);
@@ -332,7 +331,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	 * @param similarityKey
 	 * @return
 	 */
-	private boolean passesCutoff(SimilarityKey similarityKey) {
+	private boolean passesCutoff(SimilarityKey similarityKey, EMSignatureDataSet sigDataSet) {
 		GenesetSimilarity similarity = geneSetSimilarities.get(similarityKey);
 		
 		PostAnalysisFilterParameters filterParams = params.getRankTestParameters();
@@ -392,7 +391,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		Columns.EDGE_MANN_WHIT_LESS_PVALUE.createColumnIfAbsent(table, prefix, null);
 		Columns.EDGE_MANN_WHIT_CUTOFF.createColumnIfAbsent(table, prefix, null);
 		Columns.EDGE_CUTOFF_TYPE.createColumnIfAbsent(table, prefix, null);
-		
+		Columns.EDGE_SIG_DATASET.createColumnIfAbsent(table, prefix, null);
 		return table;
 	}
 	
@@ -404,6 +403,52 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 			return type.cast(taskResult.build());
 		}
 		return null;
+	}
+
+	
+	
+	private static class EdgeCacheKey {
+		
+		private final String name;
+		private final String signatureDataSetName;
+		
+		public EdgeCacheKey(String name, String signatureDataSetName) {
+			this.name = name;
+			this.signatureDataSetName = signatureDataSetName;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((name == null) ? 0 : name.hashCode());
+			result = prime * result + ((signatureDataSetName == null) ? 0 : signatureDataSetName.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			EdgeCacheKey other = (EdgeCacheKey) obj;
+			if (name == null) {
+				if (other.name != null)
+					return false;
+			} else if (!name.equals(other.name))
+				return false;
+			if (signatureDataSetName == null) {
+				if (other.signatureDataSetName != null)
+					return false;
+			} else if (!signatureDataSetName.equals(other.signatureDataSetName))
+				return false;
+			return true;
+		}
+		
+
 	}
 
 }

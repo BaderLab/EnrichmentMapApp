@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.control;
 
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_DATASET_VALUE_COMPOUND;
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_INTERACTION_VALUE_SIG;
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE;
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE_ENRICHMENT;
@@ -41,6 +42,7 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
@@ -823,10 +825,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 
 		private Set<CyEdge> getFilteredInEdges(Set<AbstractDataSet> selectedDataSets) {
 			EMCreationParameters params = map.getParams();
-			boolean distinct = params.getCreateDistinctEdges();
 
 			// Compound edges are not associated with a specific data set
-			Set<Long> dataSetEdges = distinct ? EnrichmentMap.getEdgesUnion(selectedDataSets) : null;
+			Set<Long> dataSetEdges = EnrichmentMap.getEdgesUnion(selectedDataSets);
 			
 			if (viewPanel.getSimilaritySliderPanel() != null)
 				return getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
@@ -835,6 +836,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			Set<CyEdge> filteredInEdges = new HashSet<>();
 			CyNetwork net = netView.getModel();
 			
+			boolean distinct = params.getCreateDistinctEdges();
 			if (distinct) {
 				for (CyEdge e : net.getEdgeList()) {
 					if (dataSetEdges.contains(e.getSUID()))
@@ -872,24 +874,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					show = false;
 				} else if (table.getColumn(prefix + NODE_GS_TYPE) != null
 						&& NODE_GS_TYPE_ENRICHMENT.equalsIgnoreCase(row.get(prefix + NODE_GS_TYPE, String.class))) {
-					// Skip Node if it's not an Enrichment-Geneset (but e.g. a Signature-Hub)...
-					for (String colName : columnNames) {
-						if (table.getColumn(colName) == null)
-							continue; // Ignore this column name (maybe the user deleted it)
-
-						Double value = row.get(colName, Double.class);
-
-						// Possible that there isn't a cutoff value for this geneset
-						if (value == null)
-							continue;
-
-						if (value >= minCutoff && value <= maxCutoff) {
-							show = true;
-							break;
-						} else {
-							show = false;
-						}
-					}
+					show = showElement(columnNames, table, row, maxCutoff, minCutoff);
 				}
 				
 				if (show)
@@ -914,40 +899,53 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 
 			// Go through all the existing edges to see if we need to hide any new ones.
 			for (CyEdge e : network.getEdgeList()) {
-				boolean show = true;
+				CyRow row = network.getRow(e);
+				String dataset = Columns.EDGE_DATASET.get(row, map.getParams().getAttributePrefix());
 				
-				if (dataSetEdges != null && !dataSetEdges.contains(e.getSUID())) {
-					show = false;
-				} else {
-					CyRow row = network.getRow(e);
-					String interaction = row.get(CyEdge.INTERACTION, String.class);
-					
-					if (!EDGE_INTERACTION_VALUE_SIG.equals(interaction)) { // Do not filter signature edges
-						for (String colName : columnNames) {
-							if (table.getColumn(colName) == null)
-								continue; // Ignore this column name (maybe the user deleted it)
-			
-							Double value = row.get(colName, Double.class);
-			
-							// Possible that there isn't value for this interaction
-							if (value == null)
-								continue;
-			
-							if (value >= minCutoff && value <= maxCutoff) {
-								show = true;
-								break;
-							} else {
-								show = false;
-							}
+				boolean show;
+				if(EDGE_DATASET_VALUE_COMPOUND.equals(dataset)) { // compound edge
+					show = showElement(columnNames, table, row, maxCutoff, minCutoff);
+				}
+				else { // discrete edge
+					if (dataSetEdges != null && !dataSetEdges.contains(e.getSUID())) {
+						show = false;
+					} else {
+						String interaction = row.get(CyEdge.INTERACTION, String.class);
+						if (EDGE_INTERACTION_VALUE_SIG.equals(interaction)) { 
+							show = true;
+						} else {
+							show = showElement(columnNames, table, row, maxCutoff, minCutoff);
 						}
 					}
 				}
-			
+				
 				if (show)
 					edges.add(e);
 			}
 			
 			return edges;
+		}
+
+		private boolean showElement(Set<String> columnNames, CyTable table, CyRow row, Double maxCutoff, Double minCutoff) {
+			boolean show = true;
+			for (String colName : columnNames) {
+				if (table.getColumn(colName) == null)
+					continue; // Ignore this column name (maybe the user deleted it)
+
+				Double value = row.get(colName, Double.class);
+
+				// Possible that there isn't value for this interaction
+				if (value == null)
+					continue;
+
+				if (value >= minCutoff && value <= maxCutoff) {
+					show = true;
+					break;
+				} else {
+					show = false;
+				}
+			}
+			return show;
 		}
 
 		private Set<String> getFilteredColumnNames(Set<String> columnNames, Collection<AbstractDataSet> dataSets) {

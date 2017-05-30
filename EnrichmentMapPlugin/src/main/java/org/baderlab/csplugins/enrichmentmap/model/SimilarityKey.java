@@ -73,7 +73,7 @@ public class SimilarityKey {
 	public String toString() {
 		return isCompound() 
 			? getCompoundName()
-			: String.format("%s (%s_set%s) %s", geneSet1, interaction, name, geneSet2);
+			: String.format("%s (%s_%s) %s", geneSet1, interaction, name, geneSet2);
 	}
 	
 }

@@ -95,22 +95,22 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	   	Map<String,CyEdge> edges = TestUtils.getEdges(emNetwork);
 	   	assertEquals(9, edges.size());
 	   	
-	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
+	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) MIDDLE8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
 	   	assertEquals(PostAnalysisFilterType.NUMBER.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
+	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) BOTTOM8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
 	   	assertEquals(PostAnalysisFilterType.NUMBER.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
+	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) TOP8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
 	   	assertEquals(PostAnalysisFilterType.NUMBER.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
+	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) TOP1_PLUS100");
 	   	assertNull(edge);
 	}
 	
@@ -125,25 +125,27 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		
 		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
 		
-	   	Map<String,CyEdge> edges = TestUtils.getEdges(emNetwork);
-	   	assertEquals(9, edges.size());
+		assertEquals(12, emNetwork.getEdgeCount());
+		
+	   	Map<String,CyEdge> edges = TestUtils.getSignatureEdges(emNetwork, "EM1_", "PA_top8_middle8_bottom8(1)");
+	   	assertEquals(3, edges.size());
 	   	
-	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
+	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) MIDDLE8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
 	   	assertEquals(PostAnalysisFilterType.PERCENT.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
+	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) BOTTOM8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
 	   	assertEquals(PostAnalysisFilterType.PERCENT.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
+	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) TOP8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
 	   	assertEquals(PostAnalysisFilterType.PERCENT.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
+	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) TOP1_PLUS100");
 	   	assertNull(edge);
 	}
 	
@@ -158,25 +160,27 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		
 		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
 		
-	   	Map<String,CyEdge> edges = TestUtils.getEdges(emNetwork);
-	   	assertEquals(9, edges.size());
+		assertEquals(15, emNetwork.getEdgeCount());
+		
+		Map<String,CyEdge> edges = TestUtils.getSignatureEdges(emNetwork, "EM1_", "PA_top8_middle8_bottom8(2)");
+	   	assertEquals(3, edges.size());
 	   	
-	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) MIDDLE8_PLUS100");
+	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) MIDDLE8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
 	   	assertEquals(PostAnalysisFilterType.SPECIFIC.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) BOTTOM8_PLUS100");
+	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) BOTTOM8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
 	   	assertEquals(PostAnalysisFilterType.SPECIFIC.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP8_PLUS100");
+	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) TOP8_PLUS100");
 	   	assertNotNull(edge);
 	   	assertEquals(8, emNetwork.getRow(edge).get("EM1_k_intersection", Integer.class).intValue());
 	   	assertEquals(PostAnalysisFilterType.SPECIFIC.toString(), emNetwork.getRow(edge).get("EM1_Overlap_cutoff", String.class));
 	   	
-	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig) TOP1_PLUS100");
+	   	edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) TOP1_PLUS100");
 	   	assertNull(edge);
 	}
 }

@@ -114,6 +114,7 @@ public class EMStyleBuilder {
 		public static final String EDGE_DATASET_VALUE_COMPOUND = "compound"; 
 		public static final String EDGE_DATASET_VALUE_SIG = "signature"; // post-analysis edges
 		public static final String EDGE_INTERACTION_VALUE_SIG = "sig"; // post-analysis edges
+		public static final ColumnDescriptor<String> EDGE_SIG_DATASET = new ColumnDescriptor<>("Signature Set", String.class);
 		
 		// Post-analysis Edge Attributes
 		public static final ColumnDescriptor<Double> EDGE_HYPERGEOM_PVALUE = new ColumnDescriptor<>("Overlap_Hypergeom_pVal", Double.class);
@@ -276,7 +277,7 @@ public class EMStyleBuilder {
 		
 		try {
 			dm.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.COMPOUND_EDGE_COLOR);
-			dm.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, Colors.SIG_EDGE_COLOR);
+//			dm.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, Colors.SIG_EDGE_COLOR);
 			
 			List<EMDataSet> dataSets = options.getEnrichmentMap().getDataSetList();
 			final ColorBrewer colorBrewer;

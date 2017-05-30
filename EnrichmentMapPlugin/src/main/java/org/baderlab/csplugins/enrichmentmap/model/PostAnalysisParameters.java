@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class PostAnalysisParameters {
@@ -77,6 +78,7 @@ public class PostAnalysisParameters {
 	private final Map<String,String> dataSetToRankFile; // only used by Mann-Whitney
 	private final int userDefinedUniverseSize;
 	private final String attributePrefix;
+	private final Optional<String> datasetName;
 	
 	private PostAnalysisParameters(PostAnalysisParameters.Builder builder) {
 		this.name = builder.name;
@@ -89,10 +91,15 @@ public class PostAnalysisParameters {
 		this.dataSetToRankFile = builder.dataSetToRankFile;
 		this.userDefinedUniverseSize = builder.userDefinedUniverseSize;
 		this.attributePrefix = builder.attributePrefix;
+		this.datasetName = builder.datasetName;
 	}
 
 	public String getName() {
 		return name;
+	}
+	
+	public Optional<String> getDataSetName() {
+		return datasetName;
 	}
 	
 	public AnalysisType getAnalysisType() {
@@ -146,6 +153,7 @@ public class PostAnalysisParameters {
 		private Map<String,String> dataSetToRankFile = new HashMap<>();
 		private int userDefinedUniverseSize;
 		private String attributePrefix;
+		private Optional<String> datasetName = Optional.empty();
 		
 		public Builder() {
 			// defaults
@@ -163,11 +171,17 @@ public class PostAnalysisParameters {
 			b.addDataSetToRankFile(other.dataSetToRankFile);
 			b.setUserDefinedUniverseSize(other.userDefinedUniverseSize);
 			b.setAttributePrefix(other.attributePrefix);
+			b.setDataSetName(other.datasetName.orElse(null));
 			return b;
 		}
 		
 		public Builder setName(String name) {
 			this.name = name;
+			return this;
+		}
+		
+		public Builder setDataSetName(String datasetName) {
+			this.datasetName = Optional.ofNullable(datasetName);
 			return this;
 		}
 		

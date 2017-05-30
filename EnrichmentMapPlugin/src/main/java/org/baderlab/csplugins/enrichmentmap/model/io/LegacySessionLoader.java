@@ -322,6 +322,20 @@ public class LegacySessionLoader {
 				}
 			}
 
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 			//load the expression files.  Load them last because they require
 			//info from the parameters
 			for (int i = 0; i < fileList.size(); i++){

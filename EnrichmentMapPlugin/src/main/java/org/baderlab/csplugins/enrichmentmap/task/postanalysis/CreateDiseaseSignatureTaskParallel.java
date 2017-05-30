@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
@@ -24,7 +23,6 @@ import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTaskParallel;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
-import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.mannwhit.MannWhitneyMemoized;
 import org.baderlab.csplugins.mannwhit.MannWhitneyTestResult;
 import org.cytoscape.work.AbstractTask;
@@ -93,9 +91,6 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
  		Map<String,GeneSet> signatureGeneSets = getSignatureGeneSets();
  		handleDuplicateNames(enrichmentGeneSetNames, signatureGeneSets);
      		
- 		EMSignatureDataSet sigDataSet = getOrCreateSignatureDataSet();
-		signatureGeneSets.forEach(sigDataSet.getGeneSetsOfInterest()::addGeneSet);
-		
         Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities = startBuildDiseaseSignatureParallel(tm, executor, enrichmentGeneSetNames, signatureGeneSets);
 
         // Support cancellation
@@ -114,7 +109,7 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 		
 		// create the network here
 		if(!cancelled) {
-			Task networkTask = networkTaskFactory.create(map, params, sigDataSet, geneSetSimilarities);
+			Task networkTask = networkTaskFactory.create(map, params, signatureGeneSets, geneSetSimilarities);
 			insertTasksAfterCurrentTask(networkTask);
 		}
 	}
@@ -183,22 +178,6 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 		}
 		
 		return geneSetSimilarities;
-	}
-	
-	
-	/**
-	 * Note: This method does not add the data set to the map. This task can be cancelled so it should be added at the end.
-	 */
-	private EMSignatureDataSet getOrCreateSignatureDataSet() {
-		String name = params.getName();
-		if(name == null || name.trim().isEmpty())
-			name = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
-		
-		// To emulate EM2 behaviour there can only be one signature data set
-		if(map.hasSignatureDataSets())
-			return map.getSignatureDataSets().values().iterator().next();
-		else
-			return new EMSignatureDataSet(name);
 	}
 	
 	

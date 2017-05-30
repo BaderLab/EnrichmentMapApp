@@ -7,7 +7,9 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,7 +36,7 @@ public class MannWhitneyRanksDialog extends JDialog {
 	private final EnrichmentMap map;
 	private Map<String,String> results = new HashMap<>();
 	private boolean cancelled = false;
-	
+	private String dataSetName;
 
 	public MannWhitneyRanksDialog(JFrame parent, EnrichmentMap map) {
 		super(parent, true);
@@ -45,6 +47,10 @@ public class MannWhitneyRanksDialog extends JDialog {
 		createContents();
 		pack();
 		setLocationRelativeTo(parent);
+	}
+	
+	public void setDataSet(String dataSetName) {
+		this.dataSetName = dataSetName;
 	}
 	
 	public Optional<Map<String,String>> open() {
@@ -66,6 +72,13 @@ public class MannWhitneyRanksDialog extends JDialog {
 		setContentPane(panel);
 	}
 	
+	private List<EMDataSet> getDataSets() {
+		if(dataSetName == null)
+			return map.getDataSetList();
+		else
+			return Arrays.asList(map.getDataSet(dataSetName));
+	}
+	
 	
 	private JPanel createDataSetPanel() {
 		JPanel panel = new JPanel(new GridBagLayout());
@@ -73,7 +86,9 @@ public class MannWhitneyRanksDialog extends JDialog {
 		
 		int y = 0;
 		
-		for(EMDataSet dataset : map.getDataSetList()) {
+		List<EMDataSet> dataSets = getDataSets();
+		
+		for(EMDataSet dataset : dataSets) {
 			final String dataSetName = dataset.getName();
 			JLabel label = new JLabel(dataSetName + ":");
 			JComboBox<String> combo = new JComboBox<>();

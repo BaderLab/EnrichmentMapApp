@@ -69,8 +69,8 @@ public class SimilarityKeyTest {
 		SimilarityKey k3  = new SimilarityKey("A", "B", "i", "2");
 		
 		assertEquals("A (i) B", k1.toString());
-		assertEquals("A (i_set1) B", k2.toString());
-		assertEquals("A (i_set2) B", k3.toString());
+		assertEquals("A (i_1) B", k2.toString());
+		assertEquals("A (i_2) B", k3.toString());
 	}
 
 	
