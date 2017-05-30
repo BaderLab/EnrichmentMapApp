@@ -218,6 +218,10 @@ public class PostAnalysisParameters {
 		public String getSignatureGMTFileName() {
 			return signatureGMTFileName;
 		}
+		
+		public Map<String,String> getDataSetToRankFile() {
+			return dataSetToRankFile;
+		}
 
 		public Builder setLoadedGMTGeneSets(SetOfGeneSets loadedGMTGeneSets) {
 			this.loadedGMTGeneSets = loadedGMTGeneSets;

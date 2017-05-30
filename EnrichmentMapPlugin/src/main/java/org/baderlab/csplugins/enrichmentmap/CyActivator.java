@@ -10,6 +10,7 @@ import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.BuildCommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.GSEACommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.PACommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.ResolveCommand;
+import org.baderlab.csplugins.enrichmentmap.commands.MannWhitRanksTunableHandlerFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.io.SessionListener;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
@@ -18,6 +19,7 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.command.StringTunableHandlerFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.work.ServiceProperties;
@@ -59,6 +61,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerCommand(bc, "gsea",      injector.getInstance(Key.get(TaskFactory.class, GSEACommand.class)));
 		registerCommand(bc, "mastermap", injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
 		registerCommand(bc, "pa",        injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
+		registerService(bc, new MannWhitRanksTunableHandlerFactory(), StringTunableHandlerFactory.class, new Properties());
+		
 		
 		// Don't load UI services if running headless
 		boolean headless = injector.getInstance(Key.get(Boolean.class, Headless.class));

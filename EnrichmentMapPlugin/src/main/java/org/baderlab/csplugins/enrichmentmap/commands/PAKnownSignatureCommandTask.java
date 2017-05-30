@@ -3,7 +3,9 @@ package org.baderlab.csplugins.enrichmentmap.commands;
 import static org.baderlab.csplugins.enrichmentmap.commands.ResolverCommandTask.enumNames;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
@@ -59,6 +61,9 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	
 	@Tunable(description="Name of data set to run PA against, or \"ALL\" to run in batch mode against all data sets.")
 	public String dataSetName = "ALL";
+	
+	@Tunable(description=MannWhitRanks.DESCRIPTION)
+	public MannWhitRanks mannWhitRanks = new MannWhitRanks();
 	
 	
 	@Inject private CyApplicationManager applicationManager;
@@ -134,7 +139,7 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 		builder.setRankTestParameters(new PostAnalysisFilterParameters(filter, cutoff));
 		builder.setName(name);
 		
-		if(dataSetName == null || dataSetName.trim().equalsIgnoreCase("ALL")) {
+		if(isBatch()) {
 			builder.setDataSetName(null); // run in batch mode
 		} else {
 			if(map.getDataSet(dataSetName) == null) {
@@ -143,28 +148,18 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 			builder.setDataSetName(dataSetName);
 		}
 		
+		// Mann-Whitney requires ranks
 		if(filter.isMannWhitney()) {
-			if(map.isSingleRanksPerDataset()) {
-				for(EMDataSet dataset : map.getDataSetList()) {
-					String ranksName = dataset.getExpressionSets().getAllRanksNames().iterator().next();
-					builder.addDataSetToRankFile(dataset.getName(), ranksName);
-				}
-			} else {
-				throw new RuntimeException("Mann-Whitney can only be run from a command if every data set has a single ranks file.");
-			}
+			processMannWhitneyArgs(map, builder);
 		}
 		
-		PostAnalysisParameters params = builder.build();
-		
-		CyNetworkView netView = applicationManager.getCurrentNetworkView();
-		TaskFactory taskFactory = taskFactoryFactory.create(netView, params);
-		
+		TaskFactory taskFactory = taskFactoryFactory.create(selectedView, builder.build());
 		TaskIterator taskIterator = new TaskIterator();
 		taskIterator.append(taskFactory.createTaskIterator());
 		
 		Task updatePanelTask = new AbstractTask() {
 			@Override
-			public void run(TaskMonitor taskMonitor) throws Exception {
+			public void run(TaskMonitor taskMonitor) {
 				controlPanelMediatorProvider.get().updateDataSetList(selectedView);
 				selectedView.updateView();
 			}
@@ -174,4 +169,42 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 		insertTasksAfterCurrentTask(taskIterator);
 	}
 	
+	
+	private void processMannWhitneyArgs(EnrichmentMap map, PostAnalysisParameters.Builder builder) {
+		if(mannWhitRanks.isEmpty() && map.isSingleRanksPerDataset()) {
+			for(EMDataSet dataset : map.getDataSetList()) {
+				String ranksName = dataset.getExpressionSets().getAllRanksNames().iterator().next();
+				builder.addDataSetToRankFile(dataset.getName(), ranksName);
+			}
+		} else {
+			if(mannWhitRanks.isEmpty()) {
+				throw new IllegalArgumentException("At least one of the data sets you have specified has more than one ranks file. "
+						+ "You must use the 'mannWhitRanks' parameter to specify which ranking to use for each data set.");
+			}
+			List<EMDataSet> dataSetList = isBatch() ? map.getDataSetList() : Arrays.asList(map.getDataSet(dataSetName));
+			for(EMDataSet dataSet : dataSetList) {
+				String dsName = dataSet.getName();
+				String rankFile = mannWhitRanks.getRankFile(dsName);
+				Set<String> ranksNames = dataSet.getExpressionSets().getAllRanksNames();
+				
+				if(ranksNames.size() > 1) {
+					if(rankFile == null)
+						throw new IllegalArgumentException("The data set '" + dsName + "' has more than one ranks file, you must specify the rank file using the 'mannWhatRanks' parameter.");
+					if(!ranksNames.contains(rankFile))
+						throw new IllegalArgumentException("The data set '" + dsName + "' does not contain the rank file '" + rankFile + "'.");
+				}
+				
+				if(rankFile == null && ranksNames.size() == 1) {
+					builder.addDataSetToRankFile(dsName, ranksNames.iterator().next());
+				} else {
+					builder.addDataSetToRankFile(dsName, rankFile);
+				}
+			}
+		}
+	}
+	
+	
+	private boolean isBatch() {
+		return dataSetName == null || dataSetName.trim().equalsIgnoreCase("ALL");
+	}
 }
