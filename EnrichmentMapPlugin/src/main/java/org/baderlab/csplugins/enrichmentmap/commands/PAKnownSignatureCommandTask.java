@@ -57,6 +57,9 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	@Tunable
 	public CyNetwork network;
 	
+	@Tunable(description="Name of data set to run PA against, or \"ALL\" to run in batch mode against all data sets.")
+	public String dataSetName = "ALL";
+	
 	
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private CyNetworkViewManager networkViewManager;
@@ -72,7 +75,7 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	
 	
 	public PAKnownSignatureCommandTask() {
-		filterType   = enumNames(PostAnalysisFilterType.values());
+		filterType = enumNames(PostAnalysisFilterType.values());
 		hypergeomUniverseType = enumNames(UniverseType.values());
 	}
 	
@@ -130,6 +133,15 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 		builder.setUserDefinedUniverseSize(userDefinedUniverseSize);
 		builder.setRankTestParameters(new PostAnalysisFilterParameters(filter, cutoff));
 		builder.setName(name);
+		
+		if(dataSetName == null || dataSetName.trim().equalsIgnoreCase("ALL")) {
+			builder.setDataSetName(null); // run in batch mode
+		} else {
+			if(map.getDataSet(dataSetName) == null) {
+				throw new IllegalArgumentException("Data set name not valid: '" + dataSetName + "'");
+			}
+			builder.setDataSetName(dataSetName);
+		}
 		
 		if(filter.isMannWhitney()) {
 			if(map.isSingleRanksPerDataset()) {
