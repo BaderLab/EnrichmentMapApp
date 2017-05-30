@@ -11,7 +11,6 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.work.AbstractTask;
@@ -26,7 +25,6 @@ import com.google.inject.assistedinject.Assisted;
 public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private CyApplicationManager applicationManager;
 	@Inject private CreateDiseaseSignatureTaskParallel.Factory signatureTaskFactory;
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
@@ -55,7 +53,7 @@ public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 	@Override
 	public TaskIterator createTaskIterator() {
 		// Make sure that the minimum information is set in the current set of parameters
-		EnrichmentMap map = emManager.getEnrichmentMap(applicationManager.getCurrentNetwork().getSUID());
+		EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
 		
 		StringBuilder errorBuilder = new StringBuilder();
 		checkMinimalRequirements(errorBuilder, params);
