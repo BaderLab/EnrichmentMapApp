@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.model.io;
 
+import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.SessionViewIO;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
@@ -17,6 +18,7 @@ public class SessionListener implements SessionLoadedListener, SessionAboutToBeS
 
 	@Inject private SessionModelIO modelIO;
 	@Inject private SessionViewIO viewIO;
+	@Inject private @Headless boolean headless;
 	
 	private boolean cytoscapeShuttingDown = false;
 	
@@ -32,12 +34,16 @@ public class SessionListener implements SessionLoadedListener, SessionAboutToBeS
 
 	public void save() {
 		modelIO.saveModel();
-		viewIO.saveView();
+		if(!headless) {
+			viewIO.saveView();
+		}
 	}
 	
 	public void restore(CySession session) {
 		modelIO.restoreModel(session);
-		viewIO.restoreView(session);
+		if(!headless) {
+			viewIO.restoreView(session);
+		}
 	}
 	
 	@Override

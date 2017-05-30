@@ -227,7 +227,7 @@
 						<Embed-Dependency>colt,commons-math3,itext,guava,gson,jsr305,guice,peaberry,javax.inject,aopalliance,guice-multibindings,guice-assistedinject,jatl,jcolorbrewer</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
-						<Export-Package>org.mskcc.*;prefuse.*;org.apache.*;com.google.*;org.ops4j.peaberry.*;org.baderlab.*;version="${project.version}"</Export-Package>
+						<Export-Package>org.mskcc.*;prefuse.*;org.apache.*;com.google.*;org.ops4j.peaberry.*;org.baderlab.*</Export-Package>
 						<Import-Package>*;resolution:=optional</Import-Package>
 						<_failok>true</_failok>
 					</instructions>

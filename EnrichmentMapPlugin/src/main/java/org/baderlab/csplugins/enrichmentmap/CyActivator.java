@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap;
+ package org.baderlab.csplugins.enrichmentmap;
 
 import java.util.Properties;
 
@@ -105,17 +105,21 @@ public class CyActivator extends AbstractCyActivator {
 	public void shutDown() {
 		try {
 			if (injector != null) {
+				boolean headless = injector.getInstance(Key.get(Boolean.class, Headless.class));
+				
 				// If the App gets updated or restarted we need to save all the data first
 				SessionListener sessionListener = injector.getInstance(SessionListener.class);
 				sessionListener.appShutdown();
 				
-				// Close the legend panel
-				LegendPanelMediator legendPanelMediator = injector.getInstance(LegendPanelMediator.class);
-				legendPanelMediator.hideDialog();
-				
-				// Dispose the creation dialog, or else lots of memory leaks.
-				ShowEnrichmentMapDialogAction dialogAction = injector.getInstance(ShowEnrichmentMapDialogAction.class);
-				dialogAction.dispose();
+				if(!headless) {
+					// Close the legend panel
+					LegendPanelMediator legendPanelMediator = injector.getInstance(LegendPanelMediator.class);
+					legendPanelMediator.hideDialog();
+					
+					// Dispose the creation dialog, or else lots of memory leaks.
+					ShowEnrichmentMapDialogAction dialogAction = injector.getInstance(ShowEnrichmentMapDialogAction.class);
+					dialogAction.dispose();
+				}
 			}
 		} finally {
 			super.shutDown();

@@ -7,7 +7,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.baderlab.csplugins.enrichmentmap.commands.BuildEnrichmentMapTuneableTask;
+import org.baderlab.csplugins.enrichmentmap.commands.EMBuildCommandTask;
 import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
@@ -28,7 +28,7 @@ public class Protocol1Test extends BaseIntegrationTest {
 	
 	@Test
 	public void testProtocol1() throws Exception {
-		BuildEnrichmentMapTuneableTask task = injector.getInstance(BuildEnrichmentMapTuneableTask.class);
+		EMBuildCommandTask task = injector.getInstance(EMBuildCommandTask.class);
 		
 		File enrichmentFile = TestUtils.createTempFile(PATH, "gprofiler_results_mesenonly_ordered_computedinR.txt");
 		assertTrue(enrichmentFile.exists());

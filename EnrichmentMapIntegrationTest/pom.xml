@@ -3,6 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
+	<!-- When changing the version you must also update the version in the PaxExamConfiguration class. -->
 	<parent>
 	    <groupId>org.baderlab.csplugins</groupId>
 	    <artifactId>enrichmentmap-parent</artifactId>
@@ -88,7 +89,7 @@
 		<dependency>
 			<groupId>org.baderlab.csplugins</groupId>
 			<artifactId>enrichmentmap</artifactId>
-			<version>3.0.0-SNAPSHOT</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		

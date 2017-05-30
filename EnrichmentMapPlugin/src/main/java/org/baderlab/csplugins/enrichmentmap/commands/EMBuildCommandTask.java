@@ -155,6 +155,9 @@ public class EMBuildCommandTask extends AbstractTask {
 	@Tunable(description = "Similarity Coeffecient", groups = { "User Input", "Parameters" }, gravity = 20.0, tooltip = "coeffecient between 0 and 1.")
 	public ListSingleSelection<String> coeffecients;
 
+	@Tunable
+	public Boolean distinctEdges;
+	
 
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
@@ -227,8 +230,10 @@ public class EMBuildCommandTask extends AbstractTask {
 				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), 
 						metric, similaritycutoff, propertyManager.getDefaultCombinedConstant());
 		
-		// There's only 2 datasets max with this command, and EM2 created distinct edges.
-		creationParams.setCreateDistinctEdges(true);
+		if(distinctEdges != null)
+			creationParams.setCreateDistinctEdges(distinctEdges);
+		else if(!dataset2files.isEmpty())
+			creationParams.setCreateDistinctEdges(true);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
 		insertTasksAfterCurrentTask(taskFactory.createTaskIterator());
