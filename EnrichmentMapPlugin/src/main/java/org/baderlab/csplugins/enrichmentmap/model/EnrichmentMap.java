@@ -355,7 +355,7 @@ public class EnrichmentMap {
 		this.networkID = networkID;
 	}
 
-	public static Set<Long> getNodesUnion(Collection<AbstractDataSet> dataSets) {
+	public static Set<Long> getNodesUnion(Collection<? extends AbstractDataSet> dataSets) {
 		return getUnion(dataSets, AbstractDataSet::getNodeSuids);
 	}
 	
@@ -369,7 +369,7 @@ public class EnrichmentMap {
 	 * 
 	 * Note, this will only return distinct edges, not compound edges.
 	 */
-	public static Set<Long> getEdgesUnion(Collection<AbstractDataSet> dataSets) {
+	public static Set<Long> getEdgesUnion(Collection<? extends AbstractDataSet> dataSets) {
 		return getUnion(dataSets, AbstractDataSet::getEdgeSuids);
 	}
 	
@@ -516,7 +516,6 @@ public class EnrichmentMap {
 	public List<EMSignatureDataSet> getSignatureSetList() {
 		List<EMSignatureDataSet> list = new ArrayList<>(signatureDataSets.values());
 		list.sort(Comparator.naturalOrder());
-		
 		return list;
 	}
 	

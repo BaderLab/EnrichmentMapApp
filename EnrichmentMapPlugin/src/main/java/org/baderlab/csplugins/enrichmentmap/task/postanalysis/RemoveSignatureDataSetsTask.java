@@ -1,73 +1,78 @@
 package org.baderlab.csplugins.enrichmentmap.task.postanalysis;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
-public class RemoveSignatureDataSetsTask extends AbstractTask implements ObservableTask {
+public class RemoveSignatureDataSetsTask extends AbstractTask {
 
 	public interface Factory {
-		RemoveSignatureDataSetsTask create(
-				@Assisted Collection<EMSignatureDataSet> dataSets,
-				@Assisted EnrichmentMap map
-		);
+		RemoveSignatureDataSetsTask create(Collection<EMSignatureDataSet> signatureDataSets, EnrichmentMap map);
 	}
 
-	private Collection<EMSignatureDataSet> dataSets;
-	private EnrichmentMap map;
+	private final Collection<EMSignatureDataSet> signatureDataSets;
+	private final EnrichmentMap map;
 	
 	@Inject private CyNetworkManager networkManager;
 	
 	@Inject
-	public RemoveSignatureDataSetsTask(@Assisted Collection<EMSignatureDataSet> dataSets, @Assisted EnrichmentMap map) {
-		this.dataSets = dataSets;
+	public RemoveSignatureDataSetsTask(@Assisted Collection<EMSignatureDataSet> signatureDataSets, @Assisted EnrichmentMap map) {
+		this.signatureDataSets = signatureDataSets;
 		this.map = map;
 	}
 	
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor taskMonitor) {
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		
 		if (network == null)
 			throw new IllegalStateException("The Network with SUID " + map.getNetworkID() + " does not exist.");
 		
-		dataSets.forEach(ds -> {
-			// TODO Delete associated columns?
-			// Delete hub-nodes
-			deleteNodes(ds.getNodeSuids(), network);
-			// Remove Signature Data Set from Enrichment Map
-			map.removeSignatureDataSet(ds);
-		});
+		deleteSignatureNodesAndEdges(network);
+		signatureDataSets.forEach(map::removeSignatureDataSet);
 	}
 	
-	@Override
-	public <R> R getResults(Class<? extends R> type) {
-		return null;
+	
+	private void deleteSignatureNodesAndEdges(CyNetwork network) {
+		Set<Long> edgeSuids = getEdgesToDelete();
+		Set<Long> nodeSuids = getNodesToDelete();
+		Collection<CyEdge> edges = getElements(edgeSuids, network::getEdge);
+		Collection<CyNode> nodes = getElements(nodeSuids, network::getNode);
+		network.removeEdges(edges);
+		network.removeNodes(nodes);
 	}
-
-	private void deleteNodes(Collection<Long> suidList, CyNetwork net) {
-		Set<CyNode> nodesToDelete = new HashSet<>();
-		
-		suidList.forEach(suid -> {
-			CyNode node = net.getNode(suid);
-			
-			if (node != null)
-				nodesToDelete.add(node);
-		});
-		
-		if (!nodesToDelete.isEmpty())
-			net.removeNodes(nodesToDelete);
+	
+	private Set<Long> getNodesToDelete() {
+		// Delete signature nodes that are in the given data sets but not in any other signature data sets
+		Collection<EMSignatureDataSet> otherSignatureSets = new ArrayList<>(map.getSignatureSetList());
+		otherSignatureSets.removeAll(signatureDataSets);
+		Set<Long> nodesToKeep   = EnrichmentMap.getNodesUnion(otherSignatureSets);
+		Set<Long> nodesToDelete = EnrichmentMap.getNodesUnion(signatureDataSets);
+		nodesToDelete.removeAll(nodesToKeep);
+		return nodesToDelete;
 	}
+	
+	private Set<Long> getEdgesToDelete() {
+		Set<Long> edgesToDelete = EnrichmentMap.getEdgesUnion(signatureDataSets);
+		return edgesToDelete;
+	}
+	
+	private static <T> Collection<T> getElements(Set<Long> suids, Function<Long,T> getter) {
+		return suids.stream().map(getter).filter(n->n!=null).collect(Collectors.toList());
+	}
+	
 }
