@@ -32,8 +32,7 @@ public class FilterNodesEdgesTask extends AbstractTask {
 
 	public enum FilterMode {
 		HIDE("Hide filtered out nodes and edges"),
-		HIGHLIGHT("Highlight filtered nodes and edges"),
-		SELECT("Select filtered nodes and edges");
+		HIGHLIGHT("Highlight filtered nodes and edges");
 		
 		private final String label;
 
@@ -113,10 +112,7 @@ public class FilterNodesEdgesTask extends AbstractTask {
 			if (customGraphics1 != null)
 				nv.clearValueLock(customGraphics1);
 			
-			if (filteredIn) {
-				if (filterMode == FilterMode.SELECT)
-					net.getRow(n).set(CyNetwork.SELECTED, true);
-			} else {
+			if (!filteredIn) {
 				switch (filterMode) {
 					case HIDE:
 						net.getRow(n).set(CyNetwork.SELECTED, false);
@@ -128,9 +124,6 @@ public class FilterNodesEdgesTask extends AbstractTask {
 						nv.setLockedValue(NODE_LABEL_TRANSPARENCY, 0);
 						if (customGraphics1 != null)
 							nv.setLockedValue(customGraphics1, NullCustomGraphics.getNullObject());
-						break;
-					case SELECT:
-						net.getRow(n).set(CyNetwork.SELECTED, false);
 						break;
 				}
 			}
@@ -160,10 +153,7 @@ public class FilterNodesEdgesTask extends AbstractTask {
 			ev.clearValueLock(EDGE_TRANSPARENCY);
 			ev.clearValueLock(EDGE_LABEL_TRANSPARENCY);
 			
-			if (filteredIn) {
-				if (filterMode == FilterMode.SELECT)
-					net.getRow(e).set(CyNetwork.SELECTED, true);
-			} else {
+			if (!filteredIn) {
 				switch (filterMode) {
 					case HIDE:
 						net.getRow(e).set(CyNetwork.SELECTED, false);
@@ -172,9 +162,6 @@ public class FilterNodesEdgesTask extends AbstractTask {
 					case HIGHLIGHT:
 						ev.setLockedValue(EDGE_TRANSPARENCY, FILTERED_OUT_EDGE_TRANSPARENCY);
 						ev.setLockedValue(EDGE_LABEL_TRANSPARENCY, FILTERED_OUT_EDGE_TRANSPARENCY);
-						break;
-					case SELECT:
-						net.getRow(e).set(CyNetwork.SELECTED, false);
 						break;
 				}
 			}

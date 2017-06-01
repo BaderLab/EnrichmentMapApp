@@ -6,9 +6,12 @@ import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE_ENRICHMENT;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
@@ -48,6 +52,7 @@ import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask.FilterMode;
+import org.baderlab.csplugins.enrichmentmap.task.SelectNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
@@ -112,6 +117,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
 	@Inject private RemoveSignatureDataSetsTask.Factory removeDataSetsTaskFactory;
 	@Inject private FilterNodesEdgesTask.Factory filterNodesEdgesTaskFactory;
+	@Inject private SelectNodesEdgesTask.Factory selectNodesEdgesTaskFactory;
 	@Inject private DialogTaskManager dialogTaskManager;
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private ChartFactoryManager chartFactoryManager;
@@ -369,7 +375,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		});
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "serial" })
 	private void addNetworkView(CyNetworkView netView) {
 		invokeOnEDT(() -> {
 			EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
@@ -449,6 +455,33 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					});
 					viewPanel.getDataSetSelector().getRemoveButton().addActionListener(evt -> {
 						removeSignatureDataSets(map, viewPanel);
+					});
+					
+					viewPanel.getDataSetSelector().getTable().addMouseListener(new MouseAdapter() {
+						@Override
+						public void mousePressed(final MouseEvent e) {
+							maybeShowContextMenu(e);
+						}
+						@Override
+						public void mouseReleased(final MouseEvent e) {
+							maybeShowContextMenu(e);
+						}
+						private void maybeShowContextMenu(final MouseEvent e) {
+							if (e.isPopupTrigger()) {
+								final JPopupMenu contextMenu = new JPopupMenu();
+								contextMenu.add(new JMenuItem(
+										new AbstractAction("Select nodes and edges from selected data sets") {
+											@Override
+											public void actionPerformed(final ActionEvent e) {
+												selectNodesEdges(
+														viewPanel.getNetworkView(),
+														viewPanel.getDataSetSelector().getSelectedItems()
+												);
+											}
+										}));
+								showContextMenu(contextMenu, e);
+							}
+						}
 					});
 					
 					viewPanel.getChartDataCombo().addItemListener(evt -> {
@@ -730,6 +763,18 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				.collect(Collectors.toSet());
 		
 		return (Set<EMDataSet>) set;
+	}
+	
+	private void showContextMenu(final JPopupMenu contextMenu, final MouseEvent e) {
+		invokeOnEDT(() -> {
+			final Component parent = (Component) e.getSource();
+			contextMenu.show(parent, e.getX(), e.getY());
+		});
+	}
+	
+	private void selectNodesEdges(CyNetworkView netView, Set<AbstractDataSet> dataSets) {
+		SelectNodesEdgesTask task = selectNodesEdgesTaskFactory.create(netView, dataSets);
+		dialogTaskManager.execute(new TaskIterator(task));
 	}
 	
 	private class FilterActionListener implements ActionListener {

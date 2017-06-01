@@ -258,7 +258,7 @@ public class DataSetSelector extends JPanel {
 		getRemoveButton().setEnabled(onlySignatureSelected);
 	}
 	
-	private JTable getTable() {
+	JTable getTable() {
 		if (table == null) {
 			final DefaultSelectorTableCellRenderer defRenderer = new DefaultSelectorTableCellRenderer();
 			final CheckBoxTableCellRenderer checkBoxRenderer = new CheckBoxTableCellRenderer();
