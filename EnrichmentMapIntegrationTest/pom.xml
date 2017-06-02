@@ -20,7 +20,7 @@
 		<karaf.version>3.0.3</karaf.version>
 		<pax.exam.version>1.2.2</pax.exam.version>
 	</properties>
-
+	
 	<build>
 		<plugins>
 			<plugin>

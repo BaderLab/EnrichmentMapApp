@@ -2,6 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
+	<!-- 
+		Make sure to run the integration tests once in a while.
+		
+		mvn clean install -P integration-test
+	 -->
+	 
 	<parent>
 	    <groupId>org.baderlab.csplugins</groupId>
 	    <artifactId>enrichmentmap-parent</artifactId>
@@ -226,50 +232,19 @@
 						<Bundle-Activator>${bundle.namespace}.enrichmentmap.CyActivator</Bundle-Activator>
 						<Embed-Dependency>colt,commons-math3,itext,guava,gson,jsr305,guice,peaberry,javax.inject,aopalliance,guice-multibindings,guice-assistedinject,jatl,jcolorbrewer</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
+						<Export-Package>${export.package}</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
-						<Export-Package>org.mskcc.*;prefuse.*;org.apache.*;com.google.*;org.ops4j.peaberry.*;org.baderlab.*</Export-Package>
 						<Import-Package>*;resolution:=optional</Import-Package>
 						<_failok>true</_failok>
 					</instructions>
 				</configuration>
 				<extensions>true</extensions>
 			</plugin>
-			<!-- 
-			<plugin>
-				<!- - Shrinks the jar file by removing unused .class files. Embedded jars must be inlined. - ->
-				<groupId>com.github.wvengen</groupId>
-				<artifactId>proguard-maven-plugin</artifactId>
-				<version>2.0.10</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>proguard</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<options>
-						<option>-dontobfuscate</option>
-						<option>-dontoptimize</option>
-						<option>-dontnote</option>
-						<option>-keep public class org.baderlab.csplugins.enrichmentmap.CyActivator</option>
-					</options>
-					<injar>${project.build.finalName}.jar</injar>
-					<outjar>${project.build.finalName}-small.jar</outjar>
-					<outputDirectory>${project.build.directory}</outputDirectory>
-					<libs>
-						<lib>${java.home}/lib/rt.jar</lib>
-						<!- - itext has dependency on javax.crypto in jce.jar - ->
-						<lib>${java.home}/lib/jce.jar</lib> 
-					</libs>
-				</configuration>
-			</plugin>
-			-->
-			<!-- Run the FreeBuilder annotation processor to generate Builders -->
+			<!-- Add 'src/support/java' as a source folder. -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.12</version>
 				<executions>
 					<execution>
 						<phase>generate-sources</phase>
@@ -280,26 +255,6 @@
 							<sources>
 								<source>src/support/java</source>
 							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- 
-				Copy the freebuilder jar into the project so that eclipse can use it. 
-			    Add the freebuilder jar to Project Properties > Java Compiler > Annotation Processors > Factory Paths.
-			-->
-			<plugin>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>install</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/lib</outputDirectory>
-							<includeArtifactIds>freebuilder</includeArtifactIds>
-							<stripVersion>true</stripVersion>
 						</configuration>
 					</execution>
 				</executions>

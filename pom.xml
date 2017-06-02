@@ -7,17 +7,38 @@
 	<version>3.0.0-BETA1</version>
 	<packaging>pom</packaging>
 
-	<modules>
-		<module>EnrichmentMapPlugin</module>
-		<module>EnrichmentMapIntegrationTest</module>
-	</modules>
-  
 	<properties>
 		<bundle.namespace>org.baderlab.csplugins</bundle.namespace>
 	    <project.name>EnrichmentMap</project.name>
 	    <cy3.version>3.4.0</cy3.version>
 		<osgi.api.version>4.2.0</osgi.api.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	
+	<profiles>
+		<profile>
+			<id>prod</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<export.package>!${bundle.namespace}.*</export.package>
+			</properties>
+			<modules>
+				<module>EnrichmentMapPlugin</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>integration-test</id>
+			<properties>
+				<export.package>org.mskcc.*;prefuse.*;org.apache.*;com.google.*;org.ops4j.peaberry.*;org.baderlab.*</export.package>
+			</properties>
+			<modules>
+				<module>EnrichmentMapPlugin</module>
+				<module>EnrichmentMapIntegrationTest</module>
+			</modules>
+		</profile>
+	</profiles>
 	
 	<repositories>
 		<repository>

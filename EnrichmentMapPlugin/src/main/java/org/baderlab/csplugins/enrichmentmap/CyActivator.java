@@ -45,9 +45,6 @@ public class CyActivator extends AbstractCyActivator {
 										new CytoscapeServiceModule(), new ApplicationModule(), 
 										new CommandModule());
 		
-		// register the injector as an OSGi service so the integration tests can access it
-		registerService(bc, injector, Injector.class, new Properties());
-		
 		// manager
 		EnrichmentMapManager manager = injector.getInstance(EnrichmentMapManager.class);
 		registerAllServices(bc, manager, new Properties());
@@ -64,10 +61,15 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, new MannWhitRanksTunableHandlerFactory(), StringTunableHandlerFactory.class, new Properties());
 		
 		
-		// Don't load UI services if running headless
 		boolean headless = injector.getInstance(Key.get(Boolean.class, Headless.class));
 		
-		if (!headless) {
+		if(headless) {
+			// register the injector as an OSGi service so the integration tests can access it
+			registerService(bc, injector, Injector.class, new Properties());
+		}
+		
+		if(!headless) {
+			// Don't load UI services if running headless
 			// register actions
 			registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class), new Properties());
 			

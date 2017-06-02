@@ -66,7 +66,6 @@ import javax.swing.JTextField;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
@@ -331,7 +330,7 @@ public class PostAnalysisInputPanel extends JPanel {
 	}
 
 	/**
-	 * @deprecated Use {@link EnrichmentMapParameters#checkFile(String)} instead
+	 * @deprecated Use EnrichmentMapParameters#checkFile(String) instead
 	 */
 	@Deprecated
 	protected static Color checkFile(String filename) {
