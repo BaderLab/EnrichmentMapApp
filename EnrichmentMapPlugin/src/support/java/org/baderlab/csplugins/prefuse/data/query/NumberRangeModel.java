@@ -34,13 +34,12 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-package prefuse.data.query;
-
-import prefuse.util.TypeLib;
-
-import prefuse.util.ui.ValuedRangeModel;
+package org.baderlab.csplugins.prefuse.data.query;
 
 import javax.swing.DefaultBoundedRangeModel;
+
+import org.baderlab.csplugins.prefuse.util.TypeLib;
+import org.baderlab.csplugins.prefuse.util.ui.ValuedRangeModel;
 
 
 /**

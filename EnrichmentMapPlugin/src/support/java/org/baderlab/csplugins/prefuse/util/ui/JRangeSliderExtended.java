@@ -35,22 +35,29 @@
 */
 
 //package csplugins.widgets.slider;
-package prefuse.util.ui;
+package org.baderlab.csplugins.prefuse.util.ui;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-
 import java.text.DecimalFormat;
 
-import javax.swing.*;
+import javax.swing.BoundedRangeModel;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import prefuse.data.query.*;
+import org.baderlab.csplugins.prefuse.data.query.NumberRangeModel;
 
 /**
  * Extension of the Prefuse JRangeSlider.

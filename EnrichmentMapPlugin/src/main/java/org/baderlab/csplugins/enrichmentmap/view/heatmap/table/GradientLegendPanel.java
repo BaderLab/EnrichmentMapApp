@@ -13,8 +13,8 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientWidget;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.mskcc.colorgradient.ColorGradientWidget;
 
 @SuppressWarnings("serial")
 public class GradientLegendPanel extends JPanel {

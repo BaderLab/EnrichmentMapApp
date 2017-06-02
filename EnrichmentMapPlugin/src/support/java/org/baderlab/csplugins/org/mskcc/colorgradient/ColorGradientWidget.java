@@ -30,7 +30,7 @@
 
 // imports
 
-package org.mskcc.colorgradient;
+package org.baderlab.csplugins.org.mskcc.colorgradient;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;

@@ -34,7 +34,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-package prefuse.util.ui;
+package org.baderlab.csplugins.prefuse.util.ui;
 
 import javax.swing.BoundedRangeModel;
 
