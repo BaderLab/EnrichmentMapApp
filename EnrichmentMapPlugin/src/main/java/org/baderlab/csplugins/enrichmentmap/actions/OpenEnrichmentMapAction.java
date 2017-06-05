@@ -19,7 +19,7 @@ public class OpenEnrichmentMapAction extends AbstractCyAction implements Task {
 	public static final String NAME = "EnrichmentMap";
 
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
-	@Inject private Provider<HeatMapMediator> expressionViewerMediatorProvider;
+	@Inject private Provider<HeatMapMediator> heatMapMediatorProvider;
 
 	public OpenEnrichmentMapAction() {
 		super(NAME);
@@ -28,7 +28,7 @@ public class OpenEnrichmentMapAction extends AbstractCyAction implements Task {
 
 	public synchronized void showPanels() {
 		controlPanelMediatorProvider.get().showControlPanel();
-		expressionViewerMediatorProvider.get().showHeatMapPanel();
+		heatMapMediatorProvider.get().showHeatMapPanel();
 	}
 	
 	@Override

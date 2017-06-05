@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
+import java.util.Properties;
 
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -31,12 +32,14 @@ import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisInputP
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisSignatureDiscoveryPanel;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.property.CyProperty;
 import org.osgi.framework.BundleContext;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Module;
 import com.google.inject.Provides;
+import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
@@ -53,6 +56,10 @@ public class ApplicationModule extends AbstractModule {
 	protected void configure() {
 		bind(EnrichmentMapManager.class).asEagerSingleton();		
 		install(new FactoryModule());
+		
+		// Set up CyProperty
+		bind(new TypeLiteral<CyProperty<Properties>>(){}).toInstance(new PropsReader());
+		bind(PropertyManager.class).asEagerSingleton();
 	}
 	
 	/** For tests */
@@ -64,7 +71,9 @@ public class ApplicationModule extends AbstractModule {
 	public Boolean provideHeadlessFlag(BundleContext bc) {
 		return bc.getServiceReference(CySwingApplication.class.getName()) == null;
 	}
+	
 }
+
 
 // This is a separate class so it can be used by the integration tests
 class FactoryModule extends AbstractModule {

@@ -9,19 +9,27 @@ import java.util.function.Consumer;
 
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.SwingUtilities;
 
+import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
-@SuppressWarnings("serial")
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
+@SuppressWarnings("serial")
+@Singleton
 public class SettingsPopupPanel extends JPanel {
+	
+	@Inject private PropertyManager propertyManager;
 	
 	private JRadioButton cosineRadio;
 	private JRadioButton euclideanRadio;
@@ -34,11 +42,6 @@ public class SettingsPopupPanel extends JPanel {
 	private ActionListener pearsonListener;
 	
 	
-	public SettingsPopupPanel() {
-		createContents();
-		setOpaque(false);
-	}
-	
 	public void setDistanceConsumer(Consumer<Distance> dmConsumer) {
 		this.distanceConsumer = dmConsumer;
 	}
@@ -47,18 +50,26 @@ public class SettingsPopupPanel extends JPanel {
 	 * Cannot use JComboBox on a JPopupMenu because of a bug in swing: 
 	 * http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4799266
 	 */
-	private void createContents() {		
+	@AfterInjection
+	private void createContents() {	
+		setOpaque(false);
 		JLabel distanceLabel = new JLabel("  Hierarchical Cluster - Distance Metric  ");
 		cosineRadio = new JRadioButton("Cosine");
 		euclideanRadio = new JRadioButton("Euclidean");
 		pearsonRadio = new JRadioButton("Pearson Correlation");
 		JPanel distanceRadioPanel = createButtonPanel(cosineRadio, euclideanRadio, pearsonRadio);
+		SwingUtil.makeSmall(distanceLabel);
 				
 		cosineRadio.addActionListener(cosineListener = dmListenerFor(Distance.COSINE));
 		euclideanRadio.addActionListener(euclideanListener = dmListenerFor(Distance.EUCLIDEAN));
 		pearsonRadio.addActionListener(pearsonListener = dmListenerFor(Distance.PEARSON));
 		
-		SwingUtil.makeSmall(distanceLabel);
+		JCheckBox autofocusCheckbox = new JCheckBox("Auto-Focus HeatMap");
+		autofocusCheckbox.setSelected(propertyManager.isHeatmapAutofocus());
+		autofocusCheckbox.addActionListener(e -> {
+			propertyManager.setHeatmapAutofocus(autofocusCheckbox.isSelected());
+		});
+		SwingUtil.makeSmall(autofocusCheckbox);
 		
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -68,12 +79,15 @@ public class SettingsPopupPanel extends JPanel {
 		layout.setHorizontalGroup(layout.createParallelGroup()
 			.addComponent(distanceLabel)
 			.addComponent(distanceRadioPanel)
+			.addComponent(autofocusCheckbox)
 		);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
 			.addGap(5)
 			.addComponent(distanceLabel)
 			.addComponent(distanceRadioPanel)
+			.addGap(10)
+			.addComponent(autofocusCheckbox)
 			.addGap(5)
 		);
 	}

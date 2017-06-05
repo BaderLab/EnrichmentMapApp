@@ -228,7 +228,7 @@ public class EMBuildCommandTask extends AbstractTask {
 		String prefix = legacySupport.getNextAttributePrefix();
 		EMCreationParameters creationParams = 
 				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), 
-						metric, similaritycutoff, propertyManager.getDefaultCombinedConstant());
+						metric, similaritycutoff, propertyManager.getCombinedConstant());
 		
 		if(distinctEdges != null)
 			creationParams.setCreateDistinctEdges(distinctEdges);

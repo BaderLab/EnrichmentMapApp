@@ -1,150 +1,124 @@
 package org.baderlab.csplugins.enrichmentmap;
 
 import java.util.Properties;
-import java.util.Set;
+import java.util.function.Function;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.session.CySessionManager;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 /**
  * Manages the CyProperties for EnrichmentMap.
- * 
- * MKTODO:
- * The CyProperties are currently not working. The defaults are hardcoded for the moment.
  */
 @Singleton
 public class PropertyManager {
 	
-	//Cytoscape default properties names
-	public static final String defaultJaccardCutOff_propname = "EnrichmentMap.default_jaccard";
-	public static final String defaultOverlapCutOff_propname = "EnrichmentMap.default_overlap";
-	public static final String defaultSimilarityMetric_propname = "EnrichmentMap.default_similarity_metric";
-	public static final String disable_heatmap_autofocus_propname = "EnrichmentMap.disable_heatmap_autofocus";
-
-	//get the default heatmap sort algorithm
-	public static final String defaultSortMethod_propname = "EnrichmentMap.default_sort_method";
-
-	//get the default distance metric algorithm
-	public static final String defaultDistanceMetric_propname = "EnrichmentMap.default_distance_metric";
-
-	//assign the defaults:
-	public static final String defaultPvalue_propname = "EnrichmentMap.default_pvalue";
-	public static final String defaultQvalue_propname = "EnrichmentMap.default_qvalue";
-	//get the default combined metric constant
-	public static final String defaultCombinedConstant_propname = "EnrichmentMap.default_combinedConstant";
-	
-		
-	
-	@Inject private Provider<CySessionManager> sessionManagerProvider;
-
-	//the set of default parameters we want to get 
-	private double defaultJaccardCutOff = 0.25;
-	private double defaultOverlapCutOff = 0.5;
-	private double defaultCombinedCutOff = 0.375;
-	private SimilarityMetric defaultSimilarityMetric = SimilarityMetric.OVERLAP;
-//	private DistanceMetric defaultDistanceMetric = DistanceMetric.PEARSON_CORRELATION;
-
-	private double defaultPvalue = 1.0;
-	private double defaultQvalue = 0.1;
-	private double defaultCombinedConstant = 0.5;
-	private boolean defaultDisableHeatmapAutofocus = false;
+	public static final String heatmap_autofocus_propname = "heatmapAutofocus";
+	public static final String jaccardCutOff_propname = "default.jaccardCutoff";
+	public static final String overlapCutOff_propname = "default.overlapCutoff";
+	public static final String combinedCutoff_propname = "default.combinedCutoff";
+	public static final String combinedConstant_propname = "default.combinedConstant";
+	public static final String similarityMetric_propname = "default.similarityMetric";
+	public static final String distanceMetric_propname = "default.distanceMetric";
+	public static final String Pvalue_propname = "default.pvalue";
+	public static final String Qvalue_propname = "default.qvalue";
 	
 	
+	private static final double jaccardCutOff_default = 0.25;
+	private static final double overlapCutOff_default = 0.5;
+	private static final double combinedCutoff_default = 0.375;
+	private static final double combinedConstant_default = 0.5;
+	private static final SimilarityMetric similarityMetric_default = SimilarityMetric.OVERLAP;
+	private static final Distance distanceMetric_default = Distance.PEARSON;
+	private static final double Pvalue_default = 1.0;
+	private static final double Qvalue_default = 0.1;
 	
-	public double getDefaultJaccardCutOff() {
-		return defaultJaccardCutOff;
-	}
-
-	public double getDefaultOverlapCutOff() {
-		return defaultOverlapCutOff;
+	
+	@Inject private CyProperty<Properties> cyProps;
+	
+	@AfterInjection
+	private void initializeProperties() {
+		Properties props = cyProps.getProperties();
+		if(props.size() < 9) {
+			props.setProperty(heatmap_autofocus_propname, String.valueOf(false));
+			props.setProperty(jaccardCutOff_propname, String.valueOf(jaccardCutOff_default));
+			props.setProperty(overlapCutOff_propname, String.valueOf(overlapCutOff_default));
+			props.setProperty(combinedCutoff_propname, String.valueOf(combinedCutoff_default));
+			props.setProperty(combinedConstant_propname, String.valueOf(combinedConstant_default));
+			props.setProperty(similarityMetric_propname, String.valueOf(similarityMetric_default));
+			props.setProperty(distanceMetric_propname, String.valueOf(distanceMetric_default));
+			props.setProperty(Pvalue_propname, String.valueOf(Pvalue_default));
+			props.setProperty(Qvalue_propname, String.valueOf(Qvalue_default));
+		}
 	}
 	
-	public double getDefaultCombinedCutOff() {
-		return defaultCombinedCutOff;
+	
+	public double getJaccardCutoff() {
+		return getValue(jaccardCutOff_propname, jaccardCutOff_default, Double::valueOf);
+	}
+
+	public double getOverlapCutoff() {
+		return getValue(overlapCutOff_propname, overlapCutOff_default, Double::valueOf);
+	}
+
+	public double getCombinedCutoff() {
+		return getValue(combinedCutoff_propname, combinedCutoff_default, Double::valueOf);
+	}
+
+	public double getCombinedConstant() {
+		return getValue(combinedConstant_propname, combinedConstant_default, Double::valueOf);
+	}
+
+	public SimilarityMetric getSimilarityMetric() {
+		return getValue(similarityMetric_propname, similarityMetric_default, SimilarityMetric::valueOf);
+	}
+
+	public Distance getDistanceMetric() {
+		return getValue(distanceMetric_propname, distanceMetric_default, Distance::valueOf);
+	}
+
+	public double getPvalue() {
+		return getValue(Pvalue_propname, Pvalue_default, Double::valueOf);
+	}
+
+	public double getQvalue() {
+		return getValue(Qvalue_propname, Qvalue_default, Double::valueOf);
+	}
+
+	public boolean isHeatmapAutofocus() {
+		return getValue(heatmap_autofocus_propname, false, Boolean::valueOf);
+	}
+	
+	public void setHeatmapAutofocus(boolean autofocus) {
+		cyProps.getProperties().setProperty(heatmap_autofocus_propname, String.valueOf(autofocus));
 	}
 	
 	public double getDefaultCutOff(SimilarityMetric metric) {
 		switch(metric) {
 			default:
-			case COMBINED: return defaultCombinedCutOff;
-			case JACCARD:  return defaultJaccardCutOff;
-			case OVERLAP:  return defaultOverlapCutOff;
+			case COMBINED: return getCombinedCutoff();
+			case JACCARD:  return getJaccardCutoff();
+			case OVERLAP:  return getOverlapCutoff();
 		}
 	}
 
-	public SimilarityMetric getDefaultSimilarityMetric() {
-		return defaultSimilarityMetric;
-	}
-
-//	public DistanceMetric getDefaultDistanceMetric() {
-//		return defaultDistanceMetric;
-//	}
-
-	public double getDefaultPvalue() {
-		return defaultPvalue;
-	}
-
-	public double getDefaultQvalue() {
-		return defaultQvalue;
-	}
-
-	public double getDefaultCombinedConstant() {
-		return defaultCombinedConstant;
-	}
-
-	public boolean isDefaultDisableHeatmapAutofocus() {
-		return defaultDisableHeatmapAutofocus;
-	}
-
-
-	// MKTODO This code doesn't make any sense, the properties should be in a single Properties object
-	public void initializeDefaultParameters() {
-		//get the session properties
-		//only get the sessionProperties if the sessionManager is not null
-		Set<CyProperty<?>> props = sessionManagerProvider.get().getCurrentSession().getProperties();
-
-		//go through the session properties.
-		//If the session property is there then get its value and put it in the default.
-		for(CyProperty<?> prop : props) {
-			String name = prop.getName();
-			if(name != null) {
-				Properties properties = ((CyProperty<Properties>) prop).getProperties();
-				if(name.equals(defaultJaccardCutOff_propname)) {
-					defaultJaccardCutOff = Double.valueOf((String)properties.getProperty(name));
-				}
-				if(name.equals(defaultOverlapCutOff_propname)) {
-					defaultOverlapCutOff = Double.valueOf((String)properties.getProperty(name));
-				}
-				if(name.equals(defaultOverlapCutOff_propname)) {
-					defaultOverlapCutOff = Double.valueOf((String)properties.getProperty(name));
-				}
-				if(name.equals(defaultPvalue_propname)) {
-					defaultPvalue = Double.valueOf((String)properties.getProperty(name));
-				}
-				if(name.equals(defaultQvalue_propname)) {
-					defaultQvalue = Double.valueOf((String)properties.getProperty(name));
-				}
-				if(name.equals(defaultCombinedConstant_propname)) {
-					defaultCombinedConstant = Double.valueOf((String)properties.getProperty(name));
-				}
-				if(name.equals(defaultSimilarityMetric_propname)) {
-					defaultSimilarityMetric = SimilarityMetric.valueOf(properties.getProperty(name));
-				}
-//				if(name.equals(defaultSortMethod_propname)) {
-//					defaultSortMethod = HeatMapParameters.Sort.valueOf(properties.getProperty(name));
-//				}
-//				if(name.equals(defaultDistanceMetric_propname)) {
-//					defaultDistanceMetric = (String)properties.getProperty(name);
-//				}
-				if(name.equals(disable_heatmap_autofocus_propname)) {
-					defaultDisableHeatmapAutofocus = Boolean.valueOf(properties.getProperty(name));
-				}
-			}
+	
+	private <V> V getValue(String name, V defaultVal, Function<String,V> converter) {
+		if(cyProps == null) // happens in JUnits
+			return defaultVal;
+		Properties props = cyProps.getProperties();
+		if(props == null)
+			return defaultVal;
+		String s = props.getProperty(name);
+		if(name == null)
+			return defaultVal;
+		try {
+			return converter.apply(s);
+		} catch(Exception e) {
+			return defaultVal;
 		}
 	}
 

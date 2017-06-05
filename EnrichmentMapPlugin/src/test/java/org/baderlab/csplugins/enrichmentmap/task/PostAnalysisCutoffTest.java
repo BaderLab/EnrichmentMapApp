@@ -64,8 +64,8 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	@Test
 	public void _setup(PropertyManager pm, CyApplicationManager applicationManager, CyNetworkManager networkManager) {
 		EMCreationParameters params = new EMCreationParameters("EM1_", 
-				pm.getDefaultPvalue(), pm.getDefaultQvalue(), NESFilter.ALL, Optional.empty(), 
-				SimilarityMetric.JACCARD, pm.getDefaultJaccardCutOff(), pm.getDefaultCombinedConstant());
+				pm.getPvalue(), pm.getQvalue(), NESFilter.ALL, Optional.empty(), 
+				SimilarityMetric.JACCARD, pm.getJaccardCutoff(), pm.getCombinedConstant());
 		
 		DataSetFiles dataset1files = new DataSetFiles();
 		dataset1files.setGMTFileName(PATH + "gene_sets.gmt");  

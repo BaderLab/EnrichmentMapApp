@@ -71,7 +71,7 @@ public class ResolverCommandTask extends AbstractTask {
 	
 	@Inject
 	public ResolverCommandTask(PropertyManager propertyManager) {
-		SimilarityMetric defaultMetric = propertyManager.getDefaultSimilarityMetric();
+		SimilarityMetric defaultMetric = propertyManager.getSimilarityMetric();
 		similarityMetric = enumNames(SimilarityMetric.values());
 		similarityMetric.setSelectedValue(defaultMetric.name());
 		

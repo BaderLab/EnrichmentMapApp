@@ -59,6 +59,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
@@ -70,6 +71,7 @@ public class HeatMapMainPanel extends JPanel {
 	
 	@Inject private ExportTXTAction.Factory txtActionFactory;
 	@Inject private ExportPDFAction.Factory pdfActionFactory;
+	@Inject private Provider<SettingsPopupPanel> settingsPopupPanelProvider;
 	@Inject private AddRanksDialog.Factory ranksDialogFactory;
 	@Inject private ColumnHeaderRankOptionRenderer.Factory columnHeaderRankOptionRendererFactory;
 	@Inject private IconManager iconManager;
@@ -117,7 +119,7 @@ public class HeatMapMainPanel extends JPanel {
 	
 	@AfterInjection
 	private void createContents() {
-		settingsPanel = new SettingsPopupPanel();
+		settingsPanel = settingsPopupPanelProvider.get();
 		settingsPanel.setDistanceConsumer(this::updateSetting_Distance);
 		
 		JPanel expressionPanel = createTablePanel(); // must create table first

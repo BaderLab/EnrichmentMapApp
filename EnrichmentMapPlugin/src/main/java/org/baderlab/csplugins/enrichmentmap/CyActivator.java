@@ -20,6 +20,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.command.StringTunableHandlerFactory;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.work.ServiceProperties;
@@ -29,7 +30,8 @@ import org.osgi.framework.BundleContext;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Key; 
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral; 
 
 
 public class CyActivator extends AbstractCyActivator {
@@ -60,7 +62,10 @@ public class CyActivator extends AbstractCyActivator {
 		registerCommand(bc, "pa",        injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
 		registerService(bc, new MannWhitRanksTunableHandlerFactory(), StringTunableHandlerFactory.class, new Properties());
 		
-		
+		// CyProperty
+		CyProperty<Properties> cyProperty = injector.getInstance(Key.get(new TypeLiteral<CyProperty<Properties>>(){}));
+		registerAllServices(bc, cyProperty, PropsReader.getServiceProps());
+				
 		boolean headless = injector.getInstance(Key.get(Boolean.class, Headless.class));
 		
 		if(headless) {
@@ -88,8 +93,8 @@ public class CyActivator extends AbstractCyActivator {
 			ControlPanelMediator controlPanelMediator = injector.getInstance(ControlPanelMediator.class);
 			registerAllServices(bc, controlPanelMediator, new Properties());
 			
-			HeatMapMediator expressionViewerMediator = injector.getInstance(HeatMapMediator.class);
-			registerAllServices(bc, expressionViewerMediator, new Properties());
+			HeatMapMediator heatMapMediator = injector.getInstance(HeatMapMediator.class);
+			registerAllServices(bc, heatMapMediator, new Properties());
 		}
 		
 		// If the App is updated or restarted then we want to reload the model and view from the tables

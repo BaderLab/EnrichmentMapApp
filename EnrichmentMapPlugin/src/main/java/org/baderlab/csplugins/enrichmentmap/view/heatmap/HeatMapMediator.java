@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -47,6 +48,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	
 	@Inject private HeatMapParentPanel.Factory panelFactory;
 	@Inject private EnrichmentMapManager emManager;
+	@Inject private PropertyManager propertyManager;
 	@Inject private ClusterRankingOption.Factory clusterRankOptionFactory;
 	
 	@Inject private CyNetworkManager networkManager;
@@ -70,16 +72,23 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			serviceRegistrar.registerService(heatMapPanel, CytoPanelComponent.class, props);
 		}
 		
-		// Bring panel to front
-		CytoPanel cytoPanel = swingApplication.getCytoPanel(heatMapPanel.getCytoPanelName());
-		int index = cytoPanel.indexOfComponent(HeatMapParentPanel.ID);
-		if(index >= 0)
-			cytoPanel.setSelectedIndex(index);
+		bringToFront();
 	}
 
+	private void bringToFront() {
+		CytoPanel cytoPanel = swingApplication.getCytoPanel(heatMapPanel.getCytoPanelName());
+		if(cytoPanel != null) {
+			int index = cytoPanel.indexOfComponent(HeatMapParentPanel.ID);
+			if(index >= 0) {
+				cytoPanel.setSelectedIndex(index);
+			}
+		}
+	}
 	
 	@Override
 	public void handleEvent(RowsSetEvent e) {
+		if(heatMapPanel == null)
+			return;
 		// MKTODO If this has bad performance then add a reconciler timer delay.
 		// Cytoscape selection events can come in sets of 1-4 events.
 		if(e.containsColumn(CyNetwork.SELECTED)) {
@@ -97,6 +106,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
+		if(heatMapPanel == null)
+			return;
 		CyNetworkView networkView = e.getNetworkView();
 		if(networkView != null && emManager.isEnrichmentMap(networkView)) {
 			updateHeatMap(networkView);
@@ -147,6 +158,10 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		HeatMapParams params = getHeatMapParams(map, network.getSUID(), onlyEdges);
 		
 		heatMapPanel.selectGenes(map, params, rankOptions, union, inter);
+		
+		if(propertyManager.isHeatmapAutofocus()) {
+			bringToFront();
+		}
 	}
 	
 	

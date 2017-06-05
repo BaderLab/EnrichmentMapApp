@@ -134,8 +134,8 @@ public class CutoffPropertiesPanel extends JPanel {
 		shouldFilterMinCheckbox = new JCheckBox("");
 		minExperimentsText = new JFormattedTextField(NumberFormat.getIntegerInstance());
 		
-		pvalueText.setValue(propertyManager.getDefaultPvalue());
-		qvalueText.setValue(propertyManager.getDefaultQvalue());
+		pvalueText.setValue(propertyManager.getPvalue());
+		qvalueText.setValue(propertyManager.getQvalue());
 		minExperimentsText.setValue(3);
 		
 		nesFilterCombo = new JComboBox<>();
@@ -220,7 +220,7 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		SwingUtil.makeSmall(cutoffLabel, metricLabel);
 		
-		SimilarityMetric defaultMetric = propertyManager.getDefaultSimilarityMetric();
+		SimilarityMetric defaultMetric = propertyManager.getSimilarityMetric();
 		double defaultCutoff = propertyManager.getDefaultCutOff(defaultMetric);
 		
 		similarityCutoffText = new JFormattedTextField(getFormatterFactory(false));
@@ -239,7 +239,7 @@ public class CutoffPropertiesPanel extends JPanel {
 			combinedConstantSlider.setVisible(type == SimilarityMetric.COMBINED);
 		};
 		
-		double combinedConstant = propertyManager.getDefaultCombinedConstant();
+		double combinedConstant = propertyManager.getCombinedConstant();
 		int tick = (int)(combinedConstant * 100.0);
 		
 		combinedConstantSlider = new CombinedConstantSlider(tick);
@@ -296,8 +296,8 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	
 	public void reset() {
-		pvalueText.setValue(propertyManager.getDefaultPvalue());
-		qvalueText.setValue(propertyManager.getDefaultQvalue());
+		pvalueText.setValue(propertyManager.getPvalue());
+		qvalueText.setValue(propertyManager.getQvalue());
 		nesFilterCombo.setSelectedItem(ComboItem.of(NESFilter.ALL));
 		shouldFilterMinCheckbox.setSelected(false);
 		minExperimentsText.setValue(3);
@@ -343,7 +343,7 @@ public class CutoffPropertiesPanel extends JPanel {
 	public double getPValue() {
 		return pvalueText.isVisible()
 			? getValue(pvalueText)
-			: propertyManager.getDefaultPvalue();
+			: propertyManager.getPvalue();
 	}
 	
 	public NESFilter getNESFilter() {
