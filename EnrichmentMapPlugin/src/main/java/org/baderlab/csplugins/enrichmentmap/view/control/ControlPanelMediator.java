@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
@@ -375,7 +374,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		});
 	}
 	
-	@SuppressWarnings({ "unchecked", "serial" })
+	@SuppressWarnings("unchecked")
 	private void addNetworkView(CyNetworkView netView) {
 		invokeOnEDT(() -> {
 			EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
@@ -453,10 +452,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					viewPanel.getDataSetSelector().getAddButton().addActionListener(evt -> {
 						postAnalysisPanelMediatorProvider.get().showDialog(viewPanel, netView);
 					});
-					viewPanel.getDataSetSelector().getRemoveButton().addActionListener(evt -> {
-						removeSignatureDataSets(map, viewPanel);
-					});
-					
 					viewPanel.getDataSetSelector().getTable().addMouseListener(new MouseAdapter() {
 						@Override
 						public void mousePressed(final MouseEvent e) {
@@ -469,16 +464,29 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 						private void maybeShowContextMenu(final MouseEvent e) {
 							if (e.isPopupTrigger()) {
 								final JPopupMenu contextMenu = new JPopupMenu();
-								contextMenu.add(new JMenuItem(
-										new AbstractAction("Select nodes and edges from selected data sets") {
-											@Override
-											public void actionPerformed(final ActionEvent e) {
-												selectNodesEdges(
-														viewPanel.getNetworkView(),
-														viewPanel.getDataSetSelector().getSelectedItems()
-												);
-											}
-										}));
+								{
+									JMenuItem mi = new JMenuItem("Select nodes and edges from selected data sets");
+									mi.addActionListener(evt -> selectNodesEdges(viewPanel.getNetworkView(),
+											viewPanel.getDataSetSelector().getSelectedItems()));
+									contextMenu.add(mi);
+								}
+								contextMenu.addSeparator();
+								{
+									Set<AbstractDataSet> selected = viewPanel.getDataSetSelector().getSelectedItems();
+									boolean onlySignatureSelected = !selected.isEmpty();
+									
+									for (AbstractDataSet ds : selected) {
+										if (ds instanceof EMSignatureDataSet == false) {
+											onlySignatureSelected = false;
+											break;
+										}
+									}
+									
+									JMenuItem mi = new JMenuItem("Remove selected signature gene sets");
+									mi.addActionListener(evt -> removeSignatureDataSets(map, viewPanel));
+									mi.setEnabled(onlySignatureSelected);
+									contextMenu.add(mi);
+								}
 								showContextMenu(contextMenu, e);
 							}
 						}

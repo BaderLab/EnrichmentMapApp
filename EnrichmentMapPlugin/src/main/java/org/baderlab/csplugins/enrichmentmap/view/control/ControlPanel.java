@@ -364,7 +364,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JLabel chartDataLabel = new JLabel("Chart Data:");
 		private JLabel chartTypeLabel = new JLabel("Chart Type:");
 		private JLabel chartColorsLabel = new JLabel("Chart Colors:");
-		private JLabel dsFilterLabel = new JLabel("Data Sets:");
 		
 		private DataSetSelector dataSetSelector;
 		private JCheckBox publicationReadyCheck;
@@ -567,9 +566,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				LookAndFeelUtil.equalizeSize(sliderPanelFields.toArray(new JComponent[sliderPanelFields.size()]));
 			}
 			
-			JPanel datasetListPanel = createDataSetListPanel();
-			hGroup.addComponent(datasetListPanel);
-			vGroup.addComponent(datasetListPanel);
+			hGroup.addComponent(getDataSetSelector());
+			vGroup.addPreferredGap(ComponentPlacement.UNRELATED).addComponent(getDataSetSelector());
 	   		
 			if (LookAndFeelUtil.isAquaLAF())
 				panel.setOpaque(false);
@@ -858,30 +856,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			}
 			
 			return resetStyleButton;
-		}
-		
-		private JPanel createDataSetListPanel() {
-			SwingUtil.makeSmall(dsFilterLabel);
-			
-			final JPanel panel = new JPanel();
-			final GroupLayout layout = new GroupLayout(panel);
-	       	panel.setLayout(layout);
-	   		layout.setAutoCreateContainerGaps(false);
-	   		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
-	   		
-	   		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-	   				.addComponent(dsFilterLabel)
-	   				.addComponent(getDataSetSelector(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-	   		);
-	   		layout.setVerticalGroup(layout.createSequentialGroup()
-	   				.addComponent(dsFilterLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	   				.addComponent(getDataSetSelector(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-	   		);
-			
-			if (LookAndFeelUtil.isAquaLAF())
-				panel.setOpaque(false);
-			
-			return panel;
 		}
 		
 		void updateFilterPanel() {

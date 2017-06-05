@@ -62,7 +62,6 @@ public class DataSetSelector extends JPanel {
 	private JTable table;
 	private JScrollPane tableScrollPane;
 	private JButton addButton;
-	private JButton removeButton;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
 	
@@ -104,7 +103,6 @@ public class DataSetSelector extends JPanel {
 		
 		updateTable();
 		updateSelectionButtons();
-		updateRemoveButton();
 	}
 
 	public Set<AbstractDataSet> getAllItems() {
@@ -153,7 +151,9 @@ public class DataSetSelector extends JPanel {
 	}
 	
 	private void init() {
-		LookAndFeelUtil.equalizeSize(getAddButton(), getRemoveButton());
+		JLabel titleLabel = new JLabel("Data Sets:");
+		makeSmall(titleLabel);
+		
 		LookAndFeelUtil.equalizeSize(getSelectAllButton(), getSelectNoneButton());
 		
 		final GroupLayout layout = new GroupLayout(this);
@@ -162,23 +162,22 @@ public class DataSetSelector extends JPanel {
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
    		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
-				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addGroup(layout.createSequentialGroup()
-						.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getRemoveButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addGap(20,  20, Short.MAX_VALUE)
+   				.addGroup(layout.createSequentialGroup()
+						.addComponent(titleLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
+				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    		);
    		layout.setVerticalGroup(layout.createSequentialGroup()
-   				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    				.addGroup(layout.createParallelGroup(CENTER, false)
-						.addComponent(getAddButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(getRemoveButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(getSelectAllButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(getSelectNoneButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(titleLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
+   				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   				.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    		);
 		
 		if (isAquaLAF())
@@ -238,26 +237,6 @@ public class DataSetSelector extends JPanel {
 		getSelectNoneButton().setEnabled(hasChecked);
 	}
 	
-	private void updateRemoveButton() {
-		boolean onlySignatureSelected = true;
-		int[] selectedRows = getTable().getSelectedRows();
-		
-		if (selectedRows.length > 0) {
-			for (int r : selectedRows) {
-				AbstractDataSet ds = (AbstractDataSet) table.getModel().getValueAt(r, NAME_COL_IDX);
-				
-				if (ds instanceof EMSignatureDataSet == false) {
-					onlySignatureSelected = false;
-					break;
-				}
-			}
-		} else {
-			 onlySignatureSelected = false;
-		}
-		
-		getRemoveButton().setEnabled(onlySignatureSelected);
-	}
-	
 	JTable getTable() {
 		if (table == null) {
 			final DefaultSelectorTableCellRenderer defRenderer = new DefaultSelectorTableCellRenderer();
@@ -281,7 +260,6 @@ public class DataSetSelector extends JPanel {
 			
 			table.getSelectionModel().addListSelectionListener(e -> {
 				if (!e.getValueIsAdjusting()) {
-					updateRemoveButton();
 					// Workaround for preventing a click on the check-box in a selected row
 					// from changing the selection when multiple table rows are already selected
 					if (table.getSelectedRowCount() > 0)
@@ -340,9 +318,8 @@ public class DataSetSelector extends JPanel {
 	
 	JButton getAddButton() {
 		if (addButton == null) {
-			addButton = new JButton(" " + IconManager.ICON_PLUS + " ");
-			addButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(11.0f));
-			addButton.setToolTipText("Add Signature Gene Sets...");
+			addButton = new JButton("Add Signature Gene Sets...");
+			addButton.setToolTipText("Post Analysis");
 			makeSmall(addButton);
 			
 			if (isAquaLAF())
@@ -350,20 +327,6 @@ public class DataSetSelector extends JPanel {
 		}
 		
 		return addButton;
-	}
-	
-	JButton getRemoveButton() {
-		if (removeButton == null) {
-			removeButton = new JButton(IconManager.ICON_TRASH_O);
-			removeButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
-			removeButton.setToolTipText("Remove Signature Gene Sets");
-			makeSmall(removeButton);
-			
-			if (isAquaLAF())
-				removeButton.putClientProperty("JButton.buttonType", "gradient");
-		}
-		
-		return removeButton;
 	}
 	
 	JButton getSelectAllButton() {
