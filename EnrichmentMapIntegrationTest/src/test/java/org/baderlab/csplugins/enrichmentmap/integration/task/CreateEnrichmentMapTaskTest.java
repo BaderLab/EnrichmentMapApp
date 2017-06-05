@@ -16,13 +16,13 @@ import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
-import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -63,7 +63,7 @@ public class CreateEnrichmentMapTaskTest extends BaseIntegrationTest {
 		String rankFile       = TestUtils.createTempFile(PATH, "FakeRank.rnk").getAbsolutePath();
 		
 		PropertyManager pm = new PropertyManager();
-		EMCreationParameters params = new EMCreationParameters("EM1_", pm.getDefaultPvalue(), pm.getDefaultQvalue(), NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, pm.getDefaultJaccardCutOff(), pm.getDefaultCombinedConstant());
+		EMCreationParameters params = new EMCreationParameters("EM1_", pm.getPvalue(), pm.getQvalue(), NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, pm.getJaccardCutoff(), pm.getCombinedConstant());
 		
 		DataSetFiles dataset1files = new DataSetFiles();
 		dataset1files.setGMTFileName(geneSetsFile);  
