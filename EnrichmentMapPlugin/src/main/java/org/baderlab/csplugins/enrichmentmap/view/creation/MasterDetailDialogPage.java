@@ -224,7 +224,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
 		splitPane.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
-		splitPane.setResizeWeight(0.3);
+		splitPane.setResizeWeight(0.2);
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(splitPane, BorderLayout.CENTER);
@@ -237,9 +237,9 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		JLabel label = new JLabel("Data Sets:");
 		SwingUtil.makeSmall(label);
 		
-		JButton addButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS, "Add Data Set");
-		scanButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_FOLDER_O, "Scan Folder for Data Sets");
-		deleteButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_TRASH_O, "Delete Data Set");
+		JButton addButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS, "Add data set from files");
+		scanButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_FOLDER_O, "Add data sets from folder (scan)");
+		deleteButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_TRASH_O, "Delete selected data sets");
 		
 		addButton.addActionListener(e -> addNewDataSetToList());
 		deleteButton.addActionListener(e -> deleteSelectedItems());
@@ -299,6 +299,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	private void selectItem(DataSetListItem params) {
 		cardLayout.show(dataSetDetailPanel, params == null ? "nothing" : params.id);
+		dataSetDetailPanel.revalidate();
 		updateButtonEnablement();
 	}
 	

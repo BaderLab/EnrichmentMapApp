@@ -6,7 +6,6 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import javax.swing.GroupLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 
 @SuppressWarnings("serial")
 public class EditNothingPanel extends JPanel {
@@ -14,7 +13,7 @@ public class EditNothingPanel extends JPanel {
 	public EditNothingPanel() {
 		JLabel infoLabel = new JLabel("Click the (+) button to add a data set");
 		infoLabel.setEnabled(false);
-		infoLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+//		infoLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		
 		
 		final GroupLayout layout = new GroupLayout(this);

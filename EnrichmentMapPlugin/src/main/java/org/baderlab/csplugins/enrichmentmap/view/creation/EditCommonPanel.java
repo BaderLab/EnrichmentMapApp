@@ -30,7 +30,7 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 
 	@Override
 	public String getDisplayName() {
-		return "Common Files";
+		return "Common Files (included in all data sets)";
 	}
 
 	@Override
@@ -50,6 +50,7 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 	   		
 		layout.setHorizontalGroup(
 			layout.createSequentialGroup()
+				
 				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
 					.addComponent(gmtText.getLabel())
 					.addComponent(expressionsText.getLabel())

@@ -49,7 +49,7 @@ public class PropertyManager {
 	private SimilarityMetric defaultSimilarityMetric = SimilarityMetric.OVERLAP;
 //	private DistanceMetric defaultDistanceMetric = DistanceMetric.PEARSON_CORRELATION;
 
-	private double defaultPvalue = 0.005;
+	private double defaultPvalue = 1.0;
 	private double defaultQvalue = 0.1;
 	private double defaultCombinedConstant = 0.5;
 	private boolean defaultDisableHeatmapAutofocus = false;
