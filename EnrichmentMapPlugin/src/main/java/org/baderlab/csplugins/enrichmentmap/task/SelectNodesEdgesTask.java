@@ -43,7 +43,7 @@ public class SelectNodesEdgesTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor tm) {
-		tm.setTitle("Selecting Nodes and Edges from Data Sets");
+		tm.setTitle("Select Nodes and Edges from Data Sets");
 		tm.setStatusMessage("Getting Nodes and Edges from Data Sets...");
 		tm.setProgress(0.0);
 		
