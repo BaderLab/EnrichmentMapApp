@@ -48,8 +48,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
 import org.cytoscape.view.model.CyNetworkView;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 
@@ -59,6 +62,8 @@ public class EnrichmentMapManager {
 	private Map<Long, EnrichmentMap> enrichmentMaps = new HashMap<>();
 	private Map<Long, HeatMapParams> heatMapParams = new HashMap<>();
 	private Map<Long, HeatMapParams> heatMapParamsEdges = new HashMap<>();
+	
+	@Inject private Provider<PostAnalysisPanelMediator> postAnalysisMediatorProvider;
 
 	/**
 	 * Registers a newly created Network.
@@ -76,7 +81,11 @@ public class EnrichmentMapManager {
 	}
 	
 	public EnrichmentMap removeEnrichmentMap(Long networkId) {
-		return enrichmentMaps.remove(networkId);
+		EnrichmentMap map = enrichmentMaps.remove(networkId);
+		if(map != null) {
+			postAnalysisMediatorProvider.get().removeEnrichmentMap(map);
+		}
+		return map;
 	}
 	
 	public boolean isEnrichmentMap(Long networkId) {

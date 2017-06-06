@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -56,13 +57,16 @@ public class PostAnalysisPanelMediator {
 	@Inject private CreateDiseaseSignatureTaskFactory.Factory signatureTaskFactoryFactory;
 	@Inject private ErrorMessageDialog.Factory errorMessageDialogFactory;
 	
+	private WeakHashMap<EnrichmentMap,PostAnalysisInputPanel> panels = new WeakHashMap<>();
+	
+	
 	
 	@SuppressWarnings("serial")
 	public void showDialog(Component parent, CyNetworkView netView) {
 		final EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
 		
 		invokeOnEDT(() -> {
-			final PostAnalysisInputPanel panel = panelFactory.create(map);
+			final PostAnalysisInputPanel panel = panels.computeIfAbsent(map, panelFactory::create);
 			
 			final JDialog dialog = new JDialog(swingApplication.getJFrame(), "Add Signature Gene Sets", ModalityType.APPLICATION_MODAL);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -106,6 +110,9 @@ public class PostAnalysisPanelMediator {
 		});
 	}
 	
+	public void removeEnrichmentMap(EnrichmentMap map) {
+		panels.remove(map);
+	}
 	
 	private void addGeneSets(CyNetworkView netView, PostAnalysisParameters params) {
 		CreateDiseaseSignatureTaskFactory taskFactory = signatureTaskFactoryFactory.create(netView, params);
