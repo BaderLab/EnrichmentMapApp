@@ -308,7 +308,10 @@ public class CutoffPropertiesPanel extends JPanel {
 		cutoffValues.put(SimilarityMetric.JACCARD,  propertyManager.getDefaultCutOff(SimilarityMetric.JACCARD));
 		cutoffValues.put(SimilarityMetric.OVERLAP,  propertyManager.getDefaultCutOff(SimilarityMetric.OVERLAP));
 		cutoffValues.put(SimilarityMetric.COMBINED, propertyManager.getDefaultCutOff(SimilarityMetric.COMBINED));
-		cutoffMetricCombo.setSelectedItem(ComboItem.of(SimilarityMetric.JACCARD));
+		
+		SimilarityMetric defaultMetric = propertyManager.getSimilarityMetric();
+		cutoffMetricCombo.setSelectedItem(ComboItem.of(defaultMetric));
+		
 		combinedConstantSlider.reset();
 	}
 	
