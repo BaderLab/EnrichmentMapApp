@@ -439,7 +439,10 @@ public class DataSetSelector extends JPanel {
 			} else if (column == NAME_COL_IDX) {
 				setHorizontalAlignment(JLabel.LEFT);
 				setText(((AbstractDataSet) value).getName());
-				setToolTipText(((AbstractDataSet) value).getName());
+				
+				String method = value instanceof EMDataSet ? 
+						" (" + ((EMDataSet) value).getMethod().getLabel() + ")" : "";
+				setToolTipText(((AbstractDataSet) value).getName() + method);
 			} else if (column == GENES_COL_IDX) {
 				setText("" + value);
 				setToolTipText(value + " Gene Sets");
