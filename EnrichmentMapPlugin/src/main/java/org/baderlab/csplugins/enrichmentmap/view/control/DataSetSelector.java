@@ -270,17 +270,25 @@ public class DataSetSelector extends JPanel {
 			table.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent e) {
+					final int row = table.rowAtPoint(e.getPoint());
 					final boolean isMac = LookAndFeelUtil.isMac();
 					
-					// COMMAND button down on MacOS (or CONTROL button down on another OS) or SHIFT?
-					if ((isMac && e.isMetaDown()) || (!isMac && e.isControlDown()) || e.isShiftDown())
+					// COMMAND button down on MacOS (or CONTROL button down on another OS)?
+					if ((isMac && e.isMetaDown()) || (!isMac && e.isControlDown())) {
+						// Right-click must select the row, if not selected already,
+						// because the context menu (activated by right-click) acts on the selected rows
+						if (!table.isRowSelected(row))
+							table.setRowSelectionInterval(row, row);
+						
+						return;
+					}
+					
+					if (e.isShiftDown())
 						return; // Ignore!
 					
 				    final int col = table.columnAtPoint(e.getPoint());
 				    
 					if (col == SELECTED_COL_IDX) {
-						final int row = table.rowAtPoint(e.getPoint());
-						
 						// Restore previous multiple-row selection first
 					    if (previousSelectedRows != null && previousSelectedRows.contains(row)) {
 					    	for (int i : previousSelectedRows)
