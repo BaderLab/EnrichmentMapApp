@@ -17,6 +17,7 @@ import org.baderlab.csplugins.enrichmentmap.EdgeSimilarities;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -68,7 +69,8 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		dataset1files.setEnrichmentFileName1(PATH + "fakeEnrichments.txt");
 		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
 		
-		EMCreationParameters params = new EMCreationParameters("EM1_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.1, 0.1);
+		EMCreationParameters params = 
+			new EMCreationParameters("EM1_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.COMPOUND);
 		
 	    buildEnrichmentMap(params, dataset1files, Method.Generic, LegacySupport.DATASET1);
 	   	

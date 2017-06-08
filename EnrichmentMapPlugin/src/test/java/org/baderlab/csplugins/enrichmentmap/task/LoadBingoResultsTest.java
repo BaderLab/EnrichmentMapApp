@@ -7,11 +7,12 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
@@ -40,7 +41,8 @@ public class LoadBingoResultsTest {
 		double pvalue = 0.00005;
 		double qvaule = 0.00000005; // 5.0 X 10-8
 		double similarityCutoff = 0.25;
-		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
+		EMCreationParameters params = 
+			new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		EMDataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Specialized, files);				
@@ -100,7 +102,8 @@ public class LoadBingoResultsTest {
 		double pvalue = 0.00005;
 		double qvaule = 0.00000005; // 5.0 X 10-8
 		double similarityCutoff = 0.25;
-		EMCreationParameters params = new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5);
+		EMCreationParameters params = 
+			new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);

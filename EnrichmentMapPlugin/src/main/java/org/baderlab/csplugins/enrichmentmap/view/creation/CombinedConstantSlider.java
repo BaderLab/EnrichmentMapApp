@@ -6,6 +6,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+
 @SuppressWarnings("serial")
 public class CombinedConstantSlider extends JPanel {
 
@@ -22,10 +24,7 @@ public class CombinedConstantSlider extends JPanel {
 		JLabel jaccardLabel = new JLabel(mkLabel("Jaccard", 100-defaultValue));
 		JLabel overlapLabel = new JLabel(mkLabel("Overlap", defaultValue));
 		JLabel plusLabel = new JLabel("+");
-		
-		jaccardLabel.setFont(jaccardLabel.getFont().deriveFont(10f));
-		overlapLabel.setFont(overlapLabel.getFont().deriveFont(10f));
-		plusLabel.setFont(plusLabel.getFont().deriveFont(10f));
+		SwingUtil.makeSmall(jaccardLabel, overlapLabel, plusLabel);
 		
 		plusLabel.setHorizontalAlignment(JLabel.CENTER);
 		

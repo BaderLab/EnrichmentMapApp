@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
@@ -59,7 +60,8 @@ public class HeatMapRanksTest extends BaseNetworkTest {
 		files.setRankedFile(PATH + "ranked_gene_list_ES12_versus_NT12_1473194913081.xls");  
 		files.setClassFile(PATH + "ES_NT.cls");
 		
-		EMCreationParameters params = new EMCreationParameters("HeatMapRanks_", 0.005, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.OVERLAP, 0.5, 0.5);
+		EMCreationParameters params = 
+			new EMCreationParameters("HeatMapRanks_", 0.005, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.OVERLAP, 0.5, 0.5, EdgeStrategy.AUTOMATIC);
 		
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 	    assertEquals(0, maps.size());

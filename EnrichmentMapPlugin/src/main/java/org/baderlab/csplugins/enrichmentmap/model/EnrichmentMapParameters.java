@@ -54,6 +54,7 @@ import java.util.Scanner;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -231,7 +232,7 @@ public class EnrichmentMapParameters {
 	public EMCreationParameters getCreationParameters() {
 		SimilarityMetric similarityMetric = stringToSimilarityMetric(getSimilarityMetric());
 		EMCreationParameters params = new EMCreationParameters(getAttributePrefix(), 
-				getPvalue(), getQvalue(), NESFilter.ALL, Optional.empty(), similarityMetric, getSimilarityCutOff(), getCombinedConstant());
+				getPvalue(), getQvalue(), NESFilter.ALL, Optional.empty(), similarityMetric, getSimilarityCutOff(), getCombinedConstant(), EdgeStrategy.AUTOMATIC);
 		params.setEnrichmentEdgeType(enrichment_edge_type);
 		params.setFDR(fdr);
 		return params;

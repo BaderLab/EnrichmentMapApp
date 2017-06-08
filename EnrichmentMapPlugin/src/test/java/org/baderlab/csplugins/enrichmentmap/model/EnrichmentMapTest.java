@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -33,7 +34,8 @@ public class EnrichmentMapTest {
 	
 	@Test
 	public void testGetNodes() {
-		EMCreationParameters params = new EMCreationParameters("EM1_", 1.0, 0.24, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.25, 0.5);
+		EMCreationParameters params = 
+			new EMCreationParameters("EM1_", 1.0, 0.24, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.25, 0.5, EdgeStrategy.AUTOMATIC);
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		
 		EMDataSet ds1 = em.createDataSet("DS1", Method.Generic, dummyDataSetFiles());

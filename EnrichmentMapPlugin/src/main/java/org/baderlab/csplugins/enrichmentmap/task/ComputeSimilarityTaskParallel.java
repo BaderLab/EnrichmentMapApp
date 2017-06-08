@@ -39,9 +39,10 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 		int cpus = Runtime.getRuntime().availableProcessors();
         ExecutorService executor = Executors.newFixedThreadPool(cpus);
         
-        boolean distinct = map.getParams().getCreateDistinctEdges();
+        boolean distinct = useDistinctEdges();
+        map.getParams().setCreateDistinctEdges(distinct); // set this value for access by UI components 
         
-        Map<SimilarityKey,GenesetSimilarity> similarities = startComputeSimilarities(tm, executor, distinct, !distinct);
+        Map<SimilarityKey,GenesetSimilarity> similarities = startComputeSimilarities(tm, executor, distinct);
 
         // Support cancellation
 		Timer timer = new Timer();
@@ -62,9 +63,27 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 	}
 	
 	
-	private Map<SimilarityKey,GenesetSimilarity> startComputeSimilarities(TaskMonitor tm, ExecutorService executor, boolean distinct, boolean compound) {
+	private boolean useDistinctEdges() {
+		switch(map.getParams().getEdgeStrategy()) {
+			case DISTINCT: 
+				return true;
+			case COMPOUND: 
+				return false;
+			default:
+			case AUTOMATIC:
+				if(map.getDataSetCount() == 1)
+					return true; // doesn't really matter but its more consistent with the common 2-dataset case
+				if(map.getDataSetCount() == 2)
+					return map.isDistinctExpressionSets(); // emulate EM2 behaviour
+				// 3 or more datasets use compound edges
+				return false; 
+		}
+	}
+	
+	
+	private Map<SimilarityKey,GenesetSimilarity> startComputeSimilarities(TaskMonitor tm, ExecutorService executor, boolean distinct) {
 		Set<String> names = map.getAllGeneSetOfInterestNames();
-		Map<String,Set<Integer>> unionedGenesets = compound ? map.unionAllGeneSetsOfInterest() : null;
+		Map<String,Set<Integer>> unionedGenesets = distinct ? null : map.unionAllGeneSetsOfInterest();
 		
 		DiscreteTaskMonitor taskMonitor = discreteTaskMonitor(tm, names.size());
 		String edgeType = map.getParams().getEnrichmentEdgeType();
@@ -101,8 +120,7 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 							}
 						}
 					}
-					
-					if(compound) {
+					else {
 						SimilarityKey key = new SimilarityKey(geneset1Name, geneset2Name, edgeType, null);
 						
 						if(!similarities.containsKey(key)) {

@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -81,7 +82,7 @@ public class EMGseaCommandTask extends AbstractTask {
 		String prefix = legacySupport.getNextAttributePrefix();
 		EMCreationParameters creationParams = 
 				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), 
-						metric, overlap, combinedconstant);
+						metric, overlap, combinedconstant, EdgeStrategy.AUTOMATIC);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
 		insertTasksAfterCurrentTask(taskFactory.createTaskIterator());

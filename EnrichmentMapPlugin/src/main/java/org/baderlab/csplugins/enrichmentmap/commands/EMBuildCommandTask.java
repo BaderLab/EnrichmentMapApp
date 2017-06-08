@@ -51,6 +51,7 @@ import java.util.Optional;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -225,15 +226,18 @@ public class EMBuildCommandTask extends AbstractTask {
 			dataSets.add(new DataSetParameters(LegacySupport.DATASET2, method, dataset2files));
 		}
 		
+		EdgeStrategy edgeStrategy;
+		if(distinctEdges == null)
+			edgeStrategy = EdgeStrategy.AUTOMATIC;
+		else if(distinctEdges)
+			edgeStrategy = EdgeStrategy.DISTINCT;
+		else
+			edgeStrategy = EdgeStrategy.COMPOUND;
+		
 		String prefix = legacySupport.getNextAttributePrefix();
 		EMCreationParameters creationParams = 
 				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), 
-						metric, similaritycutoff, propertyManager.getCombinedConstant());
-		
-		if(distinctEdges != null)
-			creationParams.setCreateDistinctEdges(distinctEdges);
-		else if(!dataset2files.isEmpty())
-			creationParams.setCreateDistinctEdges(true);
+						metric, similaritycutoff, propertyManager.getCombinedConstant(), edgeStrategy);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
 		insertTasksAfterCurrentTask(taskFactory.createTaskIterator());

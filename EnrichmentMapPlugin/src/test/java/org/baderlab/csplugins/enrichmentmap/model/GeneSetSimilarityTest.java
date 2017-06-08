@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTaskParallel;
@@ -58,6 +59,7 @@ public class GeneSetSimilarityTest {
 		map.getParams().setSimilarityMetric(EMCreationParameters.SimilarityMetric.JACCARD);
 		//set the cutoff to the max
 		map.getParams().setSimilarityCutoff(0);
+		map.getParams().setEdgeStrategy(EdgeStrategy.COMPOUND);
 		
 		Baton<Map<SimilarityKey, GenesetSimilarity>> baton = new Baton<>();
 		ComputeSimilarityTaskParallel sim_task = new ComputeSimilarityTaskParallel(map, baton.consumer());		
@@ -118,6 +120,7 @@ public class GeneSetSimilarityTest {
 		map.getParams().setSimilarityMetric(EMCreationParameters.SimilarityMetric.OVERLAP);
 		//set the cutoff to the max
 		map.getParams().setSimilarityCutoff(0);
+		map.getParams().setEdgeStrategy(EdgeStrategy.COMPOUND);
 		
 		Baton<Map<SimilarityKey, GenesetSimilarity>> baton = new Baton<>();
 		ComputeSimilarityTaskParallel sim_task = new ComputeSimilarityTaskParallel(map, baton.consumer());		
@@ -184,6 +187,7 @@ public class GeneSetSimilarityTest {
 		//set the cutoff to the max
 		map.getParams().setSimilarityCutoff(0);
 		map.getParams().setCombinedConstant(combined_constant);
+		map.getParams().setEdgeStrategy(EdgeStrategy.COMPOUND);
 		
 		Baton<Map<SimilarityKey, GenesetSimilarity>> baton = new Baton<>();
 		ComputeSimilarityTaskParallel sim_task = new ComputeSimilarityTaskParallel(map, baton.consumer());

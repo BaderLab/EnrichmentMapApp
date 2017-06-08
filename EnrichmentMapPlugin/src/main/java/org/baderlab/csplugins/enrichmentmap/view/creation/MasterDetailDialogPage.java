@@ -6,7 +6,6 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,7 +20,6 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -38,6 +36,7 @@ import javax.swing.border.Border;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -89,7 +88,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	private JButton deleteButton;
 	private JButton scanButton;
 	
-	private JCheckBox distinctEdgesCheckbox;
 	private CardDialogCallback callback;
 	
 	
@@ -121,11 +119,10 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		double cutoff = cutoffPanel.getCutoff();
 		double combined = cutoffPanel.getCombinedConstant();
 		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
+		EdgeStrategy edgeStrategy = cutoffPanel.getEdgeStrategy();
 		
 		EMCreationParameters params = 
-			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined);
-		
-		params.setCreateDistinctEdges(distinctEdgesCheckbox.isSelected());
+			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined, edgeStrategy);
 		
 		List<DataSetParameters> dataSets = 
 				dataSetListModel.toList().stream()
@@ -149,6 +146,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				dsp.getFiles().setGMTFileName(gmtPath);
 			}
 		}
+		
+		System.out.println(params);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
@@ -204,22 +203,11 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		dataSetListModel.addElement(commonParams);
 		dataSetDetailPanel.add(commonParams.getDetailPanel().getPanel(), commonParams.id);
 		
-		distinctEdgesCheckbox = new JCheckBox("Create separate edges for each dataset");
-		SwingUtil.makeSmall(distinctEdgesCheckbox);
-		
-		JPanel checkboxPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-		checkboxPanel.add(distinctEdgesCheckbox);
-		
-		// Make the NORTH area of both panels the same size
-		titlePanel.doLayout();
-		checkboxPanel.setPreferredSize(titlePanel.getPreferredSize());
-		
 		JPanel leftPanel = new JPanel(new BorderLayout());
 		leftPanel.add(titlePanel, BorderLayout.NORTH);
 		leftPanel.add(scrollPane, BorderLayout.CENTER);
 		
 		JPanel rightPanel = new JPanel(new BorderLayout());
-		rightPanel.add(checkboxPanel, BorderLayout.NORTH);
 		rightPanel.add(dataSetDetailPanel, BorderLayout.CENTER);
 		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
@@ -231,7 +219,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		return panel;
 	}
-	
 	
 	private JPanel createTitlePanel() {
 		JLabel label = new JLabel("Data Sets:");
@@ -268,7 +255,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		return panel;
 	}
-	
 	
 	private void addNewDataSetToList() {
 		int n = dataSetListModel.size();
@@ -321,7 +307,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		int result = JOptionPane.showConfirmDialog(callback.getDialogFrame(), 
 				"Clear inputs and restore default values?", "EnrichmentMap: Reset", JOptionPane.OK_CANCEL_OPTION);
 		if(result == JOptionPane.OK_OPTION) {
-			distinctEdgesCheckbox.setSelected(false);
 			cutoffPanel.reset();
 			commonPanel.reset();
 			for(DataSetListItem item : dataSetListModel.toList()) {

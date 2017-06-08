@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
@@ -36,7 +37,7 @@ public class ResolverCommandTask extends AbstractTask {
 	public File commonExpressionFile;
 	
 	@Tunable
-	public boolean distinctEdges = false;
+	public ListSingleSelection<String> edgeStrategy;
 	
 	// Parameter Tuneables
 	@Tunable
@@ -74,6 +75,9 @@ public class ResolverCommandTask extends AbstractTask {
 		SimilarityMetric defaultMetric = propertyManager.getSimilarityMetric();
 		similarityMetric = enumNames(SimilarityMetric.values());
 		similarityMetric.setSelectedValue(defaultMetric.name());
+		
+		edgeStrategy = enumNames(EdgeStrategy.values());
+		edgeStrategy.setSelectedValue(EdgeStrategy.AUTOMATIC.name());
 		
 		similarityCutoff = propertyManager.getDefaultCutOff(defaultMetric);
 		
@@ -127,8 +131,11 @@ public class ResolverCommandTask extends AbstractTask {
 			prefix, pvalue, qvalue, nesf, minExperiments, sm, similarityCutoff, combinedConstant);
 		logger.info(info);
 		
-		EMCreationParameters params = new EMCreationParameters(prefix, pvalue, qvalue, nesf, Optional.ofNullable(minExperiments), sm, similarityCutoff, combinedConstant);
-		params.setCreateDistinctEdges(distinctEdges);
+		EdgeStrategy strategy = EdgeStrategy.valueOf(edgeStrategy.getSelectedValue());
+		
+		EMCreationParameters params = 
+				new EMCreationParameters(prefix, pvalue, qvalue, nesf, Optional.ofNullable(minExperiments), 
+										 sm, similarityCutoff, combinedConstant, strategy);
 
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();

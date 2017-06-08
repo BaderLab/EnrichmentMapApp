@@ -13,6 +13,7 @@ import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -65,7 +66,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	public void _setup(PropertyManager pm, CyApplicationManager applicationManager, CyNetworkManager networkManager) {
 		EMCreationParameters params = new EMCreationParameters("EM1_", 
 				pm.getPvalue(), pm.getQvalue(), NESFilter.ALL, Optional.empty(), 
-				SimilarityMetric.JACCARD, pm.getJaccardCutoff(), pm.getCombinedConstant());
+				SimilarityMetric.JACCARD, pm.getJaccardCutoff(), pm.getCombinedConstant(), EdgeStrategy.AUTOMATIC);
 		
 		DataSetFiles dataset1files = new DataSetFiles();
 		dataset1files.setGMTFileName(PATH + "gene_sets.gmt");  

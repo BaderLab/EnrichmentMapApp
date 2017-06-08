@@ -15,6 +15,10 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		HYPER, BINOM, BOTH, EITHER
 	}
 	
+	public static enum EdgeStrategy {
+		AUTOMATIC, DISTINCT, COMPOUND
+	}
+	
 	private String attributePrefix; // MKTODO this shouldn't be here
 	
 	// Node filtering (gene-sets)
@@ -34,7 +38,14 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	private double qvalueMin = 1.0;
 	private double pvalueMin = 1.0;
 	
-	private boolean createDistinctEdges;
+	private EdgeStrategy edgeStrategy;
+	
+	/**
+	 * This is calculated based on the edge strategy, number of data sets and expressions. 
+	 * See FilterGenesetsByDatasetGenes and ComputeSimilarityTaskParallel.
+	 */
+	private boolean createDistinctEdges; 
+	
 	private String enrichmentEdgeType = "Geneset_Overlap";
 	
 	private final Set<String> pValueColumnNames = new HashSet<>();
@@ -50,7 +61,8 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 			Optional<Integer> minExperiments,
 			SimilarityMetric similarityMetric,
 			double similarityCutoff,
-			double combinedConstant
+			double combinedConstant,
+			EdgeStrategy edgeStrategy
 	) { 
 		this.similarityMetric = similarityMetric;
 		this.attributePrefix = attributePrefix;
@@ -60,6 +72,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		this.minExperiments = minExperiments;
 		this.similarityCutoff = similarityCutoff;
 		this.combinedConstant = combinedConstant;
+		this.edgeStrategy = edgeStrategy;
 	}
 
 	public String getAttributePrefix() {
@@ -139,6 +152,14 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		emgmt = eMgmt;
 	}
 
+	public void setEdgeStrategy(EdgeStrategy edgeStrategy) {
+		this.edgeStrategy = edgeStrategy;
+	}
+	
+	public EdgeStrategy getEdgeStrategy() {
+		return edgeStrategy;
+	}
+	
 	public void setCreateDistinctEdges(boolean d) {
 		this.createDistinctEdges = d;
 	}
@@ -198,4 +219,18 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	public Set<String> getSimilarityCutoffColumnNames() {
 		return new HashSet<>(similarityCutoffColumnNames);
 	}
+
+	@Override
+	public String toString() {
+		return "EMCreationParameters [attributePrefix=" + attributePrefix + ", pvalue=" + pvalue + ", qvalue=" + qvalue
+				+ ", minExperiments=" + minExperiments + ", nesFilter=" + nesFilter + ", similarityMetric="
+				+ similarityMetric + ", similarityCutoff=" + similarityCutoff + ", combinedConstant=" + combinedConstant
+				+ ", greatFilter=" + greatFilter + ", fdr=" + fdr + ", emgmt=" + emgmt + ", qvalueMin=" + qvalueMin
+				+ ", pvalueMin=" + pvalueMin + ", edgeStrategy=" + edgeStrategy + ", createDistinctEdges="
+				+ createDistinctEdges + ", enrichmentEdgeType=" + enrichmentEdgeType + ", pValueColumnNames="
+				+ pValueColumnNames + ", qValueColumnNames=" + qValueColumnNames + ", similarityCutoffColumnNames="
+				+ similarityCutoffColumnNames + "]";
+	}
+	
+	
 }

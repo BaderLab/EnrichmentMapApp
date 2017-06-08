@@ -18,6 +18,7 @@ import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -63,7 +64,9 @@ public class CreateEnrichmentMapTaskTest extends BaseIntegrationTest {
 		String rankFile       = TestUtils.createTempFile(PATH, "FakeRank.rnk").getAbsolutePath();
 		
 		PropertyManager pm = new PropertyManager();
-		EMCreationParameters params = new EMCreationParameters("EM1_", pm.getPvalue(), pm.getQvalue(), NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, pm.getJaccardCutoff(), pm.getCombinedConstant());
+		EMCreationParameters params = 
+			new EMCreationParameters("EM1_", pm.getPvalue(), pm.getQvalue(), NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 
+					                 pm.getJaccardCutoff(), pm.getCombinedConstant(), EdgeStrategy.COMPOUND);
 		
 		DataSetFiles dataset1files = new DataSetFiles();
 		dataset1files.setGMTFileName(geneSetsFile);  

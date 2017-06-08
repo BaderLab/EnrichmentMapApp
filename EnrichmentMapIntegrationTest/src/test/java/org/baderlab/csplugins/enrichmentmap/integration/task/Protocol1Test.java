@@ -39,6 +39,7 @@ public class Protocol1Test extends BaseIntegrationTest {
 		task.pvalue = 1.0;
 		task.qvalue = 0.00001;
 		task.similaritycutoff = 0.25;
+		task.distinctEdges = false;
 		
 		SerialTestTaskManager taskManager = new SerialTestTaskManager();
 		taskManager.execute(new TaskIterator(task));

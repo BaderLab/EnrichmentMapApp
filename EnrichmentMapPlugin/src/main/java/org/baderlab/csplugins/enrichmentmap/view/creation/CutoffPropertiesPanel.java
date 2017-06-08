@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.creation;
 
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
+import java.awt.CardLayout;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -22,6 +23,7 @@ import javax.swing.text.InternationalFormatter;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
@@ -49,7 +51,10 @@ public class CutoffPropertiesPanel extends JPanel {
 	// edge filtering
 	private JFormattedTextField similarityCutoffText;
 	private JComboBox<ComboItem<SimilarityMetric>> cutoffMetricCombo;
+	private JComboBox<ComboItem<EdgeStrategy>> edgeStrategyCombo;
 	private CombinedConstantSlider combinedConstantSlider;
+	private SimilaritySlider similaritySlider;
+	private JPanel cardPanel;
 	
 	// options
 	private JCheckBox notationCheckBox;
@@ -82,6 +87,8 @@ public class CutoffPropertiesPanel extends JPanel {
 		advancedCheckBox.addActionListener(e -> 
 			showAdvancedOptions(advancedCheckBox.isSelected())
 		);
+		
+		showAdvancedOptions(false);
 		
 		SwingUtil.makeSmall(notationCheckBox, advancedCheckBox);
 		
@@ -117,7 +124,7 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	private JPanel createFilterNodesPanel() {
 		JPanel panel = new JPanel();
-		panel.setBorder(LookAndFeelUtil.createTitledBorder("Gene-Set Filtering (Nodes)"));
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Number of Nodes (gene-set filtering)"));
 		
 		pvalueLabel = new JLabel("p-value cutoff:");
 		JLabel qvalueLabel = new JLabel("FDR q-value cutoff:");
@@ -146,7 +153,6 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		minExperimentsLabel.setEnabled(false);
 		minExperimentsText.setEnabled(false);
-		showAdvancedOptions(false);
 		
 		shouldFilterMinCheckbox.addActionListener(e -> {
 			boolean enable = shouldFilterMinCheckbox.isSelected();
@@ -211,10 +217,112 @@ public class CutoffPropertiesPanel extends JPanel {
    		return panel;
 	}
 	
+	
+	
 	private JPanel createFilterEdgesPanel() {
 		JPanel panel = new JPanel();
-		panel.setBorder(LookAndFeelUtil.createTitledBorder("Similarity Filtering (Edges)"));
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Number of Edges (gene-set similarity filtering)"));
 		
+		JPanel topPanel      = createFilterEdgesPanel_Top();
+		JPanel simplePanel   = createFilterEdgesPanel_Simple();
+		JPanel advancedPanel = createFilterEdgesPanel_Advanced();
+		
+		CardLayout cardLayout = new CardLayout();
+		cardPanel = new JPanel(cardLayout);
+		cardPanel.add(simplePanel, "simple");
+		cardPanel.add(advancedPanel, "advanced");
+		cardPanel.setOpaque(false);
+		
+		
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(
+			layout.createParallelGroup()
+				.addComponent(topPanel)
+				.addComponent(cardPanel)
+		);
+		
+		layout.setVerticalGroup(
+			layout.createSequentialGroup()
+				.addComponent(topPanel)
+				.addComponent(cardPanel)
+				.addGap(0, 0, Short.MAX_VALUE)
+		);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		
+		return panel;
+	}
+	
+	
+	private JPanel createFilterEdgesPanel_Top() {
+		JLabel edgesLabel = new JLabel("Data Set Edges:");
+		edgeStrategyCombo = new JComboBox<>();
+		edgeStrategyCombo.addItem(new ComboItem<>(EdgeStrategy.AUTOMATIC, "Automatic"));
+		edgeStrategyCombo.addItem(new ComboItem<>(EdgeStrategy.DISTINCT, "Separate edge for each data set (denser)"));
+		edgeStrategyCombo.addItem(new ComboItem<>(EdgeStrategy.COMPOUND, "Combine edges across data sets (sparser)"));
+		SwingUtil.makeSmall(edgeStrategyCombo, edgesLabel);
+		
+		JPanel panel = new JPanel();
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(
+			layout.createSequentialGroup()
+				.addComponent(edgesLabel)
+				.addComponent(edgeStrategyCombo)
+		);
+		layout.setVerticalGroup(
+			layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(edgesLabel)
+				.addComponent(edgeStrategyCombo)
+		);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		
+		return panel;
+	}
+	
+	
+	private JPanel createFilterEdgesPanel_Simple() {
+		JLabel sliderLabel = new JLabel("Connectivity:   ");
+		similaritySlider = new SimilaritySlider();
+		similaritySlider.setOpaque(false);
+		SwingUtil.makeSmall(sliderLabel);
+		
+		JPanel panel = new JPanel();
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(
+			layout.createSequentialGroup()
+				.addComponent(sliderLabel)
+				.addComponent(similaritySlider, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+		);
+		layout.setVerticalGroup(
+			layout.createParallelGroup(Alignment.CENTER)
+				.addComponent(sliderLabel)
+				.addComponent(similaritySlider, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+		);
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		
+		return panel;
+	}
+		
+		
+	private JPanel createFilterEdgesPanel_Advanced() {	
+		JPanel panel = new JPanel();
 		JLabel cutoffLabel = new JLabel("Cutoff:");
 		JLabel metricLabel = new JLabel("Metric:");
 		
@@ -247,13 +355,13 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		cutoffMetricCombo.setSelectedItem(ComboItem.of(defaultMetric)); // default
 		cutoffMetricCombo.addActionListener(sliderUpdate);
+		similarityCutoffText.setValue(cutoffValues.get(defaultMetric));
+		combinedConstantSlider.setVisible(defaultMetric == SimilarityMetric.COMBINED);
 		
 		similarityCutoffText.addPropertyChangeListener("value", e -> {
 			double value = ((Number)e.getNewValue()).doubleValue();
 			cutoffValues.put(getSimilarityMetric(), value);
 		});
-		
-		sliderUpdate.actionPerformed(null);
 		
 		final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -311,8 +419,10 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		SimilarityMetric defaultMetric = propertyManager.getSimilarityMetric();
 		cutoffMetricCombo.setSelectedItem(ComboItem.of(defaultMetric));
+		edgeStrategyCombo.setSelectedItem(ComboItem.of(EdgeStrategy.AUTOMATIC));
 		
 		combinedConstantSlider.reset();
+		similaritySlider.reset();
 	}
 	
 	
@@ -325,6 +435,9 @@ public class CutoffPropertiesPanel extends JPanel {
 		minExperimentsText.setVisible(show);
 		shouldFilterMinLabel.setVisible(show);
 		shouldFilterMinCheckbox.setVisible(show);
+		
+		CardLayout cardLayout = (CardLayout)cardPanel.getLayout();
+		cardLayout.show(cardPanel, show ? "advanced" : "simple");
 	}
 	
 	
@@ -370,19 +483,32 @@ public class CutoffPropertiesPanel extends JPanel {
 	}
 	
 	public double getCombinedConstant() {
-		return ((double)combinedConstantSlider.getValue()) / 100.0;
+		if(advancedCheckBox.isSelected())
+			return ((double)combinedConstantSlider.getValue()) / 100.0;
+		else
+			return 0.5;
 	}
 	
 	public double getCutoff() {
-		return getValue(similarityCutoffText);
+		if(advancedCheckBox.isSelected())
+			return getValue(similarityCutoffText);
+		else
+			return similaritySlider.getCutoff();
+	}
+	
+	public SimilarityMetric getSimilarityMetric() {
+		if(advancedCheckBox.isSelected())
+			return cutoffMetricCombo.getItemAt(cutoffMetricCombo.getSelectedIndex()).getValue();
+		else
+			return similaritySlider.getSimilarityMetric();
+	}
+	
+	public EdgeStrategy getEdgeStrategy() {
+		return edgeStrategyCombo.getItemAt(edgeStrategyCombo.getSelectedIndex()).getValue();
 	}
 	
 	private static double getValue(JFormattedTextField textField) {
 		return ((Number)textField.getValue()).doubleValue();
-	}
-	
-	public SimilarityMetric getSimilarityMetric() {
-		return cutoffMetricCombo.getItemAt(cutoffMetricCombo.getSelectedIndex()).getValue();
 	}
 	
 	
