@@ -66,7 +66,7 @@ public class LegendPanelMediator {
 	@AfterInjection
 	@SuppressWarnings("serial")
 	private void init() {
-		invokeOnEDTAndWait(() -> {
+		invokeOnEDT(() -> {
 			dialog = new JDialog(swingApplication.getJFrame(), "EnrichmentMap Legend", ModalityType.MODELESS);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setMinimumSize(new Dimension(440, 380));
