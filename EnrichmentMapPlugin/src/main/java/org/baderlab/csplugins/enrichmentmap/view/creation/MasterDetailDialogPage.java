@@ -147,7 +147,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			}
 		}
 		
-		System.out.println(params);
+//		System.out.println(params);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();

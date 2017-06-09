@@ -119,4 +119,8 @@ public class SetOfGeneSets {
 	public void clear() {
 		geneSets.clear();
 	}
+	
+	public boolean isEmpty() {
+		return geneSets.isEmpty();
+	}
 }

@@ -56,6 +56,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
@@ -90,7 +91,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 	 * 
 	 * @return true if successful and false otherwise.
 	 */
-	public boolean initializeSets(TaskMonitor tm) {
+	public void initializeSets(TaskMonitor tm) {
 		if(tm == null)
 			tm = new NullTaskMonitor();
 		DiscreteTaskMonitor taskMonitor = new DiscreteTaskMonitor(tm, map.getDataSetCount());
@@ -120,7 +121,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 
 			//if there are no enrichment Results then do nothing
 			if(enrichmentResults == null || enrichmentResults.isEmpty()) {
-				return false;
+				continue;
 			}
 			
 			//iterate through the GSEA Results to figure out which genesets we want to use
@@ -161,9 +162,12 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 			}
 		}
 		
-		// MKTODO clear all the genesets that are not "of interest" just to free up memory
+		boolean empty = datasets.values().stream().map(EMDataSet::getGeneSetsOfInterest).allMatch(SetOfGeneSets::isEmpty);
+		if(empty) {
+			throw new IllegalArgumentException("None of the gene sets have passed the filter. Try relaxing the gene set filter parameters.");
+		}
 		
-		return true;
+		// MKTODO clear all the genesets that are not "of interest" just to free up memory
 	}
 
 	private void updateRankAtMax(GSEAResult current_result, Ranking ranks) {

@@ -193,21 +193,25 @@ public class GSEAResolver {
 		String phenotype1 = "na";
 		String phenotype2 = "na";
 
-		if (classes != null && method.equalsIgnoreCase("Gsea")) {
+		if(classes != null && method.equalsIgnoreCase("Gsea")) {
 			String[] classes_split = classes.split("#");
 			// only and try parse classes out of label if they are there
-			if (classes_split.length >= 2) {
+			if(classes_split.length >= 2) {
 				String phenotypes = classes_split[1];
 				String[] phenotypes_split = phenotypes.split("_versus_");
-				if (phenotypes_split.length >= 2) {
+				if(phenotypes_split.length >= 2) {
 					phenotype1 = phenotypes_split[0];
 					phenotype2 = phenotypes_split[1];
 				}
+				else if(phenotypes_split.length == 1) {
+					phenotype1 = phenotypes_split[0] + "_pos";
+					phenotype2 = phenotypes_split[0] + "_neg";
+				}
 			}
-		} else if (method.equalsIgnoreCase("GseaPreranked")) {
+		} else if(method.equalsIgnoreCase("GseaPreranked")) {
 			phenotype1 = "na_pos";
 			phenotype2 = "na_neg";
-			if (params.containsKey("param phenotypes")) {
+			if(params.containsKey("param phenotypes")) {
 				String phenotypes = params.get("param phenotypes");
 				String[] phenotypes_split = phenotypes.split("_versus_");
 				if (phenotypes_split.length >= 2) {
