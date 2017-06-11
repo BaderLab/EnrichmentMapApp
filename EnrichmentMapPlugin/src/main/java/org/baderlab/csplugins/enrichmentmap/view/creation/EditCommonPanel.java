@@ -85,16 +85,17 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 	
 
 	@Override
-	public List<String> validateInput() {
+	public List<Message> validateInput() {
 		gmtText.hideError();
 		expressionsText.hideError();
 		
-		List<String> err = new ArrayList<>(2);
+		List<Message> messages = new ArrayList<>(2);
 		if(!gmtText.emptyOrReadable())
-			err.add(gmtText.showError("Enrichments file path is not valid."));
+			messages.add(Message.error(gmtText.showError("Enrichments file path is not valid.")));
 		if(!expressionsText.emptyOrReadable())
-			err.add(expressionsText.showError("Enrichments 2 file path is not valid."));
-		return err;
+			messages.add(Message.error(expressionsText.showError("Enrichments 2 file path is not valid.")));
+		
+		return messages;
 	}
 	
 	

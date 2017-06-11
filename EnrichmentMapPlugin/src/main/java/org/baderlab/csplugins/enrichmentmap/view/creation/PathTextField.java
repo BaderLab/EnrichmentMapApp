@@ -104,6 +104,14 @@ public class PathTextField {
 		return Strings.isNullOrEmpty(text) || Files.isReadable(Paths.get(text));
 	}
 	
+	public boolean isReadable() {
+		return !Strings.isNullOrEmpty(textField.getText()) && Files.isReadable(Paths.get(textField.getText()));
+	}
+	
+	public Path getPath() {
+		return Paths.get(textField.getText());
+	}
+	
 	public boolean isEmpty() {
 		return Strings.isNullOrEmpty(getText());
 	}

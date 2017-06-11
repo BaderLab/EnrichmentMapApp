@@ -14,7 +14,7 @@ public interface DetailPanel {
 	
 	String getIcon();
 	
-	List<String> validateInput();
+	List<Message> validateInput();
 	
 	default DataSetParameters createDataSetParameters() { return null; };
 	

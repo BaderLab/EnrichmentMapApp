@@ -25,6 +25,7 @@ public class PropertyManager {
 	public static final String distanceMetric_propname = "default.distanceMetric";
 	public static final String Pvalue_propname = "default.pvalue";
 	public static final String Qvalue_propname = "default.qvalue";
+	public static final String create_warn_show_propname = "create.warn.show";
 	
 	
 	private static final double jaccardCutOff_default = 0.25;
@@ -35,14 +36,14 @@ public class PropertyManager {
 	private static final Distance distanceMetric_default = Distance.PEARSON;
 	private static final double Pvalue_default = 1.0;
 	private static final double Qvalue_default = 0.1;
-	
+	private static final boolean create_warn_show_default = true;
 	
 	@Inject private CyProperty<Properties> cyProps;
 	
 	@AfterInjection
 	private void initializeProperties() {
 		Properties props = cyProps.getProperties();
-		if(props.size() < 9) {
+		if(props.size() < 10) {
 			props.setProperty(heatmap_autofocus_propname, String.valueOf(false));
 			props.setProperty(jaccardCutOff_propname, String.valueOf(jaccardCutOff_default));
 			props.setProperty(overlapCutOff_propname, String.valueOf(overlapCutOff_default));
@@ -52,9 +53,18 @@ public class PropertyManager {
 			props.setProperty(distanceMetric_propname, String.valueOf(distanceMetric_default));
 			props.setProperty(Pvalue_propname, String.valueOf(Pvalue_default));
 			props.setProperty(Qvalue_propname, String.valueOf(Qvalue_default));
+			props.setProperty(create_warn_show_propname, String.valueOf(create_warn_show_default));
+			// remember to increase the number in the if-statement above
 		}
 	}
 	
+	public boolean getShowCreateWarnings() {
+		return getValue(create_warn_show_propname, create_warn_show_default, Boolean::valueOf);
+	}
+	
+	public void setShowCreateWarnings(boolean show) {
+		cyProps.getProperties().setProperty(create_warn_show_propname, String.valueOf(show));
+	}
 	
 	public double getJaccardCutoff() {
 		return getValue(jaccardCutOff_propname, jaccardCutOff_default, Double::valueOf);
@@ -121,5 +131,8 @@ public class PropertyManager {
 			return defaultVal;
 		}
 	}
+
+
+	
 
 }

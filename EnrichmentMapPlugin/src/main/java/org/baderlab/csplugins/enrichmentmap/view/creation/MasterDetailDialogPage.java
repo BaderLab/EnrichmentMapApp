@@ -34,6 +34,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
@@ -44,7 +45,6 @@ import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog.MessageType;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
@@ -76,6 +76,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Inject private EditDataSetPanel.Factory dataSetPanelFactory;
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private ErrorMessageDialog.Factory errorMessageDialogFactory;
+	@Inject private PropertyManager propertyManager;
 	
 	private EditCommonPanel commonPanel;
 	private DataSetListItem commonParams;
@@ -355,7 +356,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				DetailPanel panel = item.getDetailPanel();
 				if(panel instanceof EditDataSetPanel && !isNullOrEmpty(((EditDataSetPanel)panel).getExpressionFileName())) {
 					String message = "A common expression file has been provided. Per-dataset expression files will be ignored.";
-					dialog.addSection(MessageType.WARN, commonPanel.getDisplayName(), commonPanel.getIcon(), message);
+					dialog.addSection(Message.warn(message), commonPanel.getDisplayName(), commonPanel.getIcon());
 					break;
 				}
 			}
@@ -367,7 +368,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				DetailPanel panel = item.getDetailPanel();
 				if(panel instanceof EditDataSetPanel && !isNullOrEmpty(((EditDataSetPanel)panel).getGMTFileName())) {
 					String message = "A common GMT file has been provided. Per-dataset GMT files will be ignored.";
-					dialog.addSection(MessageType.WARN, commonPanel.getDisplayName(), commonPanel.getIcon(), message);
+					dialog.addSection(Message.warn(message), commonPanel.getDisplayName(), commonPanel.getIcon());
 					break;
 				}
 			}
@@ -381,38 +382,43 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				.map(EditDataSetPanel::getDataSetName)
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 			
-			List<String> messages = new ArrayList<>();
+			List<Message> messages = new ArrayList<>();
 			dataSetNameCount.forEach((name,count) -> {
 				if(count > 1) {
-					messages.add("Duplicate data set name:  '" + name + "'");
+					messages.add(Message.error("Duplicate data set name:  '" + name + "'"));
 				}
 			});
 			
 			if(!messages.isEmpty()) {
-				dialog.addSection(MessageType.ERROR, "Duplicate Data Set Names", commonPanel.getIcon(), messages);
+				dialog.addSection(messages, "Duplicate Data Set Names", commonPanel.getIcon());
 			}
 		}
 		
 		// Check for input errors.
 		for(DataSetListItem item : dataSetListModel.toList()) {
 			DetailPanel panel = item.getDetailPanel();
-			List<String> messages = panel.validateInput();
+			List<Message> messages = panel.validateInput();
 			if(!messages.isEmpty()) {
-				dialog.addSection(MessageType.ERROR, panel.getDisplayName(), panel.getIcon(), messages);
+				dialog.addSection(messages, panel.getDisplayName(), panel.getIcon());
 			}
 		}
-				
-		if(!dialog.isEmpty()) {
-			dialog.pack();
-			dialog.setLocationRelativeTo(callback.getDialogFrame());
-			dialog.setModal(true);
-			dialog.setVisible(true);
-			// This will always return false if the dialog has error messages. 
-			// If the dialog only has warning messages then the user can choose to continue.
-			return dialog.shouldContinue();
-		}
+			
+		if(dialog.isEmpty())
+			return true;
+		if(!dialog.hasErrors() && !propertyManager.getShowCreateWarnings())
+			return true;
 		
-		return true;
+		dialog.pack();
+		dialog.setLocationRelativeTo(callback.getDialogFrame());
+		dialog.setModal(true);
+		dialog.setVisible(true);
+		// This will always return false if the dialog has error messages. 
+		// If the dialog only has warning messages then the user can choose to continue.
+		boolean shouldContinue = dialog.shouldContinue();
+		if(dialog.isDontWarnAgain()) {
+			propertyManager.setShowCreateWarnings(false);
+		}
+		return shouldContinue;
 	}
 	
 	

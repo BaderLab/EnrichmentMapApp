@@ -292,27 +292,36 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 
 	
 	@Override
-	public List<String> validateInput() {
-		List<String> err = new ArrayList<>();
+	public List<Message> validateInput() {
+		List<Message> messages = new ArrayList<>();
 		if(nameText.isEmpty())
-			err.add("Name field is empty.");
+			messages.add(Message.error("Name field is empty."));
 		if(enrichments1Text.isEmpty())
-			err.add("Enrichments file path is empty.");
+			messages.add(Message.error("Enrichments file path is empty."));
 		if(!enrichments1Text.emptyOrReadable() && getMethod() == Method.GSEA)
-			err.add("Enrichments Pos file path is not valid.");
+			messages.add(Message.error("Enrichments Pos file path is not valid."));
 		if(!enrichments1Text.emptyOrReadable() && getMethod() != Method.GSEA)
-			err.add("Enrichments file path is not valid.");
+			messages.add(Message.error("Enrichments file path is not valid."));
 		if(!enrichments2Text.emptyOrReadable())
-			err.add("Enrichments Neg file path is not valid.");
+			messages.add(Message.error("Enrichments Neg file path is not valid."));
 		if(!expressionsText.emptyOrReadable())
-			err.add("Expressions file path is not valid.");
+			messages.add(Message.error("Expressions file path is not valid."));
 		if(!gmtText.emptyOrReadable())
-			err.add("GMT file path is not valid.");
+			messages.add(Message.error("GMT file path is not valid."));
 		if(!ranksText.emptyOrReadable())
-			err.add("Ranks file path is not valid.");
+			messages.add(Message.error("Ranks file path is not valid."));
 		if(!classesText.emptyOrReadable())
-			err.add("Classes file path is not valid.");
-		return err;
+			messages.add(Message.error("Classes file path is not valid."));
+		
+		if(gmtText.isReadable()) {
+			String parent = gmtText.getPath().getParent().getFileName().toString();
+			if("edb".equalsIgnoreCase(parent)) {
+				messages.add(Message.warn("Using GMT file from GSEA EDB directory. This GMT file has been filtered by "
+						+ "the expressions and may effect the universe size when adding signature gene sets."));
+			}
+		}		
+		
+		return messages;
 	}
 	
 	

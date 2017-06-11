@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -26,7 +27,7 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSigna
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSignatureTaskResult;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog;
-import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog.MessageType;
+import org.baderlab.csplugins.enrichmentmap.view.creation.Message;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyEdge;
@@ -136,8 +137,9 @@ public class PostAnalysisPanelMediator {
 		
 		List<String> messages = inputPanel.validateInput();
 		if(!messages.isEmpty()) {
+			List<Message> messagesForDialog = messages.stream().map(Message::error).collect(Collectors.toList());
 			ErrorMessageDialog dialog = errorMessageDialogFactory.create(parent);
-			dialog.addSection(MessageType.ERROR, "Post Analysis: Error", IconManager.ICON_FILE_O, messages);
+			dialog.addSection(messagesForDialog, "Post Analysis: Error", IconManager.ICON_FILE_O);
 			dialog.pack();
 			dialog.setLocationRelativeTo(parent);
 			dialog.setModal(true);
