@@ -14,15 +14,32 @@ public abstract class AbstractDataSet implements Comparable<AbstractDataSet> {
 	/** EnrichmentMap only creates nodes for these genes. */
 	private SetOfGeneSets geneSetsOfInterest = new SetOfGeneSets();
 	
+	//TODO: Can a dataset be associated to multiple Enrichment maps?
+	/** A Dataset is always associated with an Enrichment Map. */
+	private transient EnrichmentMap map;
+		
 	private static final Collator collator = Collator.getInstance();
 	private final Object lock = new Object();
 	
-	protected AbstractDataSet(String name) {
+	protected AbstractDataSet(EnrichmentMap map, String name) {
+		this.map = map;
 		this.name = name;
 	}
 	
 	public String getName() {
 		return name;
+	}
+	
+	/**
+	 * @noreference
+	 * This method is only meant to be called by the ModelSerializer.
+	 */
+	public void setParent(EnrichmentMap map) {
+		this.map = map;
+	}
+	
+	public EnrichmentMap getMap() {
+		return map;
 	}
 	
 	public Set<Long> getNodeSuids() {

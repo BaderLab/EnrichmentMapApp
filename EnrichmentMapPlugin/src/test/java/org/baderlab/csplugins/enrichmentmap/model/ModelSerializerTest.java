@@ -56,11 +56,12 @@ public class ModelSerializerTest extends BaseNetworkTest {
 	    maps = emManager.getAllEnrichmentMaps();
 	    assertEquals(1, maps.size());
 	    
-	    EMSignatureDataSet sigDataSet = new EMSignatureDataSet("gene_sets");
+	    EnrichmentMap expectedEM = emManager.getAllEnrichmentMaps().values().iterator().next();
+	    
+	    EMSignatureDataSet sigDataSet = new EMSignatureDataSet(expectedEM, "gene_sets");
 	    sigDataSet.getGeneSetsOfInterest().addGeneSet("Sig1", new GeneSet("SG1", "desc1", ImmutableSet.of(1,2,3,4)));
 	    sigDataSet.getGeneSetsOfInterest().addGeneSet("Sig2", new GeneSet("SG2", "desc2", ImmutableSet.of(1,2,3,4,5,6)));
 	    
-	    EnrichmentMap expectedEM = emManager.getAllEnrichmentMaps().values().iterator().next();
 	    expectedEM.addSignatureDataSet(sigDataSet);
 	}
 	

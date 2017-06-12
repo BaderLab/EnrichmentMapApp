@@ -40,16 +40,11 @@ public class EMDataSet extends AbstractDataSet {
 	/** The set of genes in the analysis (there might be genes in the gmt file that are not in expression set). */
 	private Set<Integer> dataSetGenes = new HashSet<>();
 
-	//TODO: Can a dataset be associated to multiple Enrichment maps?
-	/** A Dataset is always associated with an Enrichment Map. */
-	private transient EnrichmentMap map;
-
 	/** The list of files associated with this Dataset. */
 	private DataSetFiles dataSetFiles;
 
 	protected EMDataSet(EnrichmentMap map, String name, Method method, DataSetFiles files) {
-		super(name);
-		this.map = map;
+		super(map, name);
 		this.method = method;
 
 		//get the file name parameters for this map
@@ -90,18 +85,6 @@ public class EMDataSet extends AbstractDataSet {
 
 	public void setExpressionSets(GeneExpressionMatrix expressionSets) {
 		this.expressionSets = expressionSets;
-	}
-
-	/**
-	 * @noreference
-	 * This method is only meant to be called by the ModelSerializer.
-	 */
-	public void setParent(EnrichmentMap map) {
-		this.map = map;
-	}
-	
-	public EnrichmentMap getMap() {
-		return map;
 	}
 
 	public SetOfGeneSets getSetOfGeneSets() {

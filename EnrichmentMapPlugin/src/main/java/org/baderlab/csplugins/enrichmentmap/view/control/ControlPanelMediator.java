@@ -41,6 +41,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
@@ -1045,7 +1046,16 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			
 			for (String name : columnNames) {
 				for (AbstractDataSet ds : dataSets) {
-					// TODO What about 2.x columns?
+					if (ds.getMap().isLegacy()) {
+						if(LegacySupport.DATASET1.equals(ds.getName()) && name.endsWith("dataset1")) {
+							filteredNames.add(name);
+							break;
+						}
+						if(LegacySupport.DATASET2.equals(ds.getName()) && name.endsWith("dataset2")) {
+							filteredNames.add(name);
+							break;
+						}
+					} 
 					if (name.endsWith(" (" + ds.getName() + ")")) {
 						filteredNames.add(name);
 						break;

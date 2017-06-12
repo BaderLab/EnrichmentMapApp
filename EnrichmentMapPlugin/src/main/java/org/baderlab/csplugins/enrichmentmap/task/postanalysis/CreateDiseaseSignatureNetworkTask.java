@@ -150,7 +150,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		String name = params.getName();
 		if(name == null || name.trim().isEmpty())
 			name = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
-		return new EMSignatureDataSet(name);
+		return new EMSignatureDataSet(map, name);
 	}
 	
 	
@@ -267,7 +267,6 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 					return;
 
 				edge = network.addEdge(hubNode, geneSet, false);
-				// We actually add the edges to the EM data sets, not the signature data set
 				sigDataSet.addEdgeSuid(edge.getSUID());
 //				map.getDataSet(similarityKey.getName()).addEdgeSuid(edge.getSUID());
 				taskResult.addNewEdge(edge);

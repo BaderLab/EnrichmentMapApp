@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.CyActivator;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
@@ -28,11 +29,13 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask;
-import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 
@@ -40,6 +43,8 @@ import com.google.inject.Inject;
 
 public class LegacySessionLoader {
 
+	private static final String SIG_DATA_SET_NAME = "Signature Gene Sets";
+	
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyNetworkManager cyNetworkManager;
 	@Inject private CyApplicationManager cyApplicationManager;
@@ -60,13 +65,76 @@ public class LegacySessionLoader {
 		return true;
 	}
 	
-	/**
-	 * Restore Enrichment maps
-	 *
-	 * @param pStateFileList - list of files associated with thie session
-	 */
-	@SuppressWarnings("unchecked")
+	
 	public void loadSession(CySession session) {
+		createModelFromSessionFiles(session);
+		migrate();
+	}
+	
+	
+	/**
+	 * Reconstruct important model data using EM2 conventions.
+	 */
+	private void migrate() {
+		for(EnrichmentMap map : emManager.getAllEnrichmentMaps().values()) {
+			if(map.isLegacy()) { // Is this check necessary?
+				EMDataSet ds1 = map.getDataSet(LegacySupport.DATASET1);
+				EMDataSet ds2 = map.getDataSet(LegacySupport.DATASET2);
+				EMSignatureDataSet dsSig = map.getSignatureDataSet(SIG_DATA_SET_NAME);
+				
+				EMCreationParameters params = map.getParams();
+				String prefix = params.getAttributePrefix();
+				
+				// Restore column names for filtering
+				params.addPValueColumnName(prefix + "pvalue_dataset1");
+				params.addQValueColumnName(prefix + "fdr_qvalue_dataset1");
+				params.addSimilarityCutoffColumnName(prefix + "similarity_coefficient");
+				if(ds2 != null) {
+					params.addPValueColumnName(prefix + "pvalue_dataset2");
+					params.addQValueColumnName(prefix + "fdr_qvalue_dataset2");
+				}
+				
+				// Restore node SUIDs
+				CyNetwork network = cyNetworkManager.getNetwork(map.getNetworkID());
+				for(CyNode node : network.getNodeList()) {
+					CyRow row = network.getRow(node);
+					if(ds1 != null) {
+						Integer gsSize = row.get(prefix + "gs_size_dataset1", Integer.class);
+						if(gsSize != null && gsSize > 0)
+							ds1.addNodeSuid(node.getSUID());
+					}
+					if(ds2 != null) {
+						Integer gsSize = row.get(prefix + "gs_size_dataset2", Integer.class);
+						if(gsSize != null && gsSize > 0)
+							ds2.addNodeSuid(node.getSUID());
+					}
+					if(dsSig != null) {
+						Integer gsSize = row.get(prefix + "gs_size_signature", Integer.class);
+						if(gsSize != null && gsSize > 0)
+							dsSig.addNodeSuid(node.getSUID());
+					}
+				}
+				
+				// Restore edge SUIDs
+				for(CyEdge edge : network.getEdgeList()) {
+					CyRow row = network.getRow(edge);
+					Integer emSet = row.get(prefix + "ENRICHMENT_SET", Integer.class);
+					if(emSet != null) {
+						if(emSet == 0 || emSet == 1)
+							ds1.addEdgeSuid(edge.getSUID());
+						else if(emSet == 2)
+							ds2.addEdgeSuid(edge.getSUID());
+						else if(emSet == 4)
+							dsSig.addEdgeSuid(edge.getSUID());
+					}
+				}
+			}
+		}
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	private void createModelFromSessionFiles(CySession session) {
 		Map<Long, EnrichmentMapParameters> paramsMap = new HashMap<>();
 		Map<Long, EnrichmentMap> enrichmentMapMap = new HashMap<>();
 
@@ -80,8 +148,9 @@ public class LegacySessionLoader {
 					String fullText = new Scanner(reader, "UTF-8").useDelimiter("\\A").next();              
 
 					//Given the file with all the parameters create a new parameter
-					EnrichmentMapParameters params = enrichmentMapParametersFactory.create(fullText);
-					EnrichmentMap em = new EnrichmentMap(params.getCreationParameters(), serviceRegistrar);
+					EnrichmentMapParameters legacyParams = enrichmentMapParametersFactory.create(fullText);
+					EMCreationParameters newParams = legacyParams.getCreationParameters();
+					EnrichmentMap em = new EnrichmentMap(newParams, serviceRegistrar);
 
 					//get the network name
 					String param_name = em.getName();
@@ -99,18 +168,18 @@ public class LegacySessionLoader {
 
 					//after associated the properties with the network
 					//initialized each Dataset that we have files for
-					HashMap<String, DataSetFiles> files = params.getFiles();
+					HashMap<String, DataSetFiles> files = legacyParams.getFiles();
 
-					for (Iterator<String> j = params.getFiles().keySet().iterator(); j.hasNext();) {
+					for (Iterator<String> j = legacyParams.getFiles().keySet().iterator(); j.hasNext();) {
 						String current_dataset = j.next();
-						Method method = EnrichmentMapParameters.stringToMethod(params.getMethod());
+						Method method = EnrichmentMapParameters.stringToMethod(legacyParams.getMethod());
 						em.createDataSet(current_dataset, method, files.get(current_dataset));
 					}
 
 					CyNetwork network = getNetworkByName(networkName);
 					Long suid = network.getSUID();
 					em.setNetworkID(suid);
-					paramsMap.put(suid, params);
+					paramsMap.put(suid, legacyParams);
 					enrichmentMapMap.put(suid, em);
 				}
 			}
@@ -151,9 +220,9 @@ public class LegacySessionLoader {
 						
 						if (propFile.getName().contains(".signature.gmt")) {
 							// TODO Find a better way to serialize EMSignatureDataSet
-							String sdsName = propFile.getName().replace(".signature.gmt", "");
-							sdsName = NamingUtil.getUniqueName(sdsName, em.getSignatureDataSets().keySet());
-							EMSignatureDataSet sigDataSet = new EMSignatureDataSet(sdsName);
+//							String sdsName = propFile.getName().replace(".signature.gmt", "");
+//							sdsName = NamingUtil.getUniqueName(sdsName, em.getSignatureDataSets().keySet());
+							EMSignatureDataSet sigDataSet = new EMSignatureDataSet(em, SIG_DATA_SET_NAME);
 							em.addSignatureDataSet(sigDataSet);
 							SetOfGeneSets sigGeneSets = sigDataSet.getGeneSetsOfInterest();
 							
@@ -254,8 +323,7 @@ public class LegacySessionLoader {
 							
 							//this is an extra rank file for backwards compatability.  Ignore it.
 							else if ((file_name_tokens.length == 4)
-									&& (file_name_tokens[1].equals("Dataset 1")
-											|| file_name_tokens[1].equals("Dataset 2"))
+									&& (file_name_tokens[1].equals("Dataset 1") || file_name_tokens[1].equals("Dataset 2"))
 									&& file_name_tokens[2].equals("RANKS"))
 								continue;
 							else //file name is not structured properly --> default to file name
@@ -268,8 +336,7 @@ public class LegacySessionLoader {
 						if (parts.dataset != null)
 							em.getDataSet(parts.dataset).getExpressionSets().addRanks(parts.ranks_name, new_ranking);
 						else
-							em.getDataSet(LegacySupport.DATASET1).getExpressionSets().addRanks(parts.ranks_name,
-									new_ranking);
+							em.getDataSet(LegacySupport.DATASET1).getExpressionSets().addRanks(parts.ranks_name, new_ranking);
 					}
 					
 					//Deal with legacy issues                    
@@ -303,14 +370,11 @@ public class LegacySessionLoader {
 							Ranking new_ranking;
 							
 							// Check to see if there is already GSEARanking
-							if (em.getDataSet(LegacySupport.DATASET2).getExpressionSets().getAllRanksNames()
-									.contains(Ranking.GSEARanking)) {
-								new_ranking = em.getDataSet(LegacySupport.DATASET2).getExpressionSets()
-										.getRanksByName(Ranking.GSEARanking);
+							if (em.getDataSet(LegacySupport.DATASET2).getExpressionSets().getAllRanksNames().contains(Ranking.GSEARanking)) {
+								new_ranking = em.getDataSet(LegacySupport.DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking);
 							} else {
 								new_ranking = new Ranking();
-								em.getDataSet(LegacySupport.DATASET2).getExpressionSets().addRanks(Ranking.GSEARanking,
-										new_ranking);
+								em.getDataSet(LegacySupport.DATASET2).getExpressionSets().addRanks(Ranking.GSEARanking, new_ranking);
 							}
 							
 							if (propFile.getName().contains(".RANKS2.txt")) {
@@ -322,19 +386,6 @@ public class LegacySessionLoader {
 				}
 			}
 
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
 			
 			//load the expression files.  Load them last because they require
 			//info from the parameters
@@ -491,7 +542,6 @@ public class LegacySessionLoader {
 	public CyNetwork getNetworkByName(String name){
 		Set<CyNetwork> networks = cyNetworkManager.getNetworkSet();
 		for(CyNetwork network:networks){
-
 			String currentName = network.getRow(network).get(CyNetwork.NAME,String.class);
 			if(currentName.equals(name))
 				return network;

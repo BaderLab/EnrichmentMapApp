@@ -74,9 +74,8 @@ import com.google.inject.assistedinject.AssistedInject;
  * parsed files used to create it, all genes in the network, all enrichment
  * results, cuts-offs, expression files, and ranks
  * 
- * @deprecated Use EMCreationParameters instead.
+ * Use EMCreationParameters instead.
  */
-@Deprecated
 public class EnrichmentMapParameters {
 
 	@Inject private StreamUtil streamUtil;

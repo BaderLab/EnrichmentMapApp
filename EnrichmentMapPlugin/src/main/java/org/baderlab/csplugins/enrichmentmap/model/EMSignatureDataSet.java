@@ -2,8 +2,8 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 public class EMSignatureDataSet extends AbstractDataSet {
 
-	public EMSignatureDataSet(String name) {
-		super(name);
+	public EMSignatureDataSet(EnrichmentMap map, String name) {
+		super(map, name);
 	}
 	
 	@Override
