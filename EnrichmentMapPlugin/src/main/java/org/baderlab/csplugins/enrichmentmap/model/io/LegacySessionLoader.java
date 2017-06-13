@@ -28,6 +28,7 @@ import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
@@ -36,6 +37,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 
@@ -67,15 +69,15 @@ public class LegacySessionLoader {
 	
 	
 	public void loadSession(CySession session) {
-		createModelFromSessionFiles(session);
-		migrate();
+		createModelFromFilesInSession(session);
+		migrateModel();
 	}
 	
 	
 	/**
-	 * Reconstruct important model data using EM2 conventions.
+	 * Migrate the EM2 model to EM3.
 	 */
-	private void migrate() {
+	private void migrateModel() {
 		for(EnrichmentMap map : emManager.getAllEnrichmentMaps().values()) {
 			if(map.isLegacy()) { // Is this check necessary?
 				EMDataSet ds1 = map.getDataSet(LegacySupport.DATASET1);
@@ -85,7 +87,9 @@ public class LegacySessionLoader {
 				EMCreationParameters params = map.getParams();
 				String prefix = params.getAttributePrefix();
 				
-				// Restore column names for filtering
+				CyNetwork network = cyNetworkManager.getNetwork(map.getNetworkID());
+				
+				// Set column names for filtering
 				params.addPValueColumnName(prefix + "pvalue_dataset1");
 				params.addQValueColumnName(prefix + "fdr_qvalue_dataset1");
 				params.addSimilarityCutoffColumnName(prefix + "similarity_coefficient");
@@ -94,8 +98,7 @@ public class LegacySessionLoader {
 					params.addQValueColumnName(prefix + "fdr_qvalue_dataset2");
 				}
 				
-				// Restore node SUIDs
-				CyNetwork network = cyNetworkManager.getNetwork(map.getNetworkID());
+				// Set node SUIDs
 				for(CyNode node : network.getNodeList()) {
 					CyRow row = network.getRow(node);
 					if(ds1 != null) {
@@ -112,10 +115,11 @@ public class LegacySessionLoader {
 						Integer gsSize = row.get(prefix + "gs_size_signature", Integer.class);
 						if(gsSize != null && gsSize > 0)
 							dsSig.addNodeSuid(node.getSUID());
+						row.set(prefix + "gs_size_dataset1", gsSize); // the style expects the gs sizes to be in the same attribute
 					}
 				}
 				
-				// Restore edge SUIDs
+				// Set edge SUIDs
 				for(CyEdge edge : network.getEdgeList()) {
 					CyRow row = network.getRow(edge);
 					Integer emSet = row.get(prefix + "ENRICHMENT_SET", Integer.class);
@@ -128,13 +132,39 @@ public class LegacySessionLoader {
 							dsSig.addEdgeSuid(edge.getSUID());
 					}
 				}
+				
+				// Set the "dataset" column
+				CyTable edgeTable = network.getDefaultEdgeTable();
+				EMStyleBuilder.Columns.EDGE_DATASET.createColumn(edgeTable, prefix, null);
+				
+				for(CyEdge edge : network.getEdgeList()) {
+					CyRow row = network.getRow(edge);
+					Integer emSet = row.get(prefix + "ENRICHMENT_SET", Integer.class);
+					if(emSet != null) {
+						String datasetName = null;
+						if(emSet == 0)
+							datasetName = EMStyleBuilder.Columns.EDGE_DATASET_VALUE_COMPOUND;
+						else if(emSet == 1)
+							datasetName = LegacySupport.DATASET1;
+						else if(emSet == 2)
+							datasetName = LegacySupport.DATASET2;
+						else if(emSet == 4)
+							datasetName = LegacySupport.DATASET1; // In EM2 all PA edges are added to dataset 1
+						
+						EMStyleBuilder.Columns.EDGE_DATASET.set(row, prefix, datasetName);
+					}
+				}
 			}
 		}
 	}
 	
 	
+	
+	/**
+	 * This code is copy-pasted from EM2 with some slight modifications.
+	 */
 	@SuppressWarnings("unchecked")
-	private void createModelFromSessionFiles(CySession session) {
+	private void createModelFromFilesInSession(CySession session) {
 		Map<Long, EnrichmentMapParameters> paramsMap = new HashMap<>();
 		Map<Long, EnrichmentMap> enrichmentMapMap = new HashMap<>();
 

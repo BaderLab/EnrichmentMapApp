@@ -491,8 +491,7 @@ public class EMStyleBuilder {
 	
 			// Continuous Mapping - set node colour based on the sign of the ES score of the dataset
 			ContinuousMapping<Double, Paint> cm = (ContinuousMapping<Double, Paint>) cmFactory
-					.createVisualMappingFunction(Columns.NODE_COLOURING.with(prefix, ds.getName()), Double.class,
-							BasicVisualLexicon.NODE_FILL_COLOR);
+					.createVisualMappingFunction(Columns.NODE_COLOURING.with(prefix, ds), Double.class, BasicVisualLexicon.NODE_FILL_COLOR);
 	
 			// Silence events fired by this mapping to prevent unnecessary style and view updates
 			eventHelper.silenceEventSource(cm);
@@ -570,6 +569,10 @@ public class EMStyleBuilder {
 		if (chartType == null || chartType == ChartType.RADIAL_HEAT_MAP) {
 			String prefix = options.getAttributePrefix();
 			String columnName = Columns.NODE_GS_SIZE.with(prefix, null);
+			if(options.getEnrichmentMap().isLegacy()) {
+				columnName += "_dataset1";
+			}
+			
 			int val0 = 10;
 			int val1 = 474;
 			

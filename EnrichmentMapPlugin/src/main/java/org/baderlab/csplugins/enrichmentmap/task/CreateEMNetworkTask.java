@@ -124,9 +124,9 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 				
 				// if result is null it will fail both instanceof checks
 				if(result instanceof GSEAResult)
-					setGSEAResultNodeAttributes(row, ds.getName(), (GSEAResult) result);
+					setGSEAResultNodeAttributes(row, ds, (GSEAResult) result);
 				else if(result instanceof GenericResult)
-					setGenericResultNodeAttributes(row, ds.getName(), (GenericResult) result);
+					setGenericResultNodeAttributes(row, ds, (GenericResult) result);
 			}
 		}
 		
@@ -188,17 +188,17 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		
 		EMCreationParameters params = map.getParams();
 		
-		for (String datasetName : map.getDataSetNames()) {
-			Columns.NODE_PVALUE.createColumn(table, prefix, datasetName);
-			Columns.NODE_FDR_QVALUE.createColumn(table, prefix, datasetName);
-			Columns.NODE_FWER_QVALUE.createColumn(table, prefix, datasetName);
+		for (EMDataSet dataset : map.getDataSetList()) {
+			Columns.NODE_PVALUE.createColumn(table, prefix, dataset);
+			Columns.NODE_FDR_QVALUE.createColumn(table, prefix, dataset);
+			Columns.NODE_FWER_QVALUE.createColumn(table, prefix, dataset);
 			// MKTODO only create these if method is GSEA?
-			Columns.NODE_ES.createColumn(table, prefix, datasetName);
-			Columns.NODE_NES.createColumn(table, prefix, datasetName); 
-			Columns.NODE_COLOURING.createColumn(table, prefix, datasetName);
+			Columns.NODE_ES.createColumn(table, prefix, dataset);
+			Columns.NODE_NES.createColumn(table, prefix, dataset); 
+			Columns.NODE_COLOURING.createColumn(table, prefix, dataset);
 			
-			params.addPValueColumnName(Columns.NODE_PVALUE.with(prefix, datasetName));
-			params.addQValueColumnName(Columns.NODE_FDR_QVALUE.with(prefix, datasetName));
+			params.addPValueColumnName(Columns.NODE_PVALUE.with(prefix, dataset));
+			params.addQValueColumnName(Columns.NODE_FDR_QVALUE.with(prefix, dataset));
 		}
 		
 		return table;
@@ -216,23 +216,23 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		return table;
 	}
 	
-	private void setGenericResultNodeAttributes(CyRow row, String datasetName, GenericResult result) {
-		Columns.NODE_PVALUE.set(row, prefix, datasetName, result.getPvalue());
-		Columns.NODE_FDR_QVALUE.set(row, prefix, datasetName, result.getFdrqvalue());
-		Columns.NODE_NES.set(row, prefix, datasetName, result.getNES());
-		Columns.NODE_COLOURING.set(row, prefix, datasetName, getColorScore(result));
+	private void setGenericResultNodeAttributes(CyRow row, EMDataSet dataset, GenericResult result) {
+		Columns.NODE_PVALUE.set(row, prefix, dataset, result.getPvalue());
+		Columns.NODE_FDR_QVALUE.set(row, prefix, dataset, result.getFdrqvalue());
+		Columns.NODE_NES.set(row, prefix, dataset, result.getNES());
+		Columns.NODE_COLOURING.set(row, prefix, dataset, getColorScore(result));
 	}
 	
-	private void setGSEAResultNodeAttributes(CyRow row, String datasetName, GSEAResult result) {
-		Columns.NODE_PVALUE.set(row, prefix, datasetName, result.getPvalue());
-		Columns.NODE_FDR_QVALUE.set(row, prefix, datasetName, result.getFdrqvalue());
-		Columns.NODE_FWER_QVALUE.set(row, prefix, datasetName, result.getFwerqvalue());
-		Columns.NODE_ES.set(row, prefix, datasetName, result.getES());
-		Columns.NODE_NES.set(row, prefix, datasetName, result.getNES());
-		Columns.NODE_COLOURING.set(row, prefix, datasetName, getColorScore(result));
+	private void setGSEAResultNodeAttributes(CyRow row, EMDataSet dataset, GSEAResult result) {
+		Columns.NODE_PVALUE.set(row, prefix, dataset, result.getPvalue());
+		Columns.NODE_FDR_QVALUE.set(row, prefix, dataset, result.getFdrqvalue());
+		Columns.NODE_FWER_QVALUE.set(row, prefix, dataset, result.getFwerqvalue());
+		Columns.NODE_ES.set(row, prefix, dataset, result.getES());
+		Columns.NODE_NES.set(row, prefix, dataset, result.getNES());
+		Columns.NODE_COLOURING.set(row, prefix, dataset, getColorScore(result));
 		
 		EMCreationParameters params = map.getParams();
-		params.addPValueColumnName(Columns.NODE_PVALUE.with(prefix, datasetName));
+		params.addPValueColumnName(Columns.NODE_PVALUE.with(prefix, dataset));
 	}
 	
 	private static double getColorScore(EnrichmentResult result) {

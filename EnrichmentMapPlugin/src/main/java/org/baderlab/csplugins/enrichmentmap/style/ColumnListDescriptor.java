@@ -5,6 +5,9 @@ import java.util.List;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 
+/**
+ * MKTODO Replace the "String suffix" parameters with "AbstractDataSet" like in ColumnDescriptor.
+ */
 public class ColumnListDescriptor<T> {
 
 	private final String name;

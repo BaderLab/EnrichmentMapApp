@@ -54,7 +54,7 @@ public final class ChartUtil {
 			CyColumnIdentifierFactory columnIdFactory) {
 		List<CyColumnIdentifier> columns = dataSets
 				.stream()
-				.map(ds -> columnDescriptor.with(attributePrefix, ds.getName()))  // column name
+				.map(ds -> columnDescriptor.with(attributePrefix, ds))  // column name
 				.map(columnIdFactory::createColumnIdentifier) // column id
 				.collect(Collectors.toList());
 		
