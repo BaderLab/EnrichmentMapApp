@@ -10,13 +10,11 @@ import javax.swing.JOptionPane;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Sync;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterSignatureGSTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.LoadSignatureGMTFilesTask;
 import org.baderlab.csplugins.enrichmentmap.util.ResultTaskObserver;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
@@ -29,9 +27,7 @@ import com.google.inject.assistedinject.Assisted;
 public class LoadSignatureSetsActionListener implements ActionListener {
 
 	@Inject private CySwingApplication application;
-	@Inject private CyApplicationManager applicationManager;
 	@Inject private @Sync TaskManager<?,?> taskManager;
-	@Inject private EnrichmentMapManager emManager;
 	
 	private final File file;
 	private final FilterMetric filterMetric;

@@ -14,10 +14,11 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
@@ -31,6 +32,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -75,7 +77,9 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 	private JList<String> availSigSetsField;
 	private JList<String> selectedSigSetsField;
 	private JButton addSelectedButton;
+	private JButton addAllButton;
 	private JButton removeSelectedButton;
+	private JButton removeAllButton;
 
 	private DefaultListModel<String> availSigSetsModel = new DefaultListModel<>();
 	private DefaultListModel<String> selectedSigSetsModel = new DefaultListModel<>();
@@ -101,19 +105,23 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 	
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
-		if (e.getValueIsAdjusting())
-			return;
+		if (!e.getValueIsAdjusting())
+			update();
+	}
+
+	public void update() {
+		setAvSigCount(availSigSetsModel.size());
+		setSelSigCount(selectedSigSetsModel.size());
 		
 		// Enable/disable buttons when list selection changes
 		if (addSelectedButton != null)
 			addSelectedButton.setEnabled(availSigSetsField.getSelectedIndices().length > 0);
 		if (removeSelectedButton != null)
 			removeSelectedButton.setEnabled(selectedSigSetsField.getSelectedIndices().length > 0);
-	}
-
-	public void update() {
-		setAvSigCount(availSigSetsModel.size());
-		setSelSigCount(selectedSigSetsModel.size());
+		if (addAllButton != null)
+			addAllButton.setEnabled(availSigSetsField.getModel().getSize() > 0);
+		if (removeAllButton != null)
+			removeAllButton.setEnabled(selectedSigSetsField.getModel().getSize() > 0);
 	}
 	
 	@AfterInjection
@@ -166,45 +174,43 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		Font selectBtnFont = iconManager.getIconFont(14.0f);
 
 		addSelectedButton = new JButton(IconManager.ICON_ANGLE_DOWN);
-		addSelectedButton.setToolTipText("Add Selected");
 		addSelectedButton.setFont(selectBtnFont);
+		addSelectedButton.setToolTipText("Add Selected");
 		addSelectedButton.setEnabled(false);
+		
+		addAllButton = new JButton(IconManager.ICON_ANGLE_DOUBLE_DOWN);
+		addAllButton.setFont(selectBtnFont);
+		addAllButton.setToolTipText("Add All");
+		addAllButton.setEnabled(false);
 
 		removeSelectedButton = new JButton(IconManager.ICON_ANGLE_UP);
-		removeSelectedButton.setToolTipText("Remove Selected");
 		removeSelectedButton.setFont(selectBtnFont);
+		removeSelectedButton.setToolTipText("Remove Selected");
 		removeSelectedButton.setEnabled(false);
-
+		
+		removeAllButton = new JButton(IconManager.ICON_ANGLE_DOUBLE_UP);
+		removeAllButton.setFont(selectBtnFont);
+		removeAllButton.setToolTipText("Remove All");
+		removeAllButton.setEnabled(false);
+		
 		addSelectedButton.addActionListener(e -> {
-			int[] selected = availSigSetsField.getSelectedIndices();
-			for (int i = selected.length; i > 0; i--) {
-				selectedSigSetsModel.addElement(availSigSetsModel.get(selected[i - 1]));
-				availSigSetsModel.remove(selected[i - 1]);
-			}
-			setSelSigCount(selectedSigSetsModel.size());
-			setAvSigCount(availSigSetsModel.size());
-		});        
+			moveSigSets(availSigSetsField, selectedSigSetsField, false);
+		});
+		addAllButton.addActionListener(e -> {
+			moveSigSets(availSigSetsField, selectedSigSetsField, true);
+		});
 		removeSelectedButton.addActionListener(e -> {
-			int[] selected = selectedSigSetsField.getSelectedIndices();
-			for (int i = selected.length; i > 0; i--) {
-				availSigSetsModel.addElement(selectedSigSetsModel.get(selected[i - 1]));
-				selectedSigSetsModel.remove(selected[i - 1]);
-			}
-
-			// Sort the Genesets:
-			List<String> setNamesArray = Collections.list(availSigSetsModel.elements());
-			Collections.sort(setNamesArray);
-			availSigSetsModel.removeAllElements();
-			for (String name : setNamesArray) {
-				availSigSetsModel.addElement(name);
-			}
-			setAvSigCount(availSigSetsModel.size());
-			setSelSigCount(selectedSigSetsModel.size());
+			moveSigSets(selectedSigSetsField, availSigSetsField, false);
+		});
+		removeAllButton.addActionListener(e -> {
+			moveSigSets(selectedSigSetsField, availSigSetsField, true);
 		});
 		
 		if (LookAndFeelUtil.isAquaLAF()) {
 			addSelectedButton.putClientProperty("JButton.buttonType", "gradient");
+			addAllButton.putClientProperty("JButton.buttonType", "gradient");
 			removeSelectedButton.putClientProperty("JButton.buttonType", "gradient");
+			removeAllButton.putClientProperty("JButton.buttonType", "gradient");
 		}
 
 		availSigSetsField.addListSelectionListener(this);
@@ -224,7 +230,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 		
 		makeSmall(availableLabel, availSigSetsField, availSigSetsScroll);
 		makeSmall(selectedLabel, selectedSigSetsField, selectedSigSetsScroll);
-		makeSmall(addSelectedButton, removeSelectedButton, clearButton);
+		makeSmall(addSelectedButton, addAllButton, removeSelectedButton, removeAllButton, clearButton);
 		
 		JPanel panel = new JPanel();
         panel.setBorder(LookAndFeelUtil.createTitledBorder("Signature Gene Sets"));
@@ -241,6 +247,9 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 						.addGap(0, 0, Short.MAX_VALUE)
 						.addComponent(addSelectedButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(removeSelectedButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addComponent(addAllButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(removeAllButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addGap(0, 0, Short.MAX_VALUE)
 				)
 				.addComponent(selectedSigSetsScroll, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -257,6 +266,8 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(addSelectedButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(removeSelectedButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(addAllButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(removeAllButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addComponent(selectedSigSetsScroll, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(selectedLabel)
@@ -267,6 +278,31 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 			panel.setOpaque(false);
         
         return panel;
+	}
+
+	private void moveSigSets(JList<String> src, JList<String> tgt, boolean all) {
+		final Set<String> set = new HashSet<>();
+		
+		final DefaultListModel<String> srcModel = (DefaultListModel<String>) src.getModel();
+		final DefaultListModel<String> tgtModel = (DefaultListModel<String>) tgt.getModel();
+		
+		for (int i = 0; i < srcModel.getSize(); i++) {
+			int index = i;
+			
+			final String element = srcModel.get(index);
+			
+			if (all || src.isSelectedIndex(i)) {
+				set.add(element);
+				
+				if (!tgtModel.contains(element))
+					tgtModel.addElement(element);
+			}
+		}
+		
+		for (final String element : set)
+			srcModel.removeElement(element);
+		
+		update();
 	}
  
     /**
@@ -355,10 +391,11 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 			}
 
 			FilterMetric filterMetric = createFilterMetric();
-			LoadSignatureSetsActionListener action = loadSignatureSetsActionListenerFactory.create(new File(filePath), filterMetric, parentPanel.getEnrichmentMap());
+			LoadSignatureSetsActionListener action =
+					loadSignatureSetsActionListenerFactory.create(new File(filePath), filterMetric, parentPanel.getEnrichmentMap());
 
 			action.setGeneSetCallback(gs -> {
-				this.signatureGenesets = gs;
+				signatureGenesets = gs;
 			});
 			
 			action.setFilteredSignatureSetsCallback(selected -> {
