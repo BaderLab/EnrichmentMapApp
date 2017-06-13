@@ -113,8 +113,9 @@ public class EMStyleBuilder {
 		
 		// Multi-edge case
 		public static final ColumnDescriptor<String> EDGE_DATASET = new ColumnDescriptor<>("Data Set", String.class);
-		public static final String EDGE_DATASET_VALUE_COMPOUND = "compound"; 
+		public static final String EDGE_DATASET_VALUE_COMPOUND = "compound";
 		public static final String EDGE_DATASET_VALUE_SIG = "signature"; // post-analysis edges
+		public static final String EDGE_INTERACTION_VALUE_OVERLAP = "Geneset_Overlap";
 		public static final String EDGE_INTERACTION_VALUE_SIG = "sig"; // post-analysis edges
 		public static final ColumnDescriptor<String> EDGE_SIG_DATASET = new ColumnDescriptor<>("Signature Set", String.class);
 		
@@ -265,8 +266,11 @@ public class EMStyleBuilder {
 	}
 	
 	private DiscreteMapping<String, Paint> createEdgeColorMapping(EMStyleOptions options, VisualProperty<Paint> vp) {
-		String prefix = options.getAttributePrefix();
-		String col = Columns.EDGE_DATASET.with(prefix, null);
+		int dataSetCount = options.getEnrichmentMap().getDataSetCount();
+		boolean distinctEdges = options.getEnrichmentMap().getParams().getCreateDistinctEdges();
+		
+		String col = (dataSetCount > 1 && distinctEdges) ?
+				Columns.EDGE_DATASET.with(options.getAttributePrefix(), null) : CyEdge.INTERACTION;
 		
 		DiscreteMapping<String, Paint> dm = (DiscreteMapping<String, Paint>) dmFactory
 				.createVisualMappingFunction(col, String.class, vp);
@@ -278,28 +282,33 @@ public class EMStyleBuilder {
 		eventHelper.silenceEventSource(dm);
 		
 		try {
-			dm.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.COMPOUND_EDGE_COLOR);
-//			dm.putMapValue(Columns.EDGE_DATASET_VALUE_SIG, Colors.SIG_EDGE_COLOR);
-			
-			List<EMDataSet> dataSets = options.getEnrichmentMap().getDataSetList();
-			final ColorBrewer colorBrewer;
-			
-			// Try colorblind and/or print friendly colours first
-			if (dataSets.size() <= 4) // Try a colorblind safe color scheme first
-				colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=4
-			else if (dataSets.size() <= 5) // Same--more than 5, it adds a RED that can be confused with the edge selection color
-				colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=5
-			else
-				colorBrewer = ColorBrewer.Set3; // http://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12
+			if (dataSetCount > 1 && distinctEdges) {
+				List<EMDataSet> dataSets = options.getEnrichmentMap().getDataSetList();
+				final ColorBrewer colorBrewer;
 				
-			Color[] colors = colorBrewer.getColorPalette(dataSets.size());
-			
-			// Do not use the filtered data sets here, because we don't want edge colours changing when filtering
-			for (int i = 0; i < dataSets.size(); i++) {
-				EMDataSet ds = dataSets.get(i);
-				Color color = colors[i];
-				dm.putMapValue(ds.getName(), color);
-				ds.setColor(color);
+				// Try colorblind and/or print friendly colours first
+				if (dataSets.size() <= 4) // Try a colorblind safe color scheme first
+					colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=4
+				else if (dataSets.size() <= 5) // Same--more than 5, it adds a RED that can be confused with the edge selection color
+					colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=5
+				else
+					colorBrewer = ColorBrewer.Set3; // http://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12
+					
+				Color[] colors = colorBrewer.getColorPalette(dataSets.size());
+				
+				// Do not use the filtered data sets here, because we don't want edge colours changing when filtering
+				for (int i = 0; i < dataSets.size(); i++) {
+					EMDataSet ds = dataSets.get(i);
+					Color color = colors[i];
+					dm.putMapValue(ds.getName(), color);
+					ds.setColor(color);
+				}
+			} else {
+				Color overlapColor = distinctEdges ?
+						ColorBrewer.Paired.getColorPalette(1)[0] : Colors.COMPOUND_EDGE_COLOR;
+				
+				dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_OVERLAP, overlapColor);
+				dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_SIG, Colors.SIG_EDGE_COLOR);
 			}
 		} finally {
 			eventHelper.unsilenceEventSource(dm);

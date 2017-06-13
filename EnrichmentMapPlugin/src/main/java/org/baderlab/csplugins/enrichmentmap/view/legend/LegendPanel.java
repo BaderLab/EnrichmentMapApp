@@ -350,8 +350,9 @@ public class LegendPanel extends JPanel {
 		
 		if (map != null) {
 			Dimension iconSize = new Dimension(LEGEND_ICON_SIZE, LEGEND_ICON_SIZE / 2);
+			boolean distinctEdges = map.getParams().getCreateDistinctEdges();
 			
-			if (map.getParams().getCreateDistinctEdges()) {
+			if (distinctEdges) {
 				VisualMappingFunction<?, Paint> mf =
 						style.getVisualMappingFunction(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
 				
@@ -360,10 +361,23 @@ public class LegendPanel extends JPanel {
 					final Collator collator = Collator.getInstance();
 					
 					Map<Object, Paint> dmMap = new TreeMap<>((Object o1, Object o2) -> {
+						if (Columns.EDGE_DATASET_VALUE_SIG.equals(o1)) return 1;
+						if (Columns.EDGE_DATASET_VALUE_SIG.equals(o2)) return -1;
 						return collator.compare("" + o1, "" + o2);
 					});
 					dmMap.putAll(dm.getAll());
 					dmMap.remove(Columns.EDGE_DATASET_VALUE_COMPOUND);
+					
+					// Special case of 1 dataset with distinct edges and maybe signature genesets as well
+					if (map.getDataSetCount() == 1) {
+						Paint p1 = dmMap.remove(Columns.EDGE_INTERACTION_VALUE_OVERLAP);
+						Paint p2 = dmMap.remove(Columns.EDGE_INTERACTION_VALUE_SIG);
+						
+						if (p1 != null)
+							dmMap.put(map.getDataSetList().iterator().next().getName(), p1);
+						if (p2 != null)
+							dmMap.put(Columns.EDGE_DATASET_VALUE_SIG, p2);
+					}
 					
 					if (!map.hasSignatureDataSets())
 						dmMap.remove(Columns.EDGE_DATASET_VALUE_SIG);

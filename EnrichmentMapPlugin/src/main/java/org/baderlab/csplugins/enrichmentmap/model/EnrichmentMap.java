@@ -328,6 +328,9 @@ public class EnrichmentMap {
 		this.dataSets = dataSets;
 	}
 
+	/**
+	 * Returns the total number of data sets, excluding Signature Data Sets.
+	 */
 	public int getDataSetCount() {
 		return dataSets.size();
 	}
