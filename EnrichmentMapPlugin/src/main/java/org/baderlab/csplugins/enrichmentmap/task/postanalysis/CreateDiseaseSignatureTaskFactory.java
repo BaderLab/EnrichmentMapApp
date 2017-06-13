@@ -29,12 +29,10 @@ public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
 	
-	
 	private String errors = null;
 	
 	private final CyNetworkView netView;
 	private final PostAnalysisParameters params;
-	
 	
 	public interface Factory {
 		CreateDiseaseSignatureTaskFactory create(CyNetworkView netView, PostAnalysisParameters params);
@@ -54,16 +52,17 @@ public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 	public TaskIterator createTaskIterator() {
 		// Make sure that the minimum information is set in the current set of parameters
 		EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
-		
 		StringBuilder errorBuilder = new StringBuilder();
 		checkMinimalRequirements(errorBuilder, params);
+		
 		if (params.getRankTestParameters().getType().isMannWhitney() && map.getAllRanks().isEmpty())
 			errorBuilder.append("Mann-Whitney requires ranks. \n");
 		
-		this.errors = errorBuilder.toString();
+		errors = errorBuilder.toString();
 
-		if(errors.isEmpty()) {
+		if (errors.isEmpty()) {
 			ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
+			
 			EMStyleOptions options = controlPanelMediator.createStyleOptions(netView);
 			options.setPostAnalysis(true);
 			
@@ -73,6 +72,7 @@ public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 			TaskIterator tasks = new TaskIterator();
 			tasks.append(signatureTaskFactory.create(params, map, dataSetList));
 			tasks.append(applyStyleTaskFactory.create(options, chart, false));
+			
 			return tasks;
 		} else {
 			// MKTODO not entirely sure what to do in this case, just return an empty iterator I guess...
@@ -85,11 +85,9 @@ public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 		}
 	}
 	
-	
 	private List<EMDataSet> getDataSets(EnrichmentMap map) {
 		return params.getDataSetName().map(map::getDataSet).map(Arrays::asList).orElseGet(map::getDataSetList);
 	}
-	
 	
 	/**
 	 * Checks all values of the PostAnalysisInputPanel
@@ -103,18 +101,19 @@ public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 			errors.append("No Signature Genesets selected \n");
 		}
 	}
-	
 
 	/**
 	 * Checks if SignatureGMTFileName is provided and if the file can be read.
 	 * 
-	 * @return String with error messages (one error per line) or empty String
-	 *         if everything is okay.
+	 * @return String with error messages (one error per line) or empty String if everything is okay.
 	 */
 	public String checkGMTfiles(PostAnalysisParameters params) {
 		String signatureGMTFileName = params.getSignatureGMTFileName();
-		if(signatureGMTFileName == null || signatureGMTFileName.isEmpty() || !EnrichmentMapParameters.checkFile(signatureGMTFileName))
+		
+		if (signatureGMTFileName == null || signatureGMTFileName.isEmpty()
+				|| !EnrichmentMapParameters.checkFile(signatureGMTFileName))
 			return "Signature GMT file can not be found \n";
+		
 		return "";
 	}
 }
