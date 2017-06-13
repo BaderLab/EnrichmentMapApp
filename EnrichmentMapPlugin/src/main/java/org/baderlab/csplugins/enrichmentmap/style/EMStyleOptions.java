@@ -14,7 +14,7 @@ public class EMStyleOptions {
 	private final EnrichmentMap map;
 	private final Predicate<AbstractDataSet> filter;
 	private final ChartOptions chartOptions;
-	private final boolean postAnalysis;
+	private boolean postAnalysis;
 	private final boolean publicationReady;
 	
 	/**
@@ -60,5 +60,9 @@ public class EMStyleOptions {
 
 	public boolean isPostAnalysis() {
 		return postAnalysis;
+	}
+	
+	public void setPostAnalysis(boolean postAnalysis) {
+		this.postAnalysis = postAnalysis;
 	}
 }

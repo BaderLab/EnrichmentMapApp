@@ -65,8 +65,9 @@ public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 		if(errors.isEmpty()) {
 			ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
 			EMStyleOptions options = controlPanelMediator.createStyleOptions(netView);
-			CyCustomGraphics2<?> chart = controlPanelMediator.createChart(options);
+			options.setPostAnalysis(true);
 			
+			CyCustomGraphics2<?> chart = controlPanelMediator.createChart(options);
 			List<EMDataSet> dataSetList = getDataSets(map);
 			
 			TaskIterator tasks = new TaskIterator();
