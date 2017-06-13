@@ -2,12 +2,16 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -28,17 +32,20 @@ public class SelectNodesEdgesTask extends AbstractTask {
 
 	private final CyNetworkView networkView;
 	private final Set<AbstractDataSet> dataSets;
+	private final boolean distinctEdges;
 	
 	@Inject private CyEventHelper eventHelper;
 
 	public interface Factory {
-		SelectNodesEdgesTask create(CyNetworkView networkView, Set<AbstractDataSet> dataSets);
+		SelectNodesEdgesTask create(CyNetworkView networkView, Set<AbstractDataSet> dataSets, boolean distinctEdges);
 	}
 	
 	@Inject
-	public SelectNodesEdgesTask(@Assisted CyNetworkView networkView, @Assisted Set<AbstractDataSet> dataSets) {
+	public SelectNodesEdgesTask(@Assisted CyNetworkView networkView, @Assisted Set<AbstractDataSet> dataSets,
+			@Assisted boolean distinctEdges) {
 		this.networkView = networkView;
 		this.dataSets = dataSets;
+		this.distinctEdges = distinctEdges;
 	}
 	
 	@Override
@@ -47,8 +54,24 @@ public class SelectNodesEdgesTask extends AbstractTask {
 		tm.setStatusMessage("Getting Nodes and Edges from Data Sets...");
 		tm.setProgress(0.0);
 		
-		Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(dataSets);
-		Set<Long> dataSetEdges = EnrichmentMap.getEdgesUnion(dataSets);
+		final Set<Long> dataSetNodes = EnrichmentMap.getNodesUnion(dataSets);
+		final Set<Long> dataSetEdges;
+		
+		if (distinctEdges) {
+			dataSetEdges = EnrichmentMap.getEdgesUnion(dataSets);
+		} else {
+			dataSetEdges = new HashSet<>();
+			
+			for (CyEdge e : networkView.getModel().getEdgeList()) {
+				if (dataSetNodes.contains(e.getSource().getSUID()) && dataSetNodes.contains(e.getTarget().getSUID()))
+					dataSetEdges.add(e.getSUID());
+			}
+			
+			for (AbstractDataSet ds : dataSets) {
+				if (ds instanceof EMSignatureDataSet)
+					dataSetEdges.addAll(EnrichmentMap.getEdgesUnion(Collections.singleton(ds)));
+			}
+		}
 		
 		if (!cancelled) {
 			tm.setStatusMessage("Selecting Edges...");

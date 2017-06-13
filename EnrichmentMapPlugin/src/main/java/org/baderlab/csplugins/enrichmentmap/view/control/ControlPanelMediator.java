@@ -485,8 +485,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					final JPopupMenu contextMenu = new JPopupMenu();
 					{
 						JMenuItem mi = new JMenuItem("Select nodes and edges from selected data sets");
-						mi.addActionListener(evt -> selectNodesEdges(viewPanel.getNetworkView(),
-								viewPanel.getDataSetSelector().getSelectedItems()));
+						mi.addActionListener(evt -> selectNodesEdges(
+								viewPanel.getNetworkView(),
+								viewPanel.getDataSetSelector().getSelectedItems(),
+								map.getParams().getCreateDistinctEdges()
+						));
 						contextMenu.add(mi);
 					}
 					contextMenu.addSeparator();
@@ -819,8 +822,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		});
 	}
 	
-	private void selectNodesEdges(CyNetworkView netView, Set<AbstractDataSet> dataSets) {
-		SelectNodesEdgesTask task = selectNodesEdgesTaskFactory.create(netView, dataSets);
+	private void selectNodesEdges(CyNetworkView netView, Set<AbstractDataSet> dataSets, boolean distinctEdges) {
+		SelectNodesEdgesTask task = selectNodesEdgesTaskFactory.create(netView, dataSets, distinctEdges);
 		dialogTaskManager.execute(new TaskIterator(task));
 	}
 	
@@ -928,8 +931,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			
 			Set<CyEdge> filteredInEdges = new HashSet<>();
 			CyNetwork net = netView.getModel();
-			
 			boolean distinct = params.getCreateDistinctEdges();
+			
 			if (distinct) {
 				for (CyEdge e : net.getEdgeList()) {
 					if (dataSetEdges.contains(e.getSUID()))
