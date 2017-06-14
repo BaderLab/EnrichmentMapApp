@@ -43,8 +43,8 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
@@ -58,8 +58,8 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class EnrichmentMapManager {
-		
-	private Map<Long, EnrichmentMap> enrichmentMaps = new HashMap<>();
+	
+	private Map<Long, EnrichmentMap> enrichmentMaps = new LinkedHashMap<>();
 	private Map<Long, HeatMapParams> heatMapParams = new HashMap<>();
 	private Map<Long, HeatMapParams> heatMapParamsEdges = new HashMap<>();
 	
@@ -73,7 +73,7 @@ public class EnrichmentMapManager {
 	}
 
 	public Map<Long, EnrichmentMap> getAllEnrichmentMaps() {
-		return Collections.unmodifiableMap(enrichmentMaps);
+		return new LinkedHashMap<>(enrichmentMaps);
 	}
 
 	public EnrichmentMap getEnrichmentMap(Long networkId) {

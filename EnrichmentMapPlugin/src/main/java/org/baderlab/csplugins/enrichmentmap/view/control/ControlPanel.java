@@ -15,12 +15,11 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.net.URL;
-import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -65,6 +64,8 @@ import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyDisposable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -83,6 +84,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	private static final String BORDER_COLOR_KEY = "Separator.foreground";
 	
 	@Inject private CyServiceRegistrar serviceRegistrar;
+	@Inject private CyNetworkManager networkManager;
 	@Inject private CyNetworkViewManager networkViewManager;
 	@Inject private IconManager iconManager;
 	@Inject private EnrichmentMapManager emManager;
@@ -291,14 +293,18 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		getEmViewCombo().removeAllItems();
 		
 		if (!emMap.isEmpty()) {
-			Set<CyNetworkView> allViews = networkViewManager.getNetworkViewSet();
-			List<CyNetworkView> emViews = allViews.stream()
-			        .filter(emManager::isEnrichmentMap)
-			        .collect(Collectors.toList());
-			
-			Collator collator = Collator.getInstance(Locale.getDefault());
-			emViews.sort((v1, v2) -> collator.compare(NetworkUtil.getTitle(v1), NetworkUtil.getTitle(v2)));
-			emViews.forEach(getEmViewCombo()::addItem);
+			emMap.entrySet().stream().forEach(entry -> {
+				// To make sure the original view order is preserved
+				// (networkViewManager.getNetworkViewSet() may change the view order!)
+				CyNetwork network = networkManager.getNetwork(entry.getKey());
+				
+				if (network != null) {
+					Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+					
+					if (views != null)
+						views.forEach(getEmViewCombo()::addItem);
+				}
+			});
 			
 			getEmViewCombo().setSelectedItem(selectedItem);
 		}
