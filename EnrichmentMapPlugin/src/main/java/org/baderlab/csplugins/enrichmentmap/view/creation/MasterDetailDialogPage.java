@@ -347,11 +347,16 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		}
 	}
 	
+	
+	public EditCommonPanel getCommonPanel() {
+		return commonPanel;
+	}
+	
 	private boolean validateInput() {
 		ErrorMessageDialog dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
 		
 		// Check if the user provided a global expression file, warn if there are also per-dataset expression files.
-		if(!isNullOrEmpty(commonPanel.getExpressionFile())) {
+		if(commonPanel.hasExpressionFile()) {
 			for(DataSetListItem item : dataSetListModel.toList()) {
 				DetailPanel panel = item.getDetailPanel();
 				if(panel instanceof EditDataSetPanel && !isNullOrEmpty(((EditDataSetPanel)panel).getExpressionFileName())) {
@@ -363,7 +368,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		}
 		
 		// Check if the user provided a global gmt file, warn if there are also per-dataset gmt files.
-		if(!isNullOrEmpty(commonPanel.getGmtFile())) {
+		if(commonPanel.hasGmtFile()) {
 			for(DataSetListItem item : dataSetListModel.toList()) {
 				DetailPanel panel = item.getDetailPanel();
 				if(panel instanceof EditDataSetPanel && !isNullOrEmpty(((EditDataSetPanel)panel).getGMTFileName())) {
@@ -397,7 +402,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		// Check for input errors.
 		for(DataSetListItem item : dataSetListModel.toList()) {
 			DetailPanel panel = item.getDetailPanel();
-			List<Message> messages = panel.validateInput();
+			List<Message> messages = panel.validateInput(this);
 			if(!messages.isEmpty()) {
 				dialog.addSection(messages, panel.getDisplayName(), panel.getIcon());
 			}

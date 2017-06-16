@@ -292,7 +292,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 
 	
 	@Override
-	public List<Message> validateInput() {
+	public List<Message> validateInput(MasterDetailDialogPage parent) {
 		List<Message> messages = new ArrayList<>();
 		if(nameText.isEmpty())
 			messages.add(Message.error("Name field is empty."));
@@ -313,10 +313,10 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		if(!classesText.emptyOrReadable())
 			messages.add(Message.error("Classes file path is not valid."));
 		
-		if(gmtText.isReadable()) {
-			String parent = gmtText.getPath().getParent().getFileName().toString();
-			if("edb".equalsIgnoreCase(parent)) {
-				messages.add(Message.warn("Using GMT file from GSEA EDB directory. This GMT file has been filtered by "
+		if(gmtText.isReadable() && !parent.getCommonPanel().hasGmtFile()) {
+			String parentDir = gmtText.getPath().getParent().getFileName().toString();
+			if("edb".equalsIgnoreCase(parentDir)) {
+				messages.add(Message.warn("Using GMT file from EDB directory. This GMT file was filtered by "
 						+ "the expressions and may effect the universe size when adding signature gene sets."));
 			}
 		}		

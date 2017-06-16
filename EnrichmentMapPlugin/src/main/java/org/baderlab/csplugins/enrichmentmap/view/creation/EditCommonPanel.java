@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view.creation;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,7 +87,7 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 	
 
 	@Override
-	public List<Message> validateInput() {
+	public List<Message> validateInput(MasterDetailDialogPage parent) {
 		gmtText.hideError();
 		expressionsText.hideError();
 		
@@ -105,6 +107,14 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 	
 	public String getExpressionFile() {
 		return expressionsText.getText();
+	}
+	
+	public boolean hasExpressionFile() {
+		return !isNullOrEmpty(getExpressionFile());
+	}
+	
+	public boolean hasGmtFile() {
+		return !isNullOrEmpty(getGmtFile());
 	}
 
 	public void reset() {
