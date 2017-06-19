@@ -233,6 +233,13 @@ public class CutoffPropertiesPanel extends JPanel {
 		cardPanel.add(advancedPanel, "advanced");
 		cardPanel.setOpaque(false);
 		
+		// Link the two panels together
+		similaritySlider.getSlider().addChangeListener(e -> {
+			SimilarityMetric metric = similaritySlider.getSimilarityMetric();
+			double cutoff = similaritySlider.getCutoff();
+			cutoffMetricCombo.setSelectedItem(ComboItem.of(metric));
+			similarityCutoffText.setText(String.valueOf(cutoff));
+		});
 		
 		final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -342,9 +349,10 @@ public class CutoffPropertiesPanel extends JPanel {
 		SwingUtil.makeSmall(similarityCutoffText, cutoffMetricCombo);
 				
 		ActionListener sliderUpdate = e -> {
-			SimilarityMetric type = getSimilarityMetric();
+			SimilarityMetric type = getCutoffMetricComboValue();
 			similarityCutoffText.setValue(cutoffValues.get(type));
-			combinedConstantSlider.setVisible(type == SimilarityMetric.COMBINED);
+			// Don't make the slider visible unless the advanced panel is also visible or else it throws off the layout.
+			combinedConstantSlider.setVisible(advancedCheckBox.isSelected() && type == SimilarityMetric.COMBINED);
 		};
 		
 		double combinedConstant = propertyManager.getCombinedConstant();
@@ -360,7 +368,7 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		similarityCutoffText.addPropertyChangeListener("value", e -> {
 			double value = ((Number)e.getNewValue()).doubleValue();
-			cutoffValues.put(getSimilarityMetric(), value);
+			cutoffValues.put(getCutoffMetricComboValue(), value);
 		});
 		
 		final GroupLayout layout = new GroupLayout(panel);
@@ -426,18 +434,22 @@ public class CutoffPropertiesPanel extends JPanel {
 	}
 	
 	
-	private void showAdvancedOptions(boolean show) {
-		pvalueLabel.setVisible(show);
-		pvalueText.setVisible(show);
-		nesFilterLabel.setVisible(show);
-		nesFilterCombo.setVisible(show);
-		minExperimentsLabel.setVisible(show);
-		minExperimentsText.setVisible(show);
-		shouldFilterMinLabel.setVisible(show);
-		shouldFilterMinCheckbox.setVisible(show);
+	private void showAdvancedOptions(boolean showAdvanced) {
+		pvalueLabel.setVisible(showAdvanced);
+		pvalueText.setVisible(showAdvanced);
+		nesFilterLabel.setVisible(showAdvanced);
+		nesFilterCombo.setVisible(showAdvanced);
+		minExperimentsLabel.setVisible(showAdvanced);
+		minExperimentsText.setVisible(showAdvanced);
+		shouldFilterMinLabel.setVisible(showAdvanced);
+		shouldFilterMinCheckbox.setVisible(showAdvanced);
 		
 		CardLayout cardLayout = (CardLayout)cardPanel.getLayout();
-		cardLayout.show(cardPanel, show ? "advanced" : "simple");
+		cardLayout.show(cardPanel, showAdvanced ? "advanced" : "simple");
+		
+		// If we are switching to the advanced panel make sure the combined slider is visible if it needs to be.
+		boolean showCombinedSlider = showAdvanced && getCutoffMetricComboValue() == SimilarityMetric.COMBINED;
+		combinedConstantSlider.setVisible(showCombinedSlider);
 	}
 	
 	
@@ -458,7 +470,7 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	public double getPValue() {
 		return pvalueText.isVisible()
-			? getValue(pvalueText)
+			? getTextFieldDoubleValue(pvalueText)
 			: propertyManager.getPvalue();
 	}
 	
@@ -479,7 +491,7 @@ public class CutoffPropertiesPanel extends JPanel {
 	}
 	
 	public double getQValue() {
-		return getValue(qvalueText);
+		return getTextFieldDoubleValue(qvalueText);
 	}
 	
 	public double getCombinedConstant() {
@@ -491,14 +503,18 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	public double getCutoff() {
 		if(advancedCheckBox.isSelected())
-			return getValue(similarityCutoffText);
+			return getTextFieldDoubleValue(similarityCutoffText);
 		else
 			return similaritySlider.getCutoff();
 	}
 	
+	private SimilarityMetric getCutoffMetricComboValue() {
+		return cutoffMetricCombo.getItemAt(cutoffMetricCombo.getSelectedIndex()).getValue();
+	}
+	
 	public SimilarityMetric getSimilarityMetric() {
 		if(advancedCheckBox.isSelected())
-			return cutoffMetricCombo.getItemAt(cutoffMetricCombo.getSelectedIndex()).getValue();
+			return getCutoffMetricComboValue();
 		else
 			return similaritySlider.getSimilarityMetric();
 	}
@@ -507,7 +523,7 @@ public class CutoffPropertiesPanel extends JPanel {
 		return edgeStrategyCombo.getItemAt(edgeStrategyCombo.getSelectedIndex()).getValue();
 	}
 	
-	private static double getValue(JFormattedTextField textField) {
+	private static double getTextFieldDoubleValue(JFormattedTextField textField) {
 		return ((Number)textField.getValue()).doubleValue();
 	}
 	

@@ -14,7 +14,7 @@ import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 public class SimilaritySlider extends JPanel {
 
 	private JSlider slider;
-	private final int defaultValue = 3;
+	private final int defaultValue = 4;
 	
 	public SimilaritySlider() {
 		slider = new JSlider(1, 5, defaultValue);
@@ -61,6 +61,10 @@ public class SimilaritySlider extends JPanel {
 	
 	public void reset() {
 		slider.setValue(defaultValue);
+	}
+	
+	public JSlider getSlider() {
+		return slider;
 	}
 	
 }
