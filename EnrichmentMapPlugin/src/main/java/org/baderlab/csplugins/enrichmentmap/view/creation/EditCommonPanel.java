@@ -23,6 +23,7 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 	
 	private PathTextField gmtText;
 	private PathTextField expressionsText;
+	private PathTextField classText;
 	
 	
 	@Override
@@ -44,6 +45,7 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 	private void createContents() {
 		gmtText = pathTextFactory.create("GMT File:", FileBrowser.Filter.GMT);
 		expressionsText = pathTextFactory.create("Expressions:", FileBrowser.Filter.EXPRESSION);
+		classText = pathTextFactory.create("Class File:", FileBrowser.Filter.CLASS);
 		
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -56,14 +58,17 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
 					.addComponent(gmtText.getLabel())
 					.addComponent(expressionsText.getLabel())
+					.addComponent(classText.getLabel())
 				)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
 					.addComponent(gmtText.getTextField())
 					.addComponent(expressionsText.getTextField())
+					.addComponent(classText.getTextField())
 				)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(gmtText.getBrowseButton())
 					.addComponent(expressionsText.getBrowseButton())
+					.addComponent(classText.getBrowseButton())
 				)
 		);
 		
@@ -79,6 +84,11 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 					.addComponent(expressionsText.getTextField())
 					.addComponent(expressionsText.getBrowseButton())
 				)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(classText.getLabel())
+					.addComponent(classText.getTextField())
+					.addComponent(classText.getBrowseButton())
+				)
 		);
 		
    		if(LookAndFeelUtil.isAquaLAF())
@@ -93,9 +103,11 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 		
 		List<Message> messages = new ArrayList<>(2);
 		if(!gmtText.emptyOrReadable())
-			messages.add(Message.error(gmtText.showError("Enrichments file path is not valid.")));
+			messages.add(Message.error(gmtText.showError("GMT file path is not valid.")));
 		if(!expressionsText.emptyOrReadable())
-			messages.add(Message.error(expressionsText.showError("Enrichments 2 file path is not valid.")));
+			messages.add(Message.error(expressionsText.showError("Expressions file path is not valid.")));
+		if(!classText.emptyOrReadable())
+			messages.add(Message.error(expressionsText.showError("Class file path is not valid.")));
 		
 		return messages;
 	}
@@ -109,6 +121,10 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 		return expressionsText.getText();
 	}
 	
+	public String getClassFile() {
+		return classText.getText();
+	}
+	
 	public boolean hasExpressionFile() {
 		return !isNullOrEmpty(getExpressionFile());
 	}
@@ -116,10 +132,15 @@ public class EditCommonPanel extends JPanel implements DetailPanel {
 	public boolean hasGmtFile() {
 		return !isNullOrEmpty(getGmtFile());
 	}
+	
+	public boolean hasClassFile() {
+		return !isNullOrEmpty(getClassFile());
+	}
 
 	public void reset() {
 		gmtText.setText("");
 		expressionsText.setText("");
+		classText.setText("");
 	}
 	
 }

@@ -350,12 +350,29 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		return analysisTypeCombo.getItemAt(analysisTypeCombo.getSelectedIndex()).getValue();
 	}
 	
-	public String getExpressionFileName() {
+	public String getExpressionFile() {
 		return expressionsText.getText();
 	}
 	
-	public String getGMTFileName() {
+	public String getGMTFile() {
 		return gmtText.getText();
 	}
+	
+	public String getClassFile() {
+		return classesText.getText();
+	}
+	
+	public boolean hasExpressionFile() {
+		return !isNullOrEmpty(getExpressionFile());
+	}
+	
+	public boolean hasGmtFile() {
+		return !isNullOrEmpty(getGMTFile());
+	}
+	
+	public boolean hasClassFile() {
+		return !isNullOrEmpty(getClassFile());
+	}
+
 
 }

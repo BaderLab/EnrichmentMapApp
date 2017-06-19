@@ -1,7 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.view.creation;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -133,22 +131,20 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				.collect(Collectors.toList());
 		
 		// Overwrite all the expression files if the common file has been provided
-		String exprPath = commonPanel.getExpressionFile();
-		if(!isNullOrEmpty(exprPath)) {
-			for(DataSetParameters dsp : dataSets) {
-				dsp.getFiles().setExpressionFileName(exprPath);
-			}
+		if(commonPanel.hasExpressionFile()) {
+			String exprPath = commonPanel.getExpressionFile();
+			dataSets.forEach(dsp -> dsp.getFiles().setExpressionFileName(exprPath));
 		}
-		
 		// Overwrite all the gmt files if a common file has been provided
-		String gmtPath = commonPanel.getGmtFile();
-		if(!isNullOrEmpty(gmtPath)) {
-			for(DataSetParameters dsp : dataSets) {
-				dsp.getFiles().setGMTFileName(gmtPath);
-			}
+		if(commonPanel.hasGmtFile()) {
+			String gmtPath = commonPanel.getGmtFile();
+			dataSets.forEach(dsp -> dsp.getFiles().setGMTFileName(gmtPath));
 		}
-		
-//		System.out.println(params);
+		// Overwrite all the class files if a common file has been provided
+		if(commonPanel.hasClassFile()) {
+			String classPath = commonPanel.getClassFile();
+			dataSets.forEach(dsp -> dsp.getFiles().setClassFile(classPath));
+		}
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
@@ -352,38 +348,38 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		return commonPanel;
 	}
 	
+	
+	private Stream<EditDataSetPanel> editPanelStream() {
+		return dataSetListModel.stream()
+			.map(DataSetListItem::getDetailPanel)
+			.filter(panel -> panel instanceof EditDataSetPanel)
+			.map(panel -> (EditDataSetPanel)panel);
+	}
+	
+	private static void addCommonWarnSection(ErrorMessageDialog dialog, DetailPanel panel, String name) {
+		String message = "A common " + name + " file has been provided. Per-dataset " + name + " files will be ignored.";
+		dialog.addSection(Message.warn(message), panel.getDisplayName(), panel.getIcon());
+	}
+	
+	
 	private boolean validateInput() {
 		ErrorMessageDialog dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
 		
 		// Check if the user provided a global expression file, warn if there are also per-dataset expression files.
-		if(commonPanel.hasExpressionFile()) {
-			for(DataSetListItem item : dataSetListModel.toList()) {
-				DetailPanel panel = item.getDetailPanel();
-				if(panel instanceof EditDataSetPanel && !isNullOrEmpty(((EditDataSetPanel)panel).getExpressionFileName())) {
-					String message = "A common expression file has been provided. Per-dataset expression files will be ignored.";
-					dialog.addSection(Message.warn(message), commonPanel.getDisplayName(), commonPanel.getIcon());
-					break;
-				}
-			}
+		if(commonPanel.hasExpressionFile() && editPanelStream().anyMatch(EditDataSetPanel::hasExpressionFile)) {
+			addCommonWarnSection(dialog, commonPanel, "expression");
 		}
-		
 		// Check if the user provided a global gmt file, warn if there are also per-dataset gmt files.
-		if(commonPanel.hasGmtFile()) {
-			for(DataSetListItem item : dataSetListModel.toList()) {
-				DetailPanel panel = item.getDetailPanel();
-				if(panel instanceof EditDataSetPanel && !isNullOrEmpty(((EditDataSetPanel)panel).getGMTFileName())) {
-					String message = "A common GMT file has been provided. Per-dataset GMT files will be ignored.";
-					dialog.addSection(Message.warn(message), commonPanel.getDisplayName(), commonPanel.getIcon());
-					break;
-				}
-			}
+		if(commonPanel.hasGmtFile() && editPanelStream().anyMatch(EditDataSetPanel::hasGmtFile)) {
+			addCommonWarnSection(dialog, commonPanel, "GMT");
+		}
+		// Check if the user provided a global gmt file, warn if there are also per-dataset gmt files.
+		if(commonPanel.hasClassFile() && editPanelStream().anyMatch(EditDataSetPanel::hasClassFile)) {
+			addCommonWarnSection(dialog, commonPanel, "class");
 		}
 		
 		{ // Check for duplicate data set names
-			Map<String,Long> dataSetNameCount = dataSetListModel.stream()
-				.map(DataSetListItem::getDetailPanel)
-				.filter(panel -> panel instanceof EditDataSetPanel)
-				.map(panel -> (EditDataSetPanel)panel)
+			Map<String,Long> dataSetNameCount = editPanelStream()
 				.map(EditDataSetPanel::getDataSetName)
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 			
