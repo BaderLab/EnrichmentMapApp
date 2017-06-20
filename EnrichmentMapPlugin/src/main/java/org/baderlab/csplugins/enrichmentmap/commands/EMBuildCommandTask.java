@@ -54,7 +54,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
@@ -160,7 +159,6 @@ public class EMBuildCommandTask extends AbstractTask {
 	public Boolean distinctEdges;
 	
 
-	@Inject private EnrichmentMapManager emManager;
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private LegacySupport legacySupport;
 	@Inject private PropertyManager propertyManager;
@@ -238,6 +236,9 @@ public class EMBuildCommandTask extends AbstractTask {
 		EMCreationParameters creationParams = 
 				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), 
 						metric, similaritycutoff, propertyManager.getCombinedConstant(), edgeStrategy);
+		
+		//System.out.println(creationParams);
+		//System.out.println(dataSets);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
 		insertTasksAfterCurrentTask(taskFactory.createTaskIterator());

@@ -257,10 +257,24 @@ public class EnrichmentMapParameters {
 	
 	public static Method stringToMethod(String name) {
 		switch(name) {
+			case method_generic:
+			case "GENERIC":
+				return Method.Generic;
+			case method_GSEA:        
+			case "gsea":
+				return Method.GSEA;
+			case method_Specialized: 
+			case "david":
+			case "DAVID":
+			case "bingo":
+			case "BINGO":
+			case "BiNGO":
+			case "great":
+			case "GREAT":
+			case "Great":
+				return Method.Specialized;
 			default:
-			case method_generic:     return Method.Generic;
-			case method_GSEA:        return Method.GSEA;
-			case method_Specialized: return Method.Specialized;
+				throw new IllegalArgumentException("Method '" + name + "' not recognized");
 		}
 	}
 	

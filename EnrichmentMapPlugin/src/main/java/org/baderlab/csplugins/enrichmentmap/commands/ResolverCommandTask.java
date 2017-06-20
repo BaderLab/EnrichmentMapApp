@@ -27,7 +27,7 @@ import com.google.inject.Inject;
 
 public class ResolverCommandTask extends AbstractTask {
 
-	@Tunable
+	@Tunable(required=true)
 	public File rootFolder;
 	
 	@Tunable
@@ -91,6 +91,31 @@ public class ResolverCommandTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		logger.info("Running EnrichmentMap Data Set Resolver Task");
 		
+		EdgeStrategy strategy;
+		try {
+			strategy = EdgeStrategy.valueOf(edgeStrategy.getSelectedValue().toUpperCase());
+		} catch(IllegalArgumentException e) {
+			throw new IllegalArgumentException("edgeStrategy is invalid: '" + edgeStrategy.getSelectedValue() + "'");
+		}
+		
+		SimilarityMetric sm;
+		try {
+			sm = SimilarityMetric.valueOf(similarityMetric.getSelectedValue().toUpperCase());
+		} catch(IllegalArgumentException e) {
+			throw new IllegalArgumentException("similarityMetric is invalid: '" + similarityMetric.getSelectedValue() + "'");
+		}
+		
+		NESFilter nesf;
+		try {
+			nesf = NESFilter.valueOf(nesFilter.getSelectedValue().toUpperCase());
+		} catch(IllegalArgumentException e) {
+			throw new IllegalArgumentException("nesFilter is invalid: '" + nesFilter.getSelectedValue() + "'");
+		}
+		
+		if(rootFolder == null || !rootFolder.exists()) {
+			throw new IllegalArgumentException("rootFolder is invalid: " + rootFolder);
+		}
+		
 		// Scan root folder (note: throws exception if no data sets were found)
 		ResolverTask resolverTask = new ResolverTask(rootFolder);
 		taskManager.execute(new TaskIterator(resolverTask)); // blocks
@@ -123,15 +148,10 @@ public class ResolverCommandTask extends AbstractTask {
 		
 		// Create Enrichment Map
 		String prefix = legacySupport.getNextAttributePrefix();
-		SimilarityMetric sm = SimilarityMetric.valueOf(similarityMetric.getSelectedValue());
-		NESFilter nesf = NESFilter.valueOf(nesFilter.getSelectedValue());
-		
 		String info = String.format(
 			"prefix:%s, pvalue:%f, qvalue:%f, nesFilter:%s, minExperiments:%d, similarityMetric:%s, similarityCutoff:%f, combinedConstant:%f", 
 			prefix, pvalue, qvalue, nesf, minExperiments, sm, similarityCutoff, combinedConstant);
 		logger.info(info);
-		
-		EdgeStrategy strategy = EdgeStrategy.valueOf(edgeStrategy.getSelectedValue());
 		
 		EMCreationParameters params = 
 				new EMCreationParameters(prefix, pvalue, qvalue, nesf, Optional.ofNullable(minExperiments), 
