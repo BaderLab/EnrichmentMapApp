@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +30,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter.SortKey;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableRowSorter;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -176,7 +177,6 @@ public class HeatMapMainPanel extends JPanel {
 
 		rankColumn.setHeaderRenderer(columnHeaderRankOptionRendererFactory.create(this, HeatMapTableModel.RANK_COL));
 		rankColumn.setPreferredWidth(100);
-		((TableRowSorter<?>)table.getRowSorter()).setSortable(HeatMapTableModel.RANK_COL, false);
 		
 		int colCount = tableModel.getColumnCount();
 		for(int col = HeatMapTableModel.DESC_COL_COUNT; col < colCount; col++) {
@@ -339,9 +339,13 @@ public class HeatMapMainPanel extends JPanel {
 		// Update the Table
 		clearTableHeader();
 		List<String> genesToUse = params.getOperator() == Operator.UNION ? unionGenes : interGenes;
-		List<? extends SortKey> sortKeys = table.getRowSorter().getSortKeys();
 		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, genesToUse, params.getTransform());
 		table.setModel(tableModel);
+		
+		List<? extends SortKey> sortKeys = table.getRowSorter().getSortKeys();
+		if(sortKeys.isEmpty()) {
+			sortKeys = Collections.singletonList(new SortKey(HeatMapTableModel.RANK_COL, SortOrder.ASCENDING));
+		}
 		
 		updateSetting_ShowValues(params.isShowValues());
 		try {
