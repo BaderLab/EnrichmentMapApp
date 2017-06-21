@@ -494,9 +494,9 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	public Optional<Integer> getMinimumExperiments() {
 		if(minExperimentsText.isVisible() && shouldFilterMinCheckbox.isSelected()) {
- 			Integer value = (Integer)minExperimentsText.getValue();
+ 			Number value = (Number)minExperimentsText.getValue(); // sometimes returns Long, sometimes Integer
  			if(value != null && value.intValue() > 0) {
- 				return Optional.of(value);
+ 				return Optional.of(value.intValue());
  			}
 		}
 		return Optional.empty();
