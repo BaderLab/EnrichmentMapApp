@@ -406,7 +406,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			
 		if(dialog.isEmpty())
 			return true;
-		if(!dialog.hasErrors() && !propertyManager.getShowCreateWarnings())
+		if(!dialog.hasErrors() && !propertyManager.getValue(PropertyManager.CREATE_WARN))
 			return true;
 		
 		dialog.pack();
@@ -417,7 +417,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		// If the dialog only has warning messages then the user can choose to continue.
 		boolean shouldContinue = dialog.shouldContinue();
 		if(dialog.isDontWarnAgain()) {
-			propertyManager.setShowCreateWarnings(false);
+			propertyManager.setValue(PropertyManager.CREATE_WARN, false);
 		}
 		return shouldContinue;
 	}

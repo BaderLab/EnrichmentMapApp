@@ -159,7 +159,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		heatMapPanel.selectGenes(map, params, rankOptions, union, inter);
 		
-		if(propertyManager.isHeatmapAutofocus()) {
+		if(propertyManager.getValue(PropertyManager.HEATMAP_AUTOFOCUS)) {
 			bringToFront();
 		}
 	}

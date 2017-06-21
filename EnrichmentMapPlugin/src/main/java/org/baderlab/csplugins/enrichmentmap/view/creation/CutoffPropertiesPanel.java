@@ -6,7 +6,9 @@ import java.awt.CardLayout;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.EnumMap;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,11 +23,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.text.InternationalFormatter;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -59,16 +63,30 @@ public class CutoffPropertiesPanel extends JPanel {
 	// options
 	private JCheckBox notationCheckBox;
 	private JCheckBox advancedCheckBox;
-	private Map<SimilarityMetric,Double> cutoffValues;
+	
+	private final List<Pair<SimilarityMetric, Double>> sliderTicks = Arrays.asList(
+		Pair.of(SimilarityMetric.JACCARD, 0.35),
+		Pair.of(SimilarityMetric.JACCARD, 0.25),
+		Pair.of(SimilarityMetric.COMBINED, 0.375),
+		Pair.of(SimilarityMetric.OVERLAP, 0.5),
+		Pair.of(SimilarityMetric.OVERLAP, 0.25)
+	);
+	
+	// Cache value when user changes the combo box
+	private Map<SimilarityMetric,Double> advancedCutoffValues = initialCutoffValues();
+		
+	private Map<SimilarityMetric,Double> initialCutoffValues() {
+		// this is in its own method because its called by reset()
+		Map<SimilarityMetric,Double> values = new HashMap<>();
+		values.put(SimilarityMetric.JACCARD,  0.25);
+		values.put(SimilarityMetric.COMBINED, 0.375);
+		values.put(SimilarityMetric.OVERLAP,  0.5);
+		return values;
+	}
 	
 	
 	@AfterInjection
 	public void createContents() {
-		cutoffValues = new EnumMap<>(SimilarityMetric.class);
-		cutoffValues.put(SimilarityMetric.JACCARD,  propertyManager.getDefaultCutOff(SimilarityMetric.JACCARD));
-		cutoffValues.put(SimilarityMetric.OVERLAP,  propertyManager.getDefaultCutOff(SimilarityMetric.OVERLAP));
-		cutoffValues.put(SimilarityMetric.COMBINED, propertyManager.getDefaultCutOff(SimilarityMetric.COMBINED));
-		
 		setBorder(LookAndFeelUtil.createPanelBorder());
 		
 		JPanel filterNodesPanel = createFilterNodesPanel();
@@ -121,7 +139,6 @@ public class CutoffPropertiesPanel extends JPanel {
    		);
 	}
 	
-	
 	private JPanel createFilterNodesPanel() {
 		JPanel panel = new JPanel();
 		panel.setBorder(LookAndFeelUtil.createTitledBorder("Number of Nodes (gene-set filtering)"));
@@ -141,8 +158,8 @@ public class CutoffPropertiesPanel extends JPanel {
 		shouldFilterMinCheckbox = new JCheckBox("");
 		minExperimentsText = new JFormattedTextField(NumberFormat.getIntegerInstance());
 		
-		pvalueText.setValue(propertyManager.getPvalue());
-		qvalueText.setValue(propertyManager.getQvalue());
+		pvalueText.setValue(propertyManager.getValue(PropertyManager.P_VALUE));
+		qvalueText.setValue(propertyManager.getValue(PropertyManager.Q_VALUE));
 		minExperimentsText.setValue(3);
 		
 		nesFilterCombo = new JComboBox<>();
@@ -300,7 +317,7 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	private JPanel createFilterEdgesPanel_Simple() {
 		JLabel sliderLabel = new JLabel("Connectivity:   ");
-		similaritySlider = new SimilaritySlider();
+		similaritySlider = new SimilaritySlider(sliderTicks, 3);
 		similaritySlider.setOpaque(false);
 		SwingUtil.makeSmall(sliderLabel);
 		
@@ -335,8 +352,8 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		SwingUtil.makeSmall(cutoffLabel, metricLabel);
 		
-		SimilarityMetric defaultMetric = propertyManager.getSimilarityMetric();
-		double defaultCutoff = propertyManager.getDefaultCutOff(defaultMetric);
+		SimilarityMetric defaultMetric = sliderTicks.get(2).getKey();
+		double defaultCutoff = sliderTicks.get(2).getValue();
 		
 		similarityCutoffText = new JFormattedTextField(getFormatterFactory(false));
 		similarityCutoffText.setValue(defaultCutoff);
@@ -350,25 +367,23 @@ public class CutoffPropertiesPanel extends JPanel {
 				
 		ActionListener sliderUpdate = e -> {
 			SimilarityMetric type = getCutoffMetricComboValue();
-			similarityCutoffText.setValue(cutoffValues.get(type));
+			similarityCutoffText.setValue(advancedCutoffValues.get(type));
 			// Don't make the slider visible unless the advanced panel is also visible or else it throws off the layout.
 			combinedConstantSlider.setVisible(advancedCheckBox.isSelected() && type == SimilarityMetric.COMBINED);
 		};
 		
-		double combinedConstant = propertyManager.getCombinedConstant();
-		int tick = (int)(combinedConstant * 100.0);
-		
+		int tick = (int)(LegacySupport.combinedConstant_default * 100.0);
 		combinedConstantSlider = new CombinedConstantSlider(tick);
 		combinedConstantSlider.setOpaque(false);
 		
 		cutoffMetricCombo.setSelectedItem(ComboItem.of(defaultMetric)); // default
 		cutoffMetricCombo.addActionListener(sliderUpdate);
-		similarityCutoffText.setValue(cutoffValues.get(defaultMetric));
+		similarityCutoffText.setValue(advancedCutoffValues.get(defaultMetric));
 		combinedConstantSlider.setVisible(defaultMetric == SimilarityMetric.COMBINED);
 		
 		similarityCutoffText.addPropertyChangeListener("value", e -> {
 			double value = ((Number)e.getNewValue()).doubleValue();
-			cutoffValues.put(getCutoffMetricComboValue(), value);
+			advancedCutoffValues.put(getCutoffMetricComboValue(), value);
 		});
 		
 		final GroupLayout layout = new GroupLayout(panel);
@@ -412,20 +427,17 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	
 	public void reset() {
-		pvalueText.setValue(propertyManager.getPvalue());
-		qvalueText.setValue(propertyManager.getQvalue());
+		pvalueText.setValue(propertyManager.getValue(PropertyManager.P_VALUE));
+		qvalueText.setValue(propertyManager.getValue(PropertyManager.Q_VALUE));
 		nesFilterCombo.setSelectedItem(ComboItem.of(NESFilter.ALL));
 		shouldFilterMinCheckbox.setSelected(false);
 		minExperimentsText.setValue(3);
 		minExperimentsLabel.setEnabled(false);
 		minExperimentsText.setEnabled(false);
 		
-		cutoffValues = new EnumMap<>(SimilarityMetric.class);
-		cutoffValues.put(SimilarityMetric.JACCARD,  propertyManager.getDefaultCutOff(SimilarityMetric.JACCARD));
-		cutoffValues.put(SimilarityMetric.OVERLAP,  propertyManager.getDefaultCutOff(SimilarityMetric.OVERLAP));
-		cutoffValues.put(SimilarityMetric.COMBINED, propertyManager.getDefaultCutOff(SimilarityMetric.COMBINED));
+		advancedCutoffValues = initialCutoffValues();
 		
-		SimilarityMetric defaultMetric = propertyManager.getSimilarityMetric();
+		SimilarityMetric defaultMetric = sliderTicks.get(2).getKey();
 		cutoffMetricCombo.setSelectedItem(ComboItem.of(defaultMetric));
 		edgeStrategyCombo.setSelectedItem(ComboItem.of(EdgeStrategy.AUTOMATIC));
 		
@@ -471,7 +483,7 @@ public class CutoffPropertiesPanel extends JPanel {
 	public double getPValue() {
 		return pvalueText.isVisible()
 			? getTextFieldDoubleValue(pvalueText)
-			: propertyManager.getPvalue();
+			: propertyManager.getValue(PropertyManager.P_VALUE);
 	}
 	
 	public NESFilter getNESFilter() {

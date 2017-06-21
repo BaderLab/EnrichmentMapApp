@@ -71,9 +71,7 @@ public class CyActivator extends AbstractCyActivator {
 		if(headless) {
 			// register the injector as an OSGi service so the integration tests can access it
 			registerService(bc, injector, Injector.class, new Properties());
-		}
-		
-		if(!headless) {
+		} else {
 			// Don't load UI services if running headless
 			// register actions
 			registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class), new Properties());
@@ -85,7 +83,6 @@ public class CyActivator extends AbstractCyActivator {
 			// chart factories
 			final Properties chartProps = new Properties();
 			chartProps.setProperty(CyCustomGraphics2Factory.GROUP, "Charts");
-			
 			RadialHeatMapChartFactory radialHeatMapChartFactory = injector.getInstance(RadialHeatMapChartFactory.class);
 			registerService(bc, radialHeatMapChartFactory, CyCustomGraphics2Factory.class, chartProps);
 			

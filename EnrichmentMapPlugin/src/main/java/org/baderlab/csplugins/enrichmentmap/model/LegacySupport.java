@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 
@@ -17,6 +18,12 @@ public class LegacySupport {
 	
 	public static final String DATASET1 = "Dataset 1";
 	public static final String DATASET2 = "Dataset 2";
+	
+	public static final double jaccardCutOff_default = 0.25;
+	public static final double overlapCutOff_default = 0.5;
+	public static final double combinedCutoff_default = 0.375;
+	public static final double combinedConstant_default = 0.5;
+	public static final SimilarityMetric similarityMetric_default = SimilarityMetric.OVERLAP;
 	
 	
 	@Inject private EnrichmentMapManager emManager;

@@ -65,9 +65,9 @@ public class SettingsPopupPanel extends JPanel {
 		pearsonRadio.addActionListener(pearsonListener = dmListenerFor(Distance.PEARSON));
 		
 		JCheckBox autofocusCheckbox = new JCheckBox("Auto-Focus HeatMap");
-		autofocusCheckbox.setSelected(propertyManager.isHeatmapAutofocus());
+		autofocusCheckbox.setSelected(propertyManager.getValue(PropertyManager.HEATMAP_AUTOFOCUS));
 		autofocusCheckbox.addActionListener(e -> {
-			propertyManager.setHeatmapAutofocus(autofocusCheckbox.isSelected());
+			propertyManager.setValue(PropertyManager.HEATMAP_AUTOFOCUS, autofocusCheckbox.isSelected());
 		});
 		SwingUtil.makeSmall(autofocusCheckbox);
 		

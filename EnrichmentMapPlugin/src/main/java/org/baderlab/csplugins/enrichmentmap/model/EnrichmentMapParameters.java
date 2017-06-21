@@ -195,15 +195,15 @@ public class EnrichmentMapParameters {
 		this.method = EnrichmentMapParameters.method_GSEA;
 
 		//the set of default parameters we want to get 
-		this.defaultJaccardCutOff = propertyManager.getJaccardCutoff();
-		this.defaultOverlapCutOff = propertyManager.getOverlapCutoff();
-		this.defaultSimilarityMetric = similarityMetricToString(propertyManager.getSimilarityMetric());
+		this.defaultJaccardCutOff = LegacySupport.jaccardCutOff_default;
+		this.defaultOverlapCutOff = LegacySupport.overlapCutOff_default;
+		this.defaultSimilarityMetric = similarityMetricToString(SimilarityMetric.OVERLAP);
 //		this.defaultSortMethod = HeatMapParameters.Sort.CLUSTER.display;
 //		this.defaultDistanceMetric = HeatMapParameters.DistanceMetric.PEARSON_CORRELATION.display;
 
-		this.pvalue = propertyManager.getPvalue();
-		this.qvalue = propertyManager.getQvalue();
-		this.combinedConstant = propertyManager.getCombinedConstant();
+		this.pvalue = propertyManager.getValue(PropertyManager.P_VALUE);
+		this.qvalue = propertyManager.getValue(PropertyManager.Q_VALUE);
+		this.combinedConstant = LegacySupport.combinedConstant_default;
 		this.disable_heatmap_autofocus = false;
 		
 		//choose Jaccard or Overlap as default

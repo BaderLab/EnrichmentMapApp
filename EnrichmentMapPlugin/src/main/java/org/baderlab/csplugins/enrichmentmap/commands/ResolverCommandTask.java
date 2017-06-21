@@ -53,14 +53,13 @@ public class ResolverCommandTask extends AbstractTask {
 	public Integer minExperiments = null;
 	
 	@Tunable
-	public Double similarityCutoff = 0.25;
+	public Double similarityCutoff = LegacySupport.overlapCutOff_default;
 
 	@Tunable
 	public ListSingleSelection<String> similarityMetric;
 
 	@Tunable
-	public double combinedConstant = 0.5;
-	
+	public double combinedConstant = LegacySupport.combinedConstant_default;
 	
 	
 	private static final Logger logger = Logger.getLogger(CyUserLog.NAME);
@@ -72,19 +71,15 @@ public class ResolverCommandTask extends AbstractTask {
 	
 	@Inject
 	public ResolverCommandTask(PropertyManager propertyManager) {
-		SimilarityMetric defaultMetric = propertyManager.getSimilarityMetric();
 		similarityMetric = enumNames(SimilarityMetric.values());
-		similarityMetric.setSelectedValue(defaultMetric.name());
+		similarityMetric.setSelectedValue(LegacySupport.similarityMetric_default.name());
 		
 		edgeStrategy = enumNames(EdgeStrategy.values());
 		edgeStrategy.setSelectedValue(EdgeStrategy.AUTOMATIC.name());
 		
-		similarityCutoff = propertyManager.getDefaultCutOff(defaultMetric);
-		
 		nesFilter = enumNames(NESFilter.values());
 		nesFilter.setSelectedValue(NESFilter.ALL.name());
 	}
-	
 	
 	
 	@Override

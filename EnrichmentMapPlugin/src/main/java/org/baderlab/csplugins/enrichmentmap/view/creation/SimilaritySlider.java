@@ -2,11 +2,13 @@ package org.baderlab.csplugins.enrichmentmap.view.creation;
 
 import java.awt.BorderLayout;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 
@@ -14,10 +16,14 @@ import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 public class SimilaritySlider extends JPanel {
 
 	private JSlider slider;
-	private final int defaultValue = 4;
+	private final int defaultTick;
+	private final List<Pair<SimilarityMetric, Double>> cutoffs;
 	
-	public SimilaritySlider() {
-		slider = new JSlider(1, 5, defaultValue);
+	public SimilaritySlider(List<Pair<SimilarityMetric, Double>> cutoffs, int defaultTick) {
+		this.defaultTick = defaultTick;
+		this.cutoffs = cutoffs;
+		
+		slider = new JSlider(1, cutoffs.size(), defaultTick);
 		slider.setMajorTickSpacing(1);
 		slider.setSnapToTicks(true);
 		slider.setPaintTicks(true);
@@ -28,7 +34,7 @@ public class SimilaritySlider extends JPanel {
 		
 		Hashtable<Integer,JLabel> labelTable = new Hashtable<>();
 		labelTable.put(1, sparseLabel);
-		labelTable.put(5, denseLabel);
+		labelTable.put(cutoffs.size(), denseLabel);
 		
 		slider.setLabelTable(labelTable);
 		slider.setPaintLabels(true);
@@ -37,30 +43,21 @@ public class SimilaritySlider extends JPanel {
 		add(slider, BorderLayout.SOUTH);
 	}
 	
+	
+	public Pair<SimilarityMetric,Double> getTickValue() {
+		return cutoffs.get(slider.getValue()-1);
+	}
+	
 	public SimilarityMetric getSimilarityMetric() {
-		switch(slider.getValue()) {
-			default:
-			case 1: return SimilarityMetric.JACCARD;
-			case 2: return SimilarityMetric.JACCARD;
-			case 3: return SimilarityMetric.COMBINED;
-			case 4: return SimilarityMetric.OVERLAP;
-			case 5: return SimilarityMetric.OVERLAP;
-		}
+		return getTickValue().getKey();
 	}
 	
 	public double getCutoff() {
-		switch(slider.getValue()) {
-			default:
-			case 1: return 0.35;
-			case 2: return 0.25;
-			case 3: return 0.375;
-			case 4: return 0.5;
-			case 5: return 0.25;
-		}
+		return getTickValue().getValue();
 	}
 	
 	public void reset() {
-		slider.setValue(defaultValue);
+		slider.setValue(defaultTick);
 	}
 	
 	public JSlider getSlider() {
