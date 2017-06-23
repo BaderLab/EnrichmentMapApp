@@ -1,3 +1,4 @@
+package org.baderlab.csplugins.enrichmentmap.model;
 /**
  **                       EnrichmentMap Cytoscape Plugin
  **
@@ -34,16 +35,6 @@
  ** Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  **
  **/
-
-// $Id$
-// $LastChangedDate$
-// $LastChangedRevision$
-// $LastChangedBy$
-// $HeadURL$
-
-package org.baderlab.csplugins.enrichmentmap.model;
-
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 
 /**
  * Created by User: risserlin Date: Jan 28, 2009 Time: 3:25:51 PM
@@ -133,10 +124,10 @@ public class GenericResult extends EnrichmentResult {
 	 */
 	@Override
 	public boolean geneSetOfInterest(EnrichmentResultFilterParams params) {
-		if(params.getNESFilter() == NESFilter.POSITIVE && getNES() <= 0)
-			return false;
-		if(params.getNESFilter() == NESFilter.NEGATIVE && getNES() >= 0)
-			return false;
+//		if(params.getNESFilter() == NESFilter.POSITIVE && getNES() <= 0)
+//			return false;
+//		if(params.getNESFilter() == NESFilter.NEGATIVE && getNES() >= 0)
+//			return false;
 		
 		double pvalue = params.getPvalue();
 		double fdrqvalue = params.getQvalue();

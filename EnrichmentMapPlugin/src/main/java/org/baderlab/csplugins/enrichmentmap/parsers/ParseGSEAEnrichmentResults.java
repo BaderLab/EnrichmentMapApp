@@ -1,36 +1,67 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class ParseGSEAEnrichmentResults extends DatasetLineParser {
+import com.google.common.base.Strings;
+
+public class ParseGSEAEnrichmentResults extends AbstractTask {
+	
+	public static final Double DefaultScoreAtMax = -1000000.0;
+	
+	
+	public final EMDataSet dataset;
 	
 	public ParseGSEAEnrichmentResults(EMDataSet dataset) {
-		super(dataset);
+		this.dataset = dataset;
 	}
 	
 	@Override
-	public void parseLines(List<String> lines, EMDataSet dataset, TaskMonitor taskMonitor) {
+	public void run(TaskMonitor taskMonitor) throws IOException {
 		if(taskMonitor == null)
 			taskMonitor = new NullTaskMonitor();
 		taskMonitor.setTitle("Parsing Bingo Enrichment Result file");
 		
-		//skip the first line which just has the field names (start i=1)
-
+		NESFilter nesFilter = dataset.getMap().getParams().getNESFilter();
+		
+		if(nesFilter == NESFilter.ALL || nesFilter == NESFilter.POSITIVE) {
+			String positiveEnrichmentResults = dataset.getEnrichments().getFilename1();
+			if(!Strings.isNullOrEmpty(positiveEnrichmentResults)) {
+				readFile(taskMonitor, positiveEnrichmentResults);
+			}
+		}
+		
+		if(nesFilter == NESFilter.ALL || nesFilter == NESFilter.NEGATIVE) {
+			String negativeEnrichmentResults = dataset.getEnrichments().getFilename2();
+			if(!Strings.isNullOrEmpty(negativeEnrichmentResults)) {
+				readFile(taskMonitor, negativeEnrichmentResults);
+			}
+		}
+	}
+	
+	
+	private void readFile(TaskMonitor taskMonitor, String enrichmentFile) throws IOException {
 		dataset.getMap().getParams().setFDR(true);
 
+		List<String> lines = LineReader.readLines(enrichmentFile);
+		
 		int currentProgress = 0;
 		int maxValue = lines.size();
 		taskMonitor.setStatusMessage("Parsing Enrichment Results file - " + maxValue + " rows");
 
+		
 		Map<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
 		
+		//skip the first line which just has the field names (start i=1)
 		for(int i = 1; i < lines.size(); i++) {
 			String line = lines.get(i);
 			String[] tokens = line.split("\t");

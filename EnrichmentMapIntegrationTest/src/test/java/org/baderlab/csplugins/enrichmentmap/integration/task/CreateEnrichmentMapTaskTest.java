@@ -65,8 +65,9 @@ public class CreateEnrichmentMapTaskTest extends BaseIntegrationTest {
 		
 		PropertyManager pm = new PropertyManager();
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", pm.getPvalue(), pm.getQvalue(), NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 
-					                 pm.getJaccardCutoff(), pm.getCombinedConstant(), EdgeStrategy.COMPOUND);
+			new EMCreationParameters("EM1_", pm.getValue(PropertyManager.P_VALUE), pm.getValue(PropertyManager.Q_VALUE), 
+									NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 
+									LegacySupport.jaccardCutOff_default, LegacySupport.combinedConstant_default, EdgeStrategy.COMPOUND);
 		
 		DataSetFiles dataset1files = new DataSetFiles();
 		dataset1files.setGMTFileName(geneSetsFile);  

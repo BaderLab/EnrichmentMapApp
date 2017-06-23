@@ -1,32 +1,38 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.GreatFilter;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.common.collect.ImmutableSet;
 
-public class ParseGREATEnrichmentResults extends DatasetLineParser {
+public class ParseGREATEnrichmentResults extends AbstractTask {
 
+	private final EMDataSet dataset;
+	
 	public ParseGREATEnrichmentResults(EMDataSet dataset) {
-		super(dataset);
+		this.dataset = dataset;
 	}
 
 	@Override
-	public void parseLines(List<String> lines, EMDataSet dataset, TaskMonitor taskMonitor) {
+	public void run(TaskMonitor taskMonitor) throws IOException {
 		if(taskMonitor == null)
 			taskMonitor = new NullTaskMonitor();
 		taskMonitor.setTitle("Parsing Enrichment Result file");
 
+		List<String> lines = LineReader.readLines(dataset.getEnrichments().getFilename1());
+		
 		boolean hasBackground = false;
 
 		EMCreationParameters params = dataset.getMap().getParams();

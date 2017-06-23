@@ -103,7 +103,7 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		EnrichmentMap map = dataset.getMap();
 
 		String expressionFileName = dataset.getExpressionSets().getFilename();
-		List<String> lines = DatasetLineParser.readLines(expressionFileName);
+		List<String> lines = LineReader.readLines(expressionFileName);
 		
 		int currentProgress = 0;
 		int maxValue = lines.size();
@@ -276,7 +276,7 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		//check to see if the file was opened successfully
 
 		if(!classFile.equalsIgnoreCase(null)) {
-			List<String> lines = DatasetLineParser.readLines(classFile);
+			List<String> lines = LineReader.readLines(classFile);
 
 			//the class file can be split by a space or a tab
 			String[] classes = lines.get(2).split("\\s");

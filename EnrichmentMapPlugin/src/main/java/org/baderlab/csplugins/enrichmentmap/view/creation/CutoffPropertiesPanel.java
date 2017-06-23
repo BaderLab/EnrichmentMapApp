@@ -145,7 +145,7 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		pvalueLabel = new JLabel("p-value cutoff:");
 		JLabel qvalueLabel = new JLabel("FDR q-value cutoff:");
-		nesFilterLabel = new JLabel("NES:");
+		nesFilterLabel = new JLabel("NES (GSEA only):");
 		shouldFilterMinLabel = new JLabel("Filter by minimum experiments:");
 		minExperimentsLabel = new JLabel("Minimum experiments:");
 		

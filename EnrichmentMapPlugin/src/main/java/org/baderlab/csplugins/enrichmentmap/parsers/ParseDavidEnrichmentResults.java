@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -9,24 +10,29 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.common.collect.ImmutableSet;
 
-public class ParseDavidEnrichmentResults extends DatasetLineParser {
+public class ParseDavidEnrichmentResults extends AbstractTask {
 	
+	private final EMDataSet dataset;
+	 
 	public ParseDavidEnrichmentResults(EMDataSet dataset) {
-		super(dataset);
+		this.dataset = dataset;
 	}
 
 	/**
 	 * Parse david enrichment results file
 	 */
 	@Override
-	public void parseLines(List<String> lines, EMDataSet dataset, TaskMonitor taskMonitor) {
+	public void run(TaskMonitor taskMonitor) throws IOException {
 		if(taskMonitor == null)
 			taskMonitor = new NullTaskMonitor();
 		taskMonitor.setTitle("Parsing David Enrichment Result file");
+		
+		List<String> lines = LineReader.readLines(dataset.getEnrichments().getFilename1());
 		
 		//with David results there are no genesets defined.  first pass through the file
 		// needs to parse the genesets

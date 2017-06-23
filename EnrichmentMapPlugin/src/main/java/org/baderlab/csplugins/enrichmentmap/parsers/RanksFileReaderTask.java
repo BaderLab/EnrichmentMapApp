@@ -131,7 +131,7 @@ public class RanksFileReaderTask extends AbstractTask {
 		if(taskMonitor == null)
 			taskMonitor = new NullTaskMonitor();
 		
-		List<String> lines = DatasetLineParser.readLines(RankFileName);
+		List<String> lines = LineReader.readLines(RankFileName);
 		
 		int lineNumber = 0;
 		int currentProgress = 0;

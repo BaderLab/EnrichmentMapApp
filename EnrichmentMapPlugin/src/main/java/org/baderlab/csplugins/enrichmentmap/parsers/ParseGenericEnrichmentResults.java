@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -10,21 +11,26 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.common.collect.ImmutableSet;
 
-public class ParseGenericEnrichmentResults extends DatasetLineParser {
+public class ParseGenericEnrichmentResults extends AbstractTask {
+	
+	private final EMDataSet dataset;
 	
 	public ParseGenericEnrichmentResults(EMDataSet dataset) {
-		super(dataset);
+		this.dataset = dataset;
 	}
 	
 	@Override
-	public void parseLines(List<String> lines, EMDataSet dataset, TaskMonitor taskMonitor) {
+	public void run(TaskMonitor taskMonitor) throws IOException {
 		if(taskMonitor == null)
 			taskMonitor = new NullTaskMonitor();
 		taskMonitor.setTitle("Parsing Generic Result file");
+		
+		List<String> lines = LineReader.readLines(dataset.getEnrichments().getFilename1());
 
 		//Get the current genesets so we can check that all the results are in the geneset list
 		//and put the size of the genesets into the visual style
