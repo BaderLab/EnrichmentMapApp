@@ -1,22 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LINE_TYPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TOOLTIP;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.DIAMOND;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.ELLIPSE;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.RECTANGLE;
@@ -282,8 +266,9 @@ public class EMStyleBuilder {
 		eventHelper.silenceEventSource(dm);
 		
 		try {
+			List<EMDataSet> dataSets = options.getEnrichmentMap().getDataSetList();
+			
 			if (dataSetCount > 1 && distinctEdges) {
-				List<EMDataSet> dataSets = options.getEnrichmentMap().getDataSetList();
 				final ColorBrewer colorBrewer;
 				
 				// Try colorblind and/or print friendly colours first
@@ -309,6 +294,10 @@ public class EMStyleBuilder {
 				
 				dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_OVERLAP, overlapColor);
 				dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_SIG, Colors.SIG_EDGE_COLOR);
+				
+				for (EMDataSet ds : dataSets) {
+					ds.setColor(overlapColor);
+				}
 			}
 		} finally {
 			eventHelper.unsilenceEventSource(dm);
