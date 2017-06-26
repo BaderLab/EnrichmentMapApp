@@ -6,12 +6,14 @@ import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE_ENRICHMENT;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -297,6 +299,12 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 						dataSets, columnDescriptor, columnIdFactory);
 				ChartType type = chartOptions.getType();
 
+				List<Color> colors = chartOptions.getColorScheme().getColors();
+				
+				// Swap UP and ZERO colors if q or p-value (it should not have negative values!)
+				if ((data == ChartData.FDR_VALUE || data == ChartData.P_VALUE) && colors.size() == 3)
+					colors = Arrays.asList(new Color[] { colors.get(1), colors.get(0), colors.get(1) });
+				
 				Map<String, Object> props = new HashMap<>(type.getProperties());
 				props.put("cy_dataColumns", columns);
 				
@@ -305,7 +313,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				props.put("cy_autoRange", false);
 				props.put("cy_globalRange", true);
 				props.put("cy_showItemLabels", chartOptions.isShowLabels());
-				props.put("cy_colors", chartOptions.getColorScheme().getColors());
+				props.put("cy_colors", colors);
 				
 				try {
 					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
