@@ -196,14 +196,13 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	private List<RankingOption> getDataSetRankOptions(EnrichmentMap map, CyNetwork network, List<CyNode> nodes, List<CyEdge> edges) {
 		List<RankingOption> options = new ArrayList<>();
 		for(EMDataSet dataset : map.getDataSetList()) {
-			if(nodes.size() == 1 && edges.isEmpty() && dataset.getMethod() == Method.GSEA && contains(dataset, network, nodes.get(0))) {
+			if(nodes.size() == 1 && edges.isEmpty() && dataset.getMethod() == Method.GSEA) {
 				String geneSetName = network.getRow(nodes.get(0)).get(CyNetwork.NAME, String.class);
 				Map<String,Ranking> ranks = dataset.getExpressionSets().getRanks();
 				ranks.forEach((name, ranking) -> {
 					options.add(new GSEALeadingEdgeRankingOption(dataset, geneSetName, name));
 				});
-			}
-			else if(contains(network, dataset, nodes, edges)) {
+			} else {
 				Map<String,Ranking> ranks = dataset.getExpressionSets().getRanks();
 				ranks.forEach((name, ranking) -> {
 					options.add(new BasicRankingOption(ranking, dataset, name));
@@ -213,25 +212,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		return options;
 	}
 
-	
-	private static boolean contains(CyNetwork network, EMDataSet dataset, List<CyNode> nodes, List<CyEdge> edges) {
-		for(CyNode node : nodes) {
-			if(contains(dataset, network, node))
-				return true;
-		}
-		for(CyEdge edge : edges) {
-			if(contains(dataset, network, edge.getSource()) || contains(dataset, network, edge.getTarget()))
-				return true;
-		}
-		return false;
-	}
-	
-	private static boolean contains(EMDataSet dataset, CyNetwork network, CyNode node) {
-		String name = network.getRow(node).get(CyNetwork.NAME, String.class);
-		return dataset.getGeneSetsOfInterest().getGeneSetByName(name) != null;
-	}
-	
-	
 	private static Set<String> unionGenesets(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
 		Set<String> union = new HashSet<>();
 		for(CyNode node : nodes) {
