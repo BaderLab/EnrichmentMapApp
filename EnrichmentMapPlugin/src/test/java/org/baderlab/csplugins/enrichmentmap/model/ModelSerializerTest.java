@@ -1,10 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Map;
 import java.util.Optional;
@@ -161,7 +157,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertEquals(expected.getEnrichmentFileName2(), actual.getEnrichmentFileName2());
 		assertEquals(expected.getRankedFile(), actual.getRankedFile());
 		assertEquals(expected.getClassFile(), actual.getClassFile());
-		assertArrayEquals(expected.getTemp_class1(), actual.getTemp_class1());
 		assertEquals(expected.getPhenotype1(), actual.getPhenotype1());
 		assertEquals(expected.getPhenotype2(), actual.getPhenotype2());
 		assertEquals(expected.getGseaHtmlReportFile(), actual.getGseaHtmlReportFile());

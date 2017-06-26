@@ -21,10 +21,6 @@ public class DataSetFiles {
 	//colour the heading on the columns accroding to class or phenotype they belong to.
 	private String classFile = null;
 
-	//class file designations that were loaded in from a session file.
-	//need a temporary place for these class definition as
-	private String[] temp_class1 = null;
-
 	//phenotypes associated with this set of files
 	public static final String default_pheno1 = "UP";
 	public static final String default_pheno2 = "DOWN";
@@ -82,14 +78,6 @@ public class DataSetFiles {
 		this.classFile = classFile;
 	}
 
-	public String[] getTemp_class1() {
-		return temp_class1;
-	}
-
-	public void setTemp_class1(String[] temp_class1) {
-		this.temp_class1 = temp_class1;
-	}
-
 	public String getGseaHtmlReportFile() {
 		return gseaHtmlReportFile;
 	}
@@ -120,7 +108,6 @@ public class DataSetFiles {
 		this.enrichmentFileName1 = copy.getEnrichmentFileName1();
 		this.enrichmentFileName2 = copy.getEnrichmentFileName2();
 		this.classFile = copy.getClassFile();
-		this.temp_class1 = copy.getTemp_class1();
 		this.gseaHtmlReportFile = copy.getGseaHtmlReportFile();
 		this.RankedFile = copy.getRankedFile();
 		this.phenotype1 = copy.getPhenotype1();

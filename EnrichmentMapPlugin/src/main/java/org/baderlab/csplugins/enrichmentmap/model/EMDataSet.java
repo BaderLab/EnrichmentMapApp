@@ -56,7 +56,6 @@ public class EMDataSet extends AbstractDataSet {
 			this.enrichments.setFilename2(files.getEnrichmentFileName2());
 			this.enrichments.setPhenotype1(files.getPhenotype1());
 			this.enrichments.setPhenotype2(files.getPhenotype2());
-			this.expressionSets.setPhenotypes(files.getTemp_class1());
 			this.expressionSets.setFilename(files.getExpressionFileName());
 		} else {
 			System.out.println("There are no files initialized for this Dataset, named:" + name + "\n");

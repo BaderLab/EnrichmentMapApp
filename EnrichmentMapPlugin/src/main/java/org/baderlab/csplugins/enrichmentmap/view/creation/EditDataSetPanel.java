@@ -31,6 +31,7 @@ import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
@@ -51,8 +52,6 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 	private PathTextField classesText;
 	private JTextField positiveText;
 	private JTextField negativeText;
-	
-	private String[] classes;
 	
 	private final @Nullable DataSetParameters initDataSet;
 	
@@ -108,10 +107,11 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		
 		String positive = positiveText.getText();
 		String negative = negativeText.getText();
-		if(!isNullOrEmpty(positive) && !isNullOrEmpty(negative) && classes != null) {
+		if(!isNullOrEmpty(positive)) {
 			files.setPhenotype1(positive);
+		}
+		if(!isNullOrEmpty(negative)) {
 			files.setPhenotype2(negative);
-			files.setTemp_class1(classes);
 		}
 		
 		return new DataSetParameters(name, method, files);
@@ -150,7 +150,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		expressionsText = pathTextFactory.create("Expressions:", FileBrowser.Filter.EXPRESSION);
 		ranksText = pathTextFactory.create("Ranks:", FileBrowser.Filter.RANK);
 		classesText = pathTextFactory.create("Classes:", FileBrowser.Filter.CLASS);
-		classesText.getTextField().getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(this::updateClasses));
+		classesText.getTextField().getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(this::preFillPhenotypes));
 		
 		enrichments2Text.getLabel().setVisible(false);
 		enrichments2Text.getTextField().setVisible(false);
@@ -325,10 +325,9 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 	}
 	
 	
-	private void updateClasses() {
-		if(positiveText.getText().trim().isEmpty() && negativeText.getText().trim().isEmpty() 
-				&& Files.isReadable(Paths.get(classesText.getText()))) {
-			String classFile = classesText.getText();
+	private void preFillPhenotypes() {
+		String classFile = classesText.getText();
+		if(!Strings.isNullOrEmpty(classFile) && Files.isReadable(Paths.get(classFile))) {
 			String[] phenotypes = ClassFileReaderTask.parseClasses(classFile);
 			if(phenotypes != null) {
 				LinkedHashSet<String> distinctOrdererd = new LinkedHashSet<>();
@@ -339,7 +338,6 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 					Iterator<String> iter = distinctOrdererd.iterator();
 					positiveText.setText(iter.next());
 					negativeText.setText(iter.next());
-					classes = phenotypes;
 				}
 			}
 		}
