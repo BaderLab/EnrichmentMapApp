@@ -16,8 +16,8 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
@@ -171,7 +171,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			HeatMapParams.Builder builder = new HeatMapParams.Builder();
 			
 			if(map.totalExpressionCount() > COLLAPSE_THRESHOLD) 
-				builder.setTransform(Transform.COMPRESS_MEDIAN);
+				builder.setCompress(Compress.MEDIAN);
 			if(onlyEdges)
 				builder.setOperator(Operator.INTERSECTION);
 			

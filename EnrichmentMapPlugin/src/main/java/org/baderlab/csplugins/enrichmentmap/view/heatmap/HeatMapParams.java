@@ -10,21 +10,15 @@ public class HeatMapParams {
 	public static enum Transform {
 		AS_IS, 
 		ROW_NORMALIZE, 
-		LOG_TRANSFORM,
-		COMPRESS_MEDIAN,
-		COMPRESS_MAX,
-		COMPRESS_MIN;
-		
-		public boolean isCompress() {
-			switch(this) {
-			case COMPRESS_MAX: 
-			case COMPRESS_MEDIAN:
-			case COMPRESS_MIN: 
-				return true;
-			default: 
-				return false;
-			}
-		}
+		LOG_TRANSFORM;
+	}
+	
+	public static enum Compress {
+		NONE,
+		MEDIAN,
+		MIN,
+		MAX;
+		public boolean isNone() { return this == NONE; }
 	}
 	
 	public static enum Operator {
@@ -48,6 +42,7 @@ public class HeatMapParams {
 	}
 	
 	private final Transform transform;
+	private final Compress compress;
 	private final Operator operator;
 	private final Distance distanceMetric;
 	private final boolean showValues;
@@ -56,6 +51,7 @@ public class HeatMapParams {
 	
 	private HeatMapParams(Builder builder) {
 		this.transform = builder.transform;
+		this.compress = builder.compress;
 		this.operator = builder.operator;
 		this.distanceMetric = builder.distanceMetric;
 		this.showValues = builder.showValues;
@@ -65,6 +61,7 @@ public class HeatMapParams {
 	
 	public static class Builder {
 		private Transform transform = Transform.AS_IS;
+		private Compress compress = Compress.NONE;
 		private Operator operator = Operator.UNION;
 		private Distance distanceMetric = Distance.EUCLIDEAN;
 		private boolean showValues = false;
@@ -74,24 +71,19 @@ public class HeatMapParams {
 		
 		public Builder(HeatMapParams params) {
 			this.transform = params.transform;
+			this.compress = params.compress;
 			this.operator = params.operator;
 			this.distanceMetric = params.distanceMetric;
 			this.showValues = params.showValues;
 			this.rankingOptionName = params.rankingOptionName;
 		}
 		
-		public static Builder from(Builder other) {
-			Builder b = new Builder();
-			b.transform = other.transform;
-			b.operator = other.operator;
-			b.distanceMetric = other.distanceMetric;
-			b.showValues = other.showValues;
-			b.rankingOptionName = other.rankingOptionName;
-			return b;
-		}
-		
 		public Builder setTransform(Transform transform) {
 			this.transform = transform;
+			return this;
+		}
+		public Builder setCompress(Compress compress) {
+			this.compress = compress;
 			return this;
 		}
 		public Builder setOperator(Operator operator) {
@@ -120,6 +112,10 @@ public class HeatMapParams {
 	public Transform getTransform() {
 		return transform;
 	}
+	
+	public Compress getCompress() {
+		return compress;
+	}
 
 	public String getRankingOptionName() {
 		return rankingOptionName;
@@ -137,11 +133,11 @@ public class HeatMapParams {
 		return showValues;
 	}
 
-
 	@Override
 	public String toString() {
-		return "HeatMapParams [transform=" + transform + ", operator=" + operator + ", distanceMetric=" + distanceMetric
-				+ ", showValues=" + showValues + ", rankingOptionName=" + rankingOptionName + "]";
+		return "HeatMapParams [transform=" + transform + ", compress=" + compress + ", operator=" + operator
+				+ ", distanceMetric=" + distanceMetric + ", showValues=" + showValues + ", rankingOptionName="
+				+ rankingOptionName + "]";
 	}
 	
 }

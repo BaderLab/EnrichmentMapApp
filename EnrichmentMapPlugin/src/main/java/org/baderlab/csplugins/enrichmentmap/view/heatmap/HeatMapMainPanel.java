@@ -41,6 +41,7 @@ import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
@@ -82,12 +83,14 @@ public class HeatMapMainPanel extends JPanel {
 	
 	private JTable table;
 	private JScrollPane scrollPane;
-	private JComboBox<ComboItem<Transform>> normCombo;
 	private JComboBox<ComboItem<Operator>> operatorCombo;
+	private JComboBox<ComboItem<Transform>> normCombo;
+	private JComboBox<ComboItem<Compress>> compressCombo;
 	private JCheckBox showValuesCheck;
 	
 	private ActionListener normActionListener;
 	private ActionListener operatorActionListener;
+	private ActionListener compressActionListener;
 	private ActionListener showValueActionListener;
 	
 	private ClusterRankingOption clusterRankOption = null;
@@ -208,23 +211,27 @@ public class HeatMapMainPanel extends JPanel {
 		operatorCombo = new JComboBox<>();
 		JLabel normLabel = new JLabel("Expressions:");
 		normCombo = new JComboBox<>();
+		JLabel compressLabel = new JLabel("Compress:");
+		compressCombo = new JComboBox<>();
 		
-		SwingUtil.makeSmall(operatorLabel, operatorCombo, normLabel, normCombo, showValuesCheck);
+		SwingUtil.makeSmall(operatorLabel, operatorCombo, normLabel, normCombo, compressLabel, compressCombo, showValuesCheck);
 		
-		operatorCombo.addItem(new ComboItem<>(Operator.UNION, "Union"));
-		operatorCombo.addItem(new ComboItem<>(Operator.INTERSECTION, "Intersection"));
+		operatorCombo.addItem(new ComboItem<>(Operator.UNION, "All"));
+		operatorCombo.addItem(new ComboItem<>(Operator.INTERSECTION, "Common"));
 		operatorCombo.setSelectedItem(ComboItem.of(Operator.UNION));
 		
-		normCombo.addItem(new ComboItem<>(Transform.AS_IS, "Expression Values"));
-		normCombo.addItem(new ComboItem<>(Transform.ROW_NORMALIZE, "Row Normalize"));
-		normCombo.addItem(new ComboItem<>(Transform.LOG_TRANSFORM, "Log Transform"));
-		normCombo.addItem(new ComboItem<>(Transform.COMPRESS_MEDIAN, "Compress (Median)"));
-		normCombo.addItem(new ComboItem<>(Transform.COMPRESS_MIN, "Compress (Min)"));
-		normCombo.addItem(new ComboItem<>(Transform.COMPRESS_MAX, "Compress (Max)"));
-		normCombo.setSelectedItem(ComboItem.of(Transform.COMPRESS_MEDIAN));
+		normCombo.addItem(new ComboItem<>(Transform.AS_IS,         "Values"));
+		normCombo.addItem(new ComboItem<>(Transform.ROW_NORMALIZE, "Row Norm"));
+		normCombo.addItem(new ComboItem<>(Transform.LOG_TRANSFORM, "Log"));
+		
+		compressCombo.addItem(new ComboItem<>(Compress.NONE, "-None-"));
+		compressCombo.addItem(new ComboItem<>(Compress.MEDIAN, "Median"));
+		compressCombo.addItem(new ComboItem<>(Compress.MIN, "Min"));
+		compressCombo.addItem(new ComboItem<>(Compress.MAX, "Max"));
 		
 		operatorCombo.addActionListener(operatorActionListener = e -> updateSetting_Operator(getOperator()));
-		normCombo.addActionListener(normActionListener = e -> updateSetting_Transform(getTransform()));
+		normCombo.addActionListener(normActionListener = e -> updateSetting_Transform(getTransform(), getCompress()));
+		compressCombo.addActionListener(compressActionListener = e -> updateSetting_Transform(getTransform(), getCompress()));
 		showValuesCheck.addActionListener(showValueActionListener = e -> updateSetting_ShowValues(isShowValues()));
 		
 		JButton plusButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS, "Add Rankings...");
@@ -240,18 +247,22 @@ public class HeatMapMainPanel extends JPanel {
 		panel.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		final int gap = 3;
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 			.addComponent(gradientLegendPanel, 180, 180, 180)
 			.addGap(0, 0, Short.MAX_VALUE)
 			.addComponent(operatorLabel)
 			.addComponent(operatorCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			.addGap(5)
+			.addGap(gap)
 			.addComponent(normLabel)
 			.addComponent(normCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			.addGap(5)
+			.addGap(gap)
+			.addComponent(compressLabel)
+			.addComponent(compressCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addGap(gap)
 			.addComponent(showValuesCheck)
-			.addGap(5)
+			.addGap(gap)
 			.addComponent(plusButton)
 			.addComponent(gearButton)
 			.addComponent(menuButton)
@@ -262,6 +273,8 @@ public class HeatMapMainPanel extends JPanel {
 			.addComponent(operatorCombo)
 			.addComponent(normLabel)
 			.addComponent(normCombo)
+			.addComponent(compressLabel)
+			.addComponent(compressCombo)
 			.addComponent(showValuesCheck)
 			.addComponent(plusButton)
 			.addComponent(gearButton)
@@ -279,6 +292,10 @@ public class HeatMapMainPanel extends JPanel {
 	
 	public Transform getTransform() {
 		return normCombo.getItemAt(normCombo.getSelectedIndex()).getValue();
+	}
+	
+	public Compress getCompress() {
+		return compressCombo.getItemAt(compressCombo.getSelectedIndex()).getValue();
 	}
 	
 	public RankingOption getRankingOption() {
@@ -301,6 +318,7 @@ public class HeatMapMainPanel extends JPanel {
 		return new HeatMapParams.Builder()
 				.setDistanceMetric(getDistance())
 				.setOperator(getOperator())
+				.setCompress(getCompress())
 				.setShowValues(isShowValues())
 				.setRankingOptionName(getRankingOptionName())
 				.setTransform(getTransform())
@@ -320,6 +338,7 @@ public class HeatMapMainPanel extends JPanel {
 		
 		operatorCombo.removeActionListener(operatorActionListener);
 		normCombo.removeActionListener(normActionListener);
+		compressCombo.removeActionListener(compressActionListener);
 		showValuesCheck.removeActionListener(showValueActionListener);
 		
 		// Update Combo Boxes
@@ -329,6 +348,7 @@ public class HeatMapMainPanel extends JPanel {
 		operatorCombo.setSelectedItem(ComboItem.of(params.getOperator()));
 		
 		normCombo.setSelectedItem(ComboItem.of(params.getTransform()));
+		compressCombo.setSelectedItem(ComboItem.of(params.getCompress()));
 		
 		selectedRankOption = getRankOptionFromParams(params);
 
@@ -339,7 +359,7 @@ public class HeatMapMainPanel extends JPanel {
 		// Update the Table
 		clearTableHeader();
 		List<String> genesToUse = params.getOperator() == Operator.UNION ? unionGenes : interGenes;
-		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, genesToUse, params.getTransform());
+		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, genesToUse, params.getTransform(), params.getCompress());
 		table.setModel(tableModel);
 		
 		List<? extends SortKey> sortKeys = table.getRowSorter().getSortKeys();
@@ -357,6 +377,7 @@ public class HeatMapMainPanel extends JPanel {
 		
 		operatorCombo.addActionListener(operatorActionListener);
 		normCombo.addActionListener(normActionListener);
+		compressCombo.addActionListener(compressActionListener);
 		showValuesCheck.addActionListener(showValueActionListener);
 		
 		isResetting = false;
@@ -466,9 +487,9 @@ public class HeatMapMainPanel extends JPanel {
 		settingChanged();
 	}
 	
-	private void updateSetting_Transform(Transform transform) {
+	private void updateSetting_Transform(Transform transform, Compress compress) {
 		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
-		if(tableModel.getTransform().isCompress() != transform.isCompress()) {
+		if(tableModel.getCompress() != compress) {
 			HeatMapParams params = this.buildParams();
 			EnrichmentMap map = tableModel.getEnrichmentMap();
 			List<RankingOption> rankOptions = parent.getMediator().getDataSetRankOptions(map);
@@ -477,7 +498,7 @@ public class HeatMapMainPanel extends JPanel {
 			);
 		}
 		else {
-			tableModel.setTransform(transform);
+			tableModel.setTransform(transform, compress);
 			updateSetting_ShowValues(isShowValues()); // clear cached data used by the ColorRenderer
 		}
 		settingChanged();

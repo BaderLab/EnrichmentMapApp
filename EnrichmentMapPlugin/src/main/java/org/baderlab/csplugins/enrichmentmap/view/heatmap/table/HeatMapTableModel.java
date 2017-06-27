@@ -15,6 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 
 import cern.colt.list.DoubleArrayList;
@@ -39,12 +40,14 @@ public class HeatMapTableModel extends AbstractTableModel {
 	
 	private List<String> genes;
 	private Transform transform;
+	private Compress compress;
 	private Map<Integer,RankValue> ranking;
 	private String ranksColName = "Ranks";
 
 	
-	public HeatMapTableModel(EnrichmentMap map, Map<Integer,RankValue> ranking, List<String> genes, Transform transform) {
+	public HeatMapTableModel(EnrichmentMap map, Map<Integer,RankValue> ranking, List<String> genes, Transform transform, Compress compress) {
 		this.transform = transform;
+		this.compress = compress;
 		this.map = map;
 		this.ranking = ranking;
 		this.genes = genes;
@@ -62,10 +65,11 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	
-	public void setTransform(Transform transform) {
-		boolean c1 = this.transform.isCompress();
-		boolean c2 = transform.isCompress();
+	public void setTransform(Transform transform, Compress compress) {
+		boolean c1 = this.compress.isNone();
+		boolean c2 = compress.isNone();
 		this.transform = transform;
+		this.compress = compress;
 		if(c1 != c2)
 			fireTableStructureChanged();
 		fireTableDataChanged();
@@ -86,6 +90,10 @@ public class HeatMapTableModel extends AbstractTableModel {
 		return transform;
 	}
 	
+	public Compress getCompress() {
+		return compress;
+	}
+	
 	public EnrichmentMap getEnrichmentMap() {
 		return map;
 	}
@@ -101,10 +109,10 @@ public class HeatMapTableModel extends AbstractTableModel {
 
 	@Override
 	public int getColumnCount() {
-		if(transform.isCompress())
-			return map.getDataSetCount() + DESC_COL_COUNT;
-		else
+		if(compress.isNone())
 			return colCount;
+		else
+			return map.getDataSetCount() + DESC_COL_COUNT;
 	}
 	
 	@Override
@@ -117,12 +125,12 @@ public class HeatMapTableModel extends AbstractTableModel {
 			return ranksColName;
 		
 		EMDataSet dataset = getDataSet(col);
-		if(transform.isCompress()) {
-			return dataset.getName();
-		} else {
+		if(compress.isNone()) {
 			int index = getIndexInDataSet(col) + 2;
 			String[] columns = dataset.getExpressionSets().getColumnNames();
 			return columns[index];
+		} else {
+			return dataset.getName();
 		}
 	}
 
@@ -143,11 +151,11 @@ public class HeatMapTableModel extends AbstractTableModel {
 			return getDescription(geneID);
 		
 		EMDataSet dataset = getDataSet(col);
-		if(transform.isCompress()) {
-			return getCompressedExpression(dataset, geneID, transform);
-		} else {
+		if(compress.isNone()) {
 			double[] vals = getExpression(dataset, geneID, transform);
 			return vals == null ? Double.NaN : vals[getIndexInDataSet(col)];
+		} else {
+			return getCompressedExpression(dataset, geneID, transform, compress);
 		}
 	}
 	
@@ -177,7 +185,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	public Optional<String> getPhenotype(int col) {
-		if(transform.isCompress())
+		if(!compress.isNone())
 			return Optional.empty();
 		EMDataSet dataset = getDataSet(col);
 		int index = getIndexInDataSet(col);
@@ -194,25 +202,25 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	public EMDataSet getDataSet(int col) {
-		if(transform.isCompress()) {
+		if(compress.isNone()) {
+			return colToDataSet.floorEntry(col).getValue();
+		} else {
 			List<EMDataSet> datasets = map.getDataSetList();
 			return datasets.get(col-DESC_COL_COUNT);
 		}
-		else
-			return colToDataSet.floorEntry(col).getValue();
 	}
 	
 	
-	private static double getCompressedExpression(EMDataSet dataset, int geneID, Transform transform) {
-		double[] vals = getExpression(dataset, geneID, Transform.AS_IS);
+	private static double getCompressedExpression(EMDataSet dataset, int geneID, Transform transform, Compress compress) {
+		double[] vals = getExpression(dataset, geneID, transform);
 		if(vals == null)
 			return Double.NaN;
 		
-		switch(transform) {
-			case COMPRESS_MEDIAN: return median(vals);
-			case COMPRESS_MAX:    return max(vals);
-			case COMPRESS_MIN:    return min(vals);
-			default:              return Double.NaN;
+		switch(compress) {
+			case MEDIAN: return median(vals);
+			case MAX:    return max(vals);
+			case MIN:    return min(vals);
+			default:     return Double.NaN;
 		}
 	}
 	
