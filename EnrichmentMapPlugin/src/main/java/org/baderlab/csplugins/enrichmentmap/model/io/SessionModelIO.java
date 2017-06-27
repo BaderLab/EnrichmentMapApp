@@ -44,9 +44,18 @@ import com.google.inject.Singleton;
 @Singleton
 public class SessionModelIO {
 	
-	private static final int VERSION = 1;
-
-	private static final String MODEL_TABLE_TITLE = CyActivator.APP_NAME + ".Model." + VERSION;
+	/**
+	 * WARNING
+	 * Upgrading the version means the following:
+	 * - Make sure session files saved with older versions of EM are still supported.
+	 * - Change the version check in hasTablesInvalidVersion().
+	 * - Make sure LegacySessionLoader still works.
+	 * - Write an integration test.
+	 */
+	public static final int VERSION = 1;
+	
+	private static final String MODEL_TABLE_PREFIX = CyActivator.APP_NAME + ".Model.";
+	private static final String MODEL_TABLE_TITLE =  MODEL_TABLE_PREFIX + VERSION;
 	
 	private static final ColumnDescriptor<Integer> COL_PK         = new ColumnDescriptor<>("ID", Integer.class);
 	private static final ColumnDescriptor<Long>    COL_NETWORK_ID = new ColumnDescriptor<>("Network.SUID", Long.class);
@@ -184,6 +193,17 @@ public class SessionModelIO {
 			}
 		}
 		return null;
+	}
+	
+	public boolean hasTablesInvalidVersion() {
+		// This simple check only works because the current version is 1.
+		for(CyTable table : tableManager.getAllTables(true)) {
+			String title = table.getTitle();
+			if(title.startsWith(MODEL_TABLE_PREFIX) && !title.equals(MODEL_TABLE_TITLE)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private CyTable deleteRedundantTables() {

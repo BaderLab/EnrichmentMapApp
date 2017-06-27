@@ -1,6 +1,11 @@
 package org.baderlab.csplugins.enrichmentmap.model.io;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
+import org.baderlab.csplugins.enrichmentmap.CyActivator;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.SessionViewIO;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
@@ -11,6 +16,7 @@ import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -19,11 +25,19 @@ public class SessionListener implements SessionLoadedListener, SessionAboutToBeS
 	@Inject private SessionModelIO modelIO;
 	@Inject private SessionViewIO viewIO;
 	@Inject private @Headless boolean headless;
+	@Inject private Provider<JFrame> frameProvider;
 	
 	private boolean cytoscapeShuttingDown = false;
 	
 	@Override
 	public void handleEvent(SessionLoadedEvent event) {
+		if(modelIO.hasTablesInvalidVersion()) {
+			SwingUtilities.invokeLater(() -> {
+				String message = "<html>The session file was saved with a different version of " + CyActivator.APP_NAME + " and is "
+								   + "<br>not compatible with this version. Please upgrade the " + CyActivator.APP_NAME + " App.</html>";
+				JOptionPane.showMessageDialog(frameProvider.get(), message, "EnrichmentMap Session Load Error", JOptionPane.WARNING_MESSAGE);
+			});
+		}
 		restore(event.getLoadedSession());
 	}
 
