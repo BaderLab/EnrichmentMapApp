@@ -51,6 +51,13 @@ public class ParseEDBEnrichmentResults extends AbstractTask {
 	    dataset.getEnrichments().setEnrichments(handler.enrichmentResults);
 	}
 	
+	private static String deAccent(String str) {
+//		String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);
+//		System.out.println(nfdNormalizedString);
+//		Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+//		return pattern.matcher(nfdNormalizedString).replaceAll("");
+		return str.replace("Â", "");
+	}
 	
 	private class EDBHandler extends DefaultHandler {
 		Map<String, EnrichmentResult> enrichmentResults = new HashMap<>();
@@ -60,6 +67,7 @@ public class ParseEDBEnrichmentResults extends AbstractTask {
 			if("DTG".equals(qName)) {
 				//name - tag is GENESET but need to remove gene_sets.gmt# from the front
 				String name = attributes.getValue("GENESET").replace("gene_sets.gmt#", "");
+				name = deAccent(name);
 				
 				//gsSize - geneset size.  Get value from the number of hits in the hit indices (HIT_INDICES)
 				String value = attributes.getValue("HIT_INDICES");
