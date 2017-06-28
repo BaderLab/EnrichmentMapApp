@@ -190,7 +190,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertEquals(expected.getNumConditions(), actual.getNumConditions());
 		assertEquals(expected.getExpressionUniverse(), actual.getExpressionUniverse());
 		assertMapsEqual(ModelSerializerTest::assertGeneExpressionEquals, expected.getExpressionMatrix(), actual.getExpressionMatrix());
-		assertMapsEqual(ModelSerializerTest::assertGeneExpressionEquals, expected.getExpressionMatrix_rowNormalized(), actual.getExpressionMatrix_rowNormalized());
 		assertEquals(expected.getMaxExpression(), actual.getMaxExpression(), 0.0);
 		assertEquals(expected.getMinExpression(), actual.getMinExpression(), 0.0);
 		assertEquals(expected.getClosesttoZero(), actual.getClosesttoZero(), 0.0);
@@ -220,7 +219,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 	}
 	
 	private static <K,V> void assertMapsEqual(BiConsumer<V,V> valueAsserter, Map<K,V> expected, Map<K,V> actual) {
-		assertFalse(actual.isEmpty());
 		assertEquals(expected.keySet(), actual.keySet());
 		for(K key : expected.keySet()) {
 			V expectedValue = expected.get(key);

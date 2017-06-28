@@ -1,6 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
+import java.util.Map;
+
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientRange;
@@ -35,8 +38,9 @@ public class DataSetColorRange {
 				break;
 			
 			case ROW_NORMALIZE:
-				min = expression.getMinExpression(expression.getExpressionMatrix_rowNormalized());
-				max = expression.getMaxExpression(expression.getExpressionMatrix_rowNormalized());
+				Map<Integer,GeneExpression> rowNormalized = expression.rowNormalizeMatrix();
+				min = expression.getMinExpression(rowNormalized);
+				max = expression.getMaxExpression(rowNormalized);
 
 				//if both row normalization values are zero, can't perform row normalization issue warning
 				//This happens when there is only one data column in the dataset (or if it is rank file)

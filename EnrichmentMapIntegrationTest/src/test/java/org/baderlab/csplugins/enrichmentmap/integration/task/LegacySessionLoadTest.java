@@ -1,10 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.integration.task;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Collection;
@@ -189,7 +185,6 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(20, expressions.getNumConditions());
 		
 		assertEquals(12653, expressions.getExpressionMatrix().size());
-		assertEquals(12653, expressions.getExpressionMatrix_rowNormalized().size());
 		
 		GeneExpression expression = expressions.getExpressionMatrix().get(0);
 		assertEquals("MOCOS", expression.getName());

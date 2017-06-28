@@ -64,7 +64,7 @@ public class GeneExpressionMatrix {
 	//and one with the row normalized values.  The row normalizes values are stored as opposed
 	//to being computing on the fly to decrease the time needed to update a heatmap.
 	private Map<Integer, GeneExpression> expressionMatrix;
-	private Map<Integer, GeneExpression> expressionMatrix_rowNormalized;
+	private transient Map<Integer, GeneExpression> expressionMatrix_rowNormalized;
 
 	//maximum expression value of all expression values in the array - computed as matrix is
 	//loaded in.
@@ -93,7 +93,6 @@ public class GeneExpressionMatrix {
 
 	public GeneExpressionMatrix() {
 		this.expressionMatrix = new HashMap<>();
-		this.expressionMatrix_rowNormalized = new HashMap<>();
 		this.ranks = new HashMap<>();
 
 	}
@@ -223,30 +222,22 @@ public class GeneExpressionMatrix {
 	 * Normalization involves computing the mean and standard deviation for each
 	 * row in the matrix. Each value in that specific row has the mean
 	 * subtracted and is divided by the standard deviation. Row normalization is
-	 * precomputed and stored with the expression matrix to decrease computation
-	 * time on the fly. (Log normalization is computed on the fly)
+	 * computed lazily and cached with the expression matrix. 
+	 * (Log normalization is computed on the fly)
 	 */
-	public void rowNormalizeMatrix() {
+	public synchronized Map<Integer, GeneExpression> rowNormalizeMatrix() {
+		if (expressionMatrix_rowNormalized == null) {
+			expressionMatrix_rowNormalized = new HashMap<Integer, GeneExpression>();
 
-		if(expressionMatrix == null)
-			return;
-
-		//create new matrix
-		expressionMatrix_rowNormalized = new HashMap<Integer, GeneExpression>();
-
-		//go through the expression matrix
-		for(Iterator<Integer> i = expressionMatrix.keySet().iterator(); i.hasNext();) {
-			Integer key = i.next();
-			GeneExpression currentexpression = ((GeneExpression) expressionMatrix.get(key));
-			String Name = currentexpression.getName();
-			String description = currentexpression.getDescription();
-			GeneExpression norm_row = new GeneExpression(Name, description);
-			double[] currentexpression_row_normalized = currentexpression.rowNormalize();
-			norm_row.setExpression(currentexpression_row_normalized);
-
-			expressionMatrix_rowNormalized.put(key, norm_row);
+			for (Integer key : expressionMatrix.keySet()) {
+				GeneExpression expression = (GeneExpression) expressionMatrix.get(key);
+				GeneExpression norm_row = new GeneExpression(expression.getName(), expression.getDescription());
+				double[] row_normalized = expression.rowNormalize();
+				norm_row.setExpression(row_normalized);
+				expressionMatrix_rowNormalized.put(key, norm_row);
+			}
 		}
-
+		return expressionMatrix_rowNormalized;
 	}
 
 	//Getters and Setters
@@ -292,14 +283,6 @@ public class GeneExpressionMatrix {
 
 	public void setExpressionMatrix(Map<Integer, GeneExpression> expressionMatrix) {
 		this.expressionMatrix = expressionMatrix;
-	}
-
-	public Map<Integer, GeneExpression> getExpressionMatrix_rowNormalized() {
-		return expressionMatrix_rowNormalized;
-	}
-
-	public void setExpressionMatrix_rowNormalized(Map<Integer, GeneExpression> expressionMatrix_rowNormalized) {
-		this.expressionMatrix_rowNormalized = expressionMatrix_rowNormalized;
 	}
 
 	public double getMaxExpression() {
