@@ -4,8 +4,6 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +23,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -234,13 +231,11 @@ public class HeatMapMainPanel extends JPanel {
 		compressCombo.addActionListener(compressActionListener = e -> updateSetting_Transform(getTransform(), getCompress()));
 		showValuesCheck.addActionListener(showValueActionListener = e -> updateSetting_ShowValues(isShowValues()));
 		
-		JButton plusButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS, "Add Rankings...");
 		JButton gearButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_GEAR, "Settings");
-		JButton menuButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_EXTERNAL_LINK, "Export");
-		LookAndFeelUtil.equalizeSize(gearButton, menuButton);
-		plusButton.addActionListener(e -> addRankings());
 		gearButton.addActionListener(e -> settingsPanel.popup(gearButton));
-		menuButton.addActionListener(this::showExportMenu);
+		settingsPanel.getAddRanksButton().addActionListener(e -> addRankings());
+		settingsPanel.getExportTxtButton().addActionListener(txtActionFactory.create(table));
+		settingsPanel.getExportPdfButton().addActionListener(pdfActionFactory.create(table));
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
@@ -263,9 +258,7 @@ public class HeatMapMainPanel extends JPanel {
 			.addGap(gap)
 			.addComponent(showValuesCheck)
 			.addGap(gap)
-			.addComponent(plusButton)
 			.addComponent(gearButton)
-			.addComponent(menuButton)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
 			.addComponent(gradientLegendPanel)
@@ -276,9 +269,7 @@ public class HeatMapMainPanel extends JPanel {
 			.addComponent(compressLabel)
 			.addComponent(compressCombo)
 			.addComponent(showValuesCheck)
-			.addComponent(plusButton)
 			.addComponent(gearButton)
-			.addComponent(menuButton)
 		);
 		
 		panel.setOpaque(false);
@@ -502,14 +493,6 @@ public class HeatMapMainPanel extends JPanel {
 			updateSetting_ShowValues(isShowValues()); // clear cached data used by the ColorRenderer
 		}
 		settingChanged();
-	}
-	
-	private void showExportMenu(ActionEvent event)  {
-		JPopupMenu menu = new JPopupMenu();
-		menu.add(txtActionFactory.create(table));
-		menu.add(pdfActionFactory.create(table));
-		Component c = (Component) event.getSource();
-		menu.show(c, 0, c.getHeight());
 	}
 	
 }

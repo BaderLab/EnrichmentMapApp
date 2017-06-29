@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -9,17 +10,20 @@ import java.util.function.Consumer;
 
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import com.google.inject.Inject;
@@ -30,6 +34,11 @@ import com.google.inject.Singleton;
 public class SettingsPopupPanel extends JPanel {
 	
 	@Inject private PropertyManager propertyManager;
+	@Inject private IconManager iconManager;
+	
+	private JButton addRanksButton;
+	private JButton exportTxtButton;
+	private JButton exportPdfButton;
 	
 	private JRadioButton cosineRadio;
 	private JRadioButton euclideanRadio;
@@ -53,6 +62,16 @@ public class SettingsPopupPanel extends JPanel {
 	@AfterInjection
 	private void createContents() {	
 		setOpaque(false);
+		
+		Font iconFont = iconManager.getIconFont(13.0f);
+		addRanksButton = new JButton("Add Rankings");
+		addRanksButton.setIcon(SwingUtil.iconFromString(IconManager.ICON_PLUS, iconFont));
+		exportTxtButton = new JButton("Export as TXT");
+		exportTxtButton.setIcon(SwingUtil.iconFromString(IconManager.ICON_EXTERNAL_LINK, iconFont));
+		exportPdfButton = new JButton("Export as PDF");
+		exportPdfButton.setIcon(SwingUtil.iconFromString(IconManager.ICON_EXTERNAL_LINK, iconFont));
+		SwingUtil.makeSmall(addRanksButton, exportTxtButton, exportPdfButton);
+		
 		JLabel distanceLabel = new JLabel("  Hierarchical Cluster - Distance Metric  ");
 		cosineRadio = new JRadioButton("Cosine");
 		euclideanRadio = new JRadioButton("Euclidean");
@@ -77,6 +96,9 @@ public class SettingsPopupPanel extends JPanel {
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
+			.addComponent(addRanksButton)
+			.addComponent(exportTxtButton)
+			.addComponent(exportPdfButton)
 			.addComponent(distanceLabel)
 			.addComponent(distanceRadioPanel)
 			.addComponent(autofocusCheckbox)
@@ -84,12 +106,18 @@ public class SettingsPopupPanel extends JPanel {
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
 			.addGap(5)
+			.addComponent(addRanksButton)
+			.addComponent(exportTxtButton)
+			.addComponent(exportPdfButton)
+			.addGap(5)
 			.addComponent(distanceLabel)
 			.addComponent(distanceRadioPanel)
 			.addGap(10)
 			.addComponent(autofocusCheckbox)
 			.addGap(5)
 		);
+		
+		layout.linkSize(SwingConstants.HORIZONTAL, addRanksButton, exportTxtButton, exportPdfButton);
 	}
 	
 	
@@ -101,6 +129,17 @@ public class SettingsPopupPanel extends JPanel {
 		};
 	}
 	
+	public JButton getAddRanksButton() {
+		return addRanksButton;
+	}
+
+	public JButton getExportTxtButton() {
+		return exportTxtButton;
+	}
+
+	public JButton getExportPdfButton() {
+		return exportPdfButton;
+	}
 	
 	public void update(HeatMapParams params) {
 		cosineRadio.removeActionListener(cosineListener);

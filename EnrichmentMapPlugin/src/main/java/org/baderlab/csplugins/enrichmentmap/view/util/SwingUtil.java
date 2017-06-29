@@ -4,12 +4,15 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -241,6 +244,23 @@ public class SwingUtil {
 		final Graphics2D g = bi.createGraphics();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.drawImage(img, 0, 0, width, height, null);
+		g.dispose();
+		
+		return new ImageIcon(bi);
+	}
+
+	
+	public static ImageIcon iconFromString(String s, Font font) {
+		FontRenderContext frc = new FontRenderContext(null, true, true);
+        Rectangle2D bounds = font.getStringBounds(s, frc);
+        
+        BufferedImage bi = new BufferedImage((int)bounds.getWidth(), (int)bounds.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		final Graphics2D g = bi.createGraphics();
+		
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setColor(Color.BLACK);
+		g.setFont(font);
+		g.drawString(s, (float)bounds.getX(), -(float)bounds.getY());
 		g.dispose();
 		
 		return new ImageIcon(bi);
