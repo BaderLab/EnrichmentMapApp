@@ -1,12 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.integration;
 
-import static org.ops4j.pax.exam.CoreOptions.frameworkStartLevel;
-import static org.ops4j.pax.exam.CoreOptions.junitBundles;
-import static org.ops4j.pax.exam.CoreOptions.maven;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
-import static org.ops4j.pax.exam.CoreOptions.options;
-import static org.ops4j.pax.exam.CoreOptions.systemProperty;
-import static org.ops4j.pax.exam.CoreOptions.vmOption;
+import static org.ops4j.pax.exam.CoreOptions.*;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.karafDistributionConfiguration;
 
 import org.ops4j.pax.exam.Configuration;
@@ -25,7 +19,7 @@ public abstract class PaxExamConfiguration {
 		
 		// Don't get these values from system properties because I want to run these tests in eclipse
 		final String cyVersion = "3.4.0"; 
-		final String emVersion = "3.0.0-BETA1";
+		final String emVersion = "3.0.0-RC1";
 		final String groupId   = "org.baderlab.csplugins";
 		final String appBundle = "EnrichmentMap";
  
