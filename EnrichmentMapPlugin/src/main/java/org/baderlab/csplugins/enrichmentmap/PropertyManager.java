@@ -21,12 +21,12 @@ public class PropertyManager {
 	
 	public static class Property<T> {
 		private final String key;
-		public final T defaultValue;
+		public final T def;
 		private final Function<String,T> converter;
 		
 		private Property(String key, T defaultValue, Function<String,T> converter) {
 			this.key = key;
-			this.defaultValue = defaultValue;
+			this.def = defaultValue;
 			this.converter = converter;
 		}
 	}
@@ -37,36 +37,38 @@ public class PropertyManager {
 	public static final Property<Boolean> CREATE_WARN = new Property<>("create.warn", true, Boolean::valueOf);
 	public static final Property<Distance> DISTANCE_METRIC = new Property<>("default.distanceMetric", Distance.PEARSON, Distance::valueOf);
 	
-	@Inject private CyProperty<Properties> cyProperties;
+	@Inject private CyProperty<Properties> cyProps;
 	
 	@AfterInjection
 	private void initializeProperties() {
-		getAllProperties().forEach(this::setDefault);
+		getAllProperties().stream()
+		.filter(prop -> !cyProps.getProperties().containsKey(prop.key))
+		.forEach(this::setDefault);
 	}
 	
 	
 	public <T> void setValue(Property<T> property, T value) {
-		cyProperties.getProperties().setProperty(property.key, String.valueOf(value));
+		cyProps.getProperties().setProperty(property.key, String.valueOf(value));
 	}
 	
 	public <T> void setDefault(Property<T> property) {
-		setValue(property, property.defaultValue);
+		setValue(property, property.def);
 	}
 	
 	public <T> T getValue(Property<T> property) {
-		if(cyProperties == null) // happens in JUnits
-			return property.defaultValue;
-		Properties properties = cyProperties.getProperties();
+		if(cyProps == null) // happens in JUnits
+			return property.def;
+		Properties properties = cyProps.getProperties();
 		if(properties == null)
-			return property.defaultValue;
+			return property.def;
 		String string = properties.getProperty(property.key);
 		if(string == null)
-			return property.defaultValue;
+			return property.def;
 		
 		try {
 			return property.converter.apply(string);
 		} catch(Exception e) {
-			return property.defaultValue;
+			return property.def;
 		}
 	}
 	
