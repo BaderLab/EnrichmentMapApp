@@ -67,7 +67,7 @@ public class ErrorMessageDialog extends JDialog {
 	private JPanel createButtonPanel() {
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
 		
-		doNotShowCheckbox = new JCheckBox("Do not warn me again.");
+		doNotShowCheckbox = new JCheckBox("Do not warn me again");
 		SwingUtil.makeSmall(doNotShowCheckbox);
 		
 		JButton cancelButton = new JButton("Cancel");
