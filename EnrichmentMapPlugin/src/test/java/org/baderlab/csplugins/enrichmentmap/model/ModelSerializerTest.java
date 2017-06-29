@@ -11,6 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Similarit
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.io.ModelSerializer;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.task.BaseNetworkTest;
 import org.jukito.JukitoRunner;
 import org.junit.Before;
@@ -32,7 +33,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		}
 	}
 	
-	
 	@Before
 	public void setUp(EnrichmentMapManager emManager) {
 		DataSetFiles dataset1files = new DataSetFiles();
@@ -42,12 +42,13 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
 		
 		EMCreationParameters params = 
-			new EMCreationParameters("ModelSerializer_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("ModelSerializer_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), 
+					SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
 		
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 	    assertEquals(0, maps.size());
 	    
-	    buildEnrichmentMap(params, dataset1files, Method.Generic, LegacySupport.DATASET1);
+	    buildEnrichmentMap(params, new DataSetParameters(LegacySupport.DATASET1, Method.Generic, dataset1files));
 	    
 	    maps = emManager.getAllEnrichmentMaps();
 	    assertEquals(1, maps.size());
@@ -136,10 +137,9 @@ public class ModelSerializerTest extends BaseNetworkTest {
 	}
 	
 	private static void assertDataSetEquals(EMDataSet expected, EMDataSet actual) {
-//		assertNotNull(actual.getMap()); // MKTODO GSON can't serialize circular references, need to restore parent pointer manually
+//		assertNotNull(actual.getMap()); // GSON can't serialize circular references, need to restore parent pointer manually
 		assertEquals(expected.getName(), actual.getName());
 		assertEquals(expected.getMethod(), actual.getMethod());
-		assertEquals(expected.isDummyExpressionData(), actual.isDummyExpressionData());
 		assertDataSetFilesEquals(expected.getDataSetFiles(), actual.getDataSetFiles());
 		assertSetOfGeneSetsEquals(expected.getSetOfGeneSets(), actual.getSetOfGeneSets());
 		assertSetOfGeneSetsEquals(expected.getGeneSetsOfInterest(), actual.getGeneSetsOfInterest());
@@ -148,6 +148,7 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertEquals(expected.getDataSetGenes(), actual.getDataSetGenes());
 		assertSetOfEnrichmentResultsEquals(expected.getEnrichments(), actual.getEnrichments());
 		assertGeneExpressionMatrixEquals(expected.getExpressionSets(), actual.getExpressionSets());
+		assertMapsEqual(ModelSerializerTest::assertRankingEquals, expected.getRanks(), actual.getRanks());
 	}
 	
 	private static void assertDataSetFilesEquals(DataSetFiles expected, DataSetFiles actual) {
@@ -196,7 +197,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertArrayEquals(expected.getPhenotypes(), actual.getPhenotypes());
 		assertEquals(expected.getPhenotype1(), actual.getPhenotype1());
 		assertEquals(expected.getPhenotype2(), actual.getPhenotype2());
-		assertMapsEqual(ModelSerializerTest::assertRankingEquals, expected.getRanks(), actual.getRanks());
 		assertEquals(expected.getFilename(), actual.getFilename());
 	}
 	

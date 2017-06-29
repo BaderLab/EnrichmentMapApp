@@ -63,8 +63,8 @@ public class GeneExpressionMatrix {
 	//Store two instances of the expression matrix, one with the raw expression values
 	//and one with the row normalized values.  The row normalizes values are stored as opposed
 	//to being computing on the fly to decrease the time needed to update a heatmap.
-	private Map<Integer, GeneExpression> expressionMatrix;
-	private transient Map<Integer, GeneExpression> expressionMatrix_rowNormalized;
+	private Map<Integer, GeneExpression> expressionMatrix = new HashMap<>();
+	private transient Map<Integer, GeneExpression> expressionMatrix_rowNormalized = null;
 
 	//maximum expression value of all expression values in the array - computed as matrix is
 	//loaded in.
@@ -82,19 +82,10 @@ public class GeneExpressionMatrix {
 	private String phenotype1;
 	private String phenotype2;
 
-	//Set of Rankings
-	//Set of Rankings - (HashMap of Hashmaps)
-	//Stores the dataset rank files if they were loaded on input but also has
-	//the capability of storing more rank files
-	private Map<String, Ranking> ranks;
-
 	//File associated with this expression set
 	private String filename;
 
 	public GeneExpressionMatrix() {
-		this.expressionMatrix = new HashMap<>();
-		this.ranks = new HashMap<>();
-
 	}
 
 	public GeneExpressionMatrix(String filename) {
@@ -361,52 +352,5 @@ public class GeneExpressionMatrix {
 		return expressionMatrix.keySet();
 	}
 
-	public Map<String, Ranking> getRanks() {
-		return ranks;
-	}
-
-	public void setRanks(Map<String, Ranking> ranks) {
-		this.ranks = ranks;
-	}
-
-	public void addRanks(String ranks_name, Ranking new_rank) {
-		if(this.ranks != null && ranks_name != null && new_rank != null)
-			this.ranks.put(ranks_name, new_rank);
-	}
-
-	public Ranking getRanksByName(String ranks_name) {
-		if(this.ranks != null) {
-			return this.ranks.get(ranks_name);
-		} else {
-			return null;
-		}
-	}
-
-	public Set<String> getAllRanksNames() {
-		HashSet<String> allnames = new HashSet<String>();
-		if(ranks != null && !ranks.isEmpty()) {
-			for(Iterator<String> i = ranks.keySet().iterator(); i.hasNext();) {
-				String current_name = (String) i.next();
-				if(current_name != null)
-					allnames.add(current_name);
-			}
-		}
-		return allnames;
-	}
-
-	/**
-	 * @return true if we have at least one list of gene ranks
-	 */
-	public boolean haveRanks() {
-		if(this.ranks != null && this.ranks.size() > 0)
-			return true;
-		else
-			return false;
-	}
-
-	public void createNewRanking(String name) {
-		Ranking new_ranking = new Ranking();
-		this.ranks.put(name, new_ranking);
-	}
-
+	
 }

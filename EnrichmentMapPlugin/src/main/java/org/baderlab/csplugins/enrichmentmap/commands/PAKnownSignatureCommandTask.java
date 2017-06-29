@@ -173,7 +173,7 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	private void processMannWhitneyArgs(EnrichmentMap map, PostAnalysisParameters.Builder builder) {
 		if(mannWhitRanks.isEmpty() && map.isSingleRanksPerDataset()) {
 			for(EMDataSet dataset : map.getDataSetList()) {
-				String ranksName = dataset.getExpressionSets().getAllRanksNames().iterator().next();
+				String ranksName = dataset.getAllRanksNames().iterator().next();
 				builder.addDataSetToRankFile(dataset.getName(), ranksName);
 			}
 		} else {
@@ -185,7 +185,7 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 			for(EMDataSet dataSet : dataSetList) {
 				String dsName = dataSet.getName();
 				String rankFile = mannWhitRanks.getRankFile(dsName);
-				Set<String> ranksNames = dataSet.getExpressionSets().getAllRanksNames();
+				Set<String> ranksNames = dataSet.getAllRanksNames();
 				
 				if(ranksNames.size() > 1) {
 					if(rankFile == null)

@@ -17,10 +17,8 @@ import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
-import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
@@ -116,8 +114,8 @@ public abstract class BaseNetworkTest {
 	}
 	
 	
-	protected void buildEnrichmentMap(EMCreationParameters params, DataSetFiles datasetFiles, Method method, String datasetName) {
-		List<DataSetParameters> dataSets = Arrays.asList(new DataSetParameters(datasetName, method, datasetFiles));
+	protected void buildEnrichmentMap(EMCreationParameters params, DataSetParameters ...datasets) { //, DataSetFiles datasetFiles, Method method, String datasetName) {
+		List<DataSetParameters> dataSets = Arrays.asList(datasets);
 		CreateEnrichmentMapTaskFactory taskFactory = masterMapTaskFactoryFactory.create(params, dataSets);
 		TaskIterator taskIterator = taskFactory.createTaskIterator();
 		

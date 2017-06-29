@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -320,14 +319,11 @@ public class LegacySessionLoader {
 					if (propFile.getName().contains(".RANKS1.txt") || propFile.getName().contains(".RANKS1Genes.txt")){
 						Ranking new_ranking;
 						//Check to see if there is already GSEARanking
-						if (em.getDataSet(LegacySupport.DATASET1).getExpressionSets().getAllRanksNames()
-								.contains(Ranking.GSEARanking)) {
-							new_ranking = em.getDataSet(LegacySupport.DATASET1).getExpressionSets()
-									.getRanksByName(Ranking.GSEARanking);
+						if (em.getDataSet(LegacySupport.DATASET1).getAllRanksNames().contains(Ranking.GSEARanking)) {
+							new_ranking = em.getDataSet(LegacySupport.DATASET1).getRanksByName(Ranking.GSEARanking);
 						} else {
 							new_ranking = new Ranking();
-							em.getDataSet(LegacySupport.DATASET1).getExpressionSets().addRanks(Ranking.GSEARanking,
-									new_ranking);
+							em.getDataSet(LegacySupport.DATASET1).addRanks(Ranking.GSEARanking, new_ranking);
 						}
 						
 						if (propFile.getName().contains(".RANKS1.txt")) {
@@ -364,9 +360,9 @@ public class LegacySessionLoader {
 						ranks.forEach(new_ranking::addRank);
 
 						if (parts.dataset != null)
-							em.getDataSet(parts.dataset).getExpressionSets().addRanks(parts.ranks_name, new_ranking);
+							em.getDataSet(parts.dataset).addRanks(parts.ranks_name, new_ranking);
 						else
-							em.getDataSet(LegacySupport.DATASET1).getExpressionSets().addRanks(parts.ranks_name, new_ranking);
+							em.getDataSet(LegacySupport.DATASET1).addRanks(parts.ranks_name, new_ranking);
 					}
 					
 					//Deal with legacy issues                    
@@ -395,16 +391,15 @@ public class LegacySessionLoader {
 						
 						//have to keep this method just in case old session files have ranks saved in this way
 						//it would only happen for sessions saved with version 0.8
-						if (propFile.getName().contains(".RANKS2.txt")
-								|| propFile.getName().contains(".RANKS2Genes.txt")) {
+						if (propFile.getName().contains(".RANKS2.txt") || propFile.getName().contains(".RANKS2Genes.txt")) {
 							Ranking new_ranking;
 							
 							// Check to see if there is already GSEARanking
-							if (em.getDataSet(LegacySupport.DATASET2).getExpressionSets().getAllRanksNames().contains(Ranking.GSEARanking)) {
-								new_ranking = em.getDataSet(LegacySupport.DATASET2).getExpressionSets().getRanksByName(Ranking.GSEARanking);
+							if (em.getDataSet(LegacySupport.DATASET2).getAllRanksNames().contains(Ranking.GSEARanking)) {
+								new_ranking = em.getDataSet(LegacySupport.DATASET2).getRanksByName(Ranking.GSEARanking);
 							} else {
 								new_ranking = new Ranking();
-								em.getDataSet(LegacySupport.DATASET2).getExpressionSets().addRanks(Ranking.GSEARanking, new_ranking);
+								em.getDataSet(LegacySupport.DATASET2).addRanks(Ranking.GSEARanking, new_ranking);
 							}
 							
 							if (propFile.getName().contains(".RANKS2.txt")) {
@@ -460,8 +455,8 @@ public class LegacySessionLoader {
 					//are dealing with two distinct expression files.
 					if (map.getDataSet(LegacySupport.DATASET2) != null && map.getDataSet(LegacySupport.DATASET2).getGeneSetsOfInterest() != null && !map.getDataSet(LegacySupport.DATASET2).getGeneSetsOfInterest().getGeneSets().isEmpty() ){
 						map.setDistinctExpressionSets(true);
-						map.getDataSet(LegacySupport.DATASET1).setDataSetGenes(new HashSet<Integer>((Set<Integer>)map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getGeneIds()));
-						map.getDataSet(LegacySupport.DATASET2).setDataSetGenes(new HashSet<Integer>((Set<Integer>)map.getDataSet(LegacySupport.DATASET2).getExpressionSets().getGeneIds()));
+//						map.getDataSet(LegacySupport.DATASET1).setDataSetGenes(new HashSet<Integer>((Set<Integer>)map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getGeneIds()));
+//						map.getDataSet(LegacySupport.DATASET2).setDataSetGenes(new HashSet<Integer>((Set<Integer>)map.getDataSet(LegacySupport.DATASET2).getExpressionSets().getGeneIds()));
 					}
 				}
 			}

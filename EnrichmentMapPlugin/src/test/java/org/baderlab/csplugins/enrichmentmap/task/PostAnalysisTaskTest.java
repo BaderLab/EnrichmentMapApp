@@ -1,9 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +26,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.cytoscape.application.CyApplicationManager;
@@ -72,7 +70,7 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		EMCreationParameters params = 
 			new EMCreationParameters("EM1_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.COMPOUND);
 		
-	    buildEnrichmentMap(params, dataset1files, Method.Generic, LegacySupport.DATASET1);
+	    buildEnrichmentMap(params, new DataSetParameters(LegacySupport.DATASET1, Method.Generic, dataset1files));
 	   	
 	   	// Assert the network is as expected
 	   	Set<CyNetwork> networks = networkManager.getNetworkSet();

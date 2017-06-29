@@ -23,6 +23,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.N
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.task.BaseNetworkTest;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.RankingOption;
@@ -66,7 +67,7 @@ public class HeatMapRanksTest extends BaseNetworkTest {
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 	    assertEquals(0, maps.size());
 	    
-	    buildEnrichmentMap(params, files, Method.GSEA, LegacySupport.DATASET1);
+	    buildEnrichmentMap(params, new DataSetParameters(LegacySupport.DATASET1, Method.GSEA, files));
 	    
 	    maps = emManager.getAllEnrichmentMaps();
 	    assertEquals(1, maps.size());

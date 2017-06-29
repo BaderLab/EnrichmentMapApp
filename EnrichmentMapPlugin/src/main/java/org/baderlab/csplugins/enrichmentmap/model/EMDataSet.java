@@ -1,16 +1,15 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.awt.Color;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
-/**
- * An Enrichment Map Data Set consists of:
- * <ul><li>Set of Genesets</li>
- * <li>Set of Genes</li>
- * <li>Enrichments of those genesets</li>
- * <li>Expression of genes used to calculate the enrichment</li></ul>
- */
+
 public class EMDataSet extends AbstractDataSet {
 	
 	public static enum Method {
@@ -26,23 +25,13 @@ public class EMDataSet extends AbstractDataSet {
 	}
 	
 	private Method method;
-
-	/** The set of enrichments. An enrichment result can either be an Generic or GSEA result. */
 	private SetOfEnrichmentResults enrichments = new SetOfEnrichmentResults();
-
-	private GeneExpressionMatrix expressionSets = new GeneExpressionMatrix();
-	private boolean dummyExpressionData;
+	private String expressionKey;
 	private Color color;
-
-	/** Hashmap of all genesets in the geneset file (gmt file). It only holds temporary data used during analysis. */
 	private SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
-
-	/** The set of genes in the analysis (there might be genes in the gmt file that are not in expression set). */
-	private Set<Integer> dataSetGenes = new HashSet<>();
-
-	/** The list of files associated with this Dataset. */
 	private DataSetFiles dataSetFiles;
-
+	private Map<String, Ranking> ranks = new HashMap<>();
+	
 	protected EMDataSet(EnrichmentMap map, String name, Method method, DataSetFiles files) {
 		super(map, name);
 		this.method = method;
@@ -56,7 +45,6 @@ public class EMDataSet extends AbstractDataSet {
 			this.enrichments.setFilename2(files.getEnrichmentFileName2());
 			this.enrichments.setPhenotype1(files.getPhenotype1());
 			this.enrichments.setPhenotype2(files.getPhenotype2());
-			this.expressionSets.setFilename(files.getExpressionFileName());
 		} else {
 			System.out.println("There are no files initialized for this Dataset, named:" + name + "\n");
 		}
@@ -73,17 +61,26 @@ public class EMDataSet extends AbstractDataSet {
 	public SetOfEnrichmentResults getEnrichments() {
 		return enrichments;
 	}
+	
+	public void setExpressionKey(String key) {
+		this.expressionKey = key;
+	}
 
 	public void setEnrichments(SetOfEnrichmentResults enrichments) {
 		this.enrichments = enrichments;
 	}
 
-	public GeneExpressionMatrix getExpressionSets() {
-		return expressionSets;
-	}
-
-	public void setExpressionSets(GeneExpressionMatrix expressionSets) {
-		this.expressionSets = expressionSets;
+	public synchronized GeneExpressionMatrix getExpressionSets() {
+		EnrichmentMap map = getMap();
+		GeneExpressionMatrix matrix = map.getExpressionMatrix(expressionKey);
+		if(matrix == null) {
+			// Avoid NPEs
+			matrix = new GeneExpressionMatrix();
+			String key = "Lazy_" + UUID.randomUUID().toString();
+			setExpressionKey(key);
+			map.putExpressionMatrix(key, matrix);
+		}
+		return matrix;
 	}
 
 	public SetOfGeneSets getSetOfGeneSets() {
@@ -95,27 +92,11 @@ public class EMDataSet extends AbstractDataSet {
 	}
 
 	public Set<Integer> getDataSetGenes() {
-		return dataSetGenes;
-	}
-
-	public void setDataSetGenes(Set<Integer> dataSetGenes) {
-		this.dataSetGenes = dataSetGenes;
+		return Collections.unmodifiableSet(getExpressionSets().getGeneIds());
 	}
 
 	public DataSetFiles getDataSetFiles() {
 		return dataSetFiles;
-	}
-
-	public void setDataSetFiles(DataSetFiles dataSetFiles) {
-		this.dataSetFiles = dataSetFiles;
-	}
-
-	public boolean isDummyExpressionData() {
-		return dummyExpressionData;
-	}
-
-	public void setDummyExpressionData(boolean dummyExpressionData) {
-		this.dummyExpressionData = dummyExpressionData;
 	}
 
 	@Override
@@ -159,4 +140,53 @@ public class EMDataSet extends AbstractDataSet {
 	public void setColor(Color color) {
 		this.color = color;
 	}
+	
+	public Map<String, Ranking> getRanks() {
+		return ranks;
+	}
+
+	public void setRanks(Map<String, Ranking> ranks) {
+		this.ranks = ranks;
+	}
+
+	public void addRanks(String ranks_name, Ranking new_rank) {
+		if(this.ranks != null && ranks_name != null && new_rank != null)
+			this.ranks.put(ranks_name, new_rank);
+	}
+
+	public Ranking getRanksByName(String ranks_name) {
+		if(this.ranks != null) {
+			return this.ranks.get(ranks_name);
+		} else {
+			return null;
+		}
+	}
+
+	public Set<String> getAllRanksNames() {
+		HashSet<String> allnames = new HashSet<String>();
+		if(ranks != null && !ranks.isEmpty()) {
+			for(Iterator<String> i = ranks.keySet().iterator(); i.hasNext();) {
+				String current_name = (String) i.next();
+				if(current_name != null)
+					allnames.add(current_name);
+			}
+		}
+		return allnames;
+	}
+
+	/**
+	 * @return true if we have at least one list of gene ranks
+	 */
+	public boolean haveRanks() {
+		if(this.ranks != null && this.ranks.size() > 0)
+			return true;
+		else
+			return false;
+	}
+
+	public void createNewRanking(String name) {
+		Ranking new_ranking = new Ranking();
+		this.ranks.put(name, new_ranking);
+	}
+
 }

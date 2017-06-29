@@ -43,11 +43,9 @@
 
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -96,26 +94,30 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		//check to see if the second column is a double.  If it is then consider that column
 		//expression
 
-		boolean twoColumns = false;
-
-		Set<Integer> datasetGenes = dataset.getDataSetGenes();
-//		Map<Integer,String> genes = dataset.getMap().getGenes();
 		EnrichmentMap map = dataset.getMap();
-
-		String expressionFileName = dataset.getExpressionSets().getFilename();
-		List<String> lines = LineReader.readLines(expressionFileName);
+		String expressionFileName = dataset.getDataSetFiles().getExpressionFileName();
+		dataset.setExpressionKey(expressionFileName);
 		
+		// Check to see if this expression file has already been loaded
+		GeneExpressionMatrix existingExpressionMatrix = map.getExpressionMatrix(expressionFileName);
+		if(existingExpressionMatrix != null) {
+			return existingExpressionMatrix;
+		}
+		
+		GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix();
+		expressionMatrix.setFilename(expressionFileName);
+		map.putExpressionMatrix(expressionFileName, expressionMatrix);
+		
+		Map<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
+		
+		List<String> lines = LineReader.readLines(expressionFileName);
 		int currentProgress = 0;
 		int maxValue = lines.size();
 		int expressionUniverse = 0;
+		boolean twoColumns = false;
 
 		taskMonitor.setStatusMessage("Parsing GCT file - " + maxValue + " rows");
-
-		GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
-		//GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix(lines[0].split("\t"));
-		//HashMap<Integer,GeneExpression> expression = new HashMap<Integer, GeneExpression>();
-		Map<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
-
+		
 		for(int i = 0; i < lines.size(); i++) {
 			String line = lines.get(i);
 			String[] tokens = line.split("\t");
@@ -181,9 +183,6 @@ public class ExpressionFileReaderTask extends AbstractTask {
 			//TODO:is there the possibility that we need all the expression genes?  Currently this great decreases space when saving sessions
 			Integer genekey = map.getHashFromGene(Name);
 			if(genekey != null) {
-				//we want the genes hashmap and dataset genes hashmap to have the same keys so it is easier to compare.
-				datasetGenes.add(genekey);
-
 				String description = "";
 				//check to see if the second column is parseable
 				if(twoColumns) {
@@ -212,7 +211,6 @@ public class ExpressionFileReaderTask extends AbstractTask {
 					expressionMatrix.setClosesttoZero(newClosest);
 
 				expression.put(genekey, expres);
-
 			}
 			expressionUniverse++;
 
@@ -253,41 +251,6 @@ public class ExpressionFileReaderTask extends AbstractTask {
 
 	}
 
-	/**
-	 * Parse class file (The class file is a GSEA specific file that specifyies
-	 * which phenotype each column of the expression file belongs to.) The class
-	 * file can only be associated with an analysis when dataset specifications
-	 * are specified initially using an rpt file.
-	 *
-	 * @param classFile - name of class file
-	 * @return String array of the phenotypes of each column in the expression
-	 *         array
-	 */
-	private String[] setClasses(String classFile) throws IOException {
-
-		File f = new File(classFile);
-
-		//deal with legacy issue, if a session file has the class file set but
-		//it didn't actually save the classes yet.
-		if(!f.exists()) {
-			return null;
-		}
-		
-		//check to see if the file was opened successfully
-
-		if(!classFile.equalsIgnoreCase(null)) {
-			List<String> lines = LineReader.readLines(classFile);
-
-			//the class file can be split by a space or a tab
-			String[] classes = lines.get(2).split("\\s");
-
-			//the third line of the class file defines the classes
-			return classes;
-		} else {
-			String[] def_pheno = { "Na_pos", "NA_neg" };
-			return def_pheno;
-		}
-	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {

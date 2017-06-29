@@ -245,7 +245,7 @@ public class AddRanksDialog extends JDialog {
 	private boolean validateDuplicateRankName() {
 		String ranksName = getRanksName();
 		EMDataSet dataset = getDataSet();
-		if(dataset.getExpressionSets().getRanks().containsKey(ranksName)) {
+		if(dataset.getRanks().containsKey(ranksName)) {
 			JOptionPane.showMessageDialog(this, "Ranks name already exists", "Error", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}

@@ -39,6 +39,13 @@ public class EnrichmentMap {
 
 	private Map<String, EMDataSet> dataSets = new HashMap<>();
 
+	/**
+	 * In order to minimize memory usage (and session file size) we will store expressions
+	 * here and have the EMDataSets keep a key to this map. That way datasets can share
+	 * expression matrices.
+	 */
+	private Map<String, GeneExpressionMatrix> expressions = new HashMap<>();
+	
 	/** The set of genes defined in the Enrichment map. */
 	private BiMap<Integer, String> genes = HashBiMap.create();
 
@@ -75,6 +82,15 @@ public class EnrichmentMap {
 		return ds;
 	}
 	
+	
+	public void putExpressionMatrix(String key, GeneExpressionMatrix matrix) {
+		expressions.put(key, matrix);
+	}
+	
+	public GeneExpressionMatrix getExpressionMatrix(String key) {
+		return expressions.get(key);
+	}
+	
 	/**
 	 * Method to transfer files specified in the parameters to the objects they correspond to.
 	 */
@@ -102,11 +118,11 @@ public class EnrichmentMap {
 		//rank files - dataset1 
 		if (!isNullOrEmpty(files.getRankedFile())) {
 			if (ds.getMethod() == Method.GSEA) {
-				ds.getExpressionSets().createNewRanking(Ranking.GSEARanking);
-				ds.getExpressionSets().getRanksByName(Ranking.GSEARanking).setFilename(files.getRankedFile());
+				ds.createNewRanking(Ranking.GSEARanking);
+				ds.getRanksByName(Ranking.GSEARanking).setFilename(files.getRankedFile());
 			} else {
-				ds.getExpressionSets().createNewRanking(ds.getName());
-				ds.getExpressionSets().getRanksByName(ds.getName()).setFilename(files.getRankedFile());
+				ds.createNewRanking(ds.getName());
+				ds.getRanksByName(ds.getName()).setFilename(files.getRankedFile());
 			}
 		}
 	}
@@ -193,6 +209,7 @@ public class EnrichmentMap {
 	 * Filter all the genesets by the dataset genes If there are multiple sets
 	 * of genesets make sure to filter by the specific dataset genes
 	 */
+	@Deprecated
 	public void filterGenesets() {
 		for (EMDataSet ds : dataSets.values()) {
 			// only filter the genesets if dataset genes are not null or empty
@@ -422,7 +439,7 @@ public class EnrichmentMap {
 		//go through each Dataset
 		for (EMDataSet ds : dataSets.values()) {
 			// there could be duplicate ranking names for two different datasets. Add the dataset to the ranks name
-			Set<String> allNames = ds.getExpressionSets().getAllRanksNames();
+			Set<String> allNames = ds.getAllRanksNames();
 
 			for (String name : allNames)
 				allRankNames.add(name + "-" + ds.getName());
@@ -435,7 +452,7 @@ public class EnrichmentMap {
 		Map<String, Ranking> allranks = new HashMap<>();
 		
 		for (EMDataSet dataset : dataSets.values())
-			allranks.putAll(dataset.getExpressionSets().getRanks());
+			allranks.putAll(dataset.getRanks());
 		
 		return allranks;
 	}
@@ -445,7 +462,7 @@ public class EnrichmentMap {
 	 */
 	public boolean isSingleRanksPerDataset() {
 		for(EMDataSet dataset : dataSets.values()) {
-			if(dataset.getExpressionSets().getRanks().size() != 1) {
+			if(dataset.getRanks().size() != 1) {
 				return false;
 			}
 		}
@@ -482,11 +499,10 @@ public class EnrichmentMap {
 
 			if (!ds.equalsIgnoreCase("") && !rank.equalsIgnoreCase("")) {
 				// check that this is the right dataset
-				if (ds.equalsIgnoreCase(nextDs)
-						&& (dataSets.get(nextDs)).getExpressionSets().getAllRanksNames().contains(rank))
-					return dataSets.get(nextDs).getExpressionSets().getRanksByName(rank);
-			} else if ((dataSets.get(nextDs)).getExpressionSets().getAllRanksNames().contains(ranksName)) {
-				return dataSets.get(nextDs).getExpressionSets().getRanksByName(ranksName);
+				if (ds.equalsIgnoreCase(nextDs) && (dataSets.get(nextDs)).getAllRanksNames().contains(rank))
+					return dataSets.get(nextDs).getRanksByName(rank);
+			} else if ((dataSets.get(nextDs)).getAllRanksNames().contains(ranksName)) {
+				return dataSets.get(nextDs).getRanksByName(ranksName);
 			}
 		}
 		

@@ -22,6 +22,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -74,7 +75,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		dataset1files.setEnrichmentFileName1(PATH + "fakeEnrichments.txt");
 		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
 		
-	    buildEnrichmentMap(params, dataset1files, Method.Generic, LegacySupport.DATASET1);
+	    buildEnrichmentMap(params, new DataSetParameters(LegacySupport.DATASET1, Method.Generic, dataset1files));
 	    
 	    // Assert the network is as expected
 	   	Set<CyNetwork> networks = networkManager.getNetworkSet();

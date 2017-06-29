@@ -92,7 +92,7 @@ public class MannWhitneyRanksDialog extends JDialog {
 			final String dataSetName = dataset.getName();
 			JLabel label = new JLabel(dataSetName + ":");
 			JComboBox<String> combo = new JComboBox<>();
-			for(String ranksName : dataset.getExpressionSets().getAllRanksNames()) {
+			for(String ranksName : dataset.getAllRanksNames()) {
 				combo.addItem(ranksName);
 			}
 			SwingUtil.makeSmall(label, combo);

@@ -63,7 +63,7 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 		boolean isNegative = isNegativeGS();
 		
 		Map<Integer,GeneExpression> expressions = dataset.getExpressionSets().getExpressionMatrix();
-		Ranking ranking = dataset.getExpressionSets().getRanksByName(rankingName);
+		Ranking ranking = dataset.getRanksByName(rankingName);
 		
 		Integer[] ranksSubset = new Integer[expressions.size()];
 		HashMap<Integer, ArrayList<Integer>> rank2keys = new HashMap<Integer, ArrayList<Integer>>();
@@ -136,7 +136,7 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 	private int getTopRank() {
 		int topRank = rankAtMax + 3; // MKTODO why?
 		if(scoreAtMax < 0) {
-			topRank = dataset.getExpressionSets().getRanksByName(rankingName).getMaxRank() - topRank;
+			topRank = dataset.getRanksByName(rankingName).getMaxRank() - topRank;
 		}
 		return topRank;
 	}

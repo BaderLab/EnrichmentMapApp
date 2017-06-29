@@ -130,7 +130,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 				 
 				// update rank at max for leading edge calculation
 				if(dataset.getMethod() == Method.GSEA) {
-					Ranking ranks = dataset.getExpressionSets().getRanksByName(datasetName);
+					Ranking ranks = dataset.getRanksByName(datasetName);
 					updateRankAtMax((GSEAResult)result, ranks);
 				}
 				

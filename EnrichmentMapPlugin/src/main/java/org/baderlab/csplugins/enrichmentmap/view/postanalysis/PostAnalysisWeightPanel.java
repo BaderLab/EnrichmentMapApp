@@ -465,7 +465,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 		if(getFilterType().isMannWhitney()) {
 			if(map.isSingleRanksPerDataset()) {
 				for(EMDataSet dataset : map.getDataSetList()) {
-					String ranksName = dataset.getExpressionSets().getAllRanksNames().iterator().next();
+					String ranksName = dataset.getAllRanksNames().iterator().next();
 					builder.addDataSetToRankFile(dataset.getName(), ranksName);
 				}
 			} else {

@@ -1,7 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.Map;
-import java.util.Set;
+import java.util.UUID;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
@@ -21,20 +21,18 @@ public class CreateDummyExpressionTask extends AbstractTask {
 		this.dataset = dataset;
 	}
 
-	//Create a dummy expression file so that when no expression files are loaded you can still
-	//use the intersect and union viewers.
+	//Create a dummy expression file so that when no expression files are loaded you can still use the HeatMap.
 	private void createDummyExpression() {
-		//in order to see the gene in the expression viewer we also need a dummy expression file
-		//get all the genes
-		//HashMap<String, Integer> genes= dataset.getMap().getGenes();
-		Set<Integer> datasetGenes;
-
+		// Not worried too much about sharing dummy expressions as they don't use up very much space.
+		GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix();
+		String expressionKey = "Dummy_" + UUID.randomUUID().toString();
+		dataset.getMap().putExpressionMatrix(expressionKey, expressionMatrix);
+		dataset.setExpressionKey(expressionKey);
+		
+		//in order to see the gene in the expression viewer we also need a dummy expression file get all the genes
 		Map<String, Integer> genes = dataset.getMap().getGeneSetsGenes(dataset.getSetOfGeneSets().getGeneSets().values());
-		datasetGenes = dataset.getDataSetGenes();
 
 		String[] titletokens = {"Name", "Description", "Dummy"};
-
-		GeneExpressionMatrix expressionMatrix = dataset.getExpressionSets();
 		expressionMatrix.setColumnNames(titletokens);
 		Map<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
 		expressionMatrix.setExpressionMatrix(expression);
@@ -43,8 +41,6 @@ public class CreateDummyExpressionTask extends AbstractTask {
 
 		for(String currentGene : genes.keySet()) {
 			int genekey = genes.get(currentGene);
-			if(datasetGenes != null)
-				datasetGenes.add(genekey);
 
 			GeneExpression expres = new GeneExpression(currentGene, currentGene);
 			expres.setExpression(tokens);
@@ -60,15 +56,12 @@ public class CreateDummyExpressionTask extends AbstractTask {
 				expressionMatrix.setClosesttoZero(newClosest);
 
 			expression.put(genekey, expres);
-
 		}
 
 		//set the number of genes
 		//expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
 		expressionMatrix.setNumConditions(3);
 		expressionMatrix.setFilename("Dummy Expression_" + dataset.getName().toString());
-
-		dataset.setDummyExpressionData(true);
 	}
 
 	

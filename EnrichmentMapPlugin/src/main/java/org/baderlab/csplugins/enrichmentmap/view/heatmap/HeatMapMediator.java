@@ -198,12 +198,12 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		for(EMDataSet dataset : map.getDataSetList()) {
 			if(nodes.size() == 1 && edges.isEmpty() && dataset.getMethod() == Method.GSEA) {
 				String geneSetName = network.getRow(nodes.get(0)).get(CyNetwork.NAME, String.class);
-				Map<String,Ranking> ranks = dataset.getExpressionSets().getRanks();
+				Map<String,Ranking> ranks = dataset.getRanks();
 				ranks.forEach((name, ranking) -> {
 					options.add(new GSEALeadingEdgeRankingOption(dataset, geneSetName, name));
 				});
 			} else {
-				Map<String,Ranking> ranks = dataset.getExpressionSets().getRanks();
+				Map<String,Ranking> ranks = dataset.getRanks();
 				ranks.forEach((name, ranking) -> {
 					options.add(new BasicRankingOption(ranking, dataset, name));
 				});

@@ -47,11 +47,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -286,27 +284,28 @@ public class RanksFileReaderTask extends AbstractTask {
 				// update rank2gene and gene2score as well
 			}
 		}
+		
 		//check to see if some of the dataset genes are not in this rank file
-		Set<Integer> current_genes = dataset.getDataSetGenes();
-
-		Set<Integer> current_ranks = ranks.keySet();
-
-		//intersect the genes with the ranks.  only retain the genes that have ranks.
-		Set<Integer> intersection = new HashSet<>(current_genes);
-		intersection.retainAll(current_ranks);
-
-		//see if there more genes than there are ranks
-		if(!(intersection.size() == current_genes.size())) {
-			//JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Ranks for some of the genes/proteins listed in the expression file are missing. \n These genes/proteins will be excluded from ranked listing in the heat map.");
-
-		}
+//		Set<Integer> current_genes = dataset.getDataSetGenes();
+//
+//		Set<Integer> current_ranks = ranks.keySet();
+//
+//		//intersect the genes with the ranks.  only retain the genes that have ranks.
+//		Set<Integer> intersection = new HashSet<>(current_genes);
+//		intersection.retainAll(current_ranks);
+//
+//		//see if there more genes than there are ranks
+//		if(!(intersection.size() == current_genes.size())) {
+//			//JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Ranks for some of the genes/proteins listed in the expression file are missing. \n These genes/proteins will be excluded from ranked listing in the heat map.");
+//
+//		}
 
 		//create a new Ranking
 		Ranking new_ranking = new Ranking();
 		ranks.forEach(new_ranking::addRank);
 
 		//add the Ranks to the expression file ranking
-		dataset.getExpressionSets().addRanks(ranks_name, new_ranking);
+		dataset.addRanks(ranks_name, new_ranking);
 
 	}
 

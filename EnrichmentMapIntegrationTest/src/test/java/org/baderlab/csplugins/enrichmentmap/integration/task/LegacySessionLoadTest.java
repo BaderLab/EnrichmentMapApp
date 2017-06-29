@@ -191,7 +191,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals("MOCOS (molybdenum cofactor sulfurase)", expression.getDescription());
 		assertEquals(18, expression.getExpression().length);
 		
-		Ranking ranking = expressions.getRanks().get("GSEARanking");
+		Ranking ranking = dataset.getRanks().get("GSEARanking");
 		assertEquals(12653, ranking.getAllRanks().size());
 		assertEquals(12653, ranking.getRanking().size());
 		

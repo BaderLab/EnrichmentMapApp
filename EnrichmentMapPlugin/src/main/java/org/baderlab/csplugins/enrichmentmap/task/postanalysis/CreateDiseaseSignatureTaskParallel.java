@@ -219,7 +219,7 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 
 	private void mannWhitney(Set<Integer> intersection, GenesetSimilarity comparison, EMDataSet dataSet) {
 		String rankFile = params.getDataSetToRankFile().get(dataSet.getName());
-		Ranking ranks = dataSet.getExpressionSets().getRanks().get(rankFile);
+		Ranking ranks = dataSet.getRanks().get(rankFile);
 
 		// Calculate Mann-Whitney U pValue for Overlap
 		Integer[] overlapGeneIds = intersection.toArray(new Integer[intersection.size()]);

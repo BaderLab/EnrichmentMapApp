@@ -82,8 +82,8 @@ public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 			
 			// Load ranks if present
 			String ranksName = dataset.getMethod() == Method.GSEA ? Ranking.GSEARanking : datasetName;
-			if(dataset.getExpressionSets().getRanksByName(ranksName) != null) {
-				String filename = dataset.getExpressionSets().getRanksByName(ranksName).getFilename();
+			if(dataset.getRanksByName(ranksName) != null) {
+				String filename = dataset.getRanksByName(ranksName).getFilename();
 				tasks.append(new RanksFileReaderTask(filename, dataset, ranksName, false));
 			}
 			
