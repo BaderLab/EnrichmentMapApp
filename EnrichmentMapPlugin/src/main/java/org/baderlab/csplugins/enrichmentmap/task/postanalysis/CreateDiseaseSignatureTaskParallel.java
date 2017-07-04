@@ -139,7 +139,7 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 						if(Thread.interrupted())
 							break loop;
 						
-						GeneSet enrGeneSet = dataSet.getSetOfGeneSets().getGeneSetByName(geneSetName);
+						GeneSet enrGeneSet = dataSet.getGeneSetsOfInterest().getGeneSetByName(geneSetName);
 						if(enrGeneSet != null) {
 							// restrict to a common gene universe
 							Set<Integer> enrGenes = Sets.intersection(enrGeneSet.getGenes(), geneUniverse);
