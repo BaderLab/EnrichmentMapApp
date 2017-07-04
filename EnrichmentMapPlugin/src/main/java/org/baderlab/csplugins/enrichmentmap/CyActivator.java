@@ -8,6 +8,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogActio
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.BuildCommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.GSEACommand;
+import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.JsonCommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.PACommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.ResolveCommand;
 import org.baderlab.csplugins.enrichmentmap.commands.MannWhitRanksTunableHandlerFactory;
@@ -56,10 +57,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, sessionListener, new Properties());
 		
 		// commands
-		registerCommand(bc, "build",     injector.getInstance(Key.get(TaskFactory.class, BuildCommand.class)));
-		registerCommand(bc, "gsea",      injector.getInstance(Key.get(TaskFactory.class, GSEACommand.class)));
-		registerCommand(bc, "mastermap", injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
-		registerCommand(bc, "pa",        injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
+		registerCommand(bc, "build",        injector.getInstance(Key.get(TaskFactory.class, BuildCommand.class)));
+		registerCommand(bc, "gsea",         injector.getInstance(Key.get(TaskFactory.class, GSEACommand.class)));
+		registerCommand(bc, "mastermap",    injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
+		registerCommand(bc, "pa",           injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
+		registerCommand(bc, "export-model", injector.getInstance(Key.get(TaskFactory.class, JsonCommand.class)));
 		registerService(bc, new MannWhitRanksTunableHandlerFactory(), StringTunableHandlerFactory.class, new Properties());
 		
 		// CyProperty

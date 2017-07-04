@@ -21,6 +21,7 @@ public class CommandModule extends AbstractModule {
 	@BindingAnnotation @Retention(RUNTIME) public @interface GSEACommand { }
 	@BindingAnnotation @Retention(RUNTIME) public @interface ResolveCommand { }
 	@BindingAnnotation @Retention(RUNTIME) public @interface PACommand { }
+	@BindingAnnotation @Retention(RUNTIME) public @interface JsonCommand { }
 	
 	
 	@Override
@@ -43,8 +44,13 @@ public class CommandModule extends AbstractModule {
 	}
 	
 	@Provides @PACommand
-	public TaskFactory providePA(Provider<PAKnownSignatureCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
-		return createTaskFactory(taskProvider, showTask);
+	public TaskFactory providePA(Provider<PAKnownSignatureCommandTask> taskProvider) {
+		return createTaskFactory(taskProvider, null);
+	}
+	
+	@Provides @JsonCommand
+	public TaskFactory provideJson(Provider<ExportModelJsonCommandTask> taskProvider) {
+		return createTaskFactory(taskProvider, null);
 	}
 
 	
@@ -52,7 +58,10 @@ public class CommandModule extends AbstractModule {
 		return new AbstractTaskFactory() {
 			@Override
 			public TaskIterator createTaskIterator() {
-				return new TaskIterator(taskProvider.get(), showTask);
+				TaskIterator tasks = new TaskIterator(taskProvider.get());
+				if(showTask != null)
+					tasks.append(showTask);
+				return tasks;
 			}
 		};
 	}

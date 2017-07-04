@@ -35,13 +35,20 @@ public class ModelSerializer {
 	private static final Logger logger = LoggerFactory.getLogger(ModelSerializer.class);
 
 	public static String serialize(EnrichmentMap map) {
+		return serialize(map, false);
+	}
+	
+	public static String serialize(EnrichmentMap map, boolean pretty) {
 		// When saving to the session file DO NOT enable pretty printing, the Cytoscape CSV parser is very slow for multi-line text
-		Gson gson = new GsonBuilder()
+		GsonBuilder builder = new GsonBuilder()
 				.registerTypeHierarchyAdapter(Path.class, new PathAdapter())
-				.registerTypeAdapter(EnrichmentResult.class, new EnrichmentResultAdapter())
-				//.setPrettyPrinting()  // for debug use ONLY
-				.create();
+				.registerTypeAdapter(EnrichmentResult.class, new EnrichmentResultAdapter());
 		
+		if(pretty) {
+			builder.setPrettyPrinting();
+		}
+				
+		Gson gson = builder.create();
 		String json = gson.toJson(map);
 		return json;
 	}
