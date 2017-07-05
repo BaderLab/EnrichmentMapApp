@@ -10,9 +10,6 @@ import java.util.Set;
  */
 public class SetOfGeneSets {
 
-	//name of results (ie. Dataset1 or name specified by user)
-	private String name;
-
 	/** 
 	 * The set of genesets
 	 * Hash Key = name of gene set
@@ -21,25 +18,8 @@ public class SetOfGeneSets {
 	 * Note: Must declare the type as HashMap because it forces GSON to deserialize using 
 	 * an actual HashMap, otherwise it wants to use a LinkedTreeMap which uses much more memory.
 	 */
-	private HashMap<String, GeneSet> geneSets;
+	private HashMap<String, GeneSet> geneSets = new HashMap<>();
 
-	public SetOfGeneSets(String name) {
-		this.name = name;
-		geneSets = new HashMap<>();
-	}
-	
-	public SetOfGeneSets() {
-		this("");
-	}
-
-	/**
-	 * Create a set of Genesets on re-load Given - the dataset these genesets
-	 * are associated with and the loaded in EM property file
-	 */
-	public SetOfGeneSets(String ds, HashMap<String, String> props) {
-		if (props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%name"))
-			this.name = props.get(ds + "%" + this.getClass().getSimpleName() + "%name");
-	}
 
 	/**
 	 * FilterGenesets - restrict the genes contained in each gene set to only
@@ -63,14 +43,6 @@ public class SetOfGeneSets {
 		geneSets = filteredGenesets;
 	}
 	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public Map<String, GeneSet> getGeneSets() {
 		return geneSets;
 	}

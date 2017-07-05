@@ -92,6 +92,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 //	private Ranking mannWhitRanks;
     
 	private SetOfGeneSets signatureGenesets;
+	private String autoName;
 	private final Map<PostAnalysisFilterType, Double> savedFilterValues = PostAnalysisFilterType.createMapOfDefaults();
 	
 	public interface Factory {
@@ -394,21 +395,18 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 			LoadSignatureSetsActionListener action =
 					loadSignatureSetsActionListenerFactory.create(new File(filePath), filterMetric, parentPanel.getEnrichmentMap());
 
-			action.setGeneSetCallback(gs -> {
-				signatureGenesets = gs;
-			});
-			
-			action.setFilteredSignatureSetsCallback(selected -> {
-				availSigSetsModel.clear();
-				selectedSigSetsModel.clear();
-
-				for (String name : selected)
-					availSigSetsModel.addElement(name);
-				
-				update();
-			});
-			
 			action.actionPerformed(null);
+			
+			signatureGenesets = action.getResultGeneSets();
+			autoName = action.getAutoName();
+			
+			availSigSetsModel.clear();
+			selectedSigSetsModel.clear();
+
+			for (String name : action.getFilteredSignatureSets())
+				availSigSetsModel.addElement(name);
+			
+			update();
 		});
 		
 		makeSmall(signatureDiscoveryGMTFileNameTextField, selectSigGMTFileButton);
@@ -552,6 +550,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 			String filePath = (String) signatureDiscoveryGMTFileNameTextField.getValue();
 			builder.setSignatureGMTFileName(filePath);
 			builder.setLoadedGMTGeneSets(signatureGenesets);
+			builder.setAutoName(autoName);
 			return true;
 		}
 		return false;

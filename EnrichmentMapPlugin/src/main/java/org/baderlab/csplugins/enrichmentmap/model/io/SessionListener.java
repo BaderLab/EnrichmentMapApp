@@ -43,7 +43,22 @@ public class SessionListener implements SessionLoadedListener, SessionAboutToBeS
 
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent event) {
-		save();
+		if(sessionIsActuallySaving()) {
+			save();
+		}
+	}
+	
+	private boolean sessionIsActuallySaving() {
+		StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+		for(StackTraceElement frame : stack) {
+			String className = frame.getClassName();
+			if(className.equals("org.cytoscape.task.internal.session.SaveSessionTask") ||
+			   className.equals("org.cytoscape.task.internal.session.SaveSessionAsTask")) {
+				System.out.println("found it! " + className);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void save() {

@@ -69,7 +69,7 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private CyNetworkViewManager networkViewManager;
 	
-	@Inject private LoadSignatureSetsActionListener.Factory loadSignatureSetsActionListenerFactory;
+	@Inject private LoadSignatureSetsActionListener.Factory loadSignatureSetsFactory;
 	@Inject private CreateDiseaseSignatureTaskFactory.Factory taskFactoryFactory;
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	@Inject private EnrichmentMapManager emManager;
@@ -77,7 +77,7 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	
 	private SetOfGeneSets signatureGenesets = null;
 	private Set<String> selectedGenesetNames = null; // result of filtering, but since we are using FilterNetric.None() this will be all the genesets
-	
+	private String autoName = null;
 	
 	public PAKnownSignatureCommandTask() {
 		filterType = enumNames(PostAnalysisFilterType.values());
@@ -86,16 +86,12 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	
 	
 	private void loadGeneSets(EnrichmentMap map) {
-		FilterMetric filterMetric = new FilterMetric.None();
-		LoadSignatureSetsActionListener loadAction = loadSignatureSetsActionListenerFactory.create(gmtFile, filterMetric, map);
-		loadAction.setGeneSetCallback(gs -> {
-			signatureGenesets = gs;
-		});
-		loadAction.setFilteredSignatureSetsCallback(names -> {
-			selectedGenesetNames = names;
-		});
-		
+		LoadSignatureSetsActionListener loadAction = loadSignatureSetsFactory.create(gmtFile, new FilterMetric.None(), map);
 		loadAction.actionPerformed(null);
+		
+		signatureGenesets = loadAction.getResultGeneSets();
+		selectedGenesetNames = loadAction.getFilteredSignatureSets();
+		autoName = loadAction.getAutoName();
 	}
 	
 	@Override
@@ -129,15 +125,16 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 		PostAnalysisFilterType filter = PostAnalysisFilterType.valueOf(filterType.getSelectedValue());
 		UniverseType universe = UniverseType.valueOf(hypergeomUniverseType.getSelectedValue());
 		
-		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-		builder.setAttributePrefix(map.getParams().getAttributePrefix());
-		builder.setSignatureGMTFileName(gmtFile.getAbsolutePath());
-		builder.setLoadedGMTGeneSets(signatureGenesets);
-		builder.addSelectedGeneSetNames(selectedGenesetNames);
-		builder.setUniverseType(universe);
-		builder.setUserDefinedUniverseSize(userDefinedUniverseSize);
-		builder.setRankTestParameters(new PostAnalysisFilterParameters(filter, cutoff));
-		builder.setName(name);
+		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder()
+			.setAttributePrefix(map.getParams().getAttributePrefix())
+			.setSignatureGMTFileName(gmtFile.getAbsolutePath())
+			.setLoadedGMTGeneSets(signatureGenesets)
+			.addSelectedGeneSetNames(selectedGenesetNames)
+			.setUniverseType(universe)
+			.setUserDefinedUniverseSize(userDefinedUniverseSize)
+			.setRankTestParameters(new PostAnalysisFilterParameters(filter, cutoff))
+			.setName(name)
+			.setAutoName(autoName);
 		
 		if(isBatch()) {
 			builder.setDataSetName(null); // run in batch mode

@@ -155,9 +155,10 @@ public abstract class BaseNetworkTest {
 		File file = new File(builder.getSignatureGMTFileName());
 		LoadSignatureSetsActionListener loader = loadSignatureSetsActionListenerFactory.create(file, new FilterMetric.None(), map);
 		loader.setTaskManager(testTaskManager);
-		loader.setGeneSetCallback(builder::setLoadedGMTGeneSets);
-		loader.setFilteredSignatureSetsCallback(builder::addSelectedGeneSetNames);
 		loader.actionPerformed(null);
+		builder.setLoadedGMTGeneSets(loader.getResultGeneSets());
+		builder.addSelectedGeneSetNames(loader.getFilteredSignatureSets());
+		builder.setAutoName(loader.getAutoName());
 		
 		PostAnalysisParameters paParams = builder.build();
 		

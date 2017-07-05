@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import javax.swing.JOptionPane;
 
@@ -14,9 +13,9 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterSignatureGSTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.LoadSignatureGMTFilesTask;
+import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.util.ResultTaskObserver;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskObserver;
@@ -26,6 +25,8 @@ import com.google.inject.assistedinject.Assisted;
 
 public class LoadSignatureSetsActionListener implements ActionListener {
 
+	private static final String FILE_EXT = ".gmt";
+	
 	@Inject private CySwingApplication application;
 	@Inject private @Sync TaskManager<?,?> taskManager;
 	
@@ -33,8 +34,9 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 	private final FilterMetric filterMetric;
 	private final EnrichmentMap map;
 	
-	private Consumer<SetOfGeneSets> geneSetCallback = x -> {};
-	private Consumer<Set<String>> filteredSignatureSetsCallback = x -> {};
+	private SetOfGeneSets resultGeneSets;
+	private Set<String> filteredSignatureSets;
+	private String autoName;
 	
 	
 	public interface Factory {
@@ -51,17 +53,22 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 	/**
 	 * For tests to replace the task manager. 
 	 * MKTODO: There may be a better way to do this with Guice/Jukito.
+	 * @noreference
 	 */
 	public void setTaskManager(TaskManager<?,?> taskManager) {
 		this.taskManager = taskManager;
 	}
 	
-	public void setGeneSetCallback(Consumer<SetOfGeneSets> geneSetCallback) {
-		this.geneSetCallback = geneSetCallback;
+	public SetOfGeneSets getResultGeneSets() {
+		return resultGeneSets;
 	}
 	
-	public void setFilteredSignatureSetsCallback(Consumer<Set<String>> filteredSignatureSetsCallback) {
-		this.filteredSignatureSetsCallback = filteredSignatureSetsCallback;
+	public Set<String> getFilteredSignatureSets() {
+		return filteredSignatureSets;
+	}
+	
+	public String getAutoName() {
+		return autoName;
 	}
 	
 	@Override
@@ -70,23 +77,20 @@ public class LoadSignatureSetsActionListener implements ActionListener {
 		if (file.canRead()) {
 			// MKTODO warning LoadSignatureGMTFilesTask is side-effecting, it pulls the loaded genes into the EnrichmentMap object
 			LoadSignatureGMTFilesTask loadGMTs = new LoadSignatureGMTFilesTask(file, map, filterMetric);
-
+			
 			TaskObserver taskObserver = new ResultTaskObserver() {
-				private SetOfGeneSets resultGeneSets;
-				private Set<String> filteredSignatureSets;
-
+				@SuppressWarnings("unchecked")
 				@Override
 				public void taskFinished(ObservableTask task) {
 					if (task instanceof FilterSignatureGSTask) {
 						resultGeneSets = task.getResults(SetOfGeneSets.class);
 						filteredSignatureSets = task.getResults(Set.class);
+						
+						String name = file.getName();
+						if(name.toLowerCase().endsWith(FILE_EXT))
+							name = name.substring(0, name.length() - FILE_EXT.length()).trim();
+						autoName = NamingUtil.getUniqueName(name, map.getSignatureDataSets().keySet());
 					}
-				}
-				
-				@Override
-				public void allFinished(FinishStatus finishStatus) {
-					geneSetCallback.accept(resultGeneSets);
-					filteredSignatureSetsCallback.accept(filteredSignatureSets);
 				}
 			};
 			

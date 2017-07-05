@@ -24,7 +24,6 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
-import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -42,6 +41,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
@@ -148,8 +148,9 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	 */
 	private EMSignatureDataSet createSignatureDataSet() {
 		String name = params.getName();
-		if(name == null || name.trim().isEmpty())
-			name = NamingUtil.getUniqueName(params.getLoadedGMTGeneSets().getName(), map.getSignatureDataSets().keySet());
+		if(Strings.isNullOrEmpty(name)) {
+			name = params.getAutoName();
+		}
 		return new EMSignatureDataSet(map, name);
 	}
 	

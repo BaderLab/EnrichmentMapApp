@@ -112,26 +112,8 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertEquals(expected.getSource(), actual.getSource());
 	}
 	
-//	private static void assertGenesetSimilarityEquals(GenesetSimilarity expected, GenesetSimilarity actual) {
-//		assertEquals(expected.getGeneset1_Name(), actual.getGeneset1_Name());
-//		assertEquals(expected.getGeneset2_Name(), actual.getGeneset2_Name());
-//		assertEquals(expected.getInteractionType(), actual.getInteractionType());
-//		assertEquals(expected.getSimilarity_coeffecient(), actual.getSimilarity_coeffecient(), 0.0);
-//		assertEquals(expected.getHypergeom_pvalue(), actual.getHypergeom_pvalue(), 0.0);
-//		assertEquals(expected.getHypergeom_N(), actual.getHypergeom_N());
-//		assertEquals(expected.getHypergeom_n(), actual.getHypergeom_n());
-//		assertEquals(expected.getHypergeom_k(), actual.getHypergeom_k());
-//		assertEquals(expected.getHypergeom_m(), actual.getHypergeom_m());
-//		assertEquals(expected.getMann_Whit_pValue_twoSided(), actual.getMann_Whit_pValue_twoSided(), 0.0);
-//		assertEquals(expected.getMann_Whit_pValue_greater(), actual.getMann_Whit_pValue_greater(), 0.0);
-//		assertEquals(expected.getMann_Whit_pValue_less(), actual.getMann_Whit_pValue_less(), 0.0);
-//		assertEquals(expected.isMannWhitMissingRanks(), actual.isMannWhitMissingRanks());
-//		assertEquals(expected.getOverlapping_genes(), actual.getOverlapping_genes());
-//		assertEquals(expected.getEnrichment_set(), actual.getEnrichment_set()); // MKTODO remove this field
-//	}
 	
 	private static void assertSetOfGeneSetsEquals(SetOfGeneSets expected, SetOfGeneSets actual) {
-		assertEquals(expected.getName(), actual.getName());
 		assertMapsEqual(ModelSerializerTest::assertGeneSetEquals, expected.getGeneSets(), actual.getGeneSets());
 	}
 	

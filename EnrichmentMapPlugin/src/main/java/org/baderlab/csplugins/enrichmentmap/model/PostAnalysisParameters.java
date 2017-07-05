@@ -68,7 +68,8 @@ public class PostAnalysisParameters {
 		GMT, EXPRESSION_SET, INTERSECTION, USER_DEFINED
 	}
 	
-	private final String name;
+	private final String name; // name given by user, overrides autoName
+	private final String autoName; // name automatically assigned
 	private final AnalysisType analysisType;
 	private final UniverseType universeType;
 	private final PostAnalysisFilterParameters rankTestParameters;
@@ -82,6 +83,7 @@ public class PostAnalysisParameters {
 	
 	private PostAnalysisParameters(PostAnalysisParameters.Builder builder) {
 		this.name = builder.name;
+		this.autoName = builder.autoName;
 		this.analysisType = builder.analysisType;
 		this.universeType = builder.universeType;
 		this.rankTestParameters = builder.rankTestParameters;
@@ -96,6 +98,10 @@ public class PostAnalysisParameters {
 
 	public String getName() {
 		return name;
+	}
+	
+	public String getAutoName() {
+		return autoName;
 	}
 	
 	public Optional<String> getDataSetName() {
@@ -144,6 +150,7 @@ public class PostAnalysisParameters {
 	public static class Builder {
 		
 		private String name;
+		private String autoName;
 		private AnalysisType analysisType;
 		private UniverseType universeType;
 		private PostAnalysisFilterParameters rankTestParameters;
@@ -163,6 +170,7 @@ public class PostAnalysisParameters {
 		public static Builder from(PostAnalysisParameters other) {
 			Builder b = new Builder();
 			b.setName(other.name);
+			b.setAutoName(other.autoName);
 			b.setAnalysisType(other.analysisType);
 			b.setRankTestParameters(other.rankTestParameters);
 			b.setSignatureGMTFileName(other.signatureGMTFileName);
@@ -177,6 +185,11 @@ public class PostAnalysisParameters {
 		
 		public Builder setName(String name) {
 			this.name = name;
+			return this;
+		}
+		
+		public Builder setAutoName(String autoName) {
+			this.autoName = autoName;
 			return this;
 		}
 		

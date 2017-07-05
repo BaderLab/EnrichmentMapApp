@@ -259,11 +259,11 @@ public class LegacySessionLoader {
 						} else if (propFile.getName().contains(".set2.gmt")) {
 							// account for legacy session files
 							if (em.getAllGeneSets().containsKey(LegacySupport.DATASET2)) {
-								SetOfGeneSets gs = new SetOfGeneSets(LegacySupport.DATASET2, props);
+								SetOfGeneSets gs = new SetOfGeneSets();
 								gs.setGeneSets(gsMap);
 							}
 						} else {
-							SetOfGeneSets gs = new SetOfGeneSets(parts.dataset, props);
+							SetOfGeneSets gs = new SetOfGeneSets();
 							gs.setGeneSets(gsMap);
 							em.getDataSets().get(parts.dataset).setSetOfGeneSets(gs);
 						}

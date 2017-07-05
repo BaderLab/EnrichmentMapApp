@@ -41,10 +41,11 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 	private final PostAnalysisInputPanel parentPanel;
 
 	@Inject private CyServiceRegistrar serviceRegistrar;
-	@Inject private LoadSignatureSetsActionListener.Factory loadSignatureSetsActionListenerFactory;
+	@Inject private LoadSignatureSetsActionListener.Factory loadSignatureSetsFactory;
 
 	private SetOfGeneSets signatureGenesets;
 	private Set<String> selectedGenesetNames;
+	private String autoName;
 	private PostAnalysisWeightPanel weightPanel;
 	private JFormattedTextField knownSignatureGMTFileNameTextField;
 	
@@ -138,18 +139,12 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		// Manually fire the same action listener that is used by the signature discovery panel.
 		// Use the synchronousTaskManager so that this blocks
 		
-		FilterMetric filterMetric = new FilterMetric.None();
-		LoadSignatureSetsActionListener loadAction = loadSignatureSetsActionListenerFactory.create(new File(filePath), filterMetric, parentPanel.getEnrichmentMap());
-		
-		loadAction.setGeneSetCallback(gs -> {
-			this.signatureGenesets = gs;
-		});
-		
-		loadAction.setFilteredSignatureSetsCallback(selected -> {
-			this.selectedGenesetNames = selected;
-		});
-		
+		LoadSignatureSetsActionListener loadAction = loadSignatureSetsFactory.create(new File(filePath), new FilterMetric.None(), parentPanel.getEnrichmentMap());
 		loadAction.actionPerformed(null);
+		
+		this.signatureGenesets = loadAction.getResultGeneSets();
+		this.selectedGenesetNames = loadAction.getFilteredSignatureSets();
+		this.autoName = loadAction.getAutoName();
 		return true;
 	}
 
@@ -189,6 +184,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 			builder.setSignatureGMTFileName(filePath);
 			builder.setLoadedGMTGeneSets(signatureGenesets);
 			builder.addSelectedGeneSetNames(selectedGenesetNames);
+			builder.setAutoName(autoName);
 			return true;
 		}
 		return false;

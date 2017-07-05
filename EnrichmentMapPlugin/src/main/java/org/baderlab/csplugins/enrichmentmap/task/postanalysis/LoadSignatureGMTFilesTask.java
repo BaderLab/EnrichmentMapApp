@@ -10,8 +10,6 @@ import org.cytoscape.work.TaskIterator;
 
 public class LoadSignatureGMTFilesTask implements TaskFactory {
 
-	private static final String FILE_EXT = ".gmt";
-	
 	private final EnrichmentMap map;
 	private final File file;
 	private final FilterMetric filterMetric;
@@ -34,15 +32,10 @@ public class LoadSignatureGMTFilesTask implements TaskFactory {
 	public TaskIterator createTaskIterator() {
 		TaskIterator tasks = new TaskIterator();
 		
-		String name = file.getName();
-		
-		if (name.toLowerCase().endsWith(FILE_EXT))
-			name = name.substring(0, name.length() - FILE_EXT.length()).trim();
-		
 		// this is an out-paramter for GMTFileReaderTask and an in-parameter for FilterSignatureGSTask
 		// MKTODO: find a better way to pass data from one task to another
 		// doesn't this need to be made available to paParams?
-		SetOfGeneSets setOfGeneSets = new SetOfGeneSets(name);
+		SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
 		
 		tasks.append(new GMTFileReaderTask(map, file.getAbsolutePath(), setOfGeneSets));
 		tasks.append(new FilterSignatureGSTask(map, setOfGeneSets, filterMetric));
