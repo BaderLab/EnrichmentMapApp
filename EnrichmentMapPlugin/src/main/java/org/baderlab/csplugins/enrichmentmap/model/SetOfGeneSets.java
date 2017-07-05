@@ -81,4 +81,21 @@ public class SetOfGeneSets {
 	public boolean isEmpty() {
 		return geneSets.isEmpty();
 	}
+	
+
+	@Override
+	public int hashCode() {
+		return geneSets.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof SetOfGeneSets) {
+			SetOfGeneSets other = (SetOfGeneSets) obj;
+			return geneSets.equals(other.geneSets);
+		}
+		return false;
+	}
+	
+	
 }

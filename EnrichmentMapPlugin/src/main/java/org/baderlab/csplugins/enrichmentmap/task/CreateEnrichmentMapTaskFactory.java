@@ -112,6 +112,9 @@ public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 		// Create the network
 		tasks.append(createEMNetworkTaskFactory.create(map, pipe.supplier()));
 		
+		// Make any final adjustments to the model
+		tasks.append(new ModelCleanupTask(map));
+		
 		// Create style and layout
 		if(!headless) {
 			tasks.append(createEMViewTaskFactory.create(map));

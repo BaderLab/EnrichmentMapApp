@@ -45,6 +45,7 @@ public class EnrichmentMap {
 	 * expression matrices.
 	 */
 	private Map<String, GeneExpressionMatrix> expressions = new HashMap<>();
+	private Map<String, SetOfGeneSets> geneSets = new HashMap<>();
 	
 	/** The set of genes defined in the Enrichment map. */
 	private BiMap<Integer, String> genes = HashBiMap.create();
@@ -90,6 +91,32 @@ public class EnrichmentMap {
 	public GeneExpressionMatrix getExpressionMatrix(String key) {
 		return expressions.get(key);
 	}
+	
+	public GeneExpressionMatrix removeExpressionMatrix(String key) {
+		return expressions.remove(key);
+	}
+	
+	public Collection<String> getExpressionMatrixKeys() {
+		return Collections.unmodifiableCollection(expressions.keySet());
+	}
+	
+	
+	public void putGeneSets(String key, SetOfGeneSets matrix) {
+		geneSets.put(key, matrix);
+	}
+	
+	public SetOfGeneSets getGeneSets(String key) {
+		return geneSets.get(key);
+	}
+	
+	public SetOfGeneSets removeGeneSets(String key) {
+		return geneSets.remove(key);
+	}
+	
+	public Collection<String> getGeneSetsKeys() {
+		return Collections.unmodifiableCollection(geneSets.keySet());
+	}
+	
 	
 	/**
 	 * Method to transfer files specified in the parameters to the objects they correspond to.

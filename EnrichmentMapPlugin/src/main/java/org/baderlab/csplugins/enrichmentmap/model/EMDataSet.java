@@ -27,8 +27,8 @@ public class EMDataSet extends AbstractDataSet {
 	private Method method;
 	private SetOfEnrichmentResults enrichments = new SetOfEnrichmentResults();
 	private String expressionKey;
+	private String geneSetsKey;
 	private Color color;
-	private SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
 	private DataSetFiles dataSetFiles;
 	private Map<String, Ranking> ranks = new HashMap<>();
 	
@@ -62,6 +62,18 @@ public class EMDataSet extends AbstractDataSet {
 	public void setExpressionKey(String key) {
 		this.expressionKey = key;
 	}
+	
+	public String getExpressionKey() {
+		return expressionKey;
+	}
+	
+	public void setGeneSetsKey(String key) {
+		this.geneSetsKey = key;
+	}
+	
+	public String getGeneSetsKey() {
+		return geneSetsKey;
+	}
 
 	public void setEnrichments(SetOfEnrichmentResults enrichments) {
 		this.enrichments = enrichments;
@@ -80,12 +92,17 @@ public class EMDataSet extends AbstractDataSet {
 		return matrix;
 	}
 
-	public SetOfGeneSets getSetOfGeneSets() {
-		return setOfGeneSets;
-	}
-
-	public void setSetOfGeneSets(SetOfGeneSets setOfGeneSets) {
-		this.setOfGeneSets = setOfGeneSets;
+	public synchronized SetOfGeneSets getSetOfGeneSets() {
+		EnrichmentMap map = getMap();
+		SetOfGeneSets geneSets = map.getGeneSets(geneSetsKey);
+		if(geneSets == null) {
+			// Avoid NPEs
+			geneSets = new SetOfGeneSets();
+			String key = "Lazy_" + UUID.randomUUID().toString();
+			setGeneSetsKey(key);
+			map.putGeneSets(key, geneSets);
+		}
+		return geneSets;
 	}
 
 	public Set<Integer> getDataSetGenes() {

@@ -263,9 +263,7 @@ public class LegacySessionLoader {
 								gs.setGeneSets(gsMap);
 							}
 						} else {
-							SetOfGeneSets gs = new SetOfGeneSets();
-							gs.setGeneSets(gsMap);
-							em.getDataSets().get(parts.dataset).setSetOfGeneSets(gs);
+							em.getDataSets().get(parts.dataset).getSetOfGeneSets().setGeneSets(gsMap);
 						}
 					}
 					

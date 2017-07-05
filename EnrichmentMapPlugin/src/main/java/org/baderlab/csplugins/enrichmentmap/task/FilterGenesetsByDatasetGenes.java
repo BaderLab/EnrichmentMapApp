@@ -13,7 +13,7 @@ import org.cytoscape.work.TaskMonitor;
 
 public class FilterGenesetsByDatasetGenes extends AbstractTask {
 
-	private EnrichmentMap map;
+	private final EnrichmentMap map;
 
 	public FilterGenesetsByDatasetGenes(EnrichmentMap map) {
 		this.map = map;
