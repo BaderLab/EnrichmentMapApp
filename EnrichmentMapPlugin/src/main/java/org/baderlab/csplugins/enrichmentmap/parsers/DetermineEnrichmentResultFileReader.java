@@ -80,8 +80,8 @@ public class DetermineEnrichmentResultFileReader {
 	 * Parse Enrichment results file
 	 */
 	public TaskIterator getParsers() {
-		String enrichmentsFileName1 = dataset.getEnrichments().getFilename1();
-		String enrichmentsFileName2 = dataset.getEnrichments().getFilename2();
+		String enrichmentsFileName1 = dataset.getDataSetFiles().getEnrichmentFileName1();
+		String enrichmentsFileName2 = dataset.getDataSetFiles().getEnrichmentFileName2();
 		
 		TaskIterator parserTasks = new TaskIterator();
 		

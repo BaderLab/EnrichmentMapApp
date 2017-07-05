@@ -65,7 +65,7 @@ public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 			EMDataSet dataset = map.createDataSet(datasetName, method, files);
 			
 			// Load GMT File
-			if(!Strings.isNullOrEmpty(dataset.getSetOfGeneSets().getFilename())) {
+			if(!Strings.isNullOrEmpty(dataset.getDataSetFiles().getGMTFileName())) {
 				tasks.append(new GMTFileReaderTask(dataset));
 			}
 			
@@ -83,7 +83,7 @@ public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 			// Load ranks if present
 			String ranksName = dataset.getMethod() == Method.GSEA ? Ranking.GSEARanking : datasetName;
 			if(dataset.getRanksByName(ranksName) != null) {
-				String filename = dataset.getRanksByName(ranksName).getFilename();
+				String filename = files.getRankedFile();
 				tasks.append(new RanksFileReaderTask(filename, dataset, ranksName, false));
 			}
 			

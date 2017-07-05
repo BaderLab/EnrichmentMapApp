@@ -145,7 +145,6 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(12653, dataset.getDataSetGenes().size());
 		assertEquals(389, dataset.getGeneSetsOfInterest().getGeneSets().size());
 //		assertEquals(17259, dataset.getSetofgenesets().getGenesets().size()); // MKTODO why? what is this used for
-		assertEndsWith(dataset.getSetOfGeneSets().getFilename(), "Human_GO_AllPathways_no_GO_iea_April_15_2013_symbol.gmt");
 		for(long suid : dataset.getNodeSuids()) {
 			assertNotNull(network.getNode(suid));
 		}
@@ -158,8 +157,6 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		
 		SetOfEnrichmentResults enrichments = dataset.getEnrichments();
 		assertEquals(4756, enrichments.getEnrichments().size());
-		assertEndsWith(enrichments.getFilename1(), "gsea_report_for_ES12_1473194913081.xls");
-		assertEndsWith(enrichments.getFilename2(), "gsea_report_for_NT12_1473194913081.xls");
 		assertEquals("ES12", enrichments.getPhenotype1());
 		assertEquals("NT12", enrichments.getPhenotype2());
 		

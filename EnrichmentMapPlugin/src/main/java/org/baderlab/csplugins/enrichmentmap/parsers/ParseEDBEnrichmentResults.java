@@ -30,8 +30,8 @@ public class ParseEDBEnrichmentResults extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Parsing Enrichment Result file");
 		
-		String enrichmentFileName1 = dataset.getEnrichments().getFilename1();
-		String enrichmentFileName2 = dataset.getEnrichments().getFilename2();
+		String enrichmentFileName1 = dataset.getDataSetFiles().getEnrichmentFileName1();
+		String enrichmentFileName2 = dataset.getDataSetFiles().getEnrichmentFileName2();
 		
 		if(!Strings.isNullOrEmpty(enrichmentFileName1))
 			parse(enrichmentFileName1);

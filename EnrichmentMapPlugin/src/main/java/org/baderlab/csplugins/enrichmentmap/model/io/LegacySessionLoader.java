@@ -429,7 +429,6 @@ public class LegacySessionLoader {
 					if(map.getDataSets().containsKey(parts_exp.dataset)){
 						EMDataSet ds = map.getDataSet(parts_exp.dataset);
 						ds.getDataSetFiles().setExpressionFileName(prop_file.getAbsolutePath());
-						ds.getExpressionSets().setFilename(prop_file.getAbsolutePath());
 						ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds);
 						GeneExpressionMatrix matrix = expressionFile1.parse();
 						matrix.restoreProps(parts_exp.dataset, props);
@@ -439,7 +438,6 @@ public class LegacySessionLoader {
 				if (prop_file.getName().contains("expression1.txt")){                  
 					EMDataSet ds1 = map.getDataSet(LegacySupport.DATASET1);
 					ds1.getDataSetFiles().setExpressionFileName(prop_file.getAbsolutePath());
-					ds1.getExpressionSets().setFilename(prop_file.getAbsolutePath());
 					ExpressionFileReaderTask expressionFile1 = new ExpressionFileReaderTask(ds1);
 					expressionFile1.parse();
 
@@ -447,7 +445,6 @@ public class LegacySessionLoader {
 				if (prop_file.getName().contains("expression2.txt")){                    
 					EMDataSet ds2 = map.getDataSet(LegacySupport.DATASET2);
 					ds2.getDataSetFiles().setExpressionFileName(prop_file.getAbsolutePath());
-					ds2.getExpressionSets().setFilename(prop_file.getAbsolutePath());
 					ExpressionFileReaderTask expressionFile2 = new ExpressionFileReaderTask(ds2);
 					expressionFile2.parse();
 					

@@ -29,7 +29,7 @@ public class ParseBingoEnrichmentResults extends AbstractTask {
 			taskMonitor = new NullTaskMonitor();
 		taskMonitor.setTitle("Parsing Bingo Enrichment Result file");
 		
-		List<String> lines = LineReader.readLines(dataset.getEnrichments().getFilename1());
+		List<String> lines = LineReader.readLines(dataset.getDataSetFiles().getEnrichmentFileName1());
 				
 		//with Bingo results there are no genesets defined.  first pass through the file
 		// needs to parse the genesets

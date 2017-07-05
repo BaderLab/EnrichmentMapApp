@@ -31,7 +31,7 @@ public class ParseGREATEnrichmentResults extends AbstractTask {
 			taskMonitor = new NullTaskMonitor();
 		taskMonitor.setTitle("Parsing Enrichment Result file");
 
-		List<String> lines = LineReader.readLines(dataset.getEnrichments().getFilename1());
+		List<String> lines = LineReader.readLines(dataset.getDataSetFiles().getEnrichmentFileName1());
 		
 		boolean hasBackground = false;
 

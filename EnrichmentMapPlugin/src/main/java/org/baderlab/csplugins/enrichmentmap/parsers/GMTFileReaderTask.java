@@ -71,7 +71,7 @@ public class GMTFileReaderTask extends AbstractTask {
 
 	public GMTFileReaderTask(EMDataSet dataset) {
 		this.map = dataset.getMap();
-		this.gmtFileName = dataset.getSetOfGeneSets().getFilename();
+		this.gmtFileName = dataset.getDataSetFiles().getGMTFileName();
 		this.setOfgenesets = dataset.getSetOfGeneSets();
 	}
 	

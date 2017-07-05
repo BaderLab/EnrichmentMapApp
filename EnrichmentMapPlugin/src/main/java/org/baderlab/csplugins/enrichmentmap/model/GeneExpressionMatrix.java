@@ -82,46 +82,7 @@ public class GeneExpressionMatrix {
 	private String phenotype1;
 	private String phenotype2;
 
-	//File associated with this expression set
-	private String filename;
 
-	public GeneExpressionMatrix() {
-	}
-
-	public GeneExpressionMatrix(String filename) {
-		this.filename = filename;
-	}
-
-
-//	/*
-//	 * Given an array of strings set the column names up from given string
-//	 */
-//	public void SetColumnNames() {
-//		numConditions = columnNames.length;
-//
-//		//As a bypass for people who want to run Enrichment map without expression data
-//		//if the expression file only contains 2 columns (name and description) then make a dummy
-//		//expression matrix with no expression data.
-//		if(numConditions == 2) {
-//			numConditions = 3;
-//			String[] newNames = new String[3];
-//
-//			//the first column is the name and the second column is description
-//			//then add a third column with no data
-//			//otherwise assume this is a rank file and it is missing the description files
-//
-//			if(columnNames[1].equalsIgnoreCase("description")) {
-//				newNames[0] = columnNames[0];
-//				newNames[1] = columnNames[1];
-//				newNames[2] = "NO DATA";
-//			} else {
-//				newNames[0] = columnNames[0];
-//				newNames[1] = "description";
-//				newNames[2] = columnNames[1];
-//			}
-//			this.columnNames = newNames;
-//		}
-//	}
 
 	/**
 	 * Get a subset of the expression matrix containing only the set of given
@@ -314,14 +275,6 @@ public class GeneExpressionMatrix {
 
 	public void setPhenotype2(String phenotype2) {
 		this.phenotype2 = phenotype2;
-	}
-
-	public String getFilename() {
-		return filename;
-	}
-
-	public void setFilename(String filename) {
-		this.filename = filename;
 	}
 
 	public double getClosesttoZero() {

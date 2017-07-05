@@ -96,18 +96,6 @@ public class EnrichmentMap {
 	 */
 	private void initializeFiles(EMDataSet ds) {
 		DataSetFiles files = ds.getDataSetFiles();
-		if (!isNullOrEmpty(files.getGMTFileName()))
-			ds.getSetOfGeneSets().setFilename(files.getGMTFileName());
-
-		// expression files
-		if (!isNullOrEmpty(files.getExpressionFileName()))
-			ds.getExpressionSets().setFilename(files.getExpressionFileName());
-
-		// enrichment results files
-		if (!isNullOrEmpty(files.getEnrichmentFileName1()))
-			ds.getEnrichments().setFilename1(files.getEnrichmentFileName1());
-		if (files.getEnrichmentFileName2() != null && !files.getEnrichmentFileName2().isEmpty())
-			ds.getEnrichments().setFilename2(files.getEnrichmentFileName2());
 
 		//phenotypes
 		if (!isNullOrEmpty(files.getPhenotype1()))
@@ -119,10 +107,8 @@ public class EnrichmentMap {
 		if (!isNullOrEmpty(files.getRankedFile())) {
 			if (ds.getMethod() == Method.GSEA) {
 				ds.createNewRanking(Ranking.GSEARanking);
-				ds.getRanksByName(Ranking.GSEARanking).setFilename(files.getRankedFile());
 			} else {
 				ds.createNewRanking(ds.getName());
-				ds.getRanksByName(ds.getName()).setFilename(files.getRankedFile());
 			}
 		}
 	}

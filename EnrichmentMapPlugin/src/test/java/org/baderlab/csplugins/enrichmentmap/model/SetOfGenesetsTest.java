@@ -50,10 +50,7 @@ public class SetOfGenesetsTest {
 	
 	@Test
 	public void testGSSetVar(){
-		
 		SetOfGeneSets gs_set = map.getDataSet(LegacySupport.DATASET1).getSetOfGeneSets();
-		
-		assertEquals("src/test/resources/org/baderlab/csplugins/enrichmentmap/model/Genesetstestfile.gmt", gs_set.getFilename());
 		
 		//make sure there are 5 genesets
 		assertEquals(6, gs_set.getGeneSets().size());

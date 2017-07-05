@@ -20,12 +20,6 @@ public class SetOfEnrichmentResults {
 	// Hash Value = the entire enrichment results containing: name, description, pvalue, fdr...
 	private Map<String, EnrichmentResult> enrichments;
 
-	//method
-	
-	//filename (GSEA has two files for the enrichments)
-	private String filename1;
-	private String filename2;
-	
 	//phenotype
 	//each enrichment is associated with two phenotypes
 	private String phenotype1 = DataSetFiles.default_pheno1;
@@ -47,10 +41,6 @@ public class SetOfEnrichmentResults {
 		this();
 		if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%name"))
 			this.name = props.get(ds + "%" + this.getClass().getSimpleName() + "%name");
-		if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%filename1"))
-			this.filename1 = props.get(ds + "%" + this.getClass().getSimpleName() + "%filename1");
-		if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%filename2"))
-			this.filename2 = props.get(ds + "%" + this.getClass().getSimpleName() + "%filename2");
 		if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%phenotype1"))
 			this.phenotype1 = props.get(ds + "%" + this.getClass().getSimpleName() + "%phenotype1");
 		if(props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%phenotype2"))
@@ -90,20 +80,4 @@ public class SetOfEnrichmentResults {
 		this.name = name;
 	}
 
-	public String getFilename1() {
-		return filename1;
-	}
-
-	public void setFilename1(String filename) {
-		this.filename1 = filename;
-	}
-
-	public String getFilename2() {
-		return filename2;
-	}
-
-	public void setFilename2(String filename2) {
-		this.filename2 = filename2;
-	}
-	
 }

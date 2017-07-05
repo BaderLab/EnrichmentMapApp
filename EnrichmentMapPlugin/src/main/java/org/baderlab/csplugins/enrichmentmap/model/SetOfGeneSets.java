@@ -23,12 +23,8 @@ public class SetOfGeneSets {
 	 */
 	private HashMap<String, GeneSet> geneSets;
 
-	//filename
-	private String filename;
-	
 	public SetOfGeneSets(String name) {
 		this.name = name;
-		filename = "";
 		geneSets = new HashMap<>();
 	}
 	
@@ -43,9 +39,6 @@ public class SetOfGeneSets {
 	public SetOfGeneSets(String ds, HashMap<String, String> props) {
 		if (props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%name"))
 			this.name = props.get(ds + "%" + this.getClass().getSimpleName() + "%name");
-		
-		if (props.containsKey(ds + "%" + this.getClass().getSimpleName() + "%filename"))
-			this.filename = props.get(ds + "%" + this.getClass().getSimpleName() + "%filename");
 	}
 
 	/**
@@ -92,13 +85,6 @@ public class SetOfGeneSets {
 		}
 	}
 	
-	public String getFilename() {
-		return filename;
-	}
-
-	public void setFilename(String filename) {
-		this.filename = filename;
-	}
 
 	public GeneSet getGeneSetByName(String name) {
 		if (geneSets != null) {

@@ -132,7 +132,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 	
 	private static void assertSetOfGeneSetsEquals(SetOfGeneSets expected, SetOfGeneSets actual) {
 		assertEquals(expected.getName(), actual.getName());
-		assertEquals(expected.getFilename(), actual.getFilename());
 		assertMapsEqual(ModelSerializerTest::assertGeneSetEquals, expected.getGeneSets(), actual.getGeneSets());
 	}
 	
@@ -165,8 +164,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 	
 	private static void assertSetOfEnrichmentResultsEquals(SetOfEnrichmentResults expected, SetOfEnrichmentResults actual) {
 		assertEquals(expected.getName(), actual.getName());
-		assertEquals(expected.getFilename1(), actual.getFilename1());
-		assertEquals(expected.getFilename2(), actual.getFilename2());
 		assertEquals(expected.getPhenotype1(), actual.getPhenotype1());
 		assertEquals(expected.getPhenotype2(), actual.getPhenotype2());
 		assertMapsEqual(ModelSerializerTest::assertEnrichmentResultEquals, expected.getEnrichments(), actual.getEnrichments());
@@ -197,11 +194,9 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertArrayEquals(expected.getPhenotypes(), actual.getPhenotypes());
 		assertEquals(expected.getPhenotype1(), actual.getPhenotype1());
 		assertEquals(expected.getPhenotype2(), actual.getPhenotype2());
-		assertEquals(expected.getFilename(), actual.getFilename());
 	}
 	
 	private static void assertRankingEquals(Ranking expected, Ranking actual) {
-		assertEquals(expected.getFilename(), actual.getFilename());
 		assertArrayEquals(expected.getScores(), actual.getScores(), 0.0);
 		assertMapsEqual(ModelSerializerTest::assertRankEquals, expected.getRanking(), actual.getRanking());
 	}

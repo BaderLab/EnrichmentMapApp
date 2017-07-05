@@ -105,7 +105,6 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		}
 		
 		GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix();
-		expressionMatrix.setFilename(expressionFileName);
 		map.putExpressionMatrix(expressionFileName, expressionMatrix);
 		
 		Map<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();

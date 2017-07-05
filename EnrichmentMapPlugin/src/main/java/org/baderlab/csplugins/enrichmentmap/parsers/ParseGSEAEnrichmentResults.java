@@ -34,14 +34,14 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 		NESFilter nesFilter = dataset.getMap().getParams().getNESFilter();
 		
 		if(nesFilter == NESFilter.ALL || nesFilter == NESFilter.POSITIVE) {
-			String positiveEnrichmentResults = dataset.getEnrichments().getFilename1();
+			String positiveEnrichmentResults = dataset.getDataSetFiles().getEnrichmentFileName1();
 			if(!Strings.isNullOrEmpty(positiveEnrichmentResults)) {
 				readFile(taskMonitor, positiveEnrichmentResults);
 			}
 		}
 		
 		if(nesFilter == NESFilter.ALL || nesFilter == NESFilter.NEGATIVE) {
-			String negativeEnrichmentResults = dataset.getEnrichments().getFilename2();
+			String negativeEnrichmentResults = dataset.getDataSetFiles().getEnrichmentFileName2();
 			if(!Strings.isNullOrEmpty(negativeEnrichmentResults)) {
 				readFile(taskMonitor, negativeEnrichmentResults);
 			}

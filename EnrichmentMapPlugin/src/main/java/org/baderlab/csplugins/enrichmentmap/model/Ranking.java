@@ -24,11 +24,6 @@ public class Ranking {
 	//array for storing scores of all genes in map
 	private double[] scores = null;
 
-	//File associated with this ranking set
-	private String filename;
-
-	public Ranking() {
-	}
 	
 	public boolean isEmpty() {
 		return ranking.isEmpty();
@@ -59,20 +54,7 @@ public class Ranking {
 		return ranking;
 	}
 	
-	public String getFilename() {
-		return filename;
-	}
-
-	public void setFilename(String filename) {
-		this.filename = filename;
-	}
 	
-	public String toString() {
-		StringBuffer paramVariables = new StringBuffer();
-		paramVariables.append(filename + "%fileName\t" + filename + "\n");
-		return paramVariables.toString();
-	}
-
 	/**
 	 * Get gene2score hash
 	 * 

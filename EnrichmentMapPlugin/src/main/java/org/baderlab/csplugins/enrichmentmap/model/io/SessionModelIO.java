@@ -153,6 +153,7 @@ public class SessionModelIO {
 							updateSuids(em, session);
 							emManager.registerEnrichmentMap(em);
 							sessionHasEM = true;
+							// MKTODO set the attribute to null to save space
 						}
 					}
 				}

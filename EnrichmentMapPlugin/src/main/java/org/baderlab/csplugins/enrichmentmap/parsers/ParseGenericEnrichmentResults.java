@@ -30,7 +30,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 			taskMonitor = new NullTaskMonitor();
 		taskMonitor.setTitle("Parsing Generic Result file");
 		
-		List<String> lines = LineReader.readLines(dataset.getEnrichments().getFilename1());
+		List<String> lines = LineReader.readLines(dataset.getDataSetFiles().getEnrichmentFileName1());
 
 		//Get the current genesets so we can check that all the results are in the geneset list
 		//and put the size of the genesets into the visual style
