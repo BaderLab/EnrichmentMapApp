@@ -66,7 +66,7 @@ public class HierarchicalClusterTask extends AbstractTask implements ObservableT
         		if(geneExpression != null) {
         			found = true;
         			name = geneExpression.getName();
-        			double[] expression = geneExpression.getExpression();
+        			float[] expression = geneExpression.getExpression();
         			System.arraycopy(expression, 0, vals, valsIndex, expression.length);
         		}
         		valsIndex += numConditions;

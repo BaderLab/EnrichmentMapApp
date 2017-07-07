@@ -43,145 +43,62 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.util.Arrays;
+
+import org.apache.commons.math3.util.Precision;
+import org.baderlab.csplugins.enrichmentmap.view.util.FuncUtil;
+
+
 /**
  * Class representing the expression of one gene/protein
  */
 public class GeneExpression {
 
-	// gene/protein name
 	private String name;
-	// gene/protein description
 	private String description;
-	// expression values associated with this gene
-	private double[] expression;
+	private float[] expression;
 
-	/**
-	 * Class constructor
-	 *
-	 * @param name
-	 *            - gene/protein name
-	 * @param description
-	 *            - gene/protein description
-	 */
 	public GeneExpression(String name, String description) {
 		this.name = name;
 		this.description = description;
 	}
+	
+	public GeneExpression(String name, String description, float[] expressions) {
+		this(name, description);
+		setExpression(expressions);
+	}
 
 	/**
 	 * Create an array of the expression values.
-	 *
-	 * @param expres
-	 *            - a string representing a line in the expression file
 	 */
 	public void setExpression(String[] expres) {
 		// ignore the first two cells --> only if there are at least 3 cells
 		int size = expres.length;
 
 		if (size > 2) {
-			expression = new double[size - 2];
+			expression = new float[size - 2];
 			for (int i = 2; i < size; i++) {
-				expression[i - 2] = Double.parseDouble(expres[i]);
+				expression[i - 2] = parseAndRound(expres[i]);
 			}
 		} else {
-			expression = new double[1];
+			expression = new float[1];
 			try {
-				expression[0] = Double.parseDouble(expres[1]);
+				expression[0] = parseAndRound(expres[1]);
 			} catch (NumberFormatException e) {
 				// if the column doesn't contain doubles then just assume that
 				// the expression
 				// file is empty
-				expression[0] = 0.0;
+				expression[0] = 0.0f;
 			}
 		}
 	}
-
-	/**
-	 * Go through current object's expression row and check if there is an
-	 * element that is higher than the current max. If there is a value higher
-	 * than the current max then return that value, if not then return - 100
-	 *
-	 * @param currentMax
-	 *            - the current maximum
-	 * @return the new maximum or -100 if the maximum remains the same.
-	 */
-	public double newMax(double currentMax) {
-		double newMax = -100;
-		boolean found_newmin = false;
-
-		for (int i = 0; i < expression.length; i++) {
-			if (expression[i] > currentMax) {
-				// if we have already found a new min check if the new one is
-				// even smaller
-				if (found_newmin) {
-					if (expression[i] > newMax)
-						newMax = expression[i];
-				} else {
-					newMax = expression[i];
-					found_newmin = true;
-				}
-			}
-		}
-		return newMax;
+	
+	private float parseAndRound(String exp) {
+		float f = Float.parseFloat(exp);
+		float r = Precision.round(f, 4);
+		return r;
 	}
 
-	/**
-	 * Go through current object's expression row and check if there is an
-	 * element that is lower than the current minimum. If there is a value lower
-	 * than the current minimum then return that value, if not then return - 100
-	 *
-	 * @param currentMin
-	 *            - the current minimum
-	 * @return the new minimum or -100 if the maximum remains the same.
-	 */
-	public double newMin(double currentMin) {
-		double newMin = -100;
-		boolean found_newmin = false;
-
-		for (int i = 0; i < expression.length; i++) {
-			if (expression[i] < currentMin) {
-				// if we have already found a new min check if the new one is
-				// even smaller
-				if (found_newmin) {
-					if (expression[i] < newMin)
-						newMin = expression[i];
-				} else {
-					newMin = expression[i];
-					found_newmin = true;
-				}
-			}
-		}
-		return newMin;
-	}
-
-	/**
-	 * Go through current object's expression row and check if there is an
-	 * element that is lower than the current minimum. If there is a value lower
-	 * than the current minimum then return that value, if not then return - 100
-	 *
-	 * @param currentMin
-	 *            - the current minimum
-	 * @return the new minimum or -100 if the maximum remains the same.
-	 */
-	public double newclosesttoZero(double currentClosest) {
-		double newClosest = -100;
-		boolean found_newclosest = false;
-
-		for (int i = 0; i < expression.length; i++) {
-			if (expression[i] < currentClosest && expression[i] > 0) {
-				// if we have already found a new min check if the new one is
-				// even smaller
-				if (found_newclosest) {
-					if (expression[i] < newClosest)
-						newClosest = expression[i];
-				} else {
-					newClosest = expression[i];
-					found_newclosest = true;
-				}
-			}
-		}
-		return newClosest;
-	}
 
 	/**
 	 * Row normalize the current gene expression set. Row normalization involved
@@ -190,15 +107,15 @@ public class GeneExpression {
 	 *
 	 * @return an array of the row normalized values of the gene expression set.
 	 */
-	public double[] rowNormalize() {
-		double[] normalize = new double[expression.length];
+	public float[] rowNormalize() {
+		float[] normalize = new float[expression.length];
 
-		double mean = getMean();
-		double std = getSTD(mean);
+		float mean = mean();
+		float std  = std(mean);
 
-		if (std == 0.0) {
+		if(std == 0.0) {
 			for (int i = 0; i < expression.length; i++)
-				normalize[i] = 0.0;
+				normalize[i] = 0.0f;
 		} else {
 			for (int i = 0; i < expression.length; i++)
 				normalize[i] = (expression[i] - mean) / std;
@@ -206,50 +123,56 @@ public class GeneExpression {
 
 		return normalize;
 	}
-
-	/**
-	 * Calculate the mean of the current gene expression set
-	 *
-	 * @return mean of current gene expression set
-	 */
-	private double getMean() {
-		double sum = 0.0;
-
-		for (int i = 0; i < expression.length; i++)
-			sum = sum + expression[i];
-
-		return sum / expression.length;
+	
+	
+	public static float max(float[] expression) {
+		return FuncUtil.reduceExpression(expression, Math::max);
+	}
+	
+	public static float min(float[] expression) {
+		return FuncUtil.reduceExpression(expression, Math::min);
+	}
+	
+	public static float median(float[] expression) {
+		if(expression == null || expression.length == 0)
+			return 0;
+		float[] copy = Arrays.copyOf(expression, expression.length);
+		Arrays.sort(copy);
+		if(copy.length % 2 == 0)
+		    return (copy[copy.length/2] + copy[copy.length/2 - 1]) / 2;
+		else
+		    return copy[copy.length/2];
+	}
+	
+	public static float closestToZero(float[] expression) {
+		float closest = max(expression);
+		if(closest <= 0)
+			return 0;
+		for(float value : expression) {
+			if(value > 0 && value < closest) {
+				closest = value;
+			}
+		}
+		return closest;
+	}
+	
+	
+	private float mean() {
+		return FuncUtil.reduceExpression(expression, (x,y) -> x + y) / expression.length;
 	}
 
-	/**
-	 * Calculate the standard deviation of the current gene expression set
-	 *
-	 * @param mean
-	 *            of current gene expression set
-	 * @return stantard deviation of current gene expression set
-	 */
-	private double getSTD(double mean) {
-		double sum = 0.0;
-
-		for (int i = 0; i < expression.length; i++)
-			sum = sum + Math.pow(expression[i] - mean, 2);
-
-		return Math.sqrt(sum) / expression.length;
+	private float std(final float mean) {
+		float sum = FuncUtil.reduceExpression(expression, (s, exp) -> s + (float)Math.pow(exp - mean, 2));
+		return (float) Math.sqrt(sum) / expression.length;
 	}
 
-	/**
-	 * log transform all the expression value in the current gene expression set
-	 *
-	 * @return array of log transformed expression values
-	 */
-	public double[] rowLogTransform() {
-		double[] logtransformed = new double[expression.length];
-
+	public float[] rowLogTransform() {
+		float[] logtransformed = new float[expression.length];
 		for (int i = 0; i < expression.length; i++)
-			logtransformed[i] = Math.log1p(expression[i]);
-
+			logtransformed[i] = (float) Math.log1p(expression[i]);
 		return logtransformed;
 	}
+
 
 	public String getName() {
 		return name;
@@ -267,11 +190,11 @@ public class GeneExpression {
 		this.description = description;
 	}
 
-	public double[] getExpression() {
+	public float[] getExpression() {
 		return expression;
 	}
 
-	public void setExpression(double[] expression) {
+	public void setExpression(float[] expression) {
 		this.expression = expression;
 	}
 

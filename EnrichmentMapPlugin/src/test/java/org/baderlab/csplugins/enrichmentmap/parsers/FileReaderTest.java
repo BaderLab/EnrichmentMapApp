@@ -6,9 +6,9 @@ import static org.mockito.Mockito.mock;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
-import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
@@ -102,8 +102,8 @@ public class FileReaderTest {
         
         assertEquals(4, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getNumGenes());
         assertEquals(59, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getNumConditions());
-        assertEquals(0.008720342, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMinExpression(),0.0);
-        assertEquals(5.131481026, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMaxExpression(),0.0);
+        assertEquals(0.0087, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMinExpression(), 0.00001);
+        assertEquals(5.1315, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMaxExpression(), 0.00001);
 
     }
 	
@@ -146,11 +146,11 @@ public class FileReaderTest {
         //There was one more gene in the expression file that wasn't in the set of genes
         //make sure it was was added
         assertEquals(4, map.getNumberOfGenes());
-        assertEquals(5.131481026, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMaxExpression(),0.0);
+        assertEquals(5.1315, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMaxExpression(), 0.00001);
 
         assertEquals(4, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getNumGenes());
         assertEquals(59, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getNumConditions());
-        assertEquals(0.008720342, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMinExpression(),0.0);
+        assertEquals(0.0087, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMinExpression(), 0.00001);
 
 
     }
@@ -196,9 +196,8 @@ public class FileReaderTest {
 
         assertEquals(4, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getNumGenes());
         assertEquals(3, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getNumConditions());
-        assertEquals(0.47536945, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMinExpression(),0.0);
-        assertEquals(0.5418719, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMaxExpression(),0.0);
-
+        assertEquals(0.4754, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMinExpression(), 0.000001);
+        assertEquals(0.5419, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMaxExpression(), 0.000001);
     }
 
 	@Test
@@ -243,8 +242,8 @@ public class FileReaderTest {
 
         assertEquals(4, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getNumGenes());
         assertEquals(3, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getNumConditions());
-        assertEquals(0.47536945, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMinExpression(),0.0);
-        assertEquals(0.5418719, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMaxExpression(),0.0);
+        assertEquals(0.4754, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMinExpression(), 0.00001);
+        assertEquals(0.5419, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getMaxExpression(), 0.00001);
 
     }
     

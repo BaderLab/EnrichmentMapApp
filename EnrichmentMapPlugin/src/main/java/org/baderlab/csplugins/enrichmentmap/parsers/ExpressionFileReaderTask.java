@@ -196,19 +196,6 @@ public class ExpressionFileReaderTask extends AbstractTask {
 
 				GeneExpression expres = new GeneExpression(Name, description);
 				expres.setExpression(tokens);
-
-				double newMax = expres.newMax(expressionMatrix.getMaxExpression());
-				if(newMax != -100)
-					expressionMatrix.setMaxExpression(newMax);
-				
-				double newMin = expres.newMin(expressionMatrix.getMinExpression());
-				if(newMin != -100)
-					expressionMatrix.setMinExpression(newMin);
-				
-				double newClosest = expres.newclosesttoZero(expressionMatrix.getClosesttoZero());
-				if(newClosest != -100)
-					expressionMatrix.setClosesttoZero(newClosest);
-
 				expression.put(genekey, expres);
 			}
 			expressionUniverse++;

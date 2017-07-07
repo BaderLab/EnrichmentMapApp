@@ -30,7 +30,7 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 	 * Filter all the genesets by the dataset genes. If there are multiple sets
 	 * of genesets make sure to filter by the specific dataset genes.
 	 */
-	public void filterGenesets(TaskMonitor taskMonitor) {
+	private void filterGenesets(TaskMonitor taskMonitor) {
 		Map<String, EMDataSet> datasets = map.getDataSets();
 		for(String k : datasets.keySet()) {
 			taskMonitor.setStatusMessage("Filtering Data Set: " + k);

@@ -41,29 +41,16 @@ public class CreateDummyExpressionTask extends AbstractTask {
 
 		for(String currentGene : genes.keySet()) {
 			int genekey = genes.get(currentGene);
-
 			GeneExpression expres = new GeneExpression(currentGene, currentGene);
 			expres.setExpression(tokens);
-
-			double newMax = expres.newMax(expressionMatrix.getMaxExpression());
-			if(newMax != -100)
-				expressionMatrix.setMaxExpression(newMax);
-			double newMin = expres.newMin(expressionMatrix.getMinExpression());
-			if(newMin != -100)
-				expressionMatrix.setMinExpression(newMin);
-			double newClosest = expres.newclosesttoZero(expressionMatrix.getClosesttoZero());
-			if(newClosest != -100)
-				expressionMatrix.setClosesttoZero(newClosest);
-
 			expression.put(genekey, expres);
 		}
 
-		//set the number of genes
-		//expressionMatrix.setNumGenes(expressionMatrix.getExpressionMatrix().size());
 		expressionMatrix.setNumConditions(3);
 	}
 
-	
+
+	@Override
 	public void run(TaskMonitor taskMonitor) {
 		createDummyExpression();
 	}

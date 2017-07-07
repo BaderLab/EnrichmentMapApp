@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -17,9 +16,6 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
-
-import cern.colt.list.DoubleArrayList;
-import cern.jet.stat.Descriptive;
 
 
 
@@ -151,11 +147,13 @@ public class HeatMapTableModel extends AbstractTableModel {
 			return getDescription(geneID);
 		
 		EMDataSet dataset = getDataSet(col);
+		
+		// cast expressions to double, because most of the code in this package is based on doubles and I don't want to change it
 		if(compress.isNone()) {
-			double[] vals = getExpression(dataset, geneID, transform);
-			return vals == null ? Double.NaN : vals[getIndexInDataSet(col)];
+			float[] vals = getExpression(dataset, geneID, transform);
+			return vals == null ? Double.NaN : (double) vals[getIndexInDataSet(col)];
 		} else {
-			return getCompressedExpression(dataset, geneID, transform, compress);
+			return (double) getCompressedExpression(dataset, geneID, transform, compress);
 		}
 	}
 	
@@ -174,6 +172,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 			case GENE_COL: return String.class;
 			case DESC_COL: return String.class;
 			case RANK_COL: return RankValue.class;
+			 // most of the existing code uses double, so cast expression values to double to avoid making big changes
 			default:       return Double.class;
 		}
 	}
@@ -211,35 +210,17 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	
-	private static double getCompressedExpression(EMDataSet dataset, int geneID, Transform transform, Compress compress) {
-		double[] vals = getExpression(dataset, geneID, transform);
-		if(vals == null)
-			return Double.NaN;
+	private static float getCompressedExpression(EMDataSet dataset, int geneID, Transform transform, Compress compress) {
+		float[] expression = getExpression(dataset, geneID, transform);
+		if(expression == null)
+			return Float.NaN;
 		
 		switch(compress) {
-			case MEDIAN: return median(vals);
-			case MAX:    return max(vals);
-			case MIN:    return min(vals);
-			default:     return Double.NaN;
+			case MEDIAN: return GeneExpression.median(expression);
+			case MAX:    return GeneExpression.max(expression);
+			case MIN:    return GeneExpression.min(expression);
+			default:     return Float.NaN;
 		}
-	}
-	
-	private static double max(double[] vals) {
-		return Arrays.stream(vals).max().orElse(0.0);
-	}
-	
-	private static double min(double[] vals) {
-		return Arrays.stream(vals).min().orElse(0.0);
-	}
-	
-	private static double median(double[] vals) {
-		if(vals.length == 0)
-			return 0.0;
-		// DoubleArrayList is just a wrapper for vals, we must make a copy of the array 
-		// before sorting or else the expression values will be moved to the wrong order.
-		double[] copy = Arrays.copyOf(vals, vals.length);
-		Arrays.sort(copy);
-		return Descriptive.median(new DoubleArrayList(copy));
 	}
 	
 	private String getDescription(int geneID) {
@@ -258,14 +239,13 @@ public class HeatMapTableModel extends AbstractTableModel {
 		return row;
 	}
 	
-	@SuppressWarnings("incomplete-switch")
-	private static @Nullable double[] getExpression(EMDataSet dataset, int geneID, Transform transform) {
-		GeneExpression row = getGeneExpression(dataset, geneID);
-		if(row != null) {
+	private static @Nullable float[] getExpression(EMDataSet dataset, int geneID, Transform transform) {
+		GeneExpression expression = getGeneExpression(dataset, geneID);
+		if(expression != null) {
 			switch(transform) {
-				case ROW_NORMALIZE: return row.rowNormalize();
-				case LOG_TRANSFORM: return row.rowLogTransform();
-				case AS_IS:         return row.getExpression();
+				case ROW_NORMALIZE: return expression.rowNormalize();
+				case LOG_TRANSFORM: return expression.rowLogTransform();
+				case AS_IS:         return expression.getExpression();
 			}
 		}
 		return null;

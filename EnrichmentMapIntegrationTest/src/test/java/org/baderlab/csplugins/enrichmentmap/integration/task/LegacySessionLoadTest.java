@@ -175,7 +175,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 
 		GeneExpressionMatrix expressions = dataset.getExpressionSets();
 		assertEquals(20326, expressions.getExpressionUniverse());
-		assertEquals(3.686190609, expressions.getClosesttoZero(), 0.0);
+		assertEquals(3.686190609, expressions.getClosestToZero(), 0.0);
 //		assertEndsWith(expressions.getFilename(), "MCF7_ExprMx_v2_names.gct");
 		assertEquals(15380.42388, expressions.getMaxExpression(), 0.0);
 		assertEquals(3.686190609, expressions.getMinExpression(), 0.0);

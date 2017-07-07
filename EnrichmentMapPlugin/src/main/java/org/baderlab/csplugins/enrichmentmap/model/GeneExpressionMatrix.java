@@ -44,10 +44,10 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import org.baderlab.csplugins.enrichmentmap.view.util.FuncUtil;
 
 /**
  * Class representing a set of genes/proteins expresion profile
@@ -66,108 +66,42 @@ public class GeneExpressionMatrix {
 	private Map<Integer, GeneExpression> expressionMatrix = new HashMap<>();
 	private transient Map<Integer, GeneExpression> expressionMatrix_rowNormalized = null;
 
-	//maximum expression value of all expression values in the array - computed as matrix is
-	//loaded in.
-	private double maxExpression = -1000000;
-
-	//minimun expression value of all expresssion values in the array - computed as matrix
-	//is loaded in.
-	private double minExpression = 10000000;
-
-	//value closest to zero for the entire expression set (above zero) used for log scaling
-	private double closesttoZero = 10000000;
-
 	//phenotype designation of each column
 	private String[] phenotypes;
 	private String phenotype1;
 	private String phenotype2;
 
 
-
-	/**
-	 * Get a subset of the expression matrix containing only the set of given
-	 * genes
-	 *
-	 * @param subset
-	 *            - hasset of integers representing the hash keys of the genes
-	 *            to be included in the expression subset
-	 * @return Hashmap of gene Hashkeys and there gene expression set for the
-	 *         specified gene hashkeys
-	 */
-	@Deprecated
-	public HashMap<Integer, GeneExpression> getExpressionMatrix(HashSet<Integer> subset) {
-
-		if((subset == null) || (subset.size() == 0))
-			return null;
-
-		HashMap<Integer, GeneExpression> expression_subset = new HashMap<Integer, GeneExpression>();
-
-		//go through the expression matrix and get the subset of
-		//genes of interest
-		for(Iterator<Integer> i = subset.iterator(); i.hasNext();) {
-			Integer k = i.next();
-			if(expressionMatrix.containsKey(k)) {
-				expression_subset.put(k, expressionMatrix.get(k));
-			} else {
-				//With the implementation of Two distinct expression files it is possible that an expression
-				//set will not contain a gene 
-				//System.out.println("how is this key not in the hashmap?");
-			}
-
-		}
-
-		return expression_subset;
-
+	public static float getMaxExpression(Map<Integer,GeneExpression> matrix) {
+		return FuncUtil.reduceExpressionMatrix(matrix, GeneExpression::max, Math::max);
+	}
+	
+	public float getMaxExpression() {
+		return getMaxExpression(expressionMatrix);
 	}
 
-	/**
-	 * Get the current maximum value of the given subset of the expression
-	 * matrix
-	 *
-	 * @param currentMatrix
-	 *            - subset of gene expression matrix
-	 * @return maximum expression value of the expression subset
-	 */
-	public double getMaxExpression(Map<Integer, GeneExpression> currentMatrix) {
-		double max = 0.0;
-		if(currentMatrix != null) {
-			//go through the expression matrix
-			for(Iterator<Integer> i = currentMatrix.keySet().iterator(); i.hasNext();) {
-				double[] currentRow = ((GeneExpression) currentMatrix.get(i.next())).getExpression();
-				for(int j = 0; j < currentRow.length; j++) {
-					if(max < currentRow[j])
-						max = currentRow[j];
-				}
-
-			}
-		}
-		return max;
-
+	public static float getMinExpression(Map<Integer,GeneExpression> matrix) {
+		return FuncUtil.reduceExpressionMatrix(matrix, GeneExpression::min, Math::min);
 	}
-
-	/**
-	 * Get the current minimum value of the given subset of the expression
-	 * matrix
-	 *
-	 * @param currentMatrix
-	 *            - subset of gene expression matrix
-	 * @return minimum expression value of the expression subset
-	 */
-	public double getMinExpression(Map<Integer, GeneExpression> currentMatrix) {
-		double min = 0.0;
-		//go through the expression matrix
-		if(currentMatrix != null) {
-			for(Iterator<Integer> i = currentMatrix.keySet().iterator(); i.hasNext();) {
-				double[] currentRow = ((GeneExpression) currentMatrix.get(i.next())).getExpression();
-				for(int j = 0; j < currentRow.length; j++) {
-					if(min > currentRow[j])
-						min = currentRow[j];
+	
+	public float getMinExpression() {
+		return getMinExpression(expressionMatrix);
+	}
+	
+	public float getClosestToZero() {
+		float closest = getMaxExpression();
+		if(closest <= 0)
+			return 0;
+		for(GeneExpression expression : expressionMatrix.values()) {
+			for(float value : expression.getExpression()) {
+				if(value > 0 && value < closest) {
+					closest = value;
 				}
 			}
 		}
-		return min;
-
+		return closest;
 	}
+	
 
 	/**
 	 * Compute the row Normalized version of the current expression matrix. Row
@@ -184,7 +118,7 @@ public class GeneExpressionMatrix {
 			for (Integer key : expressionMatrix.keySet()) {
 				GeneExpression expression = (GeneExpression) expressionMatrix.get(key);
 				GeneExpression norm_row = new GeneExpression(expression.getName(), expression.getDescription());
-				double[] row_normalized = expression.rowNormalize();
+				float[] row_normalized = expression.rowNormalize();
 				norm_row.setExpression(row_normalized);
 				expressionMatrix_rowNormalized.put(key, norm_row);
 			}
@@ -237,22 +171,6 @@ public class GeneExpressionMatrix {
 		this.expressionMatrix = expressionMatrix;
 	}
 
-	public double getMaxExpression() {
-		return maxExpression;
-	}
-
-	public void setMaxExpression(double maxExpression) {
-		this.maxExpression = maxExpression;
-	}
-
-	public double getMinExpression() {
-		return minExpression;
-	}
-
-	public void setMinExpression(double minExpression) {
-		this.minExpression = minExpression;
-	}
-
 	public String[] getPhenotypes() {
 		return phenotypes;
 	}
@@ -276,15 +194,6 @@ public class GeneExpressionMatrix {
 	public void setPhenotype2(String phenotype2) {
 		this.phenotype2 = phenotype2;
 	}
-
-	public double getClosesttoZero() {
-		return closesttoZero;
-	}
-
-	public void setClosesttoZero(double closesttoZero) {
-		this.closesttoZero = closesttoZero;
-	}
-
 
 	/**
 	 * Restores parameters saved in the session file. Note, most of this object
