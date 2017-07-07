@@ -29,6 +29,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	public static final int RANK_COL = 2;
 
 	private final EnrichmentMap map;
+	private final List<EMDataSet> datasets;
 	
 	// Uncompressed column count
 	private final int colCount;
@@ -50,7 +51,14 @@ public class HeatMapTableModel extends AbstractTableModel {
 		
 		// populate colToDataSet
 		int rangeFloor = DESC_COL_COUNT;
-		List<EMDataSet> datasets = map.getDataSetList();
+		
+		if(map.isDistinctExpressionSets()) {
+			this.datasets = map.getDataSetList();
+		} else {
+			// if all the expression sets are the same then just show one of them
+			this.datasets =  map.getDataSetList().subList(0, 1);
+		}
+		
 		colToDataSet.put(0, null);
 		for(EMDataSet dataset : datasets) {
 			GeneExpressionMatrix matrix = dataset.getExpressionSets();
@@ -108,7 +116,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		if(compress.isNone())
 			return colCount;
 		else
-			return map.getDataSetCount() + DESC_COL_COUNT;
+			return datasets.size() + DESC_COL_COUNT;
 	}
 	
 	@Override
@@ -126,7 +134,10 @@ public class HeatMapTableModel extends AbstractTableModel {
 			String[] columns = dataset.getExpressionSets().getColumnNames();
 			return columns[index];
 		} else {
-			return dataset.getName();
+			if(map.isDistinctExpressionSets())
+				return dataset.getName();
+			else
+				return "Expressions";
 		}
 	}
 
@@ -204,7 +215,6 @@ public class HeatMapTableModel extends AbstractTableModel {
 		if(compress.isNone()) {
 			return colToDataSet.floorEntry(col).getValue();
 		} else {
-			List<EMDataSet> datasets = map.getDataSetList();
 			return datasets.get(col-DESC_COL_COUNT);
 		}
 	}
@@ -224,7 +234,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	private String getDescription(int geneID) {
-		for(EMDataSet dataset : map.getDataSetList()) {
+		for(EMDataSet dataset : datasets) {
 			GeneExpression row = getGeneExpression(dataset, geneID);
 			if(row != null)
 				return row.getDescription();
