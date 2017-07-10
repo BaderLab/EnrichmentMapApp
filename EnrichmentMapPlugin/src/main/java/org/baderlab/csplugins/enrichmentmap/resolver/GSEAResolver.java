@@ -172,6 +172,19 @@ public class GSEAResolver {
 			Path rptGmtPath = Paths.get(gmtParam);
 			if(Files.exists(rptGmtPath))
 				return Optional.of(rptGmtPath);
+			
+			// Search up the tree a few levels
+			Path gmtFileName = rptGmtPath.getFileName();
+			Path gmtGuess1 = root.resolve(gmtFileName);
+			if(Files.exists(gmtGuess1))
+				return Optional.of(gmtGuess1);
+			Path gmtGuess2 = root.getParent().resolve(gmtFileName);
+			if(Files.exists(gmtGuess2))
+				return Optional.of(gmtGuess2);
+			Path gmtGuess3 = root.getParent().getParent().resolve(gmtFileName);
+			if(Files.exists(gmtGuess3))
+				return Optional.of(gmtGuess3);
+			
 		} catch(InvalidPathException e) {
 			e.printStackTrace();
 		}
