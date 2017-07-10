@@ -40,6 +40,7 @@ public class DataSetResolver {
 		GSEA_FOLDER,
 		EXPRESSION,
 		RANKS,
+		GENE_SETS,
 		IGNORE;
 		
 		public boolean isEnrichmentFile() {
@@ -101,24 +102,30 @@ public class DataSetResolver {
 		
 		// Now, iterate over Enrichments, and try to pair up with Ranks and Expressions
 		// MKTODO add other enrichment types
-		List<Path> expressionFiles = new ArrayList<>(types.get(Type.EXPRESSION));
-		List<Path> rankFiles       = new ArrayList<>(types.get(Type.RANKS));
+		List<Path> exprFiles = new ArrayList<>(types.get(Type.EXPRESSION));
+		List<Path> rankFiles = new ArrayList<>(types.get(Type.RANKS));
+		List<Path> gmtFiles  = new ArrayList<>(types.get(Type.GENE_SETS));
 		
 		// MKTODO what about other enrichment types?
 		for(Path enrichment : types.get(Type.ENRICHMENT_GENERIC)) {
 			DataSetFiles files = new DataSetFiles();
 			files.setEnrichmentFileName1(enrichment.toAbsolutePath().toString());
 			
-			Optional<Path> closestExpression = findClosestMatch(enrichment, expressionFiles);
-			Optional<Path> closestRanks      = findClosestMatch(enrichment, rankFiles);
+			Optional<Path> closestExpr  = findClosestMatch(enrichment, exprFiles);
+			Optional<Path> closestRanks = findClosestMatch(enrichment, rankFiles);
+			Optional<Path> closestGmt   = findClosestMatch(enrichment, gmtFiles);
 			
-			closestExpression.ifPresent(path -> {
-				expressionFiles.remove(path);
+			closestExpr.ifPresent(path -> {
+				exprFiles.remove(path);
 				files.setExpressionFileName(path.toAbsolutePath().toString());
 			});
 			closestRanks.ifPresent(path -> {
 				rankFiles.remove(path);
 				files.setRankedFile(path.toAbsolutePath().toString());
+			});
+			closestGmt.ifPresent(path -> {
+				gmtFiles.remove(path);
+				files.setGMTFileName(path.toAbsolutePath().toString());
 			});
 			
 			String name = getDatasetNameGeneric(enrichment.getFileName());
@@ -187,6 +194,9 @@ public class DataSetResolver {
 		// Guess based on extension and/or first line of file
 		if(hasExtension(path, "gct")) {
 			addScore(scores, Type.RANKS, 1);
+		}
+		if(hasExtension(path, "gmt")) {
+			addScore(scores, Type.GENE_SETS, 1);
 		}
 		if(hasExtension(path, "rnk")) {
 			addScore(scores, Type.RANKS, 1);

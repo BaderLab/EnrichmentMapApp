@@ -54,7 +54,6 @@ public class SessionListener implements SessionLoadedListener, SessionAboutToBeS
 			String className = frame.getClassName();
 			if(className.equals("org.cytoscape.task.internal.session.SaveSessionTask") ||
 			   className.equals("org.cytoscape.task.internal.session.SaveSessionAsTask")) {
-				System.out.println("found it! " + className);
 				return true;
 			}
 		}
