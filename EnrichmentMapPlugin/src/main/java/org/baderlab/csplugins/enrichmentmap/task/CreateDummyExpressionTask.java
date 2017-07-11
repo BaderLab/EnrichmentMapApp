@@ -42,10 +42,11 @@ public class CreateDummyExpressionTask extends AbstractTask {
 		Map<Integer,GeneExpression> expression = expressionMatrix.getExpressionMatrix();
 
 		for(int geneKey : allGenes) {
-			float dummyVal = enrichmentGenes.contains(geneKey) ? 0.25f : 0.0f;
-			String geneName = map.getGeneFromHashKey(geneKey);
-			GeneExpression expres = new GeneExpression(geneName, geneName, dummyVal);
-			expression.put(geneKey, expres);
+			if(enrichmentGenes.contains(geneKey)) {
+				String geneName = map.getGeneFromHashKey(geneKey);
+				GeneExpression expres = new GeneExpression(geneName, geneName, 0.25f);
+				expression.put(geneKey, expres);
+			}
 		}
 	}
 
