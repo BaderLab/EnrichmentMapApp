@@ -1,0 +1,2 @@
+GO.ID	Description	p.Val	FDR	Phenotype	Genes
+REAC:5655302	Signaling by FGFR1 in disease	7.29e-04	7.29e-04	1	PIK3CA,KRAS,PIK3R1,NRAS

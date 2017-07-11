@@ -17,13 +17,10 @@ import org.baderlab.csplugins.enrichmentmap.task.BaseNetworkTest;
 import org.jukito.JukitoRunner;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
 
 @RunWith(JukitoRunner.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ModelSharingTest extends BaseNetworkTest {
 
 	private static final String PATH = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/EMandPA/";

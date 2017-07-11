@@ -23,6 +23,8 @@ import com.google.common.base.Strings;
  */
 public class CreateDummyExpressionTask extends AbstractTask {
 
+	public static final float DEFAULT_VAL = 0.25f;
+	
 	private final EMDataSet dataset;
 
 	public CreateDummyExpressionTask(EMDataSet dataset) {
@@ -46,7 +48,7 @@ public class CreateDummyExpressionTask extends AbstractTask {
 		Set<Integer> genes = getGenes();
 		for(int geneKey : genes) {
 			String geneName = map.getGeneFromHashKey(geneKey);
-			GeneExpression expres = new GeneExpression(geneName, geneName, 0.25f);
+			GeneExpression expres = new GeneExpression(geneName, geneName, DEFAULT_VAL);
 			expression.put(geneKey, expres);
 		}
 		
