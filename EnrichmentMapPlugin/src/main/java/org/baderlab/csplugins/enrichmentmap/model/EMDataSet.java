@@ -66,19 +66,6 @@ public class EMDataSet extends AbstractDataSet {
 		return genes;
 	}
 	
-	/**
-	 * Return all the genes in the enrichments.
-	 */
-	public Set<Integer> getEnrichmentGenes() {
-		Set<Integer> genes = new HashSet<>();
-		Map<String,GeneSet> geneSets = getSetOfGeneSets().getGeneSets();
-		for(String geneSetName : enrichments.getEnrichments().keySet()) {
-			GeneSet geneSet = geneSets.get(geneSetName);
-			genes.addAll(geneSet.getGenes());
-		}
-		return genes;
-	}
-	
 	
 	public Method getMethod() {
 		return method;

@@ -154,7 +154,7 @@ public class EnrichmentMap {
 	}
 	
 	public Integer getHashFromGene(String gene) {
-		// MKTOD should I toUpperCase?
+		// MKTODO should I toUpperCase?
 		return genes.inverse().get(gene);
 	}
 	
