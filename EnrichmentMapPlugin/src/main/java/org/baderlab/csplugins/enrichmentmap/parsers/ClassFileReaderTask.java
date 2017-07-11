@@ -23,7 +23,7 @@ public class ClassFileReaderTask extends AbstractTask {
 		taskMonitor.setTitle("Parsing class file");
 		String classFile = dataset.getDataSetFiles().getClassFile();
 		String[] classes = parseClasses(classFile);
-		dataset.getExpressionSets().setPhenotypes(classes);
+		dataset.getEnrichments().setPhenotypes(classes);
 	}
 	
 	

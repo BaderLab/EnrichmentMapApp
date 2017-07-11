@@ -22,6 +22,7 @@ public class SetOfEnrichmentResults {
 
 	//phenotype
 	//each enrichment is associated with two phenotypes
+	private String[] phenotypes;
 	private String phenotype1 = DataSetFiles.default_pheno1;
 	private String phenotype2 = DataSetFiles.default_pheno2;
 	
@@ -56,6 +57,14 @@ public class SetOfEnrichmentResults {
 		this.enrichments = enrichments;
 	}
 
+	public String[] getPhenotypes() {
+		return phenotypes;
+	}
+	
+	public void setPhenotypes(String[] phenotypes) {
+		this.phenotypes = phenotypes;
+	}
+	
 	public String getPhenotype1() {
 		return phenotype1;
 	}

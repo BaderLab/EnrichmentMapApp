@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Set;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -81,21 +83,21 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 		if(map.getExpressionMatrixKeys().size() != 1) {
 			return false;
 		}
-//		Iterator<EMDataSet> iter = map.getDataSets().values().iterator();
-//		GeneExpressionMatrix m = iter.next().getExpressionSets();
-//		String p1 = m.getPhenotype1();
-//		String p2 = m.getPhenotype2();
-//		String[] ps = m.getPhenotypes();
-//		
-//		while(iter.hasNext()) {
-//			GeneExpressionMatrix m2 = iter.next().getExpressionSets();
-//			if(!p1.equals(m2.getPhenotype1()))
-//				return false;
-//			if(!p2.equals(m2.getPhenotype2()))
-//				return false;
-//			if(!Arrays.equals(ps, m2.getPhenotypes()))
-//				return false;
-//		}
+		Iterator<EMDataSet> iter = map.getDataSets().values().iterator();
+		SetOfEnrichmentResults r = iter.next().getEnrichments();
+		String p1 = r.getPhenotype1();
+		String p2 = r.getPhenotype2();
+		String[] ps = r.getPhenotypes();
+		
+		while(iter.hasNext()) {
+			SetOfEnrichmentResults r2 = iter.next().getEnrichments();
+			if(!p1.equals(r2.getPhenotype1()))
+				return false;
+			if(!p2.equals(r2.getPhenotype2()))
+				return false;
+			if(!Arrays.equals(ps, r2.getPhenotypes()))
+				return false;
+		}
 		
 		return true;
 	}

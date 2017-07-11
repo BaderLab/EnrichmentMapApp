@@ -199,7 +199,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 			return Optional.empty();
 		EMDataSet dataset = getDataSet(col);
 		int index = getIndexInDataSet(col);
-		String[] classes = dataset.getExpressionSets().getPhenotypes();
+		String[] classes = dataset.getEnrichments().getPhenotypes();
 		if(classes != null && index < classes.length) {
 			return Optional.ofNullable(classes[index]);
 		}

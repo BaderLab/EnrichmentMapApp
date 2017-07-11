@@ -66,11 +66,6 @@ public class GeneExpressionMatrix {
 	private Map<Integer, GeneExpression> expressionMatrix = new HashMap<>();
 	private transient Map<Integer, GeneExpression> expressionMatrix_rowNormalized = null;
 
-	//phenotype designation of each column
-	private String[] phenotypes;
-	private String phenotype1;
-	private String phenotype2;
-
 
 	public static float getMaxExpression(Map<Integer,GeneExpression> matrix) {
 		return FuncUtil.reduceExpressionMatrix(matrix, GeneExpression::max, Math::max);
@@ -169,30 +164,6 @@ public class GeneExpressionMatrix {
 
 	public void setExpressionMatrix(Map<Integer, GeneExpression> expressionMatrix) {
 		this.expressionMatrix = expressionMatrix;
-	}
-
-	public String[] getPhenotypes() {
-		return phenotypes;
-	}
-
-	public void setPhenotypes(String[] phenotypes) {
-		this.phenotypes = phenotypes;
-	}
-
-	public String getPhenotype1() {
-		return phenotype1;
-	}
-
-	public void setPhenotype1(String phenotype1) {
-		this.phenotype1 = phenotype1;
-	}
-
-	public String getPhenotype2() {
-		return phenotype2;
-	}
-
-	public void setPhenotype2(String phenotype2) {
-		this.phenotype2 = phenotype2;
 	}
 
 	/**

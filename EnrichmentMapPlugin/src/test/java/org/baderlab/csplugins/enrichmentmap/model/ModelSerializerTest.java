@@ -149,6 +149,9 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertEquals(expected.getPhenotype1(), actual.getPhenotype1());
 		assertEquals(expected.getPhenotype2(), actual.getPhenotype2());
 		assertMapsEqual(ModelSerializerTest::assertEnrichmentResultEquals, expected.getEnrichments(), actual.getEnrichments());
+		assertArrayEquals(expected.getPhenotypes(), actual.getPhenotypes());
+		assertEquals(expected.getPhenotype1(), actual.getPhenotype1());
+		assertEquals(expected.getPhenotype2(), actual.getPhenotype2());
 	}
 	
 	private static void assertEnrichmentResultEquals(EnrichmentResult expectedInter, EnrichmentResult actualInter) {
@@ -173,9 +176,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertEquals(expected.getMaxExpression(), actual.getMaxExpression(), 0.0);
 		assertEquals(expected.getMinExpression(), actual.getMinExpression(), 0.0);
 		assertEquals(expected.getClosestToZero(), actual.getClosestToZero(), 0.0);
-		assertArrayEquals(expected.getPhenotypes(), actual.getPhenotypes());
-		assertEquals(expected.getPhenotype1(), actual.getPhenotype1());
-		assertEquals(expected.getPhenotype2(), actual.getPhenotype2());
 	}
 	
 	private static void assertRankingEquals(Ranking expected, Ranking actual) {
