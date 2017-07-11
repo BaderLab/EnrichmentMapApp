@@ -145,7 +145,7 @@ public class CutoffPropertiesPanel extends JPanel {
 		panel.setBorder(LookAndFeelUtil.createTitledBorder("Number of Nodes (gene-set filtering)"));
 		
 		
-		JLabel filterGenesLabel = new JLabel("Filter genes by expressions");
+		JLabel filterGenesLabel = new JLabel("Filter genes by expressions:");
 		JLabel qvalueLabel = new JLabel("FDR q-value cutoff:");
 		pvalueLabel = new JLabel("p-value cutoff:");
 		nesFilterLabel = new JLabel("NES (GSEA only):");

@@ -106,7 +106,7 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 	        panel.setBackground(labelBackgroundColor.get()); 
         }
 		
-		panel.setToolTipText(value.toString());
+		panel.setToolTipText(value.toString() + " - " + dataset.getName());
 		return panel;
 	}
 
