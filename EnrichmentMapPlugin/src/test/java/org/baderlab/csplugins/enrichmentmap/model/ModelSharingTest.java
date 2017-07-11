@@ -51,7 +51,7 @@ public class ModelSharingTest extends BaseNetworkTest {
 		dataset2files.setRankedFile(PATH + "FakeRank2.rnk");
 
 		EMCreationParameters params = new EMCreationParameters("ExpressionSharing_", 0.1, 0.1, NESFilter.ALL,
-				Optional.empty(), SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
+				Optional.empty(), true, SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
 
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 		assertEquals(0, maps.size());
@@ -84,8 +84,8 @@ public class ModelSharingTest extends BaseNetworkTest {
 		EMDataSet ds1 = map.getDataSet(LegacySupport.DATASET1);
 		EMDataSet ds2 = map.getDataSet(LegacySupport.DATASET2);
 
-		assertFalse(ds1.getDataSetGenes().isEmpty());
-		assertFalse(ds2.getDataSetGenes().isEmpty());
+		assertFalse(ds1.getExpressionGenes().isEmpty());
+		assertFalse(ds2.getExpressionGenes().isEmpty());
 
 		// Make sure the Ranks are separate
 		double[] s1 = ds1.getRanks().get(LegacySupport.DATASET1).getScores();

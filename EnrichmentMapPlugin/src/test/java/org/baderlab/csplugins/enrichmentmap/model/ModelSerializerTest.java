@@ -42,7 +42,7 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
 		
 		EMCreationParameters params = 
-			new EMCreationParameters("ModelSerializer_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), 
+			new EMCreationParameters("ModelSerializer_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), true, 
 					SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
 		
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
@@ -126,7 +126,7 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertSetOfGeneSetsEquals(expected.getGeneSetsOfInterest(), actual.getGeneSetsOfInterest());
 		assertEquals(expected.getNodeSuids(), actual.getNodeSuids());
 		assertEquals(expected.getEdgeSuids(), actual.getEdgeSuids());
-		assertEquals(expected.getDataSetGenes(), actual.getDataSetGenes());
+		assertEquals(expected.getExpressionGenes(), actual.getExpressionGenes());
 		assertSetOfEnrichmentResultsEquals(expected.getEnrichments(), actual.getEnrichments());
 		assertGeneExpressionMatrixEquals(expected.getExpressionSets(), actual.getExpressionSets());
 		assertMapsEqual(ModelSerializerTest::assertRankingEquals, expected.getRanks(), actual.getRanks());

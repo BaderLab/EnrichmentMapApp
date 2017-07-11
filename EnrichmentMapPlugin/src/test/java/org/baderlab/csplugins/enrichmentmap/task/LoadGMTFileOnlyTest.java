@@ -42,7 +42,7 @@ public class LoadGMTFileOnlyTest {
 		double pvalue = 1.0;
 		double qvalue = 1.0;
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 	
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		
@@ -78,7 +78,7 @@ public class LoadGMTFileOnlyTest {
 		//there should be 523 genes
 		assertEquals(523, em.getNumberOfGenes());
 		assertEquals(523, dataset.getExpressionSets().getNumGenes());
-		assertEquals(523, dataset.getDataSetGenes().size());
+		assertEquals(523, dataset.getExpressionGenes().size());
 		
 		assertEquals(3,dataset.getExpressionSets().getNumConditions());
 	}

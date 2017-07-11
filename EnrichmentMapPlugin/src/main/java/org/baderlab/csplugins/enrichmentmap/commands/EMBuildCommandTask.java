@@ -234,7 +234,7 @@ public class EMBuildCommandTask extends AbstractTask {
 		
 		String prefix = legacySupport.getNextAttributePrefix();
 		EMCreationParameters creationParams = 
-				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), 
+				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true,
 						metric, similaritycutoff, LegacySupport.combinedConstant_default, edgeStrategy);
 		
 		//System.out.println(creationParams);

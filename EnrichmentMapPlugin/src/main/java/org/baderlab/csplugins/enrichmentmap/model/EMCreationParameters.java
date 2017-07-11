@@ -26,6 +26,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	private double qvalue;
 	private Optional<Integer> minExperiments;
 	private NESFilter nesFilter;
+	private boolean filterByExpressions;
 	
 	// Edge filtering (similarity)
 	private SimilarityMetric similarityMetric;
@@ -59,6 +60,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 			double qvalue,
 			NESFilter nesFilter,
 			Optional<Integer> minExperiments,
+			boolean filterByExpressions,
 			SimilarityMetric similarityMetric,
 			double similarityCutoff,
 			double combinedConstant,
@@ -70,6 +72,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		this.qvalue = qvalue;
 		this.nesFilter = nesFilter;
 		this.minExperiments = minExperiments;
+		this.filterByExpressions = filterByExpressions;
 		this.similarityCutoff = similarityCutoff;
 		this.combinedConstant = combinedConstant;
 		this.edgeStrategy = edgeStrategy;
@@ -220,6 +223,10 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		return new HashSet<>(similarityCutoffColumnNames);
 	}
 
+	public boolean isFilterByExpressions() {
+		return filterByExpressions;
+	}
+	
 	@Override
 	public String toString() {
 		return "EMCreationParameters [attributePrefix=" + attributePrefix + ", pvalue=" + pvalue + ", qvalue=" + qvalue

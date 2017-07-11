@@ -470,8 +470,8 @@ public class LegacySessionLoader {
 				//only initialize objects if there is a map for this network
 				if (map != null){
 					if(map.getDataSets().size() > 1) {
-						Set<Integer> dataset1_genes = map.getDataSets().get(LegacySupport.DATASET1).getDataSetGenes();
-						Set<Integer> dataset2_genes = map.getDataSets().get(LegacySupport.DATASET2).getDataSetGenes();
+						Set<Integer> dataset1_genes = map.getDataSets().get(LegacySupport.DATASET1).getExpressionGenes();
+						Set<Integer> dataset2_genes = map.getDataSets().get(LegacySupport.DATASET2).getExpressionGenes();
 						
 						if(!dataset1_genes.equals(dataset2_genes))
 							map.setDistinctExpressionSets(true);

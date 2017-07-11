@@ -65,7 +65,12 @@ public class GeneExpression {
 	
 	public GeneExpression(String name, String description, float[] expressions) {
 		this(name, description);
-		setExpression(expressions);
+		this.expression = expressions;
+	}
+	
+	public GeneExpression(String name, String description, float dummyVal) {
+		this(name, description);
+		this.expression = new float[] { dummyVal };
 	}
 
 	/**
@@ -197,5 +202,5 @@ public class GeneExpression {
 	public void setExpression(float[] expression) {
 		this.expression = expression;
 	}
-
+	
 }

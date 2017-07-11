@@ -47,6 +47,39 @@ public class EMDataSet extends AbstractDataSet {
 		}
 	}
 
+	
+	/**
+	 * Return all the genes in the expressions.
+	 */
+	public Set<Integer> getExpressionGenes() {
+		return Collections.unmodifiableSet(getExpressionSets().getGeneIds());
+	}
+	
+	/**
+	 * Return all the genes in the original (un-filtered) GMT.
+	 */
+	public Set<Integer> getGeneSetGenes() {
+		Set<Integer> genes = new HashSet<>();
+		for(GeneSet geneSet : getSetOfGeneSets().getGeneSets().values()) {
+			genes.addAll(geneSet.getGenes());
+		}
+		return genes;
+	}
+	
+	/**
+	 * Return all the genes in the enrichments.
+	 */
+	public Set<Integer> getEnrichmentGenes() {
+		Set<Integer> genes = new HashSet<>();
+		Map<String,GeneSet> geneSets = getSetOfGeneSets().getGeneSets();
+		for(String geneSetName : enrichments.getEnrichments().keySet()) {
+			GeneSet geneSet = geneSets.get(geneSetName);
+			genes.addAll(geneSet.getGenes());
+		}
+		return genes;
+	}
+	
+	
 	public Method getMethod() {
 		return method;
 	}
@@ -103,10 +136,6 @@ public class EMDataSet extends AbstractDataSet {
 			map.putGeneSets(key, geneSets);
 		}
 		return geneSets;
-	}
-
-	public Set<Integer> getDataSetGenes() {
-		return Collections.unmodifiableSet(getExpressionSets().getGeneIds());
 	}
 
 	public DataSetFiles getDataSetFiles() {

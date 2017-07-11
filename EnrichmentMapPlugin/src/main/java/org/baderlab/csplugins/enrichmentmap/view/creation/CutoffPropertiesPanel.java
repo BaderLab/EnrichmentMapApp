@@ -42,6 +42,7 @@ public class CutoffPropertiesPanel extends JPanel {
 	@Inject private PropertyManager propertyManager;
 	
 	// node filtering
+	private JCheckBox filterGenesCheckbox;
 	private JFormattedTextField qvalueText;
 	private JLabel pvalueLabel;
 	private JFormattedTextField pvalueText;
@@ -143,14 +144,17 @@ public class CutoffPropertiesPanel extends JPanel {
 		JPanel panel = new JPanel();
 		panel.setBorder(LookAndFeelUtil.createTitledBorder("Number of Nodes (gene-set filtering)"));
 		
-		pvalueLabel = new JLabel("p-value cutoff:");
+		
+		JLabel filterGenesLabel = new JLabel("Filter genes by expressions");
 		JLabel qvalueLabel = new JLabel("FDR q-value cutoff:");
+		pvalueLabel = new JLabel("p-value cutoff:");
 		nesFilterLabel = new JLabel("NES (GSEA only):");
 		shouldFilterMinLabel = new JLabel("Filter by minimum experiments:");
 		minExperimentsLabel = new JLabel("Minimum experiments:");
 		
-		SwingUtil.makeSmall(qvalueLabel, pvalueLabel, minExperimentsLabel, shouldFilterMinLabel, nesFilterLabel);
+		SwingUtil.makeSmall(filterGenesLabel, qvalueLabel, pvalueLabel, minExperimentsLabel, shouldFilterMinLabel, nesFilterLabel);
 		
+		filterGenesCheckbox = new JCheckBox();
 		AbstractFormatterFactory formatterFactory = getFormatterFactory(false);
 		pvalueText = new JFormattedTextField(formatterFactory);
 		qvalueText = new JFormattedTextField(formatterFactory);
@@ -177,7 +181,7 @@ public class CutoffPropertiesPanel extends JPanel {
 			minExperimentsText.setEnabled(enable);
 		});
 		
-		SwingUtil.makeSmall(pvalueText, qvalueText, shouldFilterMinCheckbox, nesFilterCombo, minExperimentsText);
+		SwingUtil.makeSmall(filterGenesCheckbox, pvalueText, qvalueText, shouldFilterMinCheckbox, nesFilterCombo, minExperimentsText);
 		
 		final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -187,6 +191,7 @@ public class CutoffPropertiesPanel extends JPanel {
 		layout.setHorizontalGroup(
 			layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
+					.addComponent(filterGenesLabel)
 					.addComponent(qvalueLabel)
 					.addComponent(pvalueLabel)
 					.addComponent(nesFilterLabel)
@@ -194,6 +199,7 @@ public class CutoffPropertiesPanel extends JPanel {
 					.addComponent(minExperimentsLabel)
 				)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING)
+					.addComponent(filterGenesCheckbox)
 					.addComponent(qvalueText, PREFERRED_SIZE, 100, PREFERRED_SIZE)
 					.addComponent(pvalueText, PREFERRED_SIZE, 100, PREFERRED_SIZE)
 					.addComponent(nesFilterCombo)
@@ -205,6 +211,10 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.CENTER)
+					.addComponent(filterGenesLabel)
+					.addComponent(filterGenesCheckbox)
+				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
 					.addComponent(qvalueLabel)
 					.addComponent(qvalueText)
@@ -427,6 +437,7 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	
 	public void reset() {
+		filterGenesCheckbox.setSelected(false);
 		pvalueText.setValue(propertyManager.getValue(PropertyManager.P_VALUE));
 		qvalueText.setValue(propertyManager.getValue(PropertyManager.Q_VALUE));
 		nesFilterCombo.setSelectedItem(ComboItem.of(NESFilter.ALL));
@@ -537,6 +548,10 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	private static double getTextFieldDoubleValue(JFormattedTextField textField) {
 		return ((Number)textField.getValue()).doubleValue();
+	}
+	
+	public boolean getFilterGenesByExpressions() {
+		return filterGenesCheckbox.isSelected();
 	}
 	
 	

@@ -68,7 +68,8 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
 		
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.COMPOUND);
+			new EMCreationParameters("EM1_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), true, 
+					SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.COMPOUND);
 		
 	    buildEnrichmentMap(params, new DataSetParameters(LegacySupport.DATASET1, Method.Generic, dataset1files));
 	   	

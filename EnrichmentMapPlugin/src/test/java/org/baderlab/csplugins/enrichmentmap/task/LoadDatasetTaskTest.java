@@ -42,7 +42,7 @@ public class LoadDatasetTaskTest {
 		files.setEnrichmentFileName2(testGSEAResults2FileName);
 		
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("EM1_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
@@ -64,7 +64,7 @@ public class LoadDatasetTaskTest {
 		//check to see if the dataset loaded
 		assertEquals(193, dataset.getSetOfGeneSets().getGeneSets().size());
 		assertEquals(14, dataset.getEnrichments().getEnrichments().size());
-		assertEquals(41, dataset.getDataSetGenes().size());
+		assertEquals(41, dataset.getExpressionGenes().size());
 		assertEquals(41, dataset.getExpressionSets().getNumGenes());
     }
 }

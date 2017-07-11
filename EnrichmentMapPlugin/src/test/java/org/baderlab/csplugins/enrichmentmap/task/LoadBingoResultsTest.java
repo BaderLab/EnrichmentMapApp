@@ -42,7 +42,7 @@ public class LoadBingoResultsTest {
 		double qvaule = 0.00000005; // 5.0 X 10-8
 		double similarityCutoff = 0.25;
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		EMDataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Specialized, files);				
@@ -79,7 +79,7 @@ public class LoadBingoResultsTest {
 
 		//make sure the dummy expression has values for all the genes
 		assertEquals(446, dataset.getExpressionSets().getNumGenes());
-		assertEquals(446,dataset.getDataSetGenes().size()); 
+		assertEquals(446,dataset.getExpressionGenes().size()); 
 	}
 	
 	
@@ -103,7 +103,8 @@ public class LoadBingoResultsTest {
 		double qvaule = 0.00000005; // 5.0 X 10-8
 		double similarityCutoff = 0.25;
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), true, 
+					SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
@@ -126,8 +127,8 @@ public class LoadBingoResultsTest {
 		CreateDummyExpressionTask dummyExpressionTask2 = new CreateDummyExpressionTask(dataset2);
 		dummyExpressionTask2.run(taskMonitor);
 		//check to see if the two datasets are distinct
-		if(!((dataset.getDataSetGenes().containsAll(dataset2.getDataSetGenes())) && 
-					(dataset2.getDataSetGenes().containsAll(dataset.getDataSetGenes()))))
+		if(!((dataset.getExpressionGenes().containsAll(dataset2.getExpressionGenes())) && 
+					(dataset2.getExpressionGenes().containsAll(dataset.getExpressionGenes()))))
 				em.setDistinctExpressionSets(true);	
 				
 		em.filterGenesets();
@@ -150,7 +151,7 @@ public class LoadBingoResultsTest {
 		assertEquals(43, dataset.getSetOfGeneSets().getGeneSets().get("NUCLEOLUS").getGenes().size());
 		//make sure the dummy expression has values for all the genes
 		assertEquals(446, dataset.getExpressionSets().getNumGenes());
-		assertEquals(446,dataset.getDataSetGenes().size());
+		assertEquals(446,dataset.getExpressionGenes().size());
 		
 		dataset2 = em.getDataSet(LegacySupport.DATASET2);
 		//check the stats for dataset2
@@ -164,7 +165,7 @@ public class LoadBingoResultsTest {
 		assertEquals(318, dataset2.getSetOfGeneSets().getGeneSets().get("INTRACELLULAR").getGenes().size());
 		//make sure the dummy expression has values for all the genes
 		assertEquals(398, dataset2.getExpressionSets().getNumGenes());
-		assertEquals(398,dataset2.getDataSetGenes().size());
+		assertEquals(398,dataset2.getExpressionGenes().size());
 		
 		//there should be 20 edges (2 edges for every node because of the distinct expresison sets)
 		//assertEquals(24,em.getGenesetSimilarity().size());

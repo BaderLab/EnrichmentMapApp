@@ -52,11 +52,11 @@ public class HeatMapTableModel extends AbstractTableModel {
 		// populate colToDataSet
 		int rangeFloor = DESC_COL_COUNT;
 		
-		if(map.isDistinctExpressionSets()) {
-			this.datasets = map.getDataSetList();
-		} else {
+		if(map.isCommonExpressionValues()) {
 			// if all the expression sets are the same then just show one of them
-			this.datasets =  map.getDataSetList().subList(0, 1);
+			this.datasets = map.getDataSetList().subList(0, 1);
+		} else {
+			this.datasets = map.getDataSetList();
 		}
 		
 		colToDataSet.put(0, null);

@@ -115,13 +115,15 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		double pvalue = cutoffPanel.getPValue();
 		double qvalue = cutoffPanel.getQValue();
 		NESFilter nesFilter = cutoffPanel.getNESFilter();
+		boolean filterByExpressions = cutoffPanel.getFilterGenesByExpressions();
 		double cutoff = cutoffPanel.getCutoff();
 		double combined = cutoffPanel.getCombinedConstant();
 		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
 		EdgeStrategy edgeStrategy = cutoffPanel.getEdgeStrategy();
 		
 		EMCreationParameters params = 
-			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, similarityMetric, cutoff, combined, edgeStrategy);
+			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, filterByExpressions, 
+					similarityMetric, cutoff, combined, edgeStrategy);
 		
 		List<DataSetParameters> dataSets = 
 				dataSetListModel.toList().stream()

@@ -42,7 +42,7 @@ public class LoadDavidResultTest {
 		double pvalue = 0.005;
 		double qvalue = 0.005; // 5.0 X 10-3
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 	
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
@@ -83,7 +83,7 @@ public class LoadDavidResultTest {
 
 		//make sure the dummy expression has values for all the genes
 		assertEquals(414, dataset.getExpressionSets().getNumGenes());
-		assertEquals(414,dataset.getDataSetGenes().size()); 
+		assertEquals(414,dataset.getExpressionGenes().size()); 
 	}
 	
 	@Test
@@ -105,7 +105,7 @@ public class LoadDavidResultTest {
 		double pvalue = 0.005;
 		double qvalue = 0.005; // 5.0 X 10-3
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
@@ -129,8 +129,8 @@ public class LoadDavidResultTest {
 		enrichmentResultsFiles2Task.run(taskMonitor);
 
 		// check to see if the two datasets are distinct
-		if (!((dataset.getDataSetGenes().containsAll(dataset2.getDataSetGenes()))
-		   && (dataset2.getDataSetGenes().containsAll(dataset.getDataSetGenes()))))
+		if (!((dataset.getExpressionGenes().containsAll(dataset2.getExpressionGenes()))
+		   && (dataset2.getExpressionGenes().containsAll(dataset.getExpressionGenes()))))
 			em.setDistinctExpressionSets(true);
 
 		CreateDummyExpressionTask dummyExpressionTask = new CreateDummyExpressionTask(dataset);
@@ -165,7 +165,7 @@ public class LoadDavidResultTest {
 
 		// make sure the dummy expression has values for all the genes
 		assertEquals(367, dataset2.getExpressionSets().getNumGenes());
-		assertEquals(367, dataset2.getDataSetGenes().size());
+		assertEquals(367, dataset2.getExpressionGenes().size());
 
 		// there should be 20 edges (2 edges for every node because of the distinct expresison sets)
 		// assertEquals((7*6),em.getGenesetSimilarity().size()); there should be a total of 366 genes

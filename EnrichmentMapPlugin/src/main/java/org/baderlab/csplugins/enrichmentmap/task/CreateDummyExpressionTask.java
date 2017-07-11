@@ -1,9 +1,11 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.cytoscape.work.AbstractTask;
@@ -23,32 +25,29 @@ public class CreateDummyExpressionTask extends AbstractTask {
 
 	//Create a dummy expression file so that when no expression files are loaded you can still use the HeatMap.
 	private void createDummyExpression() {
-		// Not worried too much about sharing dummy expressions as they don't use up very much space.
+		EnrichmentMap map = dataset.getMap();
+		
 		GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix();
+		expressionMatrix.setColumnNames(new String[] {"Name", "Description", "Dummy"});
+		expressionMatrix.setNumConditions(3);
+		
+		// Not worried too much about sharing dummy expressions as they don't use up very much space.
 		String expressionKey = "Dummy_" + UUID.randomUUID().toString();
-		dataset.getMap().putExpressionMatrix(expressionKey, expressionMatrix);
+		map.putExpressionMatrix(expressionKey, expressionMatrix);
 		dataset.setExpressionKey(expressionKey);
 		
-		//in order to see the gene in the expression viewer we also need a dummy expression file get all the genes
-		Map<String, Integer> genes = dataset.getMap().getGeneSetsGenes(dataset.getSetOfGeneSets().getGeneSets().values());
+		Set<Integer> allGenes = dataset.getGeneSetGenes();
+		Set<Integer> enrichmentGenes = dataset.getEnrichmentGenes();
+		
+		Map<Integer,GeneExpression> expression = expressionMatrix.getExpressionMatrix();
 
-		String[] titletokens = {"Name", "Description", "Dummy"};
-		expressionMatrix.setColumnNames(titletokens);
-		Map<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
-		expressionMatrix.setExpressionMatrix(expression);
-
-		String[] tokens = {"tmp", "tmp", "0.25"};
-
-		for(String currentGene : genes.keySet()) {
-			int genekey = genes.get(currentGene);
-			GeneExpression expres = new GeneExpression(currentGene, currentGene);
-			expres.setExpression(tokens);
-			expression.put(genekey, expres);
+		for(int geneKey : allGenes) {
+			float dummyVal = enrichmentGenes.contains(geneKey) ? 0.25f : 0.0f;
+			String geneName = map.getGeneFromHashKey(geneKey);
+			GeneExpression expres = new GeneExpression(geneName, geneName, dummyVal);
+			expression.put(geneKey, expres);
 		}
-
-		expressionMatrix.setNumConditions(3);
 	}
-
 
 	@Override
 	public void run(TaskMonitor taskMonitor) {

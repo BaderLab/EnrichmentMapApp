@@ -142,7 +142,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertNotNull(dataset);
 		assertSame(map, dataset.getMap());
 		assertEquals(Method.GSEA, dataset.getMethod());
-		assertEquals(12653, dataset.getDataSetGenes().size());
+		assertEquals(12653, dataset.getExpressionGenes().size());
 		assertEquals(389, dataset.getGeneSetsOfInterest().getGeneSets().size());
 //		assertEquals(17259, dataset.getSetofgenesets().getGenesets().size()); // MKTODO why? what is this used for
 		for(long suid : dataset.getNodeSuids()) {

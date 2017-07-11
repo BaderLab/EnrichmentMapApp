@@ -52,6 +52,9 @@ public class ResolverCommandTask extends AbstractTask {
 	public Integer minExperiments = null;
 	
 	@Tunable
+	public boolean filterByExpressions = false;
+	
+	@Tunable
 	public Double similarityCutoff = LegacySupport.overlapCutOff_default;
 
 	@Tunable
@@ -150,7 +153,7 @@ public class ResolverCommandTask extends AbstractTask {
 		tm.setStatusMessage(info);
 		
 		EMCreationParameters params = 
-				new EMCreationParameters(prefix, pvalue, qvalue, nesf, Optional.ofNullable(minExperiments), 
+				new EMCreationParameters(prefix, pvalue, qvalue, nesf, Optional.ofNullable(minExperiments), filterByExpressions,
 										 sm, similarityCutoff, combinedConstant, strategy);
 
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);

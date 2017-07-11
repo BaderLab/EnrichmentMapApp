@@ -56,6 +56,7 @@ public class EnrichmentMap {
 	private int NumberOfGenes = 0;
 	private boolean isLegacy = false;
 	private boolean isDistinctExpressionSets = false;
+	private boolean isCommonExpressionValues = false;
 
 	private final Object lock = new Object();
 	
@@ -194,29 +195,6 @@ public class EnrichmentMap {
 		NumberOfGenes = numberOfGenes;
 	}
 
-	/**
-	 * Given a set of genesets Go through the genesets and extract all the genes
-	 * Return - hashmap of genes to hash keys (used to create an expression file
-	 * when it is not present so user can use expression viewer to navigate
-	 * genes in a geneset without have to generate their own dummy expression file)
-	 */
-	public Map<String, Integer> getGeneSetsGenes(Collection<GeneSet> currentGeneSets) {
-		Map<String, Integer> geneSetsGenes = new HashMap<>();
-
-		for (GeneSet geneSet : currentGeneSets) {
-			// Compare the HashSet of dataset genes to the HashSet of the current Geneset
-			// only keep the genes from the geneset that are in the dataset genes
-			for (Integer geneKey : geneSet.getGenes()) {
-				// Get the current geneName
-				if (genes.containsKey(geneKey)) {
-					String name = genes.get(geneKey);
-					geneSetsGenes.put(name, geneKey);
-				}
-			}
-		}
-		
-		return geneSetsGenes;
-	}
 
 	/**
 	 * Filter all the genesets by the dataset genes If there are multiple sets
@@ -226,8 +204,9 @@ public class EnrichmentMap {
 	public void filterGenesets() {
 		for (EMDataSet ds : dataSets.values()) {
 			// only filter the genesets if dataset genes are not null or empty
-			if (ds.getDataSetGenes() != null && !ds.getDataSetGenes().isEmpty()) {
-				ds.getSetOfGeneSets().filterGeneSets(ds.getDataSetGenes());
+			Set<Integer> expressionGenes = ds.getExpressionGenes();
+			if (expressionGenes != null && !expressionGenes.isEmpty()) {
+				ds.getSetOfGeneSets().filterGeneSets(expressionGenes);
 			}
 		}
 	}
@@ -571,6 +550,14 @@ public class EnrichmentMap {
 		return isDistinctExpressionSets;
 	}
 	
+	public void setCommonExpressionValues(boolean b) {
+		this.isCommonExpressionValues = b;
+	}
+	
+	public boolean isCommonExpressionValues() {
+		return isCommonExpressionValues;
+	}
+	
 	public void setLegacy(boolean legacy) {
 		this.isLegacy = legacy;
 	}
@@ -586,4 +573,5 @@ public class EnrichmentMap {
 	public String toString() {
 		return getName();
 	}
+
 }
