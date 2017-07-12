@@ -1,5 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
+import java.util.List;
+
+import javax.swing.RowSorter.SortKey;
+
 import org.baderlab.csplugins.brainlib.DistanceMetric;
 import org.baderlab.csplugins.enrichmentmap.task.cluster.CosineDistance;
 import org.baderlab.csplugins.enrichmentmap.task.cluster.EuclideanDistance;
@@ -47,6 +51,7 @@ public class HeatMapParams {
 	private final Distance distanceMetric;
 	private final boolean showValues;
 	private final String rankingOptionName; // combo index 
+	private final List<? extends SortKey> sortKeys;
 	
 	
 	private HeatMapParams(Builder builder) {
@@ -56,6 +61,7 @@ public class HeatMapParams {
 		this.distanceMetric = builder.distanceMetric;
 		this.showValues = builder.showValues;
 		this.rankingOptionName = builder.rankingOptionName;
+		this.sortKeys = builder.sortKeys;
 	}
 	
 	
@@ -66,16 +72,18 @@ public class HeatMapParams {
 		private Distance distanceMetric = Distance.EUCLIDEAN;
 		private boolean showValues = false;
 		private String rankingOptionName;
+		private List<? extends SortKey> sortKeys;
 		
 		public Builder() { }
 		
-		public Builder(HeatMapParams params) {
-			this.transform = params.transform;
-			this.compress = params.compress;
-			this.operator = params.operator;
-			this.distanceMetric = params.distanceMetric;
-			this.showValues = params.showValues;
-			this.rankingOptionName = params.rankingOptionName;
+		public Builder(HeatMapParams other) {
+			this.transform = other.transform;
+			this.compress = other.compress;
+			this.operator = other.operator;
+			this.distanceMetric = other.distanceMetric;
+			this.showValues = other.showValues;
+			this.rankingOptionName = other.rankingOptionName;
+			this.sortKeys = other.sortKeys;
 		}
 		
 		public Builder setTransform(Transform transform) {
@@ -100,6 +108,10 @@ public class HeatMapParams {
 		}
 		public Builder setRankingOptionName(String rankingOptionName) {
 			this.rankingOptionName = rankingOptionName;
+			return this;
+		}
+		public Builder setSortKeys(List<? extends SortKey> sortKeys) {
+			this.sortKeys = sortKeys;
 			return this;
 		}
 		
@@ -132,12 +144,9 @@ public class HeatMapParams {
 	public boolean isShowValues() {
 		return showValues;
 	}
-
-	@Override
-	public String toString() {
-		return "HeatMapParams [transform=" + transform + ", compress=" + compress + ", operator=" + operator
-				+ ", distanceMetric=" + distanceMetric + ", showValues=" + showValues + ", rankingOptionName="
-				+ rankingOptionName + "]";
+	
+	public List<? extends SortKey> getSortKeys() {
+		return sortKeys;
 	}
 	
 }

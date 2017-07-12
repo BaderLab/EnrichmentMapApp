@@ -125,8 +125,10 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			Long suid = networkView.getModel().getSUID();
 			EnrichmentMap map = emManager.getEnrichmentMap(suid);
 			
-			// Overwrite all the params of the other one except 'operator'.
-			// The 'operator' field is the only param that is kept separate.
+			// Typically the user will want Union for nodes and Intersection for edges, so we keep
+			// two HeatMapParams objects in order to keep the Operator field separate.
+			// However we do want to share the other fields, so we copy them over to the other object.
+			
 			HeatMapParams otherParams = getHeatMapParams(map, suid, !onlyEdges);
 			HeatMapParams newOtherParams = new HeatMapParams.Builder(params).setOperator(otherParams.getOperator()).build();
 			

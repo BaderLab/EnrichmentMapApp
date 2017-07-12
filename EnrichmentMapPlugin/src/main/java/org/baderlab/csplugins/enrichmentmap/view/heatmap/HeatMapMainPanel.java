@@ -178,6 +178,9 @@ public class HeatMapMainPanel extends JPanel {
 		rankColumn.setHeaderRenderer(columnHeaderRankOptionRendererFactory.create(this, HeatMapTableModel.RANK_COL));
 		rankColumn.setPreferredWidth(100);
 		
+		// Fire a setting changed event when column sort changes
+		table.getRowSorter().addRowSorterListener(e -> settingChanged()); 
+		
 		int colCount = tableModel.getColumnCount();
 		for(int col = HeatMapTableModel.DESC_COL_COUNT; col < colCount; col++) {
 			EMDataSet dataset = tableModel.getDataSet(col);
@@ -313,6 +316,7 @@ public class HeatMapMainPanel extends JPanel {
 				.setShowValues(isShowValues())
 				.setRankingOptionName(getRankingOptionName())
 				.setTransform(getTransform())
+				.setSortKeys(table.getRowSorter().getSortKeys())
 				.build();
 	}
 	
@@ -353,10 +357,11 @@ public class HeatMapMainPanel extends JPanel {
 		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, genesToUse, params.getTransform(), params.getCompress());
 		table.setModel(tableModel);
 		
-		List<? extends SortKey> sortKeys = table.getRowSorter().getSortKeys();
-		if(sortKeys.isEmpty()) {
+		List<? extends SortKey> sortKeys = params.getSortKeys();
+		if(sortKeys == null)
+			sortKeys = table.getRowSorter().getSortKeys();
+		if(sortKeys.isEmpty())
 			sortKeys = Collections.singletonList(new SortKey(HeatMapTableModel.RANK_COL, SortOrder.ASCENDING));
-		}
 		
 		updateSetting_ShowValues(params.isShowValues());
 		try {
