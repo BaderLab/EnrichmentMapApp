@@ -58,7 +58,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// commands
 		registerCommand(bc, "build",        injector.getInstance(Key.get(TaskFactory.class, BuildCommand.class)));
-		registerCommand(bc, "gsea",         injector.getInstance(Key.get(TaskFactory.class, GSEACommand.class)));
+		registerCommand(bc, "gseabuild",         injector.getInstance(Key.get(TaskFactory.class, GSEACommand.class)));
 		registerCommand(bc, "mastermap",    injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
 		registerCommand(bc, "pa",           injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
 		registerCommand(bc, "export-model", injector.getInstance(Key.get(TaskFactory.class, JsonCommand.class)));
