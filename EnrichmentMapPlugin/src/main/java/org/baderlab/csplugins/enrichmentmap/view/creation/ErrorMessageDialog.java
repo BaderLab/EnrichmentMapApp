@@ -100,6 +100,14 @@ public class ErrorMessageDialog extends JDialog {
 		return y == 0;
 	}
 	
+	public void addSection(Message message, DetailPanel panel) {
+		addSection(message, panel.getDisplayName(), panel.getIcon());
+	}
+
+	public void addSection(List<Message> messages, DetailPanel panel) {
+		addSection(messages, panel.getDisplayName(), panel.getIcon());
+	}
+	
 	public void addSection(Message message, String title, String icon) {
 		addSection(Arrays.asList(message), title, icon);
 	}

@@ -351,19 +351,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	}
 	
 	
-	private Stream<EditDataSetPanel> editPanelStream() {
-		return dataSetListModel.stream()
-			.map(DataSetListItem::getDetailPanel)
-			.filter(panel -> panel instanceof EditDataSetPanel)
-			.map(panel -> (EditDataSetPanel)panel);
-	}
-	
-	private static void addCommonWarnSection(ErrorMessageDialog dialog, DetailPanel panel, String name) {
-		String message = "A common " + name + " file has been provided. Per-dataset " + name + " files will be ignored.";
-		dialog.addSection(Message.warn(message), panel.getDisplayName(), panel.getIcon());
-	}
-	
-	
 	private boolean validateInput() {
 		ErrorMessageDialog dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
 		
@@ -378,6 +365,21 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		// Check if the user provided a global gmt file, warn if there are also per-dataset gmt files.
 		if(commonPanel.hasClassFile() && editPanelStream().anyMatch(EditDataSetPanel::hasClassFile)) {
 			addCommonWarnSection(dialog, commonPanel, "class");
+		}
+		
+		// Warn when will distinct edges will always be the same.
+		// 1) Common GMT and Common Expression
+		// 2) Common GMT no filtering
+		if(commonPanel.hasGmtFile() && cutoffPanel.getEdgeStrategy() == EdgeStrategy.DISTINCT) { // and the user has explicitly specified distinct edges
+			if(commonPanel.hasExpressionFile()) {
+				String message = "<html>When providing a common GMT and common expression file 'Separate' edges will all be the same.<br>"
+						+ "It is recommended to select 'Combine Edges' or 'Automatic' in this case.</html>";
+				dialog.addSection(Message.warn(message), commonPanel.getDisplayName(), commonPanel.getIcon());
+			} else if(!cutoffPanel.getFilterGenesByExpressions()) {
+				String message = "<html>When providing a common GMT and not filtering gene sets by expressions then 'Separate' edges will all be the same.<br>"
+						+ "It is recommended to select 'Combine Edges' or 'Automatic' in this case.</html>";
+				dialog.addSection(Message.warn(message), commonPanel.getDisplayName(), commonPanel.getIcon());
+			}
 		}
 		
 		{ // Check for duplicate data set names
@@ -422,6 +424,19 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			propertyManager.setValue(PropertyManager.CREATE_WARN, false);
 		}
 		return shouldContinue;
+	}
+	
+	
+	private Stream<EditDataSetPanel> editPanelStream() {
+		return dataSetListModel.stream()
+			.map(DataSetListItem::getDetailPanel)
+			.filter(panel -> panel instanceof EditDataSetPanel)
+			.map(panel -> (EditDataSetPanel)panel);
+	}
+	
+	private static void addCommonWarnSection(ErrorMessageDialog dialog, DetailPanel panel, String name) {
+		String message = "A common " + name + " file has been provided. Per-dataset " + name + " files will be ignored.";
+		dialog.addSection(Message.warn(message), panel.getDisplayName(), panel.getIcon());
 	}
 	
 	
