@@ -43,12 +43,7 @@ public class HeatMapRanksTest extends BaseNetworkTest {
 	private static final String PATH = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/tutorial/";
 	
 	// All subclasses of BaseNetworkTest must do this
-	public static class TestModule extends BaseNetworkTest.TestModule {
-		@Override
-		protected void configureTest() {
-			super.configureTest();
-		}
-	}
+	public static class TestModule extends BaseNetworkTest.TestModule { }
 	
 	
 	@Before

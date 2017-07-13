@@ -26,12 +26,7 @@ public class ModelSharingTest extends BaseNetworkTest {
 	private static final String PATH = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/EMandPA/";
 
 	// All subclasses of BaseNetworkTest must do this
-	public static class TestModule extends BaseNetworkTest.TestModule {
-		@Override
-		protected void configureTest() {
-			super.configureTest();
-		}
-	}
+	public static class TestModule extends BaseNetworkTest.TestModule { }
 
 	@Before
 	public void setUp(EnrichmentMapManager emManager) {

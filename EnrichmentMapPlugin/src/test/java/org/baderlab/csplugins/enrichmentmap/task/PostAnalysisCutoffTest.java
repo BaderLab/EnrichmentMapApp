@@ -44,12 +44,7 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 
 	private static final String PATH = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/EMandPA/";
 	
-	public static class TestModule extends BaseNetworkTest.TestModule {
-		@Override
-		protected void configureTest() {
-			super.configureTest();
-		}
-	}
+	public static class TestModule extends BaseNetworkTest.TestModule { }
 	
 	private static CyNetwork emNetwork;
 	
