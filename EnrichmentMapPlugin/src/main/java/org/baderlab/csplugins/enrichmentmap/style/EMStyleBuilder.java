@@ -1,6 +1,22 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LINE_TYPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TOOLTIP;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.DIAMOND;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.ELLIPSE;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.RECTANGLE;
@@ -8,7 +24,6 @@ import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.R
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
@@ -23,7 +38,6 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.DiscreteRange;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -353,20 +367,8 @@ public class EMStyleBuilder {
 		eventHelper.silenceEventSource(dm);
 		
 		try {
-			LineType sigLineType = LineTypeVisualProperty.DOT;
-			
-			if (EDGE_LINE_TYPE.getRange().isDiscrete()) {
-				DiscreteRange<LineType> range = (DiscreteRange<LineType>) EDGE_LINE_TYPE.getRange();
-				Optional<LineType> first = range.values().stream()
-					.filter(v -> "MARQUEE_EQUAL".equalsIgnoreCase(v.getSerializableString()))
-					.findFirst();
-				
-				if (first.isPresent())
-					sigLineType = first.get();
-			}
-			
 			dm.putMapValue(Columns.EDGE_DATASET_VALUE_COMPOUND, LineTypeVisualProperty.SOLID);
-			dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_SIG, sigLineType);
+			dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_SIG, LineTypeVisualProperty.EQUAL_DASH);
 		} finally {
 			eventHelper.unsilenceEventSource(dm);
 		}
