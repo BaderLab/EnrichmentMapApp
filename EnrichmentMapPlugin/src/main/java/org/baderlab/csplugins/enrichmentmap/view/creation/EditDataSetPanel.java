@@ -145,7 +145,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		makeSmall(analysisLabel, analysisTypeCombo);
 
 		enrichments1Text = pathTextFactory.create("* Enrichments:", FileBrowser.Filter.ENRICHMENT);
-		enrichments2Text = pathTextFactory.create("Enrichments Neg:", FileBrowser.Filter.ENRICHMENT);
+		enrichments2Text = pathTextFactory.create("* Enrichments Neg:", FileBrowser.Filter.ENRICHMENT);
 		gmtText = pathTextFactory.create("GMT:", FileBrowser.Filter.GMT);
 		expressionsText = pathTextFactory.create("Expressions:", FileBrowser.Filter.EXPRESSION);
 		ranksText = pathTextFactory.create("Ranks:", FileBrowser.Filter.RANK);
@@ -229,11 +229,6 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 					.addComponent(enrichments2Text.getBrowseButton())
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-					.addComponent(expressionsText.getLabel())
-					.addComponent(expressionsText.getTextField())
-					.addComponent(expressionsText.getBrowseButton())
-				)
-				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
 					.addComponent(gmtText.getLabel())
 					.addComponent(gmtText.getTextField())
 					.addComponent(gmtText.getBrowseButton())
@@ -242,6 +237,11 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 					.addComponent(ranksText.getLabel())
 					.addComponent(ranksText.getTextField())
 					.addComponent(ranksText.getBrowseButton())
+				)
+				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(expressionsText.getLabel())
+					.addComponent(expressionsText.getTextField())
+					.addComponent(expressionsText.getBrowseButton())
 				)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
 					.addComponent(classesText.getLabel())
@@ -268,10 +268,12 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 			case Specialized:
 				enrichments1Text.getLabel().setText("* Enrichments:");
 				enrichments2Text.setVisible(false);
+				gmtText.getLabel().setText("GMT:");
 				break;
 			case GSEA:
 				enrichments1Text.getLabel().setText("* Enrichments Pos:");
 				enrichments2Text.setVisible(true);
+				gmtText.getLabel().setText("* GMT:");
 				break;
 		}
 	}
