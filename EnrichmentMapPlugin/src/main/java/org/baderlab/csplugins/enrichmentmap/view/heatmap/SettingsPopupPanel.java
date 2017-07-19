@@ -27,10 +27,8 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 @SuppressWarnings("serial")
-@Singleton
 public class SettingsPopupPanel extends JPanel {
 	
 	@Inject private PropertyManager propertyManager;
