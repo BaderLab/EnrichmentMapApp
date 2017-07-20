@@ -139,7 +139,7 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		analysisTypeCombo.addItem(new ComboItem<>(Method.Generic, Method.Generic.getLabel()));
 		analysisTypeCombo.addItem(new ComboItem<>(Method.Specialized, Method.Specialized.getLabel()));
 		analysisTypeCombo.addActionListener(e -> {
-			analysisTypeChanged();
+			updateLabels();
 			firePropertyChange(PROP_NAME, null, getDisplayName());
 		});
 		makeSmall(analysisLabel, analysisTypeCombo);
@@ -150,7 +150,10 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		expressionsText = pathTextFactory.create("Expressions:", FileBrowser.Filter.EXPRESSION);
 		ranksText = pathTextFactory.create("Ranks:", FileBrowser.Filter.RANK);
 		classesText = pathTextFactory.create("Classes:", FileBrowser.Filter.CLASS);
+		
 		classesText.getTextField().getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(this::preFillPhenotypes));
+		enrichments1Text.getTextField().getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(this::updateLabels));
+		gmtText.getTextField().getDocument().addDocumentListener(SwingUtil.simpleDocumentListener(this::updateLabels));
 		
 		enrichments2Text.getLabel().setVisible(false);
 		enrichments2Text.getTextField().setVisible(false);
@@ -262,13 +265,21 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 	}
 	
 	
-	private void analysisTypeChanged() {
+	private void updateLabels() {
 		switch(getMethod()) {
 			case Generic:
 			case Specialized:
-				enrichments1Text.getLabel().setText("* Enrichments:");
 				enrichments2Text.setVisible(false);
-				gmtText.getLabel().setText("GMT:");
+				if(enrichments1Text.isEmpty() == gmtText.isEmpty()) {
+					enrichments1Text.getLabel().setText("* Enrichments:");
+					gmtText.getLabel().setText("* GMT:");
+				} else if(enrichments1Text.isEmpty()) {
+					enrichments1Text.getLabel().setText("Enrichments:");
+					gmtText.getLabel().setText("* GMT:");
+				} else if(gmtText.isEmpty()) {
+					enrichments1Text.getLabel().setText("* Enrichments:");
+					gmtText.getLabel().setText("GMT:");
+				}
 				break;
 			case GSEA:
 				enrichments1Text.getLabel().setText("* Enrichments Pos:");
@@ -298,8 +309,8 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 		List<Message> messages = new ArrayList<>();
 		if(nameText.isEmpty())
 			messages.add(Message.error("Name field is empty."));
-		if(enrichments1Text.isEmpty())
-			messages.add(Message.error("Enrichments file path is empty."));
+		if(enrichments1Text.isEmpty() && gmtText.isEmpty())
+			messages.add(Message.error("Enrichments file or GMT file is required."));
 		if(!enrichments1Text.emptyOrReadable() && getMethod() == Method.GSEA)
 			messages.add(Message.error("Enrichments Pos file path is not valid."));
 		if(!enrichments1Text.emptyOrReadable() && getMethod() != Method.GSEA)
