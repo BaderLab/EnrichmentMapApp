@@ -13,7 +13,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -299,11 +298,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 						dataSets, columnDescriptor, columnIdFactory);
 				ChartType type = chartOptions.getType();
 
-				List<Color> colors = chartOptions.getColorScheme().getColors();
-				
-				// Swap UP and ZERO colors if q or p-value (it should not have negative values!)
-				if ((data == ChartData.FDR_VALUE || data == ChartData.P_VALUE) && colors.size() == 3)
-					colors = Arrays.asList(new Color[] { colors.get(1), colors.get(0), colors.get(1) });
+				List<Color> colors = ChartUtil.getChartColors(chartOptions);
 				
 				Map<String, Object> props = new HashMap<>(type.getProperties());
 				props.put("cy_dataColumns", columns);
@@ -328,7 +323,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		
 		return chart;
 	}
-	
+
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		if (getControlPanel().isDisplayable())

@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import javax.swing.UIManager;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
@@ -133,6 +134,21 @@ public final class ChartUtil {
 		return range;
 	}
 	
+	public static List<Color> getChartColors(ChartOptions options) {
+		ColorScheme colorScheme = options != null ? options.getColorScheme() : null;
+		List<Color> colors = colorScheme != null ? colorScheme.getColors() : null;
+		ChartData data = options != null ? options.getData() : null;
+		
+		// Swap UP and ZERO colors if q or p-value (it should not have negative values!)
+		if ((data == ChartData.FDR_VALUE || data == ChartData.P_VALUE) && colors.size() == 3)
+			colors = Arrays.asList(new Color[] { colors.get(1), colors.get(0), colors.get(1) });
+		
+		if (colors == null || colors.size() < 3) // UP, ZERO, DOWN:
+			colors = Arrays.asList(new Color[] { Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY });
+		
+		return colors;
+	}
+	
 	public static JFreeChart createRadialHeatMapLegend(List<EMDataSet> dataSets, ChartOptions options) {
 		// All the slices must have the same size
 		final DefaultPieDataset pieDataset = new DefaultPieDataset();
@@ -169,19 +185,17 @@ public final class ChartUtil {
 		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
 		plot.setToolTipGenerator(new StandardPieToolTipGenerator("{0}"));
 		
-		ColorScheme colorScheme = options != null ?  options.getColorScheme() : null;
-		List<Color> colors = colorScheme != null ? colorScheme.getColors() : null;
-		
-		if (colors == null || colors.size() < 3) // UP, ZERO, DOWN:
-			colors = Arrays.asList(new Color[] { Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY });
+		List<Color> colors = getChartColors(options);
 		
 		int total = dataSets.size();
-		int v = total / -2;
+		int lowerBound = options.getData() == ChartData.NES_VALUE ? -total : 0;
+		int upperBound = lowerBound + (2 * total);
+		int v = lowerBound / 2;
 		
 		for (EMDataSet ds : dataSets) {
 			plot.setSectionPaint(
 					ds.getName(), 
-					ColorUtil.getColor(v, -total, total, colors.get(2), colors.get(1), colors.get(0))
+					ColorUtil.getColor(v, lowerBound, upperBound, colors.get(2), colors.get(1), colors.get(0))
 			);
 			v++;
 		}
@@ -231,18 +245,16 @@ public final class ChartUtil {
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(false);
 		
-		ColorScheme colorScheme = options != null ?  options.getColorScheme() : null;
-		List<Color> colors = colorScheme != null ? colorScheme.getColors() : null;
-		
-		if (colors == null || colors.size() < 3) // UP, ZERO, DOWN:
-			colors = Arrays.asList(new Color[] { Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY });
+		List<Color> colors = getChartColors(options);
 		
 		List<Color> itemColors = new ArrayList<>();
 		int total = dataSets.size();
-		int v = total / 2;
+		int lowerBound = options.getData() == ChartData.NES_VALUE ? -total : 0;
+		int upperBound = lowerBound + (2 * total);
+		int v = lowerBound / 2;
 		
 		for (int i = 0; i < total; i++)
-			itemColors.add(ColorUtil.getColor(v--, -total, total, colors.get(2), colors.get(1), colors.get(0)));
+			itemColors.add(ColorUtil.getColor(v++, lowerBound, upperBound, colors.get(2), colors.get(1), colors.get(0)));
 		
 	    final BarRenderer renderer = new BarRenderer() {
 	    	@Override
@@ -264,7 +276,9 @@ public final class ChartUtil {
 	public static JFreeChart createHeatStripsLegend(List<EMDataSet> dataSets, ChartOptions options) {
 		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		int total = dataSets.size();
-		int v = total / -2;
+		int lowerBound = options.getData() == ChartData.NES_VALUE ? -total : 0;
+		int upperBound = lowerBound + (2 * total);
+		int v = lowerBound / 2;
 		
 		for (int i = 0; i < total; i++) {
 			if (v == 0.0) v = 1; // Just to make sure there is always a bar for each data set name
@@ -313,18 +327,13 @@ public final class ChartUtil {
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(false);
         
-		ColorScheme colorScheme = options != null ?  options.getColorScheme() : null;
-		List<Color> colors = colorScheme != null ? colorScheme.getColors() : null;
-		
-		if (colors == null || colors.size() < 3) // UP, ZERO, DOWN:
-			colors = Arrays.asList(new Color[] { Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY });
-		
+		List<Color> colors = getChartColors(options);
 		List<Color> itemColors = new ArrayList<>();
 		
 		for (int i = 0; i < total; i++) {
 			Number n = dataset.getValue(options.getData().toString(), dataSets.get(i).getName());
 			itemColors.add(
-					ColorUtil.getColor(n.doubleValue(), -total, total, colors.get(2), colors.get(1), colors.get(0)));
+					ColorUtil.getColor(n.doubleValue(), lowerBound, upperBound, colors.get(2), colors.get(1), colors.get(0)));
 		}
 		
 	    final BarRenderer renderer = new BarRenderer() {
