@@ -46,6 +46,7 @@ import org.jfree.ui.RectangleInsets;
 public final class ChartUtil {
 
 	public static final Color TRANSPARENT_COLOR = new Color(0x00, 0x00, 0x00, 0);
+	private static final Color DEF_CHART_ITEM_COLOR = Color.decode("#F5F5F5");
 	
 	private ChartUtil() {
 	}
@@ -185,20 +186,8 @@ public final class ChartUtil {
 		plot.setLabelShadowPaint(TRANSPARENT_COLOR);
 		plot.setToolTipGenerator(new StandardPieToolTipGenerator("{0}"));
 		
-		List<Color> colors = getChartColors(options);
-		
-		int total = dataSets.size();
-		int lowerBound = options.getData() == ChartData.NES_VALUE ? -total : 0;
-		int upperBound = lowerBound + (2 * total);
-		int v = lowerBound / 2;
-		
-		for (EMDataSet ds : dataSets) {
-			plot.setSectionPaint(
-					ds.getName(), 
-					ColorUtil.getColor(v, lowerBound, upperBound, colors.get(2), colors.get(1), colors.get(0))
-			);
-			v++;
-		}
+		for (EMDataSet ds : dataSets)
+			plot.setSectionPaint(ds.getName(), DEF_CHART_ITEM_COLOR);
 		
 		return chart;
 	}
@@ -245,21 +234,10 @@ public final class ChartUtil {
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(false);
 		
-		List<Color> colors = getChartColors(options);
-		
-		List<Color> itemColors = new ArrayList<>();
-		int total = dataSets.size();
-		int lowerBound = options.getData() == ChartData.NES_VALUE ? -total : 0;
-		int upperBound = lowerBound + (2 * total);
-		int v = lowerBound / 2;
-		
-		for (int i = 0; i < total; i++)
-			itemColors.add(ColorUtil.getColor(v++, lowerBound, upperBound, colors.get(2), colors.get(1), colors.get(0)));
-		
 	    final BarRenderer renderer = new BarRenderer() {
 	    	@Override
 	    	public Paint getItemPaint(int row, int column) {
-	    		return column < itemColors.size() ? itemColors.get(column) : Color.LIGHT_GRAY;
+	    		return DEF_CHART_ITEM_COLOR;
 	    	}
 	    };
 	    plot.setRenderer(renderer);
@@ -277,7 +255,6 @@ public final class ChartUtil {
 		final DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		int total = dataSets.size();
 		int lowerBound = options.getData() == ChartData.NES_VALUE ? -total : 0;
-		int upperBound = lowerBound + (2 * total);
 		int v = lowerBound / 2;
 		
 		for (int i = 0; i < total; i++) {
@@ -327,19 +304,10 @@ public final class ChartUtil {
         final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		rangeAxis.setVisible(false);
         
-		List<Color> colors = getChartColors(options);
-		List<Color> itemColors = new ArrayList<>();
-		
-		for (int i = 0; i < total; i++) {
-			Number n = dataset.getValue(options.getData().toString(), dataSets.get(i).getName());
-			itemColors.add(
-					ColorUtil.getColor(n.doubleValue(), lowerBound, upperBound, colors.get(2), colors.get(1), colors.get(0)));
-		}
-		
 	    final BarRenderer renderer = new BarRenderer() {
 	    	@Override
 	    	public Paint getItemPaint(int row, int column) {
-	    		return column < itemColors.size() ? itemColors.get(column) : Color.LIGHT_GRAY;
+	    		return DEF_CHART_ITEM_COLOR;
 	    	}
 	    };
 	    plot.setRenderer(renderer);
