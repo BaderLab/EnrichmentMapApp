@@ -46,6 +46,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer>
 		implements CyCustomGraphics2<T>, MappableVisualPropertyValue {
 
 	public static final String COLORS = "cy_colors";
+	public static final String COLOR_POINTS = "em_colorPoints";
 	public static final String ORIENTATION = "cy_orientation";
 	public static final String ROTATION = "cy_rotation";
 	public static final String DATA_COLUMNS = "cy_dataColumns";
@@ -454,9 +455,11 @@ public abstract class AbstractChart<T extends CustomGraphicLayer>
 	}
 	
 	protected List<Color> getColors(final Map<String, List<Double>> data) {
-		List<Color> colors = getList(COLORS, Color.class);
-		
-		return colors;
+		return getList(COLORS, Color.class);
+	}
+	
+	protected List<Double> getColorPoints(final Map<String, List<Double>> data) {
+		return getList(COLOR_POINTS, Double.class);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -558,6 +561,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer>
 		if (key.equalsIgnoreCase(BORDER_WIDTH)) return Float.class;
 		if (key.equalsIgnoreCase(BORDER_COLOR)) return Color.class;
 		if (key.equalsIgnoreCase(COLORS)) return List.class;
+		if (key.equalsIgnoreCase(COLOR_POINTS)) return List.class;
 		if (key.equalsIgnoreCase(ORIENTATION)) return Orientation.class;
 		if (key.equalsIgnoreCase(ROTATION)) return Rotation.class;
 			
@@ -570,6 +574,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer>
 		if (key.equalsIgnoreCase(ITEM_LABELS)) return String.class;
 		if (key.equalsIgnoreCase(RANGE)) return Double.class;
 		if (key.equalsIgnoreCase(COLORS)) return Color.class;
+		if (key.equalsIgnoreCase(COLOR_POINTS)) return Double.class;
 		
 		return Object.class;
 	}

@@ -52,6 +52,7 @@ import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
+import org.baderlab.csplugins.enrichmentmap.style.charts.AbstractChart;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask.FilterMode;
@@ -292,7 +293,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			// Ignore Signature Data Sets in charts
 			Set<EMDataSet> dataSets = filterDataSets(options.getDataSets());
 			
-			if (dataSets.size() > 1) {
+			if (dataSets.size() > 0) {
 				ColumnDescriptor<Double> columnDescriptor = data.getColumnDescriptor();
 				List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
 						dataSets, columnDescriptor, columnIdFactory);
@@ -309,6 +310,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				props.put("cy_globalRange", true);
 				props.put("cy_showItemLabels", chartOptions.isShowLabels());
 				props.put("cy_colors", colors);
+				
+				ColorScheme colorScheme = chartOptions != null ? chartOptions.getColorScheme() : null;
+				
+				if (colorScheme != null && colorScheme.getPoints() != null) {
+					List<Double> points = colorScheme.getPoints();
+					
+					if (!points.isEmpty())
+						props.put(AbstractChart.COLOR_POINTS, points);
+				}
 				
 				try {
 					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
@@ -461,9 +471,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				//    b) Node color/shape may change:
 				updateStyle = updateStyle || oldSize == 0 && newSize > 0;
 				updateStyle = updateStyle || oldSize > 0 && newSize == 0;
-				updateStyle = updateStyle || oldSize == 1 && newSize > 1;
-				updateStyle = updateStyle || oldSize > 1 && newSize == 1;
-
+				
 				if (updateStyle)
 					updateVisualStyle(map, viewPanel);
 				else
@@ -572,7 +580,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	private void setDefaults(EMViewControlPanel viewPanel, EnrichmentMap map) {
 		List<EMDataSet> dataSets = map.getDataSetList();
 		
-		if (dataSets.size() > 1) {
+		if (dataSets.size() > 0) {
 			ChartData chartData = ChartData.NES_VALUE; // Default for GSEA data sets
 			EMCreationParameters params = map.getParams();
 			

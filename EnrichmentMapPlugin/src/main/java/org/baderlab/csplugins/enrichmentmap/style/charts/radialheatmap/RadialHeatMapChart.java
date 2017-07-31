@@ -64,6 +64,7 @@ public class RadialHeatMapChart extends AbstractChart<RadialHeatMapLayer> {
 		final Map<String, List<Double>> data = getData(network, model);
 		
 		final List<Color> colors = getColors(data);
+		final List<Double> colorPoints = getColorPoints(data);
 		final double size = 32;
 		final Rectangle2D bounds = new Rectangle2D.Double(-size / 2, -size / 2, size, size);
 		final boolean showLabels = get(SHOW_ITEM_LABELS, Boolean.class, false);
@@ -74,8 +75,8 @@ public class RadialHeatMapChart extends AbstractChart<RadialHeatMapLayer> {
 		final boolean global = get(GLOBAL_RANGE, Boolean.class, true);
 		final List<Double> range = global ? getList(RANGE, Double.class) : null;
 		
-		final RadialHeatMapLayer layer = new RadialHeatMapLayer(data, labels, showLabels, itemFontSize, colors, borderWidth,
-				borderColor, startAngle, rotation, range, bounds);
+		final RadialHeatMapLayer layer = new RadialHeatMapLayer(data, labels, showLabels, itemFontSize, colors,
+				colorPoints, borderWidth, borderColor, startAngle, rotation, range, bounds);
 		
 		return Collections.singletonList(layer);
 	}

@@ -466,7 +466,7 @@ public class EMStyleBuilder {
 				.collect(Collectors.toList());
 		
 		if (dataSets.size() == 1) {
-			// Only 1 Data Set? Use node colour instead of charts...
+			// Only 1 Data Set? Set a continuous mapping for node colour...
 			EMDataSet ds = (EMDataSet) dataSets.iterator().next();
 			
 			// Create boundary conditions

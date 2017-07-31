@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
@@ -72,6 +74,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -459,7 +462,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					.count();
 			
 			boolean b1 = getChartDataCombo().isEnabled();
-			boolean b2 = dsCount > 1; // Can't have charts with less than 2 columns!
+			boolean b2 = dsCount > 0; // Can't have charts when no datasets are checked!
 			
 			if (b1 != b2) {
 				getChartDataCombo().setEnabled(b2);
@@ -475,12 +478,22 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		void updateChartColorsCombo() {
 			ColorScheme selectedItem = (ColorScheme) getChartColorsCombo().getSelectedItem();
 			ChartData data = (ChartData) getChartDataCombo().getSelectedItem();
+			ChartType type = (ChartType) getChartTypeCombo().getSelectedItem();
 			
 			getChartColorsCombo().removeAllItems();
 			
 			if (data != ChartData.NONE) {
-				for (ColorScheme scheme : ColorScheme.values())
+				for (ColorScheme scheme : ColorScheme.values()) {
+					// If "NES" and Radial Heat Map, use RD_BU_9 instead of RD_BU_3
+					if (data == ChartData.NES_VALUE && type == ChartType.RADIAL_HEAT_MAP) {
+						if (scheme == ColorScheme.RD_BU_3)
+							continue;
+					} else if (scheme == ColorScheme.RD_BU_9) {
+						continue;
+					}
+					
 					getChartColorsCombo().addItem(scheme);
+				}
 				
 				if (selectedItem != null)
 					getChartColorsCombo().setSelectedItem(selectedItem);
@@ -753,45 +766,15 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				chartColorsCombo = new JComboBox<>();
 				
 				final JPanel cell = new JPanel();
-				cell.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+				cell.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 				
 				final JLabel nameLabel = new JLabel(" --- ");
 				nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 				
-				final JLabel[] colorLabels = new JLabel[] { new JLabel(), new JLabel(), new JLabel() };
-				int clh = Math.max(10, nameLabel.getPreferredSize().height - 2);
-				int clw = clh;
-				
-				for (int i = 0; i < colorLabels.length; i++) {
-					JLabel lbl = colorLabels[i];
-					lbl.setOpaque(true);
-					lbl.setBorder(BorderFactory.createMatteBorder(1, 1, 1, (i == 2 ? 1 : 0),
-							UIManager.getColor("Label.disabledForeground")));
-					lbl.setPreferredSize(new Dimension(clw, clh));
-				}
-				
-				final GroupLayout layout = new GroupLayout(cell);
+				final BoxLayout layout = new BoxLayout(cell, BoxLayout.X_AXIS);
 				cell.setLayout(layout);
-				layout.setAutoCreateContainerGaps(false);
-				layout.setAutoCreateGaps(false);
 				
-				layout.setHorizontalGroup(layout.createSequentialGroup()
-						.addComponent(colorLabels[0], PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(colorLabels[1], PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(colorLabels[2], PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addComponent(nameLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				);
-				layout.setVerticalGroup(layout.createSequentialGroup()
-						.addGap(1)
-						.addGroup(layout.createParallelGroup(CENTER, true)
-								.addComponent(colorLabels[0], DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-								.addComponent(colorLabels[1], DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-								.addComponent(colorLabels[2], DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-								.addComponent(nameLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						)
-						.addGap(1)
-				);
+				final Color borderColor = UIManager.getColor("Label.disabledForeground");
 				
 				chartColorsCombo.setRenderer((JList<? extends ColorScheme> list,
 						ColorScheme value, int index, boolean isSelected, boolean cellHasFocus) -> {
@@ -807,16 +790,37 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					nameLabel.setText(value != null ? value.getName() : " ");
 					cell.setToolTipText(value != null ? value.getDescription() : null);
 					
-					List<Color> colors = value != null && chartColorsCombo.isEnabled() ?
-							value.getColors() : Collections.emptyList();
+					cell.removeAll();
 					
-					for (int i = 0; i < 3; i++) {
-						colorLabels[i].setBackground(colors.size() > 2 ? colors.get(i) : cell.getBackground());
-						colorLabels[i].setVisible(value != null && chartColorsCombo.isEnabled());
+					if (chartColorsCombo.isEnabled()) {
+						List<Color> colors = value != null && chartColorsCombo.isEnabled() ?
+								value.getColors() : Collections.emptyList();
+						int total = colors.size();
+						
+						for (int i = 0; i < total; i++) {
+							JLabel lbl = new JLabel(total > 3 ? " " : Strings.repeat(" ", 4));
+							
+							// Make middle color legend larger
+							if (total > 9 && i == (total - 1) / 2)
+								lbl.setText(Strings.repeat(" ", total - 9));
+							
+							lbl.setOpaque(true);
+							lbl.setBackground(colors.size() > 2 ? colors.get(i) : cell.getBackground());
+							
+							if (i == 0)
+								lbl.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 0, borderColor));
+							else if (i == total - 1)
+								lbl.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 1, borderColor));
+							else
+								lbl.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, borderColor));
+							
+							cell.add(lbl);
+						}
+						
+						cell.add(Box.createHorizontalStrut(15));
+						cell.add(nameLabel);
 					}
 					
-					cell.revalidate();
-
 					return cell;
 				});
 			}

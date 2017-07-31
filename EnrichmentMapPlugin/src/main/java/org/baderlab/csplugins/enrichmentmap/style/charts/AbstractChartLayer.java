@@ -48,6 +48,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	protected final boolean showRangeAxis;
 	protected final LabelPosition domainLabelPosition;
 	protected final List<Color> colors;
+	protected final List<Double> colorPoints;
 	protected final float borderWidth;
 	protected final Color borderColor;
 	protected Color labelColor = Color.DARK_GRAY;
@@ -66,23 +67,26 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	protected AbstractChartLayer(final Map<String, List<Double>> data,
-								 final List<String> itemLabels,
-								 final List<String> domainLabels,
-								 final List<String> rangeLabels,
-								 final boolean showItemLabels,
-								 final boolean showDomainAxis,
-								 final boolean showRangeAxis,
-								 final float itemFontSize,
-								 final LabelPosition domainLabelPosition,
-								 final List<Color> colors,
-								 final float axisWidth,
-								 final Color axisColor,
-								 final float axisFontSize,
-								 final float borderWidth,
-								 final Color borderColor,
-								 final List<Double> range,
-								 final Rectangle2D bounds) {
+	protected AbstractChartLayer(
+			final Map<String, List<Double>> data,
+			final List<String> itemLabels,
+			final List<String> domainLabels,
+			final List<String> rangeLabels,
+			final boolean showItemLabels,
+			final boolean showDomainAxis,
+			final boolean showRangeAxis,
+			final float itemFontSize,
+			final LabelPosition domainLabelPosition,
+			final List<Color> colors,
+			final List<Double> colorPoints,
+			final float axisWidth,
+			final Color axisColor,
+			final float axisFontSize,
+			final float borderWidth,
+			final Color borderColor,
+			final List<Double> range,
+			final Rectangle2D bounds
+	) {
 		this.data = data;
 		this.itemLabels = itemLabels;
 		this.domainLabels = domainLabels;
@@ -93,6 +97,7 @@ public abstract class AbstractChartLayer<T extends Dataset> implements Cy2DGraph
 		this.itemFontSize = itemFontSize;
 		this.domainLabelPosition = domainLabelPosition;
 		this.colors = colors;
+		this.colorPoints = colorPoints;
 		this.axisWidth = axisWidth;
 		this.axisColor = axisColor;
 		this.axisFontSize = axisFontSize;
