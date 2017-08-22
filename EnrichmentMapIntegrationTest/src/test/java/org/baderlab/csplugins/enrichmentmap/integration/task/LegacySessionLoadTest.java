@@ -136,7 +136,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(1, rows.size());
 		CyRow row = rows.iterator().next();
 		assertEquals("Geneset_Overlap", row.get(CyEdge.INTERACTION, String.class));
-		assertEquals(0.6097560975609756, EMStyleBuilder.Columns.EDGE_SIMILARITY_COEFF.get(row, prefix), 0.0);
+		assertEquals(0.6097560975609756, EMStyleBuilder.Columns.EDGE_SIMILARITY_COEFF.get(row, prefix), 0.001);
 		
 		EMDataSet dataset = map.getDataSet("Dataset 1");
 		assertNotNull(dataset);
@@ -164,21 +164,21 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertTrue(result instanceof GSEAResult);
 		GSEAResult gseaResult = (GSEAResult) result;
 		assertEquals("RIBONUCLEOSIDE TRIPHOSPHATE BIOSYNTHETIC PROCESS%GO%GO:0009201", gseaResult.getName());
-		assertEquals(0.42844063, gseaResult.getES(), 0.0);
-		assertEquals(0.45225498, gseaResult.getFdrqvalue(), 0.0);
+		assertEquals(0.42844063, gseaResult.getES(), 0.001);
+		assertEquals(0.45225498, gseaResult.getFdrqvalue(), 0.001);
 		assertEquals(1.0, gseaResult.getFwerqvalue(), 0.0);
 		assertEquals(23, gseaResult.getGsSize());
-		assertEquals(1.1938541, gseaResult.getNES(), 0.0);
-		assertEquals(0.2457786, gseaResult.getPvalue(), 0.0);
+		assertEquals(1.1938541, gseaResult.getNES(), 0.001);
+		assertEquals(0.2457786, gseaResult.getPvalue(), 0.001);
 		assertEquals(4689, gseaResult.getRankAtMax());
 		assertEquals(Optional.of("GO"), gseaResult.getSource());
 
 		GeneExpressionMatrix expressions = dataset.getExpressionSets();
 		assertEquals(20326, expressions.getExpressionUniverse());
-		assertEquals(3.686190609, expressions.getClosestToZero(), 0.0);
+		assertEquals(3.686190609, expressions.getClosestToZero(), 0.001);
 //		assertEndsWith(expressions.getFilename(), "MCF7_ExprMx_v2_names.gct");
-		assertEquals(15380.42388, expressions.getMaxExpression(), 0.0);
-		assertEquals(3.686190609, expressions.getMinExpression(), 0.0);
+		assertEquals(15380.42388, expressions.getMaxExpression(), 0.001);
+		assertEquals(3.686190609, expressions.getMinExpression(), 0.001);
 		assertEquals(20, expressions.getNumConditions());
 		
 		assertEquals(12653, expressions.getExpressionMatrix().size());
@@ -195,7 +195,7 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		Rank rank = ranking.getRanking().get(0);
 		assertEquals("MOCOS", rank.getName());
 		assertEquals(1238, rank.getRank().intValue());
-		assertEquals(0.54488367, rank.getScore(), 0.0);
+		assertEquals(0.54488367, rank.getScore(), 0.001);
 		
 		DataSetFiles files = dataset.getDataSetFiles();
 		assertEndsWith(files.getClassFile(), "ES_NT.cls");
