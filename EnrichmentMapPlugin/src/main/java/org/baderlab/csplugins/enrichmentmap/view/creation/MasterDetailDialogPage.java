@@ -4,17 +4,28 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DropTargetAdapter;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TooManyListenersException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
+import javax.swing.DropMode;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -29,6 +40,7 @@ import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
@@ -229,7 +241,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		addButton.addActionListener(e -> addNewDataSetToList());
 		deleteButton.addActionListener(e -> deleteSelectedItems());
-		scanButton.addActionListener(e -> scan());
+		scanButton.addActionListener(e -> scanButtonClicked());
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
@@ -318,31 +330,36 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		}
 	}
 	
-	private void scan() {
+	private void scanButtonClicked() {
 		Optional<File> rootFolder = fileBrowser.browseForRootFolder(jframeProvider.get());
 		if(rootFolder.isPresent()) {
-			scanButton.setEnabled(false);
-			ResolverTask task = new ResolverTask(rootFolder.get());
-			
-			dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
-				
-				@Override
-				public void taskFinished(ObservableTask task) {
-					@SuppressWarnings("unchecked")
-					List<DataSetParameters> datasets = task.getResults(List.class);
-					if(!datasets.isEmpty()) {
-						datasets.forEach(MasterDetailDialogPage.this::addDataSetToList);
-						dataSetList.setSelectedValue(datasets.get(0), true);
-					}
-				}
-				
-				@Override
-				public void allFinished(FinishStatus finishStatus) {
-					scanButton.setEnabled(true);
-					updateButtonEnablement();
-				}
-			});
+			File root = rootFolder.get();
+			runResolverTask(Arrays.asList(root));
 		}
+	}
+	
+	private void runResolverTask(List<File> files) {
+		scanButton.setEnabled(false);
+		ResolverTask task = new ResolverTask(files);
+		
+		dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
+			
+			@Override
+			public void taskFinished(ObservableTask task) {
+				@SuppressWarnings("unchecked")
+				List<DataSetParameters> datasets = task.getResults(List.class);
+				if(!datasets.isEmpty()) {
+					datasets.forEach(MasterDetailDialogPage.this::addDataSetToList);
+					dataSetList.setSelectedValue(datasets.get(0), true);
+				}
+			}
+			
+			@Override
+			public void allFinished(FinishStatus finishStatus) {
+				scanButton.setEnabled(true);
+				updateButtonEnablement();
+			}
+		});
 	}
 	
 	
@@ -457,11 +474,18 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	private class DataSetList extends JList<DataSetListItem> {
 		
+		private boolean isDragging;
+		
 		@Inject
 		public DataSetList(ListModel<DataSetListItem> model) {
 			setModel(model);
 			setCellRenderer(new CellRenderer());
 			setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+			setDropMode(DropMode.ON);
+			setTransferHandler(new ResolverTaskTransferHandler());
+			try {
+				getDropTarget().addDropTargetListener(getDropTargetListener());
+			} catch (TooManyListenersException e) { /* do nothing */ }
 		}
 		
 		private class CellRenderer implements ListCellRenderer<DataSetListItem> {
@@ -470,8 +494,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			public Component getListCellRendererComponent(JList<? extends DataSetListItem> list,
 					DataSetListItem listItem, int index, boolean isSelected, boolean cellHasFocus) {
 				
-				Color bgColor = UIManager.getColor(isSelected ? "Table.selectionBackground" : "Table.background");
-				Color fgColor = UIManager.getColor(isSelected ? "Table.selectionForeground" : "Table.foreground");
+				Color bgColor = UIManager.getColor(isSelected | isDragging ? "Table.selectionBackground" : "Table.background");
+				Color fgColor = UIManager.getColor(isSelected              ? "Table.selectionForeground" : "Table.foreground");
 				
 				DetailPanel detail = listItem.getDetailPanel();
 				JLabel iconLabel = new JLabel(" " + detail.getIcon() + "  ");
@@ -486,7 +510,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				JPanel panel = new JPanel(new BorderLayout());
 				panel.add(iconLabel, BorderLayout.WEST);
 				panel.add(titleLabel, BorderLayout.CENTER);
-				
 				panel.setBackground(bgColor);
 				
 				Border emptyBorder = BorderFactory.createEmptyBorder(2, 4, 2, 4);
@@ -495,6 +518,65 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				return panel;
 			}
 		}
+		
+		private DropTargetListener getDropTargetListener() {
+			return new DropTargetAdapter() {
+				Color normalColor = getBackground();
+				Color dragColor = UIManager.getColor("Table.selectionBackground");
+				
+				public void dragEnter(DropTargetDragEvent e) { 
+					isDragging = true;
+					setBackground(dragColor);   
+				}
+				public void dragExit(DropTargetEvent e) { 
+					isDragging = false;
+					setBackground(normalColor); 
+				}
+				public void drop(DropTargetDropEvent e) { 
+					isDragging = false;
+					setBackground(normalColor); 
+				}
+			};
+		}
+	}
+	
+	
+	private class ResolverTaskTransferHandler extends TransferHandler {
+		
+		@Override
+		public boolean canImport(TransferSupport support) {
+			if(!support.isDrop())
+				return false;
+			if(!support.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
+				return false;
+			boolean copySupported = (COPY & support.getSourceDropActions()) == COPY;
+			if(!copySupported)
+				return false;
+			return true;
+		}
+		
+		@Override
+		public boolean importData(TransferSupport support) {
+			if(!canImport(support))
+				return false;
+			
+			Object transferData;
+			try {
+				transferData = support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+			} catch (UnsupportedFlavorException | IOException e) {
+				e.printStackTrace();
+				return false;
+			}
+			
+			if(transferData instanceof List) {
+				@SuppressWarnings("unchecked")
+				List<File> fileList = (List<File>) transferData;
+				runResolverTask(fileList);
+				return true;
+			}
+			return false;
+		}
+		
 	}
 	
 }

@@ -51,10 +51,7 @@ public class DataSetResolver {
 	
 	public static List<DataSetParameters> guessDataSets(Path rootFolder, CancelStatus cancelStatus) {
 		if(cancelStatus == null) {
-			cancelStatus = new CancelStatus() {
-				@Override public boolean isCancelled() { return false; }
-				@Override public void cancel() { }
-			};
+			cancelStatus = CancelStatus.notCancelable();
 		}
 		
 		// First test if rootFolder is itself a GSEA results folder

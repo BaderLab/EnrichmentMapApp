@@ -6,4 +6,11 @@ public interface CancelStatus {
 	
 	public boolean isCancelled();
 	
+	
+	public static CancelStatus notCancelable() {
+		return new CancelStatus() {
+			@Override public boolean isCancelled() { return false; }
+			@Override public void cancel() { }
+		};
+	}
 }

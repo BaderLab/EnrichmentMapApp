@@ -1,7 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.resolver;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.work.AbstractTask;
@@ -10,15 +12,20 @@ import org.cytoscape.work.TaskMonitor;
 
 public class ResolverTask extends AbstractTask implements ObservableTask, CancelStatus {
 
-	private final Path root;
-	private List<DataSetParameters> results;
+	private final List<Path> folders = new ArrayList<>();
+	private final List<DataSetParameters> results = new ArrayList<>();
 	
 	public ResolverTask(Path root) {
-		this.root = root;
+		folders.add(root);
 	}
 	
 	public ResolverTask(File root) {
 		this(root.toPath());
+	}
+	
+	public ResolverTask(List<File> files) {
+		for(File file : files) 
+			folders.add(file.toPath());
 	}
 	
 	@Override
@@ -26,9 +33,14 @@ public class ResolverTask extends AbstractTask implements ObservableTask, Cancel
 		taskMonitor.setTitle("EnrichmentMap");
 		taskMonitor.setStatusMessage("Scanning Folder for Data Sets");
 		
-		results = DataSetResolver.guessDataSets(root, this);
-		if(results.isEmpty() && !cancelled) {
-			throw new RuntimeException("No Data Sets found under: " + root);
+		for(Path path : folders) {
+			if(cancelled)
+				break;
+			
+			if(Files.isDirectory(path)) {
+				List<DataSetParameters> dataSets = DataSetResolver.guessDataSets(path, (CancelStatus)this);
+				results.addAll(dataSets);
+			}
 		}
 	}
 	
