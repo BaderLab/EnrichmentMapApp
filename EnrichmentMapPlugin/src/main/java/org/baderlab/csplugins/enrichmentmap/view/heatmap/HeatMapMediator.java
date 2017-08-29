@@ -16,6 +16,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimerStore;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.cytoscape.application.CyApplicationManager;
@@ -56,6 +57,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@Inject private CySwingApplication swingApplication;
 	@Inject private CyApplicationManager applicationManager;
 	
+	private final CoalesceTimerStore<HeatMapMediator> selectionEventTimer = new CoalesceTimerStore<>(60);
 	private HeatMapParentPanel heatMapPanel = null;
 	private boolean onlyEdges;
 	
@@ -89,15 +91,13 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	public void handleEvent(RowsSetEvent e) {
 		if(heatMapPanel == null)
 			return;
-		// MKTODO If this has bad performance then add a reconciler timer delay.
-		// Cytoscape selection events can come in sets of 1-4 events.
 		if(e.containsColumn(CyNetwork.SELECTED)) {
 			CyNetworkView networkView = applicationManager.getCurrentNetworkView();
 			if(networkView != null) {
 				CyNetwork network = networkView.getModel();
 				// only handle event if it is a selected node
 				if(e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable()) {
-					updateHeatMap(networkView);
+					selectionEventTimer.coalesce(this, () -> updateHeatMap(networkView));
 				}
 			}
 		}

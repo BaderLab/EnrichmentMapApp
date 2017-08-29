@@ -52,7 +52,11 @@ public class HeatMapParentPanel extends JPanel implements CytoPanelComponent2 {
 		showEmptyView();
 	}
 	
-	public void selectGenes(EnrichmentMap map, HeatMapParams params, List<RankingOption> moreRankOptions, Set<String> union, Set<String> intersection) {
+	public HeatMapMediator getMediator() {
+		return mediator;
+	}
+	
+	public synchronized void selectGenes(EnrichmentMap map, HeatMapParams params, List<RankingOption> moreRankOptions, Set<String> union, Set<String> intersection) {
 		if(mainPanel == null) {
 			removeAll();
 			mainPanel = mainPanelFactory.create(this);
@@ -61,11 +65,7 @@ public class HeatMapParentPanel extends JPanel implements CytoPanelComponent2 {
 		mainPanel.reset(map, params, moreRankOptions, union, intersection);
 	}
 	
-	public HeatMapMediator getMediator() {
-		return mediator;
-	}
-	
-	public void showEmptyView() {
+	public synchronized void showEmptyView() {
 		removeAll();
 		mainPanel = null;
 		add(new NullViewPanel(), BorderLayout.CENTER);
