@@ -51,13 +51,13 @@ public class ApplyEMStyleTask extends AbstractTask {
 		CyNetworkView view = options.getNetworkView();
 		VisualStyle vs = getVisualStyle(options.getEnrichmentMap());
 		
+		if (!vs.equals(visualMappingManager.getVisualStyle(view)))
+			visualMappingManager.setVisualStyle(vs, view);
+		
 		if (updateChartOnly)
 			styleBuilderProvider.get().updateNodeChart(vs, options, chart);
 		else
 			styleBuilderProvider.get().updateProperties(vs, options, chart);
-
-		if (!vs.equals(visualMappingManager.getVisualStyle(view)))
-			visualMappingManager.setVisualStyle(vs, view);
 	}
 
 	private VisualStyle getVisualStyle(EnrichmentMap map) {
