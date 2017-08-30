@@ -10,7 +10,6 @@ import java.util.concurrent.CompletableFuture;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
@@ -26,16 +25,16 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 	
 	private final String rankingName;
 	private final EMDataSet dataset;
-	private final String geneSetName;
+	private final GSEAResult result;
 	
 	private double scoreAtMax;
 	private int rankAtMax;
 	
 	
-	public GSEALeadingEdgeRankingOption(EMDataSet dataset, String geneSetName, String rankingName) {
+	public GSEALeadingEdgeRankingOption(EMDataSet dataset, GSEAResult result, String rankingName) {
 		assert dataset.getMethod() == Method.GSEA;
+		this.result = result;
 		this.dataset = dataset;
-		this.geneSetName = geneSetName;
 		this.rankingName = rankingName;
 	}
 	
@@ -123,8 +122,6 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 	 * sets (both if there are two datasets)
 	 */
 	private void initializeLeadingEdge() {
-		Map<String,EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
-		GSEAResult result = (GSEAResult) results.get(geneSetName);
 		scoreAtMax = result.getScoreAtMax();
 		if(scoreAtMax == DetermineEnrichmentResultFileReader.DefaultScoreAtMax) {
 			scoreAtMax = result.getNES();

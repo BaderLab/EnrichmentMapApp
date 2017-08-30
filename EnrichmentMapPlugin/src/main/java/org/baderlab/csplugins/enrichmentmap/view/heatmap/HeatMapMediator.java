@@ -14,6 +14,8 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
+import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimerStore;
@@ -200,10 +202,20 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		for(EMDataSet dataset : map.getDataSetList()) {
 			if(nodes.size() == 1 && edges.isEmpty() && dataset.getMethod() == Method.GSEA) {
 				String geneSetName = network.getRow(nodes.get(0)).get(CyNetwork.NAME, String.class);
-				Map<String,Ranking> ranks = dataset.getRanks();
-				ranks.forEach((name, ranking) -> {
-					options.add(new GSEALeadingEdgeRankingOption(dataset, geneSetName, name));
-				});
+				Map<String,EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
+				EnrichmentResult result = results.get(geneSetName);
+				if(result instanceof GSEAResult) {
+					GSEAResult gseaResult = (GSEAResult) result; 
+					Map<String,Ranking> ranks = dataset.getRanks();
+					ranks.forEach((name, ranking) -> {
+						options.add(new GSEALeadingEdgeRankingOption(dataset, gseaResult, name));
+					});
+				} else {
+					Map<String,Ranking> ranks = dataset.getRanks();
+					ranks.forEach((name, ranking) -> {
+						options.add(new BasicRankingOption(ranking, dataset, name));
+					});
+				}
 			} else {
 				Map<String,Ranking> ranks = dataset.getRanks();
 				ranks.forEach((name, ranking) -> {
