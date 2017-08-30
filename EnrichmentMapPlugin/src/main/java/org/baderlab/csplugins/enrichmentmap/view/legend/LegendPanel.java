@@ -80,12 +80,16 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.style.ChartData;
+import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
+import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Colors;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.model.CyNode;
@@ -97,6 +101,8 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -124,6 +130,7 @@ public class LegendPanel extends JPanel {
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private VisualMappingManager visualMappingManager;
 	@Inject private RenderingEngineManager engineManager;
+	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	
 	private BasicCollapsiblePanel nodeLegendPanel;
 	private BasicCollapsiblePanel edgeLegendPanel;
@@ -221,31 +228,89 @@ public class LegendPanel extends JPanel {
 		JPanel p = getNodeColorPanel();
 		p.removeAll();
 		
-		if (dataSets != null && dataSets.size() == 1) {
+		ChartOptions chartOptions = options.getChartOptions();
+		ChartData data = chartOptions.getData();
+		
+		if (dataSets == null || dataSets.isEmpty() || (dataSets.size() > 1 && data == ChartData.NONE)) {
+			p.setVisible(false);
+			return;
+		}
+		
+		if (dataSets.size() == 1 && data == ChartData.NONE) {
 			EMDataSet ds = dataSets.iterator().next();
 			
 			ColorLegendPanel clp = new ColorLegendPanel(
-					Colors.MAX_PHENOTYPE_1,
-					Colors.MAX_PHENOTYPE_2,
-					ds.getEnrichments().getPhenotype1(),
-					ds.getEnrichments().getPhenotype2()
+				Colors.MAX_PHENOTYPE_1,
+				Colors.MAX_PHENOTYPE_2,
+				ds.getEnrichments().getPhenotype1(),
+				ds.getEnrichments().getPhenotype2()
 			);
 			
 			GroupLayout layout = (GroupLayout) p.getLayout();
-	
 			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addGap(0, 0, Short.MAX_VALUE)
-					.addComponent(clp, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(0, 0, Short.MAX_VALUE)
+				.addGap(0, 0, Short.MAX_VALUE)
+				.addComponent(clp, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addGap(0, 0, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
-					.addComponent(clp)
+				.addComponent(clp)
 			);
 			
-			p.setVisible(true);
 		} else {
-			p.setVisible(false);
+			ColumnDescriptor<Double> columnDescriptor = data.getColumnDescriptor();
+			List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
+					dataSets, columnDescriptor, columnIdFactory);
+
+			List<Color> colors = ChartUtil.getChartColors(chartOptions);
+			List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
+			double min = range.get(0) ;
+			double max = range.get(1);
+			
+			String posMaxLabel = max > 0 ? String.valueOf(max) : "N/A";
+			Color posMaxColor = colors.get(0);
+			Color posMinColor = colors.get(colors.size()/2);
+			ColorLegendPanel clpPos = new ColorLegendPanel(posMaxColor, posMinColor, posMaxLabel, "0", false);
+			JLabel posLabel = new JLabel("Positive");
+			SwingUtil.makeSmall(posLabel);
+			
+			GroupLayout layout = (GroupLayout) p.getLayout();
+			SequentialGroup horizontal = layout.createSequentialGroup()
+				.addGap(0, 0, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+					.addComponent(posLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(clpPos, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				);
+			ParallelGroup vertical = layout.createParallelGroup(Alignment.CENTER, false)
+				.addGroup(layout.createSequentialGroup()
+					.addComponent(posLabel)
+					.addComponent(clpPos)
+				);
+
+			
+			if(data == ChartData.NES_VALUE) { // need to show negative range
+				String negMinLabel = min < 0 ? String.valueOf(min) : "N/A";
+				Color negMaxColor = colors.get(colors.size()-1);
+				Color negMinColor = colors.get(colors.size()/2);
+				ColorLegendPanel clpNeg = new ColorLegendPanel(negMinColor, negMaxColor, "0", negMinLabel, false);
+				JLabel negLabel = new JLabel("Negative");
+				SwingUtil.makeSmall(negLabel);
+				
+				horizontal.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+					.addComponent(negLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(clpNeg, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				);
+				vertical.addGroup(layout.createSequentialGroup()
+					.addComponent(negLabel)
+					.addComponent(clpNeg)
+				);
+			}
+			
+			horizontal.addGap(0, 0, Short.MAX_VALUE);
+			layout.setHorizontalGroup(horizontal);
+			layout.setVerticalGroup(vertical);
 		}
+		
+		p.setVisible(true);
 	}
 	
 	private void updateNodeShapePanel(EnrichmentMap map) {

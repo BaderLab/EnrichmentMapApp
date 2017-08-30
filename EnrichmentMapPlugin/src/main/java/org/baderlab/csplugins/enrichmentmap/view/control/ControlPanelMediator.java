@@ -1,9 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.control;
 
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_DATASET_VALUE_COMPOUND;
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_INTERACTION_VALUE_SIG;
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE;
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE_ENRICHMENT;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.*;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
 import java.awt.Color;
@@ -293,18 +290,17 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			// Ignore Signature Data Sets in charts
 			Set<EMDataSet> dataSets = filterDataSets(options.getDataSets());
 			
-			if (dataSets.size() > 0) {
+			if (!dataSets.isEmpty()) {
 				ColumnDescriptor<Double> columnDescriptor = data.getColumnDescriptor();
 				List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
 						dataSets, columnDescriptor, columnIdFactory);
 				ChartType type = chartOptions.getType();
 
 				List<Color> colors = ChartUtil.getChartColors(chartOptions);
+				List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
 				
 				Map<String, Object> props = new HashMap<>(type.getProperties());
 				props.put("cy_dataColumns", columns);
-				
-				List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
 				props.put("cy_range", range);
 				props.put("cy_autoRange", false);
 				props.put("cy_globalRange", true);

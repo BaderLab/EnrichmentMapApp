@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.style;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -10,23 +11,25 @@ import org.baderlab.csplugins.enrichmentmap.style.charts.Rotation;
 import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChart;
 
 public enum ChartType {
+	
+	
 	RADIAL_HEAT_MAP(
 			RadialHeatMapChart.FACTORY_ID,
 			"Radial Heat Map",
 			Collections.unmodifiableMap(Stream.of(
-	                new SimpleEntry<>("cy_borderWidth", 0.0f),
-	                new SimpleEntry<>("cy_rotation", Rotation.CLOCKWISE),
+					new SimpleEntry<>("cy_borderWidth", 0.0f),
+					new SimpleEntry<>("cy_rotation", Rotation.CLOCKWISE),
 					new SimpleEntry<>("cy_startAngle", 90.0f))
-	                .collect(Collectors.toMap((e) -> e.getKey(), (e) -> e.getValue())))
+					.collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
 	),
 	HEAT_MAP(
 			"org.cytoscape.HeatMapChart",
 			"Heat Map",
 			Collections.unmodifiableMap(Stream.of(
 					new SimpleEntry<>("cy_orientation", "VERTICAL"),
-	                new SimpleEntry<>("cy_showDomainAxis", false),
-	                new SimpleEntry<>("cy_showRangeAxis", false))
-	                .collect(Collectors.toMap((e) -> e.getKey(), (e) -> e.getValue())))
+					new SimpleEntry<>("cy_showDomainAxis", false),
+					new SimpleEntry<>("cy_showRangeAxis", false))
+					.collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
 	),
 	HEAT_STRIPS(
 			"org.cytoscape.BarChart",
@@ -36,7 +39,7 @@ public enum ChartType {
 					new SimpleEntry<>("cy_orientation", "VERTICAL"),
 					new SimpleEntry<>("cy_showDomainAxis", false),
 					new SimpleEntry<>("cy_showRangeAxis", false))
-					.collect(Collectors.toMap((e) -> e.getKey(), (e) -> e.getValue())))
+					.collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
 	);
 	
 	private final String id;
@@ -78,4 +81,5 @@ public enum ChartType {
 	public String toString() {
 		return label;
 	}
+	
 }
