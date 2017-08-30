@@ -148,7 +148,7 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 			Double v =  values.size() > i ? values.get(i) : null;
 			final Color c;
 			
-			if (v == null) {
+			if (v == null || !Double.isFinite(v)) {
 				c = nanColor;
 			} else {
 				if (colorPoints.isEmpty() || colorPoints.size() != colors.size())
