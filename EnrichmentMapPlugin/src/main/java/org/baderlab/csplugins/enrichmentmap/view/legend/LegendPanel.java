@@ -266,7 +266,7 @@ public class LegendPanel extends JPanel {
 			double min = range.get(0) ;
 			double max = range.get(1);
 			
-			String posMaxLabel = max > 0 ? String.valueOf(max) : "N/A";
+			String posMaxLabel = max > 0 ? String.format("%.2f", max) : "N/A";
 			Color posMaxColor = colors.get(0);
 			Color posMinColor = colors.get(colors.size()/2);
 			ColorLegendPanel clpPos = new ColorLegendPanel(posMaxColor, posMinColor, posMaxLabel, "0", false);
@@ -288,7 +288,7 @@ public class LegendPanel extends JPanel {
 
 			
 			if(data == ChartData.NES_VALUE) { // need to show negative range
-				String negMinLabel = min < 0 ? String.valueOf(min) : "N/A";
+				String negMinLabel = min < 0 ? String.format("%.2f", min) : "N/A";
 				Color negMaxColor = colors.get(colors.size()-1);
 				Color negMinColor = colors.get(colors.size()/2);
 				ColorLegendPanel clpNeg = new ColorLegendPanel(negMinColor, negMaxColor, "0", negMinLabel, false);
