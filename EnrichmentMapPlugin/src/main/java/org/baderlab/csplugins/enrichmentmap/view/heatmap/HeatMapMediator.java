@@ -18,7 +18,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
-import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimerStore;
+import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.cytoscape.application.CyApplicationManager;
@@ -59,7 +59,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@Inject private CySwingApplication swingApplication;
 	@Inject private CyApplicationManager applicationManager;
 	
-	private final CoalesceTimerStore<HeatMapMediator> selectionEventTimer = new CoalesceTimerStore<>(60);
+	private final CoalesceTimer selectionEventTimer = new CoalesceTimer(200, 1);
 	private HeatMapParentPanel heatMapPanel = null;
 	private boolean onlyEdges;
 	
@@ -99,7 +99,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 				CyNetwork network = networkView.getModel();
 				// only handle event if it is a selected node
 				if(e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable()) {
-					selectionEventTimer.coalesce(this, () -> updateHeatMap(networkView));
+					selectionEventTimer.coalesce(() -> updateHeatMap(networkView));
 				}
 			}
 		}
@@ -141,6 +141,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	
 	
 	private void updateHeatMap(CyNetworkView networkView) {
+		System.out.println("HeatMapMediator.updateHeatMap()");
 		if(heatMapPanel == null)
 			return;
 		
@@ -263,6 +264,10 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		CyRow row = network.getRow(node);
 		// This is already the union of all the genes across data sets
 		return EMStyleBuilder.Columns.NODE_GENES.get(row, prefix, null);
+	}
+
+	public void shutDown() {
+		selectionEventTimer.shutdown();
 	}
 	
 }
