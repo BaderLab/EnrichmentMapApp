@@ -39,6 +39,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 /**
@@ -56,7 +57,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyServiceRegistrar serviceRegistrar;
-	@Inject private CySwingApplication swingApplication;
+	@Inject private Provider<CySwingApplication> swingApplicationProvider;
 	@Inject private CyApplicationManager applicationManager;
 	
 	private final CoalesceTimer selectionEventTimer = new CoalesceTimer(200, 1);
@@ -80,6 +81,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	}
 
 	private void bringToFront() {
+		CySwingApplication swingApplication = swingApplicationProvider.get();
 		CytoPanel cytoPanel = swingApplication.getCytoPanel(heatMapPanel.getCytoPanelName());
 		if(cytoPanel != null) {
 			int index = cytoPanel.indexOfComponent(HeatMapParentPanel.ID);
