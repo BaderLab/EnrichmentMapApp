@@ -136,6 +136,7 @@ public class LegendPanel extends JPanel {
 	private BasicCollapsiblePanel edgeLegendPanel;
 	
 	private JPanel nodeColorPanel;
+	private JPanel nodeChartColorPanel;
 	
 	private JPanel nodeShapePanel;
 	private JLabel nodeShapeIcon1 = new JLabel();
@@ -192,6 +193,7 @@ public class LegendPanel extends JPanel {
 		} else {
 			nodeLegendPanel = null;
 			nodeColorPanel = null;
+			nodeChartColorPanel = null;
 			nodeShapePanel = null;
 			nodeChartPanel = null;
 			edgeLegendPanel = null;
@@ -200,6 +202,7 @@ public class LegendPanel extends JPanel {
 			updateNodeColorPanel(filteredDataSets, map);
 			updateNodeShapePanel(map);
 			updateNodeChartPanel(filteredDataSets, map);
+			updateNodeChartColorPanel(filteredDataSets, map);
 			updateEdgeColorPanel(map);
 			
 			JPanel panel = new JPanel();
@@ -228,39 +231,45 @@ public class LegendPanel extends JPanel {
 		JPanel p = getNodeColorPanel();
 		p.removeAll();
 		
-		ChartOptions chartOptions = options.getChartOptions();
-		ChartData data = chartOptions.getData();
-		
-		if (dataSets == null || dataSets.isEmpty() || (dataSets.size() > 1 && data == ChartData.NONE)) {
-			p.setVisible(false);
-			return;
-		}
-		
-		if (dataSets.size() == 1 && data == ChartData.NONE) {
+		if (dataSets != null && dataSets.size() == 1) {
 			EMDataSet ds = dataSets.iterator().next();
 			
 			ColorLegendPanel clp = new ColorLegendPanel(
-				Colors.MAX_PHENOTYPE_1,
-				Colors.MAX_PHENOTYPE_2,
-				ds.getEnrichments().getPhenotype1(),
-				ds.getEnrichments().getPhenotype2()
+					Colors.MAX_PHENOTYPE_1,
+					Colors.MAX_PHENOTYPE_2,
+					ds.getEnrichments().getPhenotype1(),
+					ds.getEnrichments().getPhenotype2()
 			);
 			
 			GroupLayout layout = (GroupLayout) p.getLayout();
+	
 			layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addGap(0, 0, Short.MAX_VALUE)
-				.addComponent(clp, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addGap(0, 0, Short.MAX_VALUE)
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addComponent(clp, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 0, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
-				.addComponent(clp)
+					.addComponent(clp)
 			);
 			
+			p.setVisible(true);
 		} else {
+			p.setVisible(false);
+		}
+	}
+	
+	private void updateNodeChartColorPanel(Collection<EMDataSet> dataSets, EnrichmentMap map) {
+		JPanel p = getNodeChartColorPanel();
+		p.removeAll();
+		
+		ChartOptions chartOptions = options.getChartOptions();
+		ChartData data = chartOptions.getData();
+		
+		if(data != ChartData.NONE) {
 			ColumnDescriptor<Double> columnDescriptor = data.getColumnDescriptor();
 			List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
 					dataSets, columnDescriptor, columnIdFactory);
-
+	
 			List<Color> colors = ChartUtil.getChartColors(chartOptions);
 			List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
 			double min = range.get(0) ;
@@ -285,7 +294,7 @@ public class LegendPanel extends JPanel {
 					.addComponent(posLabel)
 					.addComponent(clpPos)
 				);
-
+	
 			
 			if(data == ChartData.NES_VALUE) { // need to show negative range
 				String negMinLabel = min < 0 ? String.format("%.2f", min) : "N/A";
@@ -308,9 +317,11 @@ public class LegendPanel extends JPanel {
 			horizontal.addGap(0, 0, Short.MAX_VALUE);
 			layout.setHorizontalGroup(horizontal);
 			layout.setVerticalGroup(vertical);
+			
+			p.setVisible(true);
+		} else {
+			p.setVisible(false);
 		}
-		
-		p.setVisible(true);
 	}
 	
 	private void updateNodeShapePanel(EnrichmentMap map) {
@@ -355,7 +366,7 @@ public class LegendPanel extends JPanel {
 		Object cg = vp != null ? style.getDefaultValue(vp) : null;
 		ChartType chartType = options.getChartOptions() != null ? options.getChartOptions().getType() : null;
 		
-		if (chartType != null && cg instanceof CyCustomGraphics2 && dataSets != null && dataSets.size() > 1) {
+		if (chartType != null && cg instanceof CyCustomGraphics2 && dataSets != null) {
 			ChartPanel chart = createChartPanel(dataSets);
 			
 			if (chart != null) {
@@ -508,11 +519,13 @@ public class LegendPanel extends JPanel {
 					.addComponent(getNodeColorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getNodeShapePanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getNodeChartPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getNodeChartColorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getNodeColorPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getNodeShapePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getNodeChartPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getNodeChartColorPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
 			if (isAquaLAF())
@@ -553,6 +566,15 @@ public class LegendPanel extends JPanel {
 		}
 		
 		return nodeColorPanel;
+	}
+	
+	private JPanel getNodeChartColorPanel() {
+		if (nodeChartColorPanel == null) {
+			nodeChartColorPanel = createStyleLegendPanel(null);
+			nodeChartColorPanel.setToolTipText("Node Chart Colors");
+		}
+		
+		return nodeChartColorPanel;
 	}
 	
 	JPanel getNodeShapePanel() {

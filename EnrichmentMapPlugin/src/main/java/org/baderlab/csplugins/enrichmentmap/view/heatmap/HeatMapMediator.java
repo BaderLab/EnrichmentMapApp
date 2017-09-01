@@ -141,7 +141,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	
 	
 	private void updateHeatMap(CyNetworkView networkView) {
-		System.out.println("HeatMapMediator.updateHeatMap()");
 		if(heatMapPanel == null)
 			return;
 		
