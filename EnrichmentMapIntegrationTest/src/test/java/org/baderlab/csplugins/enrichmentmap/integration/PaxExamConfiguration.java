@@ -19,7 +19,7 @@ public abstract class PaxExamConfiguration {
 		
 		// Don't get these values from system properties because I want to run these tests in eclipse
 		final String cyVersion = "3.4.0"; 
-		final String emVersion = "3.0.0";
+		final String emVersion = "3.1.0-SNAPSHOT";
 		final String groupId   = "org.baderlab.csplugins";
 		final String appBundle = "EnrichmentMap";
  

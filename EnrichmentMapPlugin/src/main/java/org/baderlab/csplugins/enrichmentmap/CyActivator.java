@@ -50,11 +50,11 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// manager
 		EnrichmentMapManager manager = injector.getInstance(EnrichmentMapManager.class);
-		registerAllServices(bc, manager, new Properties());
+		registerAllServices(bc, manager);
 		
 		// session save and restore
 		SessionListener sessionListener = injector.getInstance(SessionListener.class);
-		registerAllServices(bc, sessionListener, new Properties());
+		registerAllServices(bc, sessionListener);
 		
 		// commands
 		registerCommand(bc, "build",        injector.getInstance(Key.get(TaskFactory.class, BuildCommand.class)));
@@ -62,7 +62,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerCommand(bc, "mastermap",    injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
 		registerCommand(bc, "pa",           injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
 		registerCommand(bc, "export-model", injector.getInstance(Key.get(TaskFactory.class, JsonCommand.class)));
-		registerService(bc, new MannWhitRanksTunableHandlerFactory(), StringTunableHandlerFactory.class, new Properties());
+		registerService(bc, new MannWhitRanksTunableHandlerFactory(), StringTunableHandlerFactory.class);
 		
 		// CyProperty
 		CyProperty<Properties> cyProperty = injector.getInstance(Key.get(new TypeLiteral<CyProperty<Properties>>(){}));
@@ -72,11 +72,11 @@ public class CyActivator extends AbstractCyActivator {
 		
 		if(headless) {
 			// register the injector as an OSGi service so the integration tests can access it
-			registerService(bc, injector, Injector.class, new Properties());
+			registerService(bc, injector, Injector.class);
 		} else {
 			// Don't load UI services if running headless
 			// register actions
-			registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class), new Properties());
+			registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class));
 			
 			// chart listener
 			ChartFactoryManager chartFactoryManager = injector.getInstance(ChartFactoryManager.class);
@@ -90,10 +90,10 @@ public class CyActivator extends AbstractCyActivator {
 			
 			// UI Mediators
 			ControlPanelMediator controlPanelMediator = injector.getInstance(ControlPanelMediator.class);
-			registerAllServices(bc, controlPanelMediator, new Properties());
+			registerAllServices(bc, controlPanelMediator);
 			
 			HeatMapMediator heatMapMediator = injector.getInstance(HeatMapMediator.class);
-			registerAllServices(bc, heatMapMediator, new Properties());
+			registerAllServices(bc, heatMapMediator);
 		}
 		
 		// If the App is updated or restarted then we want to reload the model and view from the tables
