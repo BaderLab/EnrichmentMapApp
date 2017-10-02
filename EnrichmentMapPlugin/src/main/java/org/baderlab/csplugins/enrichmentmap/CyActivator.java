@@ -14,6 +14,7 @@ import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.ResolveComman
 import org.baderlab.csplugins.enrichmentmap.commands.MannWhitRanksTunableHandlerFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.io.SessionListener;
+import org.baderlab.csplugins.enrichmentmap.rest.EnrichmentMapResource;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChartFactory;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
@@ -63,6 +64,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerCommand(bc, "pa",           injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
 		registerCommand(bc, "export-model", injector.getInstance(Key.get(TaskFactory.class, JsonCommand.class)));
 		registerService(bc, new MannWhitRanksTunableHandlerFactory(), StringTunableHandlerFactory.class);
+		
+		// jax-rs resources
+		registerService(bc, injector.getInstance(EnrichmentMapResource.class), EnrichmentMapResource.class);
 		
 		// CyProperty
 		CyProperty<Properties> cyProperty = injector.getInstance(Key.get(new TypeLiteral<CyProperty<Properties>>(){}));
