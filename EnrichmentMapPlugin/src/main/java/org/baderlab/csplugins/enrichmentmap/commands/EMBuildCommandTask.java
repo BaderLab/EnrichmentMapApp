@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
@@ -156,12 +155,24 @@ public class EMBuildCommandTask extends AbstractTask {
 	public ListSingleSelection<String> coeffecients;
 
 	@Tunable
-	public Boolean distinctEdges;
+	public double combinedConstant = LegacySupport.combinedConstant_default;
+	
+	@Tunable
+	public ListSingleSelection<String> edgeStrategy;
+	
+	@Tunable
+	public Integer minExperiments = null;
+	
+	@Tunable
+	public ListSingleSelection<String> nesFilter;
+	
+	@Tunable
+	public boolean filterByExpressions = true;
+	
 	
 
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private LegacySupport legacySupport;
-	@Inject private PropertyManager propertyManager;
 	
 
 	public EMBuildCommandTask() {
@@ -170,6 +181,12 @@ public class EMBuildCommandTask extends AbstractTask {
 
 		coeffecients = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP,
 				EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
+		
+		edgeStrategy = ResolverCommandTask.enumNames(EdgeStrategy.values());
+		edgeStrategy.setSelectedValue(EdgeStrategy.AUTOMATIC.name());
+		
+		nesFilter = ResolverCommandTask.enumNames(NESFilter.values());
+		nesFilter.setSelectedValue(NESFilter.ALL.name());
 	}
 
 	
@@ -217,6 +234,12 @@ public class EMBuildCommandTask extends AbstractTask {
 		if(phenotype2Dataset2 != null)
 			dataset2files.setPhenotype2(phenotype2Dataset2);
 
+		NESFilter nesf;
+		try {
+			nesf = NESFilter.valueOf(nesFilter.getSelectedValue().toUpperCase());
+		} catch(IllegalArgumentException e) {
+			throw new IllegalArgumentException("nesFilter is invalid: '" + nesFilter.getSelectedValue() + "'");
+		}
 		
 		List<DataSetParameters> dataSets = new ArrayList<>(2);
 		dataSets.add(new DataSetParameters(LegacySupport.DATASET1, method, dataset1files));
@@ -224,18 +247,17 @@ public class EMBuildCommandTask extends AbstractTask {
 			dataSets.add(new DataSetParameters(LegacySupport.DATASET2, method, dataset2files));
 		}
 		
-		EdgeStrategy edgeStrategy;
-		if(distinctEdges == null)
-			edgeStrategy = EdgeStrategy.AUTOMATIC;
-		else if(distinctEdges)
-			edgeStrategy = EdgeStrategy.DISTINCT;
-		else
-			edgeStrategy = EdgeStrategy.COMPOUND;
+		EdgeStrategy strategy;
+		try {
+			strategy = EdgeStrategy.valueOf(edgeStrategy.getSelectedValue().toUpperCase());
+		} catch(IllegalArgumentException e) {
+			throw new IllegalArgumentException("edgeStrategy is invalid: '" + edgeStrategy.getSelectedValue() + "'");
+		}
 		
 		String prefix = legacySupport.getNextAttributePrefix();
 		EMCreationParameters creationParams = 
-				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true,
-						metric, similaritycutoff, LegacySupport.combinedConstant_default, edgeStrategy);
+				new EMCreationParameters(prefix, pvalue, qvalue, nesf, Optional.ofNullable(minExperiments), filterByExpressions,
+						metric, similaritycutoff, combinedConstant, strategy);
 		
 		//System.out.println(creationParams);
 		//System.out.println(dataSets);
