@@ -11,6 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.commands.EMBuildCommandTask;
 import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskIterator;
@@ -39,7 +40,7 @@ public class Protocol1Test extends BaseIntegrationTest {
 		task.pvalue = 1.0;
 		task.qvalue = 0.00001;
 		task.similaritycutoff = 0.25;
-		task.distinctEdges = false;
+		task.edgeStrategy.setSelectedValue(EdgeStrategy.COMPOUND.name());
 		
 		SerialTestTaskManager taskManager = new SerialTestTaskManager();
 		taskManager.execute(new TaskIterator(task));

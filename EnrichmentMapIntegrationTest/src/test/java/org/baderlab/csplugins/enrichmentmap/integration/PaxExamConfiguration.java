@@ -17,8 +17,8 @@ public abstract class PaxExamConfiguration {
 	@Configuration
 	public Option[] config() {
 		
-		// Don't get these values from system properties because I want to run these tests in eclipse
-		final String cyVersion = "3.4.0"; 
+		// These have to match what's in the pom.xml files.
+		final String cyVersion = "3.5.0"; 
 		final String emVersion = "3.1.0-SNAPSHOT";
 		final String groupId   = "org.baderlab.csplugins";
 		final String appBundle = "EnrichmentMap";
@@ -45,6 +45,8 @@ public abstract class PaxExamConfiguration {
 			mavenBundle().groupId("javax.activation").artifactId("com.springsource.javax.activation").version("1.1.1").startLevel(3),
 			mavenBundle().groupId("javax.xml.stream").artifactId("com.springsource.javax.xml.stream").version("1.0.1").startLevel(3),
 			mavenBundle().groupId("commons-io").artifactId("commons-io").version("2.1").startLevel(3),
+			mavenBundle().groupId("javax.ws.rs").artifactId("javax.ws.rs-api").version("2.0").startLevel(3),
+			mavenBundle().groupId("io.swagger").artifactId("swagger-annotations").version("1.5.7").startLevel(3),
 			
 			// Third-party bundle
 			mavenBundle().groupId("org.cytoscape.distribution").artifactId("third-party").version(cyVersion).startLevel(3),
