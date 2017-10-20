@@ -332,11 +332,11 @@ public class FileReaderTest {
         //check p-values
         assertEquals(0.0,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getPvalue(),0.0);
         //check fdr value
-        assertEquals(0.086938426,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getFdrqvalue(),0.0);
+        assertEquals(0.0869,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getFdrqvalue(),0.0);
         //check ES value
-        assertEquals(0.6854155,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getES(),0.0);       
+        assertEquals(0.6854,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getES(),0.0);       
         //check NES
-        assertEquals(2.1194055,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getNES(),0.0);
+        assertEquals(2.1194,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getNES(),0.0);
         //check ranks at max
         assertEquals(836,((GSEAResult)enrichments.get("ANTIGEN PROCESSING AND PRESENTATION%KEGG%HSA04612")).getRankAtMax());        
         //check size
@@ -344,13 +344,13 @@ public class FileReaderTest {
         
         // example from file 2 (EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143)
         //check p-values
-        assertEquals(0.040152963,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getPvalue(),0.0);
+        assertEquals(0.0402,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getPvalue(),0.0);
         //check fdr value
         assertEquals(1.0,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getFdrqvalue(),0.0);
         //check ES value
-        assertEquals(-0.49066687,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getES(),0.0);       
+        assertEquals(-0.4907,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getES(),0.0);       
         //check NES
-        assertEquals(-1.477554,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getNES(),0.0);
+        assertEquals(-1.4776,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getNES(),0.0);
         //check ranks at max
         assertEquals(1597,((GSEAResult)enrichments.get("EMBRYONIC HEART TUBE MORPHOGENESIS%GO%GO:0003143")).getRankAtMax());        
         //check size

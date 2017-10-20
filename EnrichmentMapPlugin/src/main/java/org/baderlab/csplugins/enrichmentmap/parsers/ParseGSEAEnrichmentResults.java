@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.util.Precision;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
@@ -49,6 +50,17 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 		}
 	}
 	
+	
+	/**
+	 * Values in EDB files are rounded to 4 decimal places. 
+	 * @param exp
+	 * @return
+	 */
+	private float parseAndRound(String exp) {
+		float f = Float.parseFloat(exp);
+		float r = Precision.round(f, 4);
+		return r;
+	}
 	
 	private void readFile(TaskMonitor taskMonitor, String enrichmentFile) throws IOException {
 		List<String> lines = LineReader.readLines(enrichmentFile);
@@ -109,6 +121,15 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 			if(!tokens[9].isEmpty()) {
 				rankAtMax = Integer.parseInt(tokens[9]);
 			}
+			
+			// Values in EDB files are rounded to 4 decimal places. 
+			// So to be consistent we will round the xls values to 4 decimal places as well.
+			
+			ES = Precision.round(ES, 4);
+			NES = Precision.round(NES, 4);
+			pvalue = Precision.round(pvalue, 4);
+			FDRqvalue = Precision.round(FDRqvalue, 4);
+			FWERqvalue = Precision.round(FWERqvalue, 4);
 			
 			GSEAResult result = new GSEAResult(Name, size, ES, NES, pvalue, FDRqvalue, FWERqvalue, rankAtMax, scoreAtMax);
 
