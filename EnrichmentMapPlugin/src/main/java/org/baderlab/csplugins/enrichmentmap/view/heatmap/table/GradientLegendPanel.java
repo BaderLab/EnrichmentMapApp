@@ -78,7 +78,7 @@ public class GradientLegendPanel extends JPanel {
 		
 		if(value instanceof Double) {
 			EMDataSet dataset = tableModel.getDataSet(col);
-			ColorRenderer renderer = (ColorRenderer) table.getCellRenderer(row, col);
+			HeatMapCellRenderer renderer = (HeatMapCellRenderer) table.getCellRenderer(row, col);
 			DataSetColorRange colorRange = renderer.getRange(dataset, tableModel.getTransform());
 			
 			JPanel panel = createExpressionLegendPanel(colorRange);

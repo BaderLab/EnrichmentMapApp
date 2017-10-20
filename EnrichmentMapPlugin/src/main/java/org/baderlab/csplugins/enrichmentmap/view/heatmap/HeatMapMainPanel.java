@@ -42,10 +42,9 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColorAndValueRenderer;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColorRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankOptionRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderVerticalRenderer;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapCellRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.GradientLegendPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankOptionErrorHeader;
@@ -475,7 +474,7 @@ public class HeatMapMainPanel extends JPanel {
 	}
 	
 	private void updateSetting_ShowValues(boolean showValues) {
-		table.setDefaultRenderer(Double.class, showValues ? new ColorAndValueRenderer() : new ColorRenderer());
+		table.setDefaultRenderer(Double.class, new HeatMapCellRenderer(showValues));
 		table.setDefaultRenderer(RankValue.class, new RankValueRenderer());
 		clearTableHeader();
 		createTableHeader(showValues ? COLUMN_WIDTH_VALUE : COLUMN_WIDTH_COLOR);
