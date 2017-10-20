@@ -8,9 +8,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
-public class EditNothingPanel extends JPanel {
+public class DetailNullPanel extends JPanel {
 
-	public EditNothingPanel() {
+	public DetailNullPanel() {
 		JLabel infoLabel = new JLabel("Click the (+) button to add a data set");
 		infoLabel.setEnabled(false);
 //		infoLabel.setForeground(UIManager.getColor("Label.disabledForeground"));

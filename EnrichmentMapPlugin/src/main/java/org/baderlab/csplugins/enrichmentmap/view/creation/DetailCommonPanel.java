@@ -17,7 +17,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import com.google.inject.Inject;
 
 @SuppressWarnings("serial")
-public class EditCommonPanel extends JPanel implements DetailPanel {
+public class DetailCommonPanel extends JPanel implements DetailPanel {
 
 	@Inject private PathTextField.Factory pathTextFactory;
 	

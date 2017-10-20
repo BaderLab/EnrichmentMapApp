@@ -82,13 +82,13 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	@Inject private LegacySupport legacySupport;
 	@Inject private CutoffPropertiesPanel cutoffPanel;
-	@Inject private Provider<EditCommonPanel> commonPanelProvider;
-	@Inject private EditDataSetPanel.Factory dataSetPanelFactory;
+	@Inject private Provider<DetailCommonPanel> commonPanelProvider;
+	@Inject private DetailDataSetPanel.Factory dataSetPanelFactory;
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private ErrorMessageDialog.Factory errorMessageDialogFactory;
 	@Inject private PropertyManager propertyManager;
 	
-	private EditCommonPanel commonPanel;
+	private DetailCommonPanel commonPanel;
 	private DataSetListItem commonParams;
 	
 	private DataSetList dataSetList;
@@ -208,7 +208,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		dataSetDetailPanel.setLayout(cardLayout);
 		
 		// Blank page
-		dataSetDetailPanel.add(new EditNothingPanel(), "nothing");
+		dataSetDetailPanel.add(new DetailNullPanel(), "nothing");
 		
 		// Common page
 		dataSetListModel.addElement(commonParams);
@@ -274,8 +274,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	}
 	
 	private void addDataSetToList(DataSetParameters params) {
-		EditDataSetPanel panel = dataSetPanelFactory.create(params);
-		panel.addPropertyChangeListener(EditDataSetPanel.PROP_NAME, e ->
+		DetailDataSetPanel panel = dataSetPanelFactory.create(params);
+		panel.addPropertyChangeListener(DetailDataSetPanel.PROP_NAME, e ->
 			((IterableListModel<?>)dataSetList.getModel()).update()
 		);
 		DataSetListItem item = new DataSetListItem(panel);
@@ -363,7 +363,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	}
 	
 	
-	public EditCommonPanel getCommonPanel() {
+	public DetailCommonPanel getCommonPanel() {
 		return commonPanel;
 	}
 	
@@ -372,15 +372,15 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		ErrorMessageDialog dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
 		
 		// Check if the user provided a global expression file, warn if there are also per-dataset expression files.
-		if(commonPanel.hasExpressionFile() && editPanelStream().anyMatch(EditDataSetPanel::hasExpressionFile)) {
+		if(commonPanel.hasExpressionFile() && editPanelStream().anyMatch(DetailDataSetPanel::hasExpressionFile)) {
 			addCommonWarnSection(dialog, commonPanel, "expression");
 		}
 		// Check if the user provided a global gmt file, warn if there are also per-dataset gmt files.
-		if(commonPanel.hasGmtFile() && editPanelStream().anyMatch(EditDataSetPanel::hasGmtFile)) {
+		if(commonPanel.hasGmtFile() && editPanelStream().anyMatch(DetailDataSetPanel::hasGmtFile)) {
 			addCommonWarnSection(dialog, commonPanel, "GMT");
 		}
 		// Check if the user provided a global gmt file, warn if there are also per-dataset gmt files.
-		if(commonPanel.hasClassFile() && editPanelStream().anyMatch(EditDataSetPanel::hasClassFile)) {
+		if(commonPanel.hasClassFile() && editPanelStream().anyMatch(DetailDataSetPanel::hasClassFile)) {
 			addCommonWarnSection(dialog, commonPanel, "class");
 		}
 		
@@ -401,7 +401,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		{ // Check for duplicate data set names
 			Map<String,Long> dataSetNameCount = editPanelStream()
-				.map(EditDataSetPanel::getDataSetName)
+				.map(DetailDataSetPanel::getDataSetName)
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 			
 			List<Message> messages = new ArrayList<>();
@@ -444,11 +444,11 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	}
 	
 	
-	private Stream<EditDataSetPanel> editPanelStream() {
+	private Stream<DetailDataSetPanel> editPanelStream() {
 		return dataSetListModel.stream()
 			.map(DataSetListItem::getDetailPanel)
-			.filter(panel -> panel instanceof EditDataSetPanel)
-			.map(panel -> (EditDataSetPanel)panel);
+			.filter(panel -> panel instanceof DetailDataSetPanel)
+			.map(panel -> (DetailDataSetPanel)panel);
 	}
 	
 	private static void addCommonWarnSection(ErrorMessageDialog dialog, DetailPanel panel, String name) {

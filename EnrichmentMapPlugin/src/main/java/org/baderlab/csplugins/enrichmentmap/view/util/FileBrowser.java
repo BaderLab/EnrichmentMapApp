@@ -36,7 +36,8 @@ public class FileBrowser {
 			new FileChooserFilter("gct Files", "xls"),
 			new FileChooserFilter("rnk Files", "bgo"),
 			new FileChooserFilter("txt Files", "txt"),
-			new FileChooserFilter("tsv Files", "tsv")
+			new FileChooserFilter("tsv Files", "tsv"),
+			new FileChooserFilter("edb Files", "edb")
 		),
 		EXPRESSION("Expression Files",
 			new FileChooserFilter("gct Files", "gct"),

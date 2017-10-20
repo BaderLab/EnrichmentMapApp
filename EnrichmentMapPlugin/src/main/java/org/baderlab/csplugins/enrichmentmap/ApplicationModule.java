@@ -18,7 +18,7 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSigna
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSignatureTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSignatureTaskParallel;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDataSetsTask;
-import org.baderlab.csplugins.enrichmentmap.view.creation.EditDataSetPanel;
+import org.baderlab.csplugins.enrichmentmap.view.creation.DetailDataSetPanel;
 import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog;
 import org.baderlab.csplugins.enrichmentmap.view.creation.PathTextField;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.AddRanksDialog;
@@ -101,7 +101,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(ExportPDFAction.Factory.class);
 		installFactory(ExportTXTAction.Factory.class);
 		installFactory(AddRanksDialog.Factory.class);
-		installFactory(EditDataSetPanel.Factory.class);
+		installFactory(DetailDataSetPanel.Factory.class);
 		installFactory(ErrorMessageDialog.Factory.class);
 		installFactory(ColumnHeaderRankOptionRenderer.Factory.class);
 		installFactory(PathTextField.Factory.class);

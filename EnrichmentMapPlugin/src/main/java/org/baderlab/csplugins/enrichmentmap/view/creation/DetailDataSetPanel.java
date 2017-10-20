@@ -36,7 +36,7 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
-public class EditDataSetPanel extends JPanel implements DetailPanel {
+public class DetailDataSetPanel extends JPanel implements DetailPanel {
 	 
 	public static final String PROP_NAME = "dataSetName";
 	
@@ -57,11 +57,11 @@ public class EditDataSetPanel extends JPanel implements DetailPanel {
 	
 	
 	public interface Factory {
-		EditDataSetPanel create(@Nullable DataSetParameters initDataSet);
+		DetailDataSetPanel create(@Nullable DataSetParameters initDataSet);
 	}
 	
 	@Inject
-	public EditDataSetPanel(@Assisted @Nullable DataSetParameters initDataSet) {
+	public DetailDataSetPanel(@Assisted @Nullable DataSetParameters initDataSet) {
 		this.initDataSet = initDataSet;
 	}
 	

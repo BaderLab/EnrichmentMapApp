@@ -31,6 +31,7 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 			taskMonitor = new NullTaskMonitor();
 		taskMonitor.setTitle("Parsing Bingo Enrichment Result file");
 		
+		dataset.getMap().getParams().setFDR(true);
 		NESFilter nesFilter = dataset.getMap().getParams().getNESFilter();
 		
 		if(nesFilter == NESFilter.ALL || nesFilter == NESFilter.POSITIVE) {
@@ -50,8 +51,6 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 	
 	
 	private void readFile(TaskMonitor taskMonitor, String enrichmentFile) throws IOException {
-		dataset.getMap().getParams().setFDR(true);
-
 		List<String> lines = LineReader.readLines(enrichmentFile);
 		
 		int currentProgress = 0;
