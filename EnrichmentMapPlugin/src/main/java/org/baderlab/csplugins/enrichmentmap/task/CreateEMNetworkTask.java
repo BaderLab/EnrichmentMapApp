@@ -25,6 +25,8 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -78,8 +80,16 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 	private long createEMNetwork() {
 		// Create the CyNetwork
 		CyNetwork network = networkFactory.createNetwork();
+		CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
 		
-		network.getRow(network).set(CyNetwork.NAME, networkNaming.getSuggestedNetworkTitle(LegacySupport.EM_NAME));
+		String networkName = map.getParams().getNetworkName();
+		if(networkName == null) {
+			networkName = networkNaming.getSuggestedNetworkTitle(LegacySupport.EM_NAME);
+		}
+		
+		rootNetwork.getRow(rootNetwork).set(CyNetwork.NAME, LegacySupport.EM_NAME);
+		network.getRow(network).set(CyNetwork.NAME, networkName);
+		
 		map.setNetworkID(network.getSUID());
 		
 		createNodeColumns(network);

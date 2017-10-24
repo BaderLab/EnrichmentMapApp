@@ -35,6 +35,11 @@ public class DetailCommonPanel extends JPanel implements DetailPanel {
 	public String getDisplayName() {
 		return "Common Files (included in all data sets)";
 	}
+	
+	@Override
+	public String getDataSetName() {
+		return null;
+	}
 
 	@Override
 	public JPanel getPanel() {

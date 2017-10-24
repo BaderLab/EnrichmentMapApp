@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DropTargetAdapter;
@@ -58,6 +60,7 @@ import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
+import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.IterableListModel;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
@@ -79,14 +82,16 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Inject private DialogTaskManager dialogTaskManager;
 	@Inject private Provider<JFrame> jframeProvider;
 	@Inject private FileBrowser fileBrowser;
-	
+	@Inject private PropertyManager propertyManager;
 	@Inject private LegacySupport legacySupport;
-	@Inject private CutoffPropertiesPanel cutoffPanel;
+	
 	@Inject private Provider<DetailCommonPanel> commonPanelProvider;
 	@Inject private DetailDataSetPanel.Factory dataSetPanelFactory;
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private ErrorMessageDialog.Factory errorMessageDialogFactory;
-	@Inject private PropertyManager propertyManager;
+
+	@Inject private CutoffPropertiesPanel cutoffPanel;
+	@Inject private NetworkNamePanel networkNamePanel;
 	
 	private DetailCommonPanel commonPanel;
 	private DataSetListItem commonParams;
@@ -131,11 +136,14 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		double cutoff = cutoffPanel.getCutoff();
 		double combined = cutoffPanel.getCombinedConstant();
 		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
+		String networkName = networkNamePanel.getNetworkName();
 		EdgeStrategy edgeStrategy = cutoffPanel.getEdgeStrategy();
 		
 		EMCreationParameters params = 
 			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, filterByExpressions, 
 					similarityMetric, cutoff, combined, edgeStrategy);
+		
+		params.setNetworkName(networkName);
 		
 		List<DataSetParameters> dataSets = 
 				dataSetListModel.toList().stream()
@@ -178,13 +186,17 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	public JPanel createBodyPanel(CardDialogCallback callback) {
 		this.callback = callback;
 		this.commonPanel = commonPanelProvider.get();
-		
 		commonParams = new DataSetListItem(commonPanel);
 				
 		JPanel dataPanel = createDataSetPanel();
+		
+		JPanel bottom = new JPanel(new GridBagLayout());
+		bottom.add(networkNamePanel, GBCFactory.grid(0,0).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
+		bottom.add(cutoffPanel, GBCFactory.grid(0,1).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
+		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(dataPanel, BorderLayout.CENTER);
-		panel.add(cutoffPanel, BorderLayout.SOUTH);
+		panel.add(bottom, BorderLayout.SOUTH);
 		
 		updateButtonEnablement();
 		return panel;
@@ -198,6 +210,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		dataSetList = new DataSetList(dataSetListModel);
 		dataSetList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		dataSetList.addListSelectionListener(e -> selectItem(dataSetList.getSelectedValue()));
+		dataSetListModel.addListDataListener(SwingUtil.simpleListDataListener(this::updateAutomaticNetworkName));
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(dataSetList);
@@ -306,6 +319,12 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		callback.setFinishButtonEnabled(dataSetListModel.size() > 1);
 	}
 	
+	private void updateAutomaticNetworkName() {
+		if(dataSetListModel.size() > 1) {
+			String name = dataSetListModel.get(1).getDetailPanel().getDataSetName();
+			networkNamePanel.setAutomaticNetworkName(name);
+		}
+	}
 	
 	@Override
 	public void extraButtonClicked(String actionCommand) {
@@ -423,6 +442,10 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			if(!messages.isEmpty()) {
 				dialog.addSection(messages, panel.getDisplayName(), panel.getIcon());
 			}
+		}
+		
+		if(networkNamePanel.getNetworkName().trim().isEmpty()) {
+			dialog.addSection(Message.error("Network name is missing"), "Network Name", commonPanel.getIcon());
 		}
 			
 		if(dialog.isEmpty())

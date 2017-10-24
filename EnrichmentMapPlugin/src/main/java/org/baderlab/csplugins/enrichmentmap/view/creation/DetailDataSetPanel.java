@@ -65,6 +65,7 @@ public class DetailDataSetPanel extends JPanel implements DetailPanel {
 		this.initDataSet = initDataSet;
 	}
 	
+	@Override
 	public String getDataSetName() {
 		return nameText.getText();
 	}

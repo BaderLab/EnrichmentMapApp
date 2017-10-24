@@ -49,7 +49,7 @@ public class CreationDialogParameters implements CardDialogParameters {
 	
 	@Override
 	public Dimension getMinimumSize() {
-		return new Dimension(650, 500);
+		return new Dimension(650, 550);
 	}
 	
 	@Override

@@ -39,6 +39,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	private double qvalueMin = 1.0;
 	private double pvalueMin = 1.0;
 	
+	private String networkName;
 	private EdgeStrategy edgeStrategy;
 	
 	/**
@@ -78,6 +79,15 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		this.edgeStrategy = edgeStrategy;
 	}
 
+	
+	public void setNetworkName(String name) {
+		this.networkName = name;
+	}
+	
+	public String getNetworkName() {
+		return networkName;
+	}
+	
 	public String getAttributePrefix() {
 		return attributePrefix;
 	}

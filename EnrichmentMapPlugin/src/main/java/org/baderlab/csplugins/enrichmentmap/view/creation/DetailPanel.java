@@ -12,6 +12,8 @@ public interface DetailPanel {
 	
 	String getDisplayName();
 	
+	String getDataSetName();
+	
 	String getIcon();
 	
 	List<Message> validateInput(MasterDetailDialogPage parent);
