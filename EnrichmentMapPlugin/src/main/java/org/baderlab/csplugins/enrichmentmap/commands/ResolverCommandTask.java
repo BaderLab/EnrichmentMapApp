@@ -63,6 +63,9 @@ public class ResolverCommandTask extends AbstractTask {
 	@Tunable
 	public double combinedConstant = LegacySupport.combinedConstant_default;
 	
+	@Tunable
+	public String networkName = null;
+	
 	
 	@Inject private SynchronousTaskManager<?> taskManager;
 	@Inject private LegacySupport legacySupport;
@@ -156,6 +159,10 @@ public class ResolverCommandTask extends AbstractTask {
 				new EMCreationParameters(prefix, pvalue, qvalue, nesf, Optional.ofNullable(minExperiments), filterByExpressions,
 										 sm, similarityCutoff, combinedConstant, strategy);
 
+		if(networkName != null && !networkName.trim().isEmpty()) {
+			params.setNetworkName(networkName);
+		}
+		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
 		taskManager.execute(tasks);

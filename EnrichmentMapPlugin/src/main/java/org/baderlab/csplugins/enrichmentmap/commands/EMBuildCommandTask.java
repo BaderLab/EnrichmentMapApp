@@ -169,6 +169,9 @@ public class EMBuildCommandTask extends AbstractTask {
 	@Tunable
 	public boolean filterByExpressions = true;
 	
+	@Tunable
+	public String networkName = null;
+	
 	
 
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
@@ -259,6 +262,8 @@ public class EMBuildCommandTask extends AbstractTask {
 				new EMCreationParameters(prefix, pvalue, qvalue, nesf, Optional.ofNullable(minExperiments), filterByExpressions,
 						metric, similaritycutoff, combinedConstant, strategy);
 		
+		if(networkName != null && !networkName.trim().isEmpty())
+			creationParams.setNetworkName(networkName);
 		//System.out.println(creationParams);
 		//System.out.println(dataSets);
 		
