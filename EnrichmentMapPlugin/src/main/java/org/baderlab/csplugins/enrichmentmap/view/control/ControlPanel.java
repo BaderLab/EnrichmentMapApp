@@ -472,7 +472,20 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		void updateChartTypeCombo() {
 			ChartData data = (ChartData) getChartDataCombo().getSelectedItem();
-			getChartTypeCombo().setEnabled(getChartDataCombo().isEnabled() && data != ChartData.NONE);
+			
+			ChartType selectedItem = (ChartType) getChartTypeCombo().getSelectedItem();
+			getChartTypeCombo().removeAllItems();
+			
+			if(data.isChartTypeSelectable()) {
+				getChartTypeCombo().addItem(ChartType.RADIAL_HEAT_MAP);
+				getChartTypeCombo().addItem(ChartType.HEAT_MAP);
+				getChartTypeCombo().addItem(ChartType.HEAT_STRIPS);
+				
+				if(selectedItem != null)
+					getChartTypeCombo().setSelectedItem(selectedItem);
+			}
+			
+			getChartTypeCombo().setEnabled(data.isChartTypeSelectable());
 		}
 		
 		void updateChartColorsCombo() {
@@ -482,7 +495,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			
 			getChartColorsCombo().removeAllItems();
 			
-			if (data != ChartData.NONE) {
+			if (data.isChartTypeSelectable()) {
 				for (ColorScheme scheme : ColorScheme.values()) {
 					// If "NES" and Radial Heat Map, use RD_BU_9 instead of RD_BU_3
 					if (data == ChartData.NES_VALUE && type == ChartType.RADIAL_HEAT_MAP) {
@@ -499,12 +512,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					getChartColorsCombo().setSelectedItem(selectedItem);
 			}
 			
-			getChartColorsCombo().setEnabled(getChartTypeCombo().isEnabled() && data != ChartData.NONE);
+			getChartColorsCombo().setEnabled(getChartTypeCombo().isEnabled() && data.isChartTypeSelectable());
 		}
 		
 		void updateChartLabelsCheck() {
 			ChartData data = (ChartData) getChartDataCombo().getSelectedItem();
-			getShowChartLabelsCheck().setEnabled(getChartTypeCombo().isEnabled() && data != ChartData.NONE);
+			getShowChartLabelsCheck().setEnabled(data.isChartTypeSelectable());
+			if(!data.isChartTypeSelectable())
+				getShowChartLabelsCheck().setSelected(false);
 		}
 		
 		CyNetworkView getNetworkView() {
@@ -738,13 +753,12 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				chartDataCombo.addItem(ChartData.P_VALUE);
 				
 				EnrichmentMap map = getEnrichmentMap();
-				
 				if (map != null) {
 					EMCreationParameters params = map.getParams();
-					
 					if (params != null && params.isFDR())
 						chartDataCombo.addItem(ChartData.FDR_VALUE);
 				}
+				chartDataCombo.addItem(ChartData.DATA_SET);
 			}
 			
 			return chartDataCombo;
@@ -753,9 +767,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		JComboBox<ChartType> getChartTypeCombo() {
 			if (chartTypeCombo == null) {
 				chartTypeCombo = new JComboBox<>();
-				
-				for (ChartType chart : ChartType.values())
-					chartTypeCombo.addItem(chart);
+				chartTypeCombo.addItem(ChartType.RADIAL_HEAT_MAP);
+				chartTypeCombo.addItem(ChartType.HEAT_MAP);
+				chartTypeCombo.addItem(ChartType.HEAT_STRIPS);
 			}
 			
 			return chartTypeCombo;

@@ -80,10 +80,10 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
-import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Colors;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
@@ -266,7 +266,7 @@ public class LegendPanel extends JPanel {
 		ChartData data = chartOptions.getData();
 		
 		if(data != ChartData.NONE) {
-			ColumnDescriptor<Double> columnDescriptor = data.getColumnDescriptor();
+			AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
 			List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
 					dataSets, columnDescriptor, columnIdFactory);
 	

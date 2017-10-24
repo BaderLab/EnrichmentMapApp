@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -353,6 +354,10 @@ public class EnrichmentMap {
 	 */
 	public List<String> getDataSetNames() {
 		return getDataSetList().stream().map(EMDataSet::getName).collect(Collectors.toList());
+	}
+	
+	public List<Color> getDataSetColors() {
+		return getDataSetList().stream().map(EMDataSet::getColor).collect(Collectors.toList());
 	}
 
 	public EMCreationParameters getParams() {

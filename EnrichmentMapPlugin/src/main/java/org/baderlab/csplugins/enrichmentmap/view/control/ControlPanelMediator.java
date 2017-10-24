@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,12 +41,12 @@ import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
-import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
@@ -277,7 +278,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	public EMStyleOptions createStyleOptions(CyNetworkView netView) {
 		EnrichmentMap map = netView != null ? emManager.getEnrichmentMap(netView.getModel().getSUID()) : null;
 		EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
-
 		return createStyleOptions(map, viewPanel);
 	}
 	
@@ -291,31 +291,38 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			Set<EMDataSet> dataSets = filterDataSets(options.getDataSets());
 			
 			if (!dataSets.isEmpty()) {
-				ColumnDescriptor<Double> columnDescriptor = data.getColumnDescriptor();
-				List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
-						dataSets, columnDescriptor, columnIdFactory);
 				ChartType type = chartOptions.getType();
-
-				List<Color> colors = ChartUtil.getChartColors(chartOptions);
-				List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
-				
 				Map<String, Object> props = new HashMap<>(type.getProperties());
-				props.put("cy_dataColumns", columns);
-				props.put("cy_range", range);
-				props.put("cy_autoRange", false);
-				props.put("cy_globalRange", true);
-				props.put("cy_showItemLabels", chartOptions.isShowLabels());
-				props.put("cy_colors", colors);
+				AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
 				
-				ColorScheme colorScheme = chartOptions != null ? chartOptions.getColorScheme() : null;
-				
-				if (colorScheme != null && colorScheme.getPoints() != null) {
-					List<Double> points = colorScheme.getPoints();
+				if(data == ChartData.DATA_SET) {
+					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
+					List<Color> colors = options.getEnrichmentMap().getDataSetColors();
+					props.put("cy_dataColumns", columns);
+					props.put("cy_colors", colors);
+					props.put("cy_showItemLabels", chartOptions.isShowLabels());
 					
-					if (!points.isEmpty())
-						props.put(AbstractChart.COLOR_POINTS, points);
+				} else {
+					List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
+							dataSets, columnDescriptor, columnIdFactory);
+	
+					List<Color> colors = ChartUtil.getChartColors(chartOptions);
+					List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
+					
+					props.put("cy_dataColumns", columns);
+					props.put("cy_range", range);
+					props.put("cy_autoRange", false);
+					props.put("cy_globalRange", true);
+					props.put("cy_showItemLabels", chartOptions.isShowLabels());
+					props.put("cy_colors", colors);
+					
+					ColorScheme colorScheme = chartOptions != null ? chartOptions.getColorScheme() : null;
+					if (colorScheme != null && colorScheme.getPoints() != null) {
+						List<Double> points = colorScheme.getPoints();
+						if (!points.isEmpty())
+							props.put(AbstractChart.COLOR_POINTS, points);
+					}
 				}
-				
 				try {
 					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
 					
@@ -728,13 +735,20 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		boolean postAnalysis = map.hasSignatureDataSets();
 		
 		ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
-		ChartType type = getChartType(viewPanel);
-		ColorScheme colorScheme = (ColorScheme) viewPanel.getChartColorsCombo().getSelectedItem();
+		ChartType type;
+		ColorScheme colorScheme;
+		if(data == ChartData.DATA_SET) {
+			type = ChartType.DATASET_PIE;
+			colorScheme = null;
+		} else {
+			type = getChartType(viewPanel);
+			colorScheme = (ColorScheme) viewPanel.getChartColorsCombo().getSelectedItem();
+		}
+		
 		boolean showLabels = viewPanel.getShowChartLabelsCheck().isSelected();
 		ChartOptions chartOptions = new ChartOptions(data, type, colorScheme, showLabels);
 
-		return new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, chartOptions, postAnalysis,
-				publicationReady);
+		return new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, chartOptions, postAnalysis, publicationReady);
 	}
 	
 	/**

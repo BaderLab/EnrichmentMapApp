@@ -37,9 +37,6 @@ import com.google.inject.Singleton;
 /**
  * Converts each EnrichmentMap object into JSON format and stores it in a private table.
  * This is designed to support App reloading like when the App is updated.
- * 
- * MKTODO restore the EnrichmentMap field in DataSet
- * MKTODO map old node suids to new ones after session is restored
  */
 @Singleton
 public class SessionModelIO {

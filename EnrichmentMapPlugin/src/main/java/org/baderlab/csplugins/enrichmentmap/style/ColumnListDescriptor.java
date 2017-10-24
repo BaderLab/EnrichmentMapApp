@@ -2,54 +2,60 @@ package org.baderlab.csplugins.enrichmentmap.style;
 
 import java.util.List;
 
+import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 
 /**
  * MKTODO Replace the "String suffix" parameters with "AbstractDataSet" like in ColumnDescriptor.
  */
-public class ColumnListDescriptor<T> {
+public class ColumnListDescriptor<T> extends AbstractColumnDescriptor {
 
-	private final String name;
 	private final Class<T> elementType;
 	
 	public ColumnListDescriptor(String name, Class<T> elementType) {
-		this.name = name;
+		super(name);
 		this.elementType = elementType;
-	}
-
-	public String getBaseName() {
-		return name;
 	}
 
 	public Class<?> getElementType() {
 		return elementType;
 	}
-	
-	public List<T> get(CyRow row, String prefix, String suffix) {
-		return row.getList(with(prefix,suffix), elementType);
+
+	public List<T> get(CyRow row, String prefix, AbstractDataSet ds) {
+		return row.getList(with(prefix,ds), elementType);
 	}
 	
-	public void set(CyRow row, String prefix, String suffix, List<T> value) {
-		row.set(with(prefix,suffix), value);
+	public List<T> get(CyRow row, String prefix) {
+		return row.getList(with(prefix,null), elementType);
 	}
 	
-	public void createColumn(CyTable table, String prefix, String suffix) {
-		table.createListColumn(with(prefix,suffix), elementType, true);
+	public List<T> get(CyRow row) {
+		return row.getList(name, elementType);
 	}
 	
-	public void createColumnIfAbsent(CyTable table, String prefix, String suffix) {
-		if(table.getColumn(with(prefix,suffix)) == null)
-			createColumn(table, prefix, suffix);
+	public void set(CyRow row, String prefix, AbstractDataSet ds, List<T> value) {
+		row.set(with(prefix,ds), value);
 	}
 	
-	public String with(String prefix, String suffix) {
-		StringBuilder sb = new StringBuilder();
-		if(prefix != null)
-			sb.append(prefix);
-		sb.append(name);
-		if(suffix != null)
-			sb.append(" (").append(suffix).append(")");
-		return sb.toString();
+	public void set(CyRow row, String prefix, List<T> value) {
+		row.set(with(prefix,null), value);
 	}
+	
+	public void set(CyRow row, List<T> value) {
+		row.set(name, value);
+	}
+	
+	@Override
+	public void createColumn(CyTable table, String prefix, AbstractDataSet ds) {
+		table.createListColumn(with(prefix,ds), elementType, true);
+	}
+
+	@Override
+	public void createColumn(CyTable table) {
+		table.createListColumn(name, elementType, true);
+	}
+	
+	
+	
 }

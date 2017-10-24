@@ -263,8 +263,7 @@ public class DataSetSelector extends JPanel {
 					// Workaround for preventing a click on the check-box in a selected row
 					// from changing the selection when multiple table rows are already selected
 					if (table.getSelectedRowCount() > 0)
-						previousSelectedRows = Arrays.stream(table.getSelectedRows()).boxed()
-								.collect(Collectors.toList());
+						previousSelectedRows = Arrays.stream(table.getSelectedRows()).boxed().collect(Collectors.toList());
 				}
 			});
 			table.addMouseListener(new MouseAdapter() {

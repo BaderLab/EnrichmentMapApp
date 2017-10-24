@@ -40,7 +40,15 @@ public enum ChartType {
 					new SimpleEntry<>("cy_showDomainAxis", false),
 					new SimpleEntry<>("cy_showRangeAxis", false))
 					.collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
-	);
+	),
+	DATASET_PIE(
+			"org.cytoscape.PieChart",
+			"Data Sets",
+			Collections.unmodifiableMap(Stream.of(
+					new SimpleEntry<>("cy_startAngle", 90.0f))
+					.collect(Collectors.toMap(Entry::getKey, Entry::getValue)))
+	)
+	;
 	
 	private final String id;
 	private final String label;

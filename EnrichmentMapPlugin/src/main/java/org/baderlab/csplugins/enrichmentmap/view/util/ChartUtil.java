@@ -15,10 +15,10 @@ import java.util.stream.Collectors;
 import javax.swing.UIManager;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
-import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -52,7 +52,7 @@ public final class ChartUtil {
 	}
 	
 	public static List<CyColumnIdentifier> getSortedColumnIdentifiers(String attributePrefix,
-			Collection<EMDataSet> dataSets, ColumnDescriptor<Double> columnDescriptor,
+			Collection<EMDataSet> dataSets, AbstractColumnDescriptor columnDescriptor,
 			CyColumnIdentifierFactory columnIdFactory) {
 		List<CyColumnIdentifier> columns = dataSets
 				.stream()

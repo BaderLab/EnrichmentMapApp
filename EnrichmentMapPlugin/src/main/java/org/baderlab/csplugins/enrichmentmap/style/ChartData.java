@@ -6,12 +6,13 @@ public enum ChartData {
 	NONE("-- None --", null),
 	NES_VALUE("NES Columns", Columns.NODE_NES),
 	P_VALUE("P-value Columns", Columns.NODE_PVALUE),
-	FDR_VALUE("Q-value (FDR) Columns", Columns.NODE_FDR_QVALUE);
+	FDR_VALUE("Q-value (FDR) Columns", Columns.NODE_FDR_QVALUE),
+	DATA_SET("Color by Data Set", Columns.DATASET_CHART);
 	
 	private final String label;
-	private final ColumnDescriptor<Double> columnDescriptor;
+	private final AbstractColumnDescriptor columnDescriptor;
 
-	private ChartData(String label, ColumnDescriptor<Double> columnDescriptor) {
+	private ChartData(String label, AbstractColumnDescriptor columnDescriptor) {
 		this.label = label;
 		this.columnDescriptor = columnDescriptor;
 	}
@@ -20,8 +21,12 @@ public enum ChartData {
 		return label;
 	}
 	
-	public ColumnDescriptor<Double> getColumnDescriptor() {
+	public AbstractColumnDescriptor getColumnDescriptor() {
 		return columnDescriptor;
+	}
+	
+	public boolean isChartTypeSelectable() {
+		return this != NONE && this != DATA_SET;
 	}
 	
 	@Override

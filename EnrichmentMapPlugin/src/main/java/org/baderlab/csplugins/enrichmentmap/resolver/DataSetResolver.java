@@ -148,12 +148,12 @@ public class DataSetResolver {
 		
 		// There should be a threshold for considering the path a match
 		// MKTODO can this heuristic be improved?
-		if(closest.isPresent()) {
-			int score = scores.get(closest.get());
-			if(score == 0) {
-				return Optional.empty();
-			}
-		}
+//		if(closest.isPresent()) {
+//			int score = scores.get(closest.get());
+//			if(score == 0) {
+//				return Optional.empty();
+//			}
+//		}
 		
 		return closest;
 	}
