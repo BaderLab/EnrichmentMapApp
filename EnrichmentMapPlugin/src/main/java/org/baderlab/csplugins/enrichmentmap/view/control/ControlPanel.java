@@ -193,14 +193,17 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			
 			emViewCombo.setRenderer(new DefaultListCellRenderer() {
 				@Override
-				public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
-						boolean cellHasFocus) {
+				public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 					super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 					
-					if (value instanceof CyNetworkView)
-						this.setText(NetworkUtil.getTitle((CyNetworkView) value));
-					else
+					if (value instanceof CyNetworkView) {
+						String title = NetworkUtil.getTitle((CyNetworkView) value);
+						String abbreviated = SwingUtil.abbreviate(title, 35);
+						this.setText(abbreviated);
+						list.setToolTipText(title);
+					} else {
 						this.setText("-- Select EnrichmentMap View --");
+					}
 					
 					return this;
 				}
