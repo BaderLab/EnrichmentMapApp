@@ -152,7 +152,7 @@ public class EMBuildCommandTask extends AbstractTask {
 	public Double similaritycutoff = 0.25;
 
 	@Tunable(description = "Similarity Coeffecient", groups = { "User Input", "Parameters" }, gravity = 20.0, tooltip = "coeffecient between 0 and 1.")
-	public ListSingleSelection<String> coeffecients;
+	public ListSingleSelection<String> coefficients;
 
 	@Tunable
 	public double combinedConstant = LegacySupport.combinedConstant_default;
@@ -182,7 +182,7 @@ public class EMBuildCommandTask extends AbstractTask {
 		analysisType = new ListSingleSelection<String>(EnrichmentMapParameters.method_GSEA,
 				EnrichmentMapParameters.method_generic, EnrichmentMapParameters.method_Specialized);
 
-		coeffecients = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP,
+		coefficients = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP,
 				EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
 		
 		edgeStrategy = ResolverCommandTask.enumNames(EdgeStrategy.values());
@@ -199,7 +199,7 @@ public class EMBuildCommandTask extends AbstractTask {
 	public void buildEnrichmentMap() {
 		// Note we must continue to use the old constants from EnrichmentMapParameters for backwards compatibility
 		Method method = EnrichmentMapParameters.stringToMethod(analysisType.getSelectedValue());
-		SimilarityMetric metric = EnrichmentMapParameters.stringToSimilarityMetric(coeffecients.getSelectedValue());
+		SimilarityMetric metric = EnrichmentMapParameters.stringToSimilarityMetric(coefficients.getSelectedValue());
 		
 		//Set Dataset1 Files
 		DataSetFiles dataset1files = new DataSetFiles();
