@@ -35,7 +35,7 @@ public class Protocol1Test extends BaseIntegrationTest {
 		assertTrue(enrichmentFile.exists());
 		
 		task.analysisType.setSelectedValue(EnrichmentMapParameters.method_generic);
-		task.coeffecients.setSelectedValue(EnrichmentMapParameters.SM_JACCARD);
+		task.coefficients.setSelectedValue(EnrichmentMapParameters.SM_JACCARD);
 		task.enrichmentsDataset1 = enrichmentFile;
 		task.pvalue = 1.0;
 		task.qvalue = 0.00001;
