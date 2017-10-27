@@ -1,9 +1,12 @@
  package org.baderlab.csplugins.enrichmentmap;
 
+import static org.cytoscape.work.ServiceProperties.*;
+
 import java.util.Properties;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
+import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.BuildCommand;
@@ -82,6 +85,13 @@ public class CyActivator extends AbstractCyActivator {
 			// register actions
 			registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class));
 			
+			// context menu actions in network view
+			Properties pathwayCommonsProps = new Properties();
+			pathwayCommonsProps.setProperty(IN_MENU_BAR, "false");
+			pathwayCommonsProps.setProperty(PREFERRED_MENU, APPS_MENU);
+			pathwayCommonsProps.setProperty(TITLE, "EnrichmentMap - Open Pathway Commons");
+			registerAllServices(bc, injector.getInstance(OpenPathwayCommonsTaskFactory.class), pathwayCommonsProps);
+			
 			// chart listener
 			ChartFactoryManager chartFactoryManager = injector.getInstance(ChartFactoryManager.class);
 			registerServiceListener(bc, chartFactoryManager, "addFactory", "removeFactory", CyCustomGraphics2Factory.class);
@@ -95,7 +105,6 @@ public class CyActivator extends AbstractCyActivator {
 			// UI Mediators
 			ControlPanelMediator controlPanelMediator = injector.getInstance(ControlPanelMediator.class);
 			registerAllServices(bc, controlPanelMediator);
-			
 			HeatMapMediator heatMapMediator = injector.getInstance(HeatMapMediator.class);
 			registerAllServices(bc, heatMapMediator);
 		}

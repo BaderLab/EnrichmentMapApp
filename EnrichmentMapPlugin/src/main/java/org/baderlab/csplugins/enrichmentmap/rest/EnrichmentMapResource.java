@@ -1,6 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.rest;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -13,8 +16,11 @@ import javax.ws.rs.core.Response.Status;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.io.ModelSerializer;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 
 import com.google.inject.Inject;
 
@@ -33,7 +39,9 @@ public class EnrichmentMapResource {
 	@ApiOperation(value="Get enrichment map model data for a given network.", response=EnrichmentMap.class)
 	@Path("/model/{network}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getModelData(@ApiParam(value="Network name or SUID") @PathParam("network") String network) {
+	public Response getModelData(
+			@ApiParam(value="Network name or SUID") @PathParam("network") String network
+	) {
 		return
 			getEnrichmentMap(network)
 			.map(this::getEnrichmentMapJSON)
@@ -46,13 +54,41 @@ public class EnrichmentMapResource {
 	@ApiOperation(value="Get enrichment map model data for a given network.", response=ExpressionDataResponse.class)
 	@Path("/expressions/{network}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getExpressionData(@ApiParam(value="Network name or SUID") @PathParam("network") String network) {
+	public Response getExpressionDataForNetwork(
+			@ApiParam(value="Network name or SUID") @PathParam("network") String network
+	) {
 		return
 			getEnrichmentMap(network)
 			.map(ExpressionDataResponse::new)
 			.map(data -> Response.ok(data).build())
 			.orElse(Response.status(Status.BAD_REQUEST).build());
 	}
+	
+	
+	@GET
+	@ApiOperation(value="Get enrichment map model data for a given network.", response=ExpressionDataResponse.class)
+	@Path("/expressions/{network}/{node}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getExpressionDataForNode(
+			@ApiParam(value="Network name or SUID") @PathParam("network") String network,
+			@ApiParam(value="Node SUID") @PathParam("node") long nodeID
+	) {
+		Optional<EnrichmentMap> mapOpt = getEnrichmentMap(network);
+		if(mapOpt.isPresent()) {
+			EnrichmentMap map = mapOpt.get();
+			String prefix = map.getParams().getAttributePrefix();
+			CyNetwork cyNetwork = networkManager.getNetwork(map.getNetworkID());
+			CyNode node = cyNetwork.getNode(nodeID);
+			CyRow row = cyNetwork.getRow(node);
+			List<String> c = Columns.NODE_GENES.get(row, prefix);
+			Set<String> genes = new HashSet<>(c);
+			System.out.println("genes: " + genes.size());
+			ExpressionDataResponse data = new ExpressionDataResponse(map, Optional.of(genes));
+			return Response.ok(data).build();
+		}
+		return Response.status(Status.BAD_REQUEST).build();
+	}
+	
 	
 	
 	private String getEnrichmentMapJSON(EnrichmentMap map) {

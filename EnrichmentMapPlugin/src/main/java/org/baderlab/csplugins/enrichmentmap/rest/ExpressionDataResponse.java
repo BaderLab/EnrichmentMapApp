@@ -3,6 +3,8 @@ package org.baderlab.csplugins.enrichmentmap.rest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -13,16 +15,22 @@ public class ExpressionDataResponse {
 	private List<DataSetExpressionResponse> dataSetExpressionList;
 	
 	public ExpressionDataResponse(EnrichmentMap map) {
+		this(map, Optional.empty());
+	}
+	
+	public ExpressionDataResponse(EnrichmentMap map, Optional<Set<String>> genes) {
 		dataSetExpressionList = new ArrayList<>(map.getDataSetCount());
 		
 		Collection<String> keys = map.getExpressionMatrixKeys();
 		for(String key : keys) {
-			DataSetExpressionResponse dataSetResponse = createDataSetExpressionResponse(map, key);
-			dataSetExpressionList.add(dataSetResponse);
+			DataSetExpressionResponse dataSetResponse = createDataSetExpressionResponse(map, key, genes);
+			if(!dataSetResponse.getExpressions().isEmpty()) {
+				dataSetExpressionList.add(dataSetResponse);
+			}
 		}
 	}
 
-	private static DataSetExpressionResponse createDataSetExpressionResponse(EnrichmentMap map, String key) {
+	private static DataSetExpressionResponse createDataSetExpressionResponse(EnrichmentMap map, String key, Optional<Set<String>> genes) {
 		GeneExpressionMatrix matrix = map.getExpressionMatrix(key);
 		
 		List<String> dataSetNames = new ArrayList<>();
@@ -32,7 +40,7 @@ public class ExpressionDataResponse {
 			}
 		}
 		
-		return new DataSetExpressionResponse(map, dataSetNames, matrix);
+		return new DataSetExpressionResponse(map, dataSetNames, matrix, genes);
 	}
 	
 	public List<DataSetExpressionResponse> getDataSetExpressionList() {

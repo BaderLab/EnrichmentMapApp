@@ -6,6 +6,7 @@ import java.lang.annotation.Retention;
 import java.util.Properties;
 
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
+import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTask;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
@@ -106,6 +107,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(ColumnHeaderRankOptionRenderer.Factory.class);
 		installFactory(PathTextField.Factory.class);
 		installFactory(CreateDiseaseSignatureTaskFactory.Factory.class);
+		installFactory(OpenPathwayCommonsTask.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {
