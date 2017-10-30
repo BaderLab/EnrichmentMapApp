@@ -206,24 +206,30 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>org.cytoscape</groupId>
-		    <artifactId>model-impl</artifactId>
-		    <version>${cy3.version}</version>
-		    <type>test-jar</type>
-		    <scope>test</scope>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-impl</artifactId>
+			<version>${cy3.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>org.cytoscape</groupId>
-		    <artifactId>event-api</artifactId>
-		    <version>${cy3.version}</version>
-		    <type>test-jar</type>
-		    <scope>test</scope>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>event-api</artifactId>
+			<version>${cy3.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>org.cytoscape</groupId>
-		    <artifactId>model-impl</artifactId>
-		    <version>${cy3.version}</version>
-		    <scope>test</scope>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>model-impl</artifactId>
+			<version>${cy3.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.test-framework.providers</groupId>
+			<artifactId>jersey-test-framework-provider-jetty</artifactId>
+			<version>2.23</version> <!-- version used by CyRest in Cytoscape 3.6 -->
+			<scope>test</scope>
 		</dependency>
 		
 	</dependencies>

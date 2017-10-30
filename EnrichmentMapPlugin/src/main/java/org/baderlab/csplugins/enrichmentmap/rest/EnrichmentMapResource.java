@@ -46,7 +46,7 @@ public class EnrichmentMapResource {
 			getEnrichmentMap(network)
 			.map(this::getEnrichmentMapJSON)
 			.map(data -> Response.ok(data).build())
-			.orElse(Response.status(Status.BAD_REQUEST).build());
+			.orElse(Response.status(Status.NOT_FOUND).build());
 	}
 	
 	
@@ -61,7 +61,7 @@ public class EnrichmentMapResource {
 			getEnrichmentMap(network)
 			.map(ExpressionDataResponse::new)
 			.map(data -> Response.ok(data).build())
-			.orElse(Response.status(Status.BAD_REQUEST).build());
+			.orElse(Response.status(Status.NOT_FOUND).build());
 	}
 	
 	
@@ -79,14 +79,15 @@ public class EnrichmentMapResource {
 			String prefix = map.getParams().getAttributePrefix();
 			CyNetwork cyNetwork = networkManager.getNetwork(map.getNetworkID());
 			CyNode node = cyNetwork.getNode(nodeID);
-			CyRow row = cyNetwork.getRow(node);
-			List<String> c = Columns.NODE_GENES.get(row, prefix);
-			Set<String> genes = new HashSet<>(c);
-			System.out.println("genes: " + genes.size());
-			ExpressionDataResponse data = new ExpressionDataResponse(map, Optional.of(genes));
-			return Response.ok(data).build();
+			if(node != null) {
+				CyRow row = cyNetwork.getRow(node);
+				List<String> c = Columns.NODE_GENES.get(row, prefix);
+				Set<String> genes = new HashSet<>(c);
+				ExpressionDataResponse data = new ExpressionDataResponse(map, Optional.of(genes));
+				return Response.ok(data).build();
+			}
 		}
-		return Response.status(Status.BAD_REQUEST).build();
+		return Response.status(Status.NOT_FOUND).build();
 	}
 	
 	
