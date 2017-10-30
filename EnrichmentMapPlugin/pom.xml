@@ -208,7 +208,7 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
-			<version>${cy3.version}</version>
+			<version>3.5.1</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
@@ -222,7 +222,7 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-impl</artifactId>
-			<version>${cy3.version}</version>
+			<version>3.5.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
