@@ -5,6 +5,7 @@ import static org.ops4j.peaberry.Peaberry.service;
 import static org.ops4j.peaberry.util.Filters.ldap;
 
 import java.lang.annotation.Retention;
+import java.util.Properties;
 
 import javax.swing.JFrame;
 
@@ -24,6 +25,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.session.CySessionManager;
@@ -47,6 +49,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 
 /**
  * Guice configuration module. 
@@ -111,6 +114,9 @@ public class CytoscapeServiceModule extends AbstractModule {
 		bind(VisualMappingFunctionFactory.class).annotatedWith(Continuous.class).toProvider(service(VisualMappingFunctionFactory.class).filter(ldap("(mapping.type=continuous)")).single());
 		bind(VisualMappingFunctionFactory.class).annotatedWith(Discrete.class).toProvider(service(VisualMappingFunctionFactory.class).filter(ldap("(mapping.type=discrete)")).single());
 		bind(VisualMappingFunctionFactory.class).annotatedWith(Passthrough.class).toProvider(service(VisualMappingFunctionFactory.class).filter(ldap("(mapping.type=passthrough)")).single());
+		
+		TypeLiteral<CyProperty<Properties>> cy3props = new TypeLiteral<CyProperty<Properties>>(){};
+		bind(cy3props).annotatedWith(Names.named("cytoscape3.props")).toProvider(service(cy3props).filter(ldap("(cyPropertyName=cytoscape3.props)")).single());
 	}
 		
 	private <T> void bindService(Class<T> serviceClass) {

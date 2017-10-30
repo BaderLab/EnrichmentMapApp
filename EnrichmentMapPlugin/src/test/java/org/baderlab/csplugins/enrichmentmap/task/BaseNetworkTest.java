@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -8,6 +9,8 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
@@ -17,10 +20,16 @@ import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSignatureTaskParallel;
@@ -178,5 +187,32 @@ public abstract class BaseNetworkTest {
 				Matchers.<Class>anyObject(),
 				Matchers.<VisualProperty>anyObject())
 		).thenReturn(cm);
+	}
+	
+	
+	/**
+	 * Create a basic enrichment map network with 4 nodes for simple tests.
+	 */
+	public EnrichmentMap createBasicNetwork() {
+		String PATH = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/EMandPA/";
+		DataSetFiles dataset1files = new DataSetFiles();
+		dataset1files.setGMTFileName(PATH + "gene_sets.gmt");  
+		dataset1files.setExpressionFileName(PATH + "FakeExpression.txt");
+		dataset1files.setEnrichmentFileName1(PATH + "fakeEnrichments.txt");
+		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
+		
+		EMCreationParameters params = 
+			new EMCreationParameters("Basic_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), true, 
+					SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
+		
+		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
+	    assertEquals(0, maps.size());
+	    
+	    buildEnrichmentMap(params, new DataSetParameters(LegacySupport.DATASET1, Method.Generic, dataset1files));
+	    
+	    maps = emManager.getAllEnrichmentMaps();
+	    assertEquals(1, maps.size());
+	    
+	    return emManager.getAllEnrichmentMaps().values().iterator().next();
 	}
 }

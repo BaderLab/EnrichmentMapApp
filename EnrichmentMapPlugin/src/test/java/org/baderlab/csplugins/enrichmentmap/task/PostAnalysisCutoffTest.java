@@ -50,8 +50,8 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	
 	private PostAnalysisParameters.Builder getBuilder() {
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-    	builder.setAnalysisType(PostAnalysisParameters.AnalysisType.KNOWN_SIGNATURE);
-    	builder.setUniverseType(UniverseType.USER_DEFINED);
+		builder.setAnalysisType(PostAnalysisParameters.AnalysisType.KNOWN_SIGNATURE);
+    		builder.setUniverseType(UniverseType.USER_DEFINED);
 		builder.setUserDefinedUniverseSize(11445);
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
