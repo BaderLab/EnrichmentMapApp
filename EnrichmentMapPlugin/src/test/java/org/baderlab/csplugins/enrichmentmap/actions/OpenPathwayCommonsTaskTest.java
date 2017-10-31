@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 import java.net.URLEncoder;
@@ -11,11 +11,11 @@ import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.task.BaseNetworkTest;
+import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.util.swing.OpenBrowser;
 import org.jukito.JukitoRunner;
 import org.junit.After;
 import org.junit.Before;
@@ -60,8 +60,8 @@ public class OpenPathwayCommonsTaskTest extends BaseNetworkTest {
 		String expectedUri = "http://pathway.commons/paint?uri=" + returnUri;
 		
 		OpenPathwayCommonsTask task = pathwayCommonsTaskFactory.create(node, network);
-		task.run(null);
-		verify(openBrowser).openURL(expectedUri);
+		String uri = task.getPathwayCommonsURL();
+		assertEquals(expectedUri, uri);
 	}
 	
 }

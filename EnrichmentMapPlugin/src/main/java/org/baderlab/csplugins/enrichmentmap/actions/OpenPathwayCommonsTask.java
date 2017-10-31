@@ -7,10 +7,10 @@ import javax.ws.rs.core.UriBuilder;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -37,18 +37,13 @@ public class OpenPathwayCommonsTask extends AbstractTask {
 		this.node = node;
 		this.network = network;
 	}
-
-	@Override
-	public void run(TaskMonitor taskMonitor) {
+	
+	public String getPathwayCommonsURL() {
 		EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
 		if(map == null)
-			return;
-		
-		System.out.println(cy3props);
+			return null;
 		
 		int port = Integer.parseInt(cy3props.getProperties().getProperty("rest.port"));
-		
-		System.out.println("port: " + port);
 		
 		String returnUri = UriBuilder
 			.fromPath("/enrichmentmap/expressions/{0}/{1}")
@@ -66,9 +61,18 @@ public class OpenPathwayCommonsTask extends AbstractTask {
 			.build()
 			.toString();
 		
-		System.out.println("url: " + pcUri);
-		
-		openBrowser.openURL(pcUri);
+		return pcUri;
+	}
+
+	@Override
+	public void run(TaskMonitor taskMonitor) {
+		String pcUri = getPathwayCommonsURL();
+		if(pcUri != null) {
+			boolean success = openBrowser.openURL(pcUri);
+			if(!success) {
+				System.out.println("Could not open URL: " + pcUri);
+			}
+		}
 	}
 
 }
