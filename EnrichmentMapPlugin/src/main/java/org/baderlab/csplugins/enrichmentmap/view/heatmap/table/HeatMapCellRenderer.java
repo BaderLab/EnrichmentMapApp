@@ -40,12 +40,7 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 			double d = ((Number)value).doubleValue();
 			
 			HeatMapTableModel model = (HeatMapTableModel) table.getModel();
-			EMDataSet dataset = model.getDataSet(col);
-			
-			Transform transform = model.getTransform();
-			DataSetColorRange range = getRange(dataset, transform);
-			
-			Color color = getColor(range.getTheme(), range.getRange(), d);
+			Color color = getColor(model, col, d);
 			label.setBackground(color);
 			Border border = BorderFactory.createMatteBorder(1, 1, 1, 1, isSelected ? table.getSelectionForeground() : color);
 			label.setBorder(border);
@@ -65,11 +60,29 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 	}
 	
 	
+	public DecimalFormat getFormat() {
+		return format;
+	}
+
+	public Color getColor(HeatMapTableModel model, int col, double d) {
+		EMDataSet dataset = model.getDataSet(col);
+		Transform transform = model.getTransform();
+		DataSetColorRange range = getRange(dataset, transform);
+		Color color = getColor(d, range);
+		return color;
+	}
+	
+	
 	public DataSetColorRange getRange(EMDataSet dataset, Transform transform) {
 		return colorRanges.computeIfAbsent(dataset, ds -> DataSetColorRange.create(ds, transform));
 	}
 	
-	private static Color getColor(ColorGradientTheme theme, ColorGradientRange range, Double measurement) {
+	
+	public static Color getColor(Double measurement, DataSetColorRange range) {
+		return getColor(measurement, range.getTheme(), range.getRange());
+	}
+	
+	public static Color getColor(Double measurement, ColorGradientTheme theme, ColorGradientRange range) {
 		if (theme == null || range == null || measurement == null)
 			return Color.GRAY;
 		if(!Double.isFinite(measurement)) // missing data can result in NaN, log transformed value of -1 can result in -Infinity
