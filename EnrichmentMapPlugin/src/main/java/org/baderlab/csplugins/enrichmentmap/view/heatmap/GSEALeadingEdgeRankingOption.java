@@ -48,10 +48,21 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 		String r = SwingUtil.abbreviate(rankingName, 11);
 		String d = SwingUtil.abbreviate(dataset.getName(), 11);
 		
-		if(r.equals(d)) {
+		if(r.equals(d))
 			return "<html>Ranks<br>" + r + "</html>";
-		}
-		return "<html>" + r + "<br>" + d + "</html>";
+		else
+			return "<html>" + r + "<br>" + d + "</html>";
+	}
+	
+	@Override
+	public String getPdfHeaderText() {
+		String r = SwingUtil.abbreviate(rankingName, 11);
+		String d = SwingUtil.abbreviate(dataset.getName(), 11);
+		
+		if(r.equals(d))
+			return "Ranks\n" + r;
+		else
+			return r + "\n" + d;
 	}
 	
 	@Override

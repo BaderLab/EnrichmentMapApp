@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
@@ -25,16 +26,18 @@ public class ExportPDFAction extends AbstractAction {
 	@Inject private FileUtil fileUtil;
 	@Inject private DialogTaskManager dialogTaskManager;
 	
-	private JTable table;
+	private final JTable table;
+	private final Supplier<RankingOption> rankingSupplier;
 	
 	public interface Factory {
-		ExportPDFAction create(JTable table);
+		ExportPDFAction create(JTable table, Supplier<RankingOption> rankingSupplier);
 	}
 	
 	@Inject
-	public ExportPDFAction(@Assisted JTable table) {
+	public ExportPDFAction(@Assisted JTable table, @Assisted Supplier<RankingOption> rankingSupplier) {
 		super("Export to PDF");
 		this.table = table;
+		this.rankingSupplier = rankingSupplier;
 	}
 	
 	@Override
@@ -42,7 +45,7 @@ public class ExportPDFAction extends AbstractAction {
 		File file = promptForFile();
 		
 		if(file != null) {
-			ExportPDFTask task = new ExportPDFTask(file, table);
+			ExportPDFTask task = new ExportPDFTask(file, table, rankingSupplier.get());
 			dialogTaskManager.execute(new TaskIterator(task));
 		}
 	}

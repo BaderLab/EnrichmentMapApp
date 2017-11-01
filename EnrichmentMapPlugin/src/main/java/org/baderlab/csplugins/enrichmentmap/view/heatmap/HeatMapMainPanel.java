@@ -237,7 +237,7 @@ public class HeatMapMainPanel extends JPanel {
 		gearButton.addActionListener(e -> settingsPanel.popup(gearButton));
 		settingsPanel.getAddRanksButton().addActionListener(e -> addRankings());
 		settingsPanel.getExportTxtButton().addActionListener(txtActionFactory.create(table));
-		settingsPanel.getExportPdfButton().addActionListener(pdfActionFactory.create(table));
+		settingsPanel.getExportPdfButton().addActionListener(pdfActionFactory.create(table, this::getRankingOption));
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);

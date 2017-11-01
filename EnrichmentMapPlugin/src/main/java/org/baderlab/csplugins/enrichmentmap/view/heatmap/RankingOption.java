@@ -27,6 +27,11 @@ public interface RankingOption {
 		return toString();
 	}
 	
+	/** Text to be used in the PDF export table header. The given string will be split on newlines. */
+	default String getPdfHeaderText() {
+		return toString();
+	}
+	
 	/**
 	 * Asynchronously compute the rankings.
 	 * @return Map where keys are geneIDs and value is the rank.

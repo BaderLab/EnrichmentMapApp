@@ -47,6 +47,11 @@ public class ClusterRankingOption implements RankingOption {
 		return "<html>Hierarchical<br>Cluster</html>";
 	}
 	
+	@Override
+	public String getPdfHeaderText() {
+		return "Hierarchical\nCluster";
+	}
+	
 	public void setDistance(Distance distance) {
 		this.distance = distance;
 	}
