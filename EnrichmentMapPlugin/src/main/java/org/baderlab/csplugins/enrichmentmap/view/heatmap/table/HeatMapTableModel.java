@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -68,6 +69,10 @@ public class HeatMapTableModel extends AbstractTableModel {
 		colCount = rangeFloor;
 	}
 	
+	
+	public List<EMDataSet> getDataSets() {
+		return Collections.unmodifiableList(datasets);
+	}
 	
 	public void setTransform(Transform transform, Compress compress) {
 		boolean c1 = this.compress.isNone();
