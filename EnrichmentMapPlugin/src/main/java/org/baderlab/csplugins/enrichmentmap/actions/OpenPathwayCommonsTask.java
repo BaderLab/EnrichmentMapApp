@@ -7,6 +7,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -58,10 +59,16 @@ public class OpenPathwayCommonsTask extends AbstractTask {
 		String pcUri = UriBuilder
 			.fromUri(pcBaseUri)
 			.queryParam("uri", returnUri)
+			.queryParam("q", getNodeLabel(map))
 			.build()
 			.toString();
 		
 		return pcUri;
+	}
+	
+	private String getNodeLabel(EnrichmentMap map) {
+		String prefix = map.getParams().getAttributePrefix();
+		return Columns.NODE_GS_DESCR.get(network.getRow(node), prefix);
 	}
 
 	@Override
