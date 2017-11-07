@@ -13,6 +13,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 public class ExpressionDataResponse {
 
 	private List<DataSetExpressionResponse> dataSetExpressionList;
+	private List<DataSetClassResponse> dataSetClassList;
 	
 	public ExpressionDataResponse(EnrichmentMap map) {
 		this(map, Optional.empty());
@@ -28,7 +29,16 @@ public class ExpressionDataResponse {
 				dataSetExpressionList.add(dataSetResponse);
 			}
 		}
+		
+		dataSetClassList = new ArrayList<>(map.getDataSetCount());
+		
+		for(EMDataSet dataSet : map.getDataSetList()) {
+			if(dataSet.getEnrichments().getPhenotypes() != null) {
+				dataSetClassList.add(new DataSetClassResponse(dataSet));
+			}
+		}
 	}
+
 
 	private static DataSetExpressionResponse createDataSetExpressionResponse(EnrichmentMap map, String key, Optional<Set<String>> genes) {
 		GeneExpressionMatrix matrix = map.getExpressionMatrix(key);
@@ -43,8 +53,14 @@ public class ExpressionDataResponse {
 		return new DataSetExpressionResponse(map, dataSetNames, matrix, genes);
 	}
 	
+	
 	public List<DataSetExpressionResponse> getDataSetExpressionList() {
 		return dataSetExpressionList;
 	}
+	
 
+	public List<DataSetClassResponse> getDataSetClassList() {
+		return dataSetClassList;
+	}
+	
 }

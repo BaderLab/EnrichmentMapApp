@@ -200,13 +200,13 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	public Optional<String> getPhenotype(int col) {
-		if(!compress.isNone())
-			return Optional.empty();
-		EMDataSet dataset = getDataSet(col);
-		int index = getIndexInDataSet(col);
-		String[] classes = dataset.getEnrichments().getPhenotypes();
-		if(classes != null && index < classes.length) {
-			return Optional.ofNullable(classes[index]);
+		if(compress.isNone()) {
+			EMDataSet dataset = getDataSet(col);
+			int index = getIndexInDataSet(col);
+			String[] classes = dataset.getEnrichments().getPhenotypes();
+			if(classes != null && index < classes.length) {
+				return Optional.ofNullable(classes[index]);
+			}
 		}
 		return Optional.empty();
 	}
