@@ -3,8 +3,11 @@ package org.baderlab.csplugins.enrichmentmap.view.control;
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.*;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog.ModalityType;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -23,11 +26,15 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 
@@ -59,6 +66,7 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDat
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
+import org.baderlab.csplugins.enrichmentmap.view.legend.CreationParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
@@ -77,6 +85,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
@@ -796,19 +805,25 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		final JPopupMenu menu = new JPopupMenu();
 		
 		{
-			final JMenuItem mi = new JCheckBoxMenuItem("Show Legend");
-			mi.addActionListener(evt -> {
+			JMenuItem showLegendItem = new JCheckBoxMenuItem("Show Legend");
+			showLegendItem.addActionListener(evt -> {
 				if (legendPanelMediatorProvider.get().getDialog().isVisible()) {
 					legendPanelMediatorProvider.get().hideDialog();
 				} else {
 					CyNetworkView netView = getCurrentEMView();
 					EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
-					legendPanelMediatorProvider.get().showDialog(createStyleOptions(netView),
-							getFilteredDataSets(viewPanel));
+					legendPanelMediatorProvider.get().showDialog(createStyleOptions(netView), getFilteredDataSets(viewPanel));
 				}
 			});
-			mi.setSelected(legendPanelMediatorProvider.get().getDialog().isVisible());
-			menu.add(mi);
+			showLegendItem.setSelected(legendPanelMediatorProvider.get().getDialog().isVisible());
+			menu.add(showLegendItem);
+			
+			JMenuItem showParamsItem = new JMenuItem("Show Creation Parameters");
+			showParamsItem.addActionListener(evt -> {
+				CyNetworkView netView = getCurrentEMView();
+				showCreationParamsDialog(netView);
+			});
+			menu.add(showParamsItem);
 		}
 		
 		menu.addSeparator();
@@ -822,6 +837,39 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		
 		return menu;
 	}
+	
+	
+	private void showCreationParamsDialog(CyNetworkView netView) {
+		JDialog d = new JDialog(swingApplication.getJFrame(), "EnrichmentMap Creation Parameters", ModalityType.APPLICATION_MODAL);
+		d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		d.setMinimumSize(new Dimension(420, 260));
+		d.setPreferredSize(new Dimension(580, 460));
+		
+		@SuppressWarnings("serial")
+		JButton closeButton = new JButton(new AbstractAction("Close") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				d.dispose();
+			}
+		});
+		
+		JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
+		d.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
+		
+		if (netView != null) {
+			EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
+			CreationParametersPanel paramsPanel = new CreationParametersPanel(map);
+			d.getContentPane().add(paramsPanel, BorderLayout.CENTER);
+		}
+		
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(d.getRootPane(), null, closeButton.getAction());
+		d.getRootPane().setDefaultButton(closeButton);
+		
+		d.setLocationRelativeTo(swingApplication.getJFrame());
+		d.pack();
+		d.setVisible(true);
+	}
+	
 	
 	private void setFilterMode(FilterMode filterMode) {
 		this.filterMode = filterMode;

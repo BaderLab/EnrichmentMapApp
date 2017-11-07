@@ -7,6 +7,7 @@ import java.awt.Frame;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -69,7 +70,6 @@ public class FileBrowser {
 	}
 	
 	
-	
 	public static Optional<Path> browse(FileUtil fileUtil, Component parent, Filter filter) {
 		File file = fileUtil.getFile(parent, filter.title, FileUtil.LOAD, filter.getFilters());
 		return Optional.ofNullable(file).map(File::toPath);
@@ -120,15 +120,33 @@ public class FileBrowser {
 	}
 	
 	private Optional<File> browseForRootFolderSwing(Component parent) {
-		JFileChooser chooser = new JFileChooser(getCurrentDirectory()); 
-	    chooser.setDialogTitle("Select Root Folder");
-	    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-	    chooser.setAcceptAllFileFilterUsed(false);
-	    if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) { 
-	    	setCurrentDirectory(chooser.getCurrentDirectory());
-	    	return Optional.of(chooser.getSelectedFile());
-	    }
-	    return Optional.empty();
+		JFileChooser chooser = new JFileChooser(getCurrentDirectory());
+		chooser.setDialogTitle("Select Root Folder");
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		chooser.setAcceptAllFileFilterUsed(false);
+		if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
+			setCurrentDirectory(chooser.getCurrentDirectory());
+			return Optional.of(chooser.getSelectedFile());
+		}
+		return Optional.empty();
+	}
+	
+	
+	public static Optional<File> promptForPdfExport(FileUtil fileUtil, Component parent) {
+		List<FileChooserFilter> filter = Collections.singletonList(new FileChooserFilter("pdf Files", "pdf"));
+		File file = fileUtil.getFile(parent, "Export as PDF File", FileUtil.SAVE, filter);
+		if(file != null) {
+			String fileName = file.toString();
+			if(!endsWithIgnoreCase(fileName, ".pdf")) {
+				file = new File(fileName + ".pdf");
+			}
+		}
+		return Optional.ofNullable(file);
+	}
+
+	private static boolean endsWithIgnoreCase(String str, String suffix) {
+		int n = suffix.length();
+		return str.regionMatches(true, str.length() - n, suffix, 0, n);
 	}
 	
 	

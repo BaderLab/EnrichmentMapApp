@@ -29,6 +29,8 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.ExportTXTAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMainPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParentPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankOptionRenderer;
+import org.baderlab.csplugins.enrichmentmap.view.legend.ExportLegendPDFTask;
+import org.baderlab.csplugins.enrichmentmap.view.legend.LegendContent;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisSignatureDiscoveryPanel;
@@ -108,6 +110,8 @@ class FactoryModule extends AbstractModule {
 		installFactory(PathTextField.Factory.class);
 		installFactory(CreateDiseaseSignatureTaskFactory.Factory.class);
 		installFactory(OpenPathwayCommonsTask.Factory.class);
+		installFactory(ExportLegendPDFTask.Factory.class);
+		installFactory(LegendContent.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

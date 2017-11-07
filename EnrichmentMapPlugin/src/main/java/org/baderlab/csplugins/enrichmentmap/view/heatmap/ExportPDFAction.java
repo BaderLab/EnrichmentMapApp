@@ -2,15 +2,14 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JTable;
 
-import org.cytoscape.util.swing.FileChooserFilter;
+import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -42,24 +41,11 @@ public class ExportPDFAction extends AbstractAction {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		File file = promptForFile();
-		
-		if(file != null) {
-			ExportPDFTask task = new ExportPDFTask(file, table, rankingSupplier.get());
+		Optional<File> file = FileBrowser.promptForPdfExport(fileUtil, jframeProvider.get());
+		if(file.isPresent()) {
+			ExportHeatMapPDFTask task = new ExportHeatMapPDFTask(file.get(), table, rankingSupplier.get());
 			dialogTaskManager.execute(new TaskIterator(task));
 		}
-	}
-	
-	private File promptForFile() {
-		List<FileChooserFilter> filter = Collections.singletonList(new FileChooserFilter("pdf Files", "pdf"));
-		File file = fileUtil.getFile(jframeProvider.get(), "Export Heatmap as PDF File", FileUtil.SAVE, filter);
-		if(file != null) {
-			String fileName = file.toString();
-			if(!fileName.endsWith(".pdf")) {
-				file = new File(fileName + ".pdf");
-			}
-		}
-		return file;
 	}
 }
 

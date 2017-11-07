@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -22,9 +23,9 @@ public class EMStyleOptions {
 	 */
 	public EMStyleOptions(CyNetworkView networkView, EnrichmentMap map, Predicate<AbstractDataSet> filter,
 			ChartOptions chartOptions, boolean postAnalysis, boolean publicationReady) {
-		this.networkView = networkView;
-		this.map = map;
-		this.filter = filter;
+		this.networkView = Objects.requireNonNull(networkView);
+		this.map = Objects.requireNonNull(map);
+		this.filter = Objects.requireNonNull(filter);
 		this.chartOptions = chartOptions;
 		this.postAnalysis = postAnalysis;
 		this.publicationReady = publicationReady;

@@ -28,7 +28,7 @@ import com.itextpdf.text.pdf.PdfPRow;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
-public class ExportPDFTask extends AbstractTask {
+public class ExportHeatMapPDFTask extends AbstractTask {
 
 	private static final int MARGIN = 20;
 
@@ -38,7 +38,7 @@ public class ExportPDFTask extends AbstractTask {
 	private final JTable jTable;
 	private final RankingOption ranking;
 	
-	public ExportPDFTask(File file, JTable jTable, RankingOption ranking) {
+	public ExportHeatMapPDFTask(File file, JTable jTable, RankingOption ranking) {
 		this.file = file;
 		this.jTable = jTable;
 		this.ranking = ranking;

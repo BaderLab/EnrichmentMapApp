@@ -1,13 +1,18 @@
 package org.baderlab.csplugins.enrichmentmap.view.legend;
 
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
-import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDTAndWait;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.io.File;
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -16,12 +21,15 @@ import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
+import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -30,12 +38,17 @@ import com.google.inject.Singleton;
 @Singleton
 public class LegendPanelMediator {
 
-	@Inject private EnrichmentMapManager emManager;
 	@Inject private Provider<LegendPanel> legendPanelProvider;
+	@Inject private ExportLegendPDFTask.Factory pdfTaskFactory;
 	@Inject private CySwingApplication swingApplication;
+	@Inject private IconManager iconManager;
+	@Inject private DialogTaskManager dialogTaskManager;
+	@Inject private FileUtil fileUtil;
 	
 	private JDialog dialog;
-	private JButton creationParamsButton = new JButton("Creation Parameters...");
+	private JButton exportPdfButton;
+	private ActionListener exportPdfListener;
+	
 	
 	public void showDialog(EMStyleOptions options, Collection<EMDataSet> filteredDataSets) {
 		invokeOnEDT(() -> {
@@ -59,10 +72,6 @@ public class LegendPanelMediator {
 		return dialog;
 	}
 	
-	public void updateDialog(EMStyleOptions options, Collection<EMDataSet> filteredDataSets) {
-		updateDialog(options, filteredDataSets, true);
-	}
-	
 	@AfterInjection
 	@SuppressWarnings("serial")
 	private void init() {
@@ -71,6 +80,12 @@ public class LegendPanelMediator {
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setMinimumSize(new Dimension(440, 380));
 			
+			dialog.addComponentListener(new ComponentAdapter() {
+				public void componentHidden(ComponentEvent e) {
+					System.out.println("hidden");
+				}
+			});
+			
 			JButton closeButton = new JButton(new AbstractAction("Close") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -78,9 +93,11 @@ public class LegendPanelMediator {
 				}
 			});
 			
-			creationParamsButton.addActionListener(e -> showCreationParamsDialog());
+			Font iconFont = iconManager.getIconFont(13.0f);
+			exportPdfButton = new JButton("Export to PDF");
+			exportPdfButton.setIcon(SwingUtil.iconFromString(IconManager.ICON_EXTERNAL_LINK, iconFont));
 			
-			JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, creationParamsButton);
+			JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, exportPdfButton);
 			
 			dialog.getContentPane().add(legendPanelProvider.get(), BorderLayout.CENTER);
 			dialog.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
@@ -90,52 +107,40 @@ public class LegendPanelMediator {
 			dialog.setLocationRelativeTo(swingApplication.getJFrame());
 		});
 	}
+
+	
+	public void updateDialog(EMStyleOptions options, Collection<EMDataSet> filteredDataSets) {
+		updateDialog(options, filteredDataSets, true);
+	}
 	
 	private void updateDialog(EMStyleOptions options, Collection<EMDataSet> filteredDataSets, boolean onlyIfVisible) {
 		if (onlyIfVisible && !dialog.isVisible())
 			return;
 		
 		invokeOnEDT(() -> {
-			creationParamsButton.setEnabled(options != null && options.getNetworkView() != null);
+			if(exportPdfListener != null) {
+				exportPdfButton.removeActionListener(exportPdfListener);
+				exportPdfListener = null;
+			}
+			
+			exportPdfButton.setEnabled(options != null && options.getNetworkView() != null);
 			legendPanelProvider.get().update(options, filteredDataSets);
 			
-			if (options != null
-					&& dialog.getWidth() < legendPanelProvider.get().getNodeLegendPanel().getPreferredSize().width)
+			if(options != null && dialog.getWidth() < legendPanelProvider.get().getNodeLegendPanel().getPreferredSize().width)
 				dialog.pack();
+			
+			if(options != null)
+				exportPdfButton.addActionListener(exportPdfListener = e -> exportPDF(options, filteredDataSets));
 		});
 	}
 	
-	@SuppressWarnings("serial")
-	private void showCreationParamsDialog() {
-		JDialog d = new JDialog(dialog, "EnrichmentMap Creation Parameters", ModalityType.APPLICATION_MODAL);
-		d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		d.setMinimumSize(new Dimension(420, 260));
-		d.setPreferredSize(new Dimension(580, 460));
-		
-		JButton closeButton = new JButton(new AbstractAction("Close") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				d.dispose();
-			}
-		});
-		
-		JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
-		d.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
-		
-		CyNetworkView netView = legendPanelProvider.get().getOptions().getNetworkView();
-		
-		if (netView != null) {
-			EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
-			CreationParametersPanel paramsPanel = new CreationParametersPanel(map);
-			d.getContentPane().add(paramsPanel, BorderLayout.CENTER);
-			
+	
+	private void exportPDF(EMStyleOptions options, Collection<EMDataSet> filteredDataSets) {
+		Optional<File> file = FileBrowser.promptForPdfExport(fileUtil, swingApplication.getJFrame());
+		if(file.isPresent()) {
+			ExportLegendPDFTask task = pdfTaskFactory.create(file.get(), options, filteredDataSets);
+			dialogTaskManager.execute(new TaskIterator(task));
 		}
-		
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(d.getRootPane(), null, closeButton.getAction());
-		d.getRootPane().setDefaultButton(closeButton);
-		
-		d.setLocationRelativeTo(dialog);
-		d.pack();
-		d.setVisible(true);
 	}
+	
 }
