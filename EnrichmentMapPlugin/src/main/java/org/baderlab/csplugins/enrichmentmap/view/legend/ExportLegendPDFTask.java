@@ -68,7 +68,7 @@ public class ExportLegendPDFTask extends AbstractTask {
 	
 	
 	private Element createNodeColorSection(PdfWriter writer) throws DocumentException {
-		ColorLegendPanel colorPanel = content.getNodeColorPanel();
+		ColorLegendPanel colorPanel = content.getNodeColorLegend();
 		if(colorPanel == null)
 			return null;
 		Paragraph p = new Paragraph(new Chunk(LegendContent.NODE_COLOR_HEADER));

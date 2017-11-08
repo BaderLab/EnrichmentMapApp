@@ -126,13 +126,10 @@ public class LegendPanelMediator {
 	
 	
 	private void exportPDF() {
-		LegendContent content = legendPanelProvider.get().getLegendContent();
-		if(content != null) {
-			Optional<File> file = FileBrowser.promptForPdfExport(fileUtil, swingApplication.getJFrame());
-			if(file.isPresent()) {
-				ExportLegendPDFTask task = new ExportLegendPDFTask(file.get(), content);
-				dialogTaskManager.execute(new TaskIterator(task));
-			}
+		Optional<File> file = FileBrowser.promptForPdfExport(fileUtil, swingApplication.getJFrame());
+		if(file.isPresent()) {
+			ExportLegendPDFTask task = new ExportLegendPDFTask(file.get(), legendPanelProvider.get());
+			dialogTaskManager.execute(new TaskIterator(task));
 		}
 	}
 	
