@@ -66,6 +66,7 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -77,7 +78,6 @@ import javax.swing.border.EmptyBorder;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
@@ -87,7 +87,6 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -114,10 +113,7 @@ public class LegendPanel extends JPanel {
 	private final Color DEF_LEGEND_BG = Color.WHITE;
 	
 	@Inject private LegendContent.Factory legendContentFactory;
-	@Inject private EnrichmentMapManager emManager;
-	@Inject private CyApplicationManager applicationManager;
 	@Inject private VisualMappingManager visualMappingManager;
-//	@Inject private RenderingEngineManager engineManager;
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	
 	private BasicCollapsiblePanel nodeLegendPanel;
@@ -152,6 +148,9 @@ public class LegendPanel extends JPanel {
 		equalizeSize(nodeShapeDesc1, nodeShapeDesc2);
 	}
 	
+	public LegendContent getLegendContent() {
+		return content;
+	}
 	
 	/**
 	 * Update parameters panel based on given enrichment map parameters
@@ -213,26 +212,17 @@ public class LegendPanel extends JPanel {
 		JPanel p = getNodeColorPanel();
 		p.removeAll();
 		
-		Collection<EMDataSet> dataSets = content.getFilteredDataSets();
-		if (dataSets != null && dataSets.size() == 1) {
-			EMDataSet ds = dataSets.iterator().next();
-			
-			ColorLegendPanel clp = new ColorLegendPanel(
-					Colors.MAX_PHENOTYPE_1,
-					Colors.MAX_PHENOTYPE_2,
-					ds.getEnrichments().getPhenotype1(),
-					ds.getEnrichments().getPhenotype2()
-			);
-			
+		ColorLegendPanel clp = content.getNodeColorPanel();
+		if(clp != null) {
 			GroupLayout layout = (GroupLayout) p.getLayout();
 	
 			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addGap(0, 0, Short.MAX_VALUE)
-					.addComponent(clp, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(0, 0, Short.MAX_VALUE)
+				.addGap(0, 0, Short.MAX_VALUE)
+				.addComponent(clp, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addGap(0, 0, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
-					.addComponent(clp)
+				.addComponent(clp)
 			);
 			
 			p.setVisible(true);
@@ -315,18 +305,16 @@ public class LegendPanel extends JPanel {
 		JPanel p = getNodeShapePanel();
 		p.removeAll();
 		
-		nodeShapeIcon1.setVisible(content.hasStyle());
-		nodeShapeDesc1.setVisible(content.hasStyle());
-		nodeShapeIcon2.setVisible(content.hasStyle() && content.getEnrichmentMap().hasSignatureDataSets());
-		nodeShapeDesc2.setVisible(content.hasStyle() && content.getEnrichmentMap().hasSignatureDataSets());
+		Icon gsIcon  = content.getGeneSetNodeShape();
+		Icon sigIcon = content.getSignatureNodeShape();
 		
-		if (content.hasStyle()) {
-			nodeShapeIcon1.setIcon(content.getGeneSetNodeShape());
-			
-			if (content.getEnrichmentMap().hasSignatureDataSets()) {
-				nodeShapeIcon2.setIcon(content.getSignatureNodeShape());
-			}
-		}
+		nodeShapeIcon1.setVisible(gsIcon != null);
+		nodeShapeDesc1.setVisible(gsIcon != null);
+		nodeShapeIcon1.setIcon(gsIcon);
+		
+		nodeShapeIcon2.setVisible(sigIcon != null);
+		nodeShapeDesc2.setVisible(sigIcon != null);
+		nodeShapeIcon2.setIcon(sigIcon);
 		
 		p.revalidate();
 	}
@@ -507,7 +495,7 @@ public class LegendPanel extends JPanel {
 	private JPanel getNodeColorPanel() {
 		if (nodeColorPanel == null) {
 			nodeColorPanel = createStyleLegendPanel(null);
-			nodeColorPanel.setToolTipText("Node Fill Color: Phenotype * (1-P_value)");
+			nodeColorPanel.setToolTipText(LegendContent.NODE_COLOR_HEADER);
 		}
 		
 		return nodeColorPanel;
@@ -516,7 +504,7 @@ public class LegendPanel extends JPanel {
 	private JPanel getNodeChartColorPanel() {
 		if (nodeChartColorPanel == null) {
 			nodeChartColorPanel = createStyleLegendPanel(null);
-			nodeChartColorPanel.setToolTipText("Node Chart Colors");
+			nodeChartColorPanel.setToolTipText(LegendContent.NODE_CHART_HEADER);
 		}
 		
 		return nodeChartColorPanel;
@@ -525,7 +513,7 @@ public class LegendPanel extends JPanel {
 	JPanel getNodeShapePanel() {
 		if (nodeShapePanel == null) {
 			nodeShapePanel = createStyleLegendPanel(null);
-			nodeShapePanel.setToolTipText("Node Shape");
+			nodeShapePanel.setToolTipText(LegendContent.NODE_SHAPE_HEADER);
 			
 			GroupLayout layout = (GroupLayout) nodeShapePanel.getLayout();
 

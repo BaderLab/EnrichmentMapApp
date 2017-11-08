@@ -7,7 +7,6 @@ import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
@@ -39,7 +38,6 @@ import com.google.inject.Singleton;
 public class LegendPanelMediator {
 
 	@Inject private Provider<LegendPanel> legendPanelProvider;
-	@Inject private ExportLegendPDFTask.Factory pdfTaskFactory;
 	@Inject private CySwingApplication swingApplication;
 	@Inject private IconManager iconManager;
 	@Inject private DialogTaskManager dialogTaskManager;
@@ -47,7 +45,6 @@ public class LegendPanelMediator {
 	
 	private JDialog dialog;
 	private JButton exportPdfButton;
-	private ActionListener exportPdfListener;
 	
 	
 	public void showDialog(EMStyleOptions options, Collection<EMDataSet> filteredDataSets) {
@@ -96,6 +93,7 @@ public class LegendPanelMediator {
 			Font iconFont = iconManager.getIconFont(13.0f);
 			exportPdfButton = new JButton("Export to PDF");
 			exportPdfButton.setIcon(SwingUtil.iconFromString(IconManager.ICON_EXTERNAL_LINK, iconFont));
+			exportPdfButton.addActionListener(e -> exportPDF());
 			
 			JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, exportPdfButton);
 			
@@ -118,28 +116,23 @@ public class LegendPanelMediator {
 			return;
 		
 		invokeOnEDT(() -> {
-			if(exportPdfListener != null) {
-				exportPdfButton.removeActionListener(exportPdfListener);
-				exportPdfListener = null;
-			}
-			
 			exportPdfButton.setEnabled(options != null && options.getNetworkView() != null);
 			legendPanelProvider.get().update(options, filteredDataSets);
 			
 			if(options != null && dialog.getWidth() < legendPanelProvider.get().getNodeLegendPanel().getPreferredSize().width)
 				dialog.pack();
-			
-			if(options != null)
-				exportPdfButton.addActionListener(exportPdfListener = e -> exportPDF(options, filteredDataSets));
 		});
 	}
 	
 	
-	private void exportPDF(EMStyleOptions options, Collection<EMDataSet> filteredDataSets) {
-		Optional<File> file = FileBrowser.promptForPdfExport(fileUtil, swingApplication.getJFrame());
-		if(file.isPresent()) {
-			ExportLegendPDFTask task = pdfTaskFactory.create(file.get(), options, filteredDataSets);
-			dialogTaskManager.execute(new TaskIterator(task));
+	private void exportPDF() {
+		LegendContent content = legendPanelProvider.get().getLegendContent();
+		if(content != null) {
+			Optional<File> file = FileBrowser.promptForPdfExport(fileUtil, swingApplication.getJFrame());
+			if(file.isPresent()) {
+				ExportLegendPDFTask task = new ExportLegendPDFTask(file.get(), content);
+				dialogTaskManager.execute(new TaskIterator(task));
+			}
 		}
 	}
 	
