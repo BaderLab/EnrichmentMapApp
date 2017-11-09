@@ -2,10 +2,14 @@ package org.baderlab.csplugins.enrichmentmap.view.legend;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Paint;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import javax.swing.Icon;
@@ -23,7 +27,10 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
 
@@ -50,30 +57,24 @@ public class ExportLegendPDFTask extends AbstractTask {
 		
 		document.open();
 
-		Element nodeColorSection = createNodeColorSection(writer);
-		if(nodeColorSection != null)
-			document.add(nodeColorSection);
+		addTo(document, createNodeColorSection(writer));
+		addTo(document, createNodeShapeSection(writer));
+		addTo(document, createChartSection(writer));
+		addTo(document, createChartColorSection(writer));
+		addTo(document, createEdgeColorSection(writer));
 	
-		Element nodeShapeSection = createNodeShapeSection(writer);
-		if(nodeShapeSection != null)
-			document.add(nodeShapeSection);
-		
-		Element chartSection = createChartSection(writer);
-		if(chartSection != null)
-			document.add(chartSection);
-		
 		document.close();
 	}
 	
 	
-	
-	private Element createNodeColorSection(PdfWriter writer) throws DocumentException {
+	private List<Element> createNodeColorSection(PdfWriter writer) throws DocumentException {
 		ColorLegendPanel colorPanel = content.getNodeColorLegend();
 		if(colorPanel == null)
 			return null;
-		Paragraph p = new Paragraph(new Chunk(LegendContent.NODE_COLOR_HEADER));
-		p.add(createNodeColor(writer, colorPanel));
-		return p;
+		Paragraph title = new Paragraph(new Chunk(LegendContent.NODE_COLOR_HEADER));
+		Paragraph body = new Paragraph();
+		body.add(createNodeColor(writer, colorPanel));
+		return Arrays.asList(title, body);
 	}
 	
 	private static Image createNodeColor(PdfWriter writer, ColorLegendPanel colorPanel) throws DocumentException {
@@ -83,45 +84,60 @@ public class ExportLegendPDFTask extends AbstractTask {
 	
 	
 	
-	private Element createNodeShapeSection(PdfWriter writer) throws DocumentException {
+	private List<Element> createNodeShapeSection(PdfWriter writer) throws DocumentException {
 		Icon gsShape = content.getGeneSetNodeShape();
 		Icon sigShape = content.getSignatureNodeShape();
 		if(gsShape == null && sigShape == null)
 			return null;
-		Paragraph p = new Paragraph(new Chunk(LegendContent.NODE_SHAPE_HEADER));
+		Paragraph title = new Paragraph(new Phrase(LegendContent.NODE_SHAPE_HEADER));
+		PdfPTable table = new PdfPTable(new float[] {1,1.2f});
+		
 		if(gsShape != null) {
-			p.add(createNodeShape(writer, gsShape));
-			p.add(new Chunk("Gene Set"));
-			p.add(Chunk.NEWLINE);
+			Image image = createNodeShape(writer, gsShape);
+			addShapeRow(writer, table, image, "Gene Set");
 		}
 		if(sigShape != null) {
-			p.add(createNodeShape(writer, sigShape));
-			p.add(new Chunk("Signature Gene Set"));
+			Image image = createNodeShape(writer, sigShape);
+			addShapeRow(writer, table, image, "Signature Gene Set");
 		}
-		return p;
+		return Arrays.asList(title, table);
+	}
+	
+	private static void addShapeRow(PdfWriter writer, PdfPTable table, Image image, String text) throws DocumentException {
+		image.setAlignment(Image.ALIGN_RIGHT);
+		PdfPCell shape = new PdfPCell(image);
+		shape.setBorder(PdfPCell.NO_BORDER);
+		shape.setHorizontalAlignment(PdfPCell.ALIGN_RIGHT);
+		shape.setVerticalAlignment(PdfPCell.ALIGN_CENTER);
+		table.addCell(shape);
+		PdfPCell name = new PdfPCell(new Phrase(text));
+		name.setBorder(PdfPCell.NO_BORDER);
+		name.setHorizontalAlignment(PdfPCell.ALIGN_LEFT);
+		name.setVerticalAlignment(PdfPCell.ALIGN_CENTER);
+		table.addCell(name);
 	}
 	
 	private static Image createNodeShape(PdfWriter writer, Icon icon) throws DocumentException {
-		return drawImage(writer, 30, 30, graphics -> {
+		return drawImage(writer, 35, 35, graphics -> {
 			@SuppressWarnings("serial")
 			Component component = new Component() {
 				@Override public Color getForeground() { return Color.BLACK; }
 			};
-			icon.paintIcon(component, graphics, 0, 0);
+			icon.paintIcon(component, graphics, 2, 2);
 		});
 	}
 	
 	
 	
-	private Element createChartSection(PdfWriter writer) throws DocumentException {
+	private List<Element> createChartSection(PdfWriter writer) throws DocumentException {
 		JFreeChart chart = content.getChart();
 		if(chart == null)
 			return null;
-		Paragraph p = new Paragraph();
-		p.add(new Chunk(LegendContent.NODE_CHART_HEADER));
-		p.add(createChart(writer, chart));
-		p.add(new Chunk(content.getChartLabel()));
-		return p;
+		Paragraph title = new Paragraph();
+		title.add(new Phrase(LegendContent.NODE_CHART_HEADER + ": " + content.getChartLabel()));
+		Paragraph body = new Paragraph();
+		body.add(createChart(writer, chart));
+		return Arrays.asList(title, body);
 	}
 	
 	private static Image createChart(PdfWriter writer, JFreeChart chart) throws DocumentException {
@@ -133,6 +149,49 @@ public class ExportLegendPDFTask extends AbstractTask {
 	}
 	
 	
+	private List<Element> createChartColorSection(PdfWriter writer) throws DocumentException {
+		ColorLegendPanel posLegend = content.getChartPosLegend();
+		ColorLegendPanel negLegend = content.getChartNegLegend();
+		if(posLegend == null && negLegend == null)
+			return null;
+		Paragraph title = new Paragraph(new Chunk(LegendContent.NODE_CHART_COLOR_HEADER));
+		Paragraph body = new Paragraph();
+		body.setAlignment(Paragraph.ALIGN_CENTER);
+		if(posLegend != null) {
+			body.add(new Phrase("Positive"));
+			body.add(Chunk.NEWLINE);
+			body.add(createNodeColor(writer, posLegend));
+			body.add(Chunk.NEWLINE);
+		}
+		if(negLegend != null) {
+			body.add(new Phrase("Negative"));
+			body.add(Chunk.NEWLINE);
+			body.add(createNodeColor(writer, negLegend));
+			body.add(Chunk.NEWLINE);
+		}
+		return Arrays.asList(title, body);
+	}
+	
+	
+	
+	private List<Element> createEdgeColorSection(PdfWriter writer) throws DocumentException {
+		Map<Object,Paint> edgeColors = content.getEdgeColors();
+		if(edgeColors == null || edgeColors.isEmpty())
+			return null;
+		Paragraph title = new Paragraph(new Chunk(LegendContent.EDGE_COLOR_HEADER));
+		PdfPTable table = new PdfPTable(new float[] {1,1.2f});
+		final int width = 40, height = 20;
+		for(Map.Entry<Object,Paint> entry : edgeColors.entrySet()) {
+			Image colorRect = drawImage(writer, width, height, graphics -> {
+				graphics.setPaint(entry.getValue());
+				graphics.fillRect(0, 0, width, height);
+			});
+			addShapeRow(writer, table, colorRect, "  " + entry.getKey().toString());
+		}
+		return Arrays.asList(title, table);
+	}
+	
+	
 	
 	private static Image drawImage(PdfWriter writer, int width, int height, Consumer<PdfGraphics2D> draw) throws DocumentException {
 		PdfContentByte contentByte = writer.getDirectContent();
@@ -141,9 +200,23 @@ public class ExportLegendPDFTask extends AbstractTask {
 		draw.accept(graphics);
 		graphics.dispose();
 		Image image = Image.getInstance(template);
+		image.setAlignment(Image.ALIGN_CENTER);
 		return image;
 	}
 	
 
-
+	@SuppressWarnings("unused")
+	private static void addTo(Document document, Element element) throws DocumentException {
+		if(element != null)
+			document.add(element);
+	}
+	
+	private static void addTo(Document document, List<Element> elements) throws DocumentException {
+		if(elements != null) {
+			for(Element element : elements) {
+				document.add(element);
+			}
+		}
+	}
+	
 }

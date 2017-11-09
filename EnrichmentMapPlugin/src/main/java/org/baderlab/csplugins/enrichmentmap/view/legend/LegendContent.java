@@ -1,5 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.view.legend;
 
+import java.awt.Paint;
+import java.util.Map;
+
 import javax.swing.Icon;
 
 import org.jfree.chart.JFreeChart;
@@ -7,10 +10,12 @@ import org.jfree.chart.JFreeChart;
 public interface LegendContent {
 	
 	public static final String NODE_COLOR_HEADER = "Node Fill Color: Phenotype * (1-P_value)";
-	public static final String NODE_CHART_HEADER = "Node Chart Colors";
+	public static final String NODE_CHART_HEADER = "Node Charts";
 	public static final String NODE_SHAPE_HEADER = "Node Shape";
+	public static final String NODE_CHART_COLOR_HEADER = "Node Chart Colors";
+	public static final String EDGE_COLOR_HEADER = "Edge Stroke Color";
 
-	static final int LEGEND_ICON_SIZE = 18;
+	public static final int LEGEND_ICON_SIZE = 18;
 	
 	
 	public JFreeChart getChart();
@@ -22,4 +27,10 @@ public interface LegendContent {
 	public Icon getSignatureNodeShape();
 	
 	public ColorLegendPanel getNodeColorLegend();
+	
+	public ColorLegendPanel getChartPosLegend();
+	
+	public ColorLegendPanel getChartNegLegend();
+	
+	public Map<Object,Paint> getEdgeColors();
 }

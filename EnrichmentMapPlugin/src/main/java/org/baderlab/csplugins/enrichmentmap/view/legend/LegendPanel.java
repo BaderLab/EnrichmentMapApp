@@ -76,10 +76,8 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
@@ -125,7 +123,6 @@ public class LegendPanel extends JPanel implements LegendContent {
 	private final Border DEF_LEGEND_BORDER = BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"));
 	private final Color DEF_LEGEND_BG = Color.WHITE;
 	
-	@Inject private EnrichmentMapManager emManager;
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private VisualMappingManager visualMappingManager;
 	@Inject private RenderingEngineManager engineManager;
@@ -152,6 +149,8 @@ public class LegendPanel extends JPanel implements LegendContent {
 	
 	// legend content
 	private ColorLegendPanel nodeColorLegend;
+	private ColorLegendPanel chartPosLegend;
+	private ColorLegendPanel chartNegLegend;
 	private JFreeChart chart;
 	private Icon geneSetNodeShape;
 	private Icon sigSetNodeShape;
@@ -197,6 +196,16 @@ public class LegendPanel extends JPanel implements LegendContent {
 	public String getChartLabel() {
 		return "" + options.getChartOptions().getData();
 	}
+	
+	@Override
+	public ColorLegendPanel getChartPosLegend() {
+		return chartPosLegend;
+	}
+	
+	@Override
+	public ColorLegendPanel getChartNegLegend() {
+		return chartNegLegend;
+	}
 	 
 	/**
 	 * Update parameters panel based on given enrichment map parameters
@@ -204,14 +213,9 @@ public class LegendPanel extends JPanel implements LegendContent {
 	 */
 	void update(EMStyleOptions options, Collection<EMDataSet> filteredDataSets) {
 		this.options = options;
-		CyNetworkView networkView = options != null ? options.getNetworkView() : null;
-		
 		removeAll();
 		
-		EnrichmentMap map = networkView != null ? emManager.getEnrichmentMap(networkView.getModel().getSUID()) : null;
-		EMCreationParameters params = map != null ? map.getParams() : null;
-
-		if (params == null) {
+		if (options == null) {
 			JLabel infoLabel = new JLabel("No EnrichmentMap View selected");
 			infoLabel.setEnabled(false);
 			infoLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
@@ -230,15 +234,17 @@ public class LegendPanel extends JPanel implements LegendContent {
 			edgeColorPanel = null;
 			
 			nodeColorLegend = null;
+			chartPosLegend = null;
+			chartNegLegend = null;
 			chart = null;
 			geneSetNodeShape = null;
 			sigSetNodeShape = null;
 			
-			updateNodeColorPanel(filteredDataSets, map);
-			updateNodeShapePanel(map);
-			updateNodeChartPanel(filteredDataSets, map);
-			updateNodeChartColorPanel(filteredDataSets, map);
-			updateEdgeColorPanel(map);
+			updateNodeColorPanel(filteredDataSets);
+			updateNodeShapePanel();
+			updateNodeChartPanel(filteredDataSets);
+			updateNodeChartColorPanel(filteredDataSets);
+			updateEdgeColorPanel();
 			
 			JPanel panel = new JPanel();
 			final GroupLayout layout = new GroupLayout(panel);
@@ -262,7 +268,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 		revalidate();
 	}
 
-	private void updateNodeColorPanel(Collection<EMDataSet> dataSets, EnrichmentMap map) {
+	private void updateNodeColorPanel(Collection<EMDataSet> dataSets) {
 		JPanel p = getNodeColorPanel();
 		p.removeAll();
 		
@@ -293,7 +299,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 		}
 	}
 	
-	private void updateNodeChartColorPanel(Collection<EMDataSet> dataSets, EnrichmentMap map) {
+	private void updateNodeChartColorPanel(Collection<EMDataSet> dataSets) {
 		JPanel p = getNodeChartColorPanel();
 		p.removeAll();
 		
@@ -313,7 +319,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 			String posMaxLabel = max > 0 ? String.format("%.2f", max) : "N/A";
 			Color posMaxColor = colors.get(0);
 			Color posMinColor = colors.get(colors.size()/2);
-			ColorLegendPanel clpPos = new ColorLegendPanel(posMaxColor, posMinColor, posMaxLabel, "0", false);
+			chartPosLegend = new ColorLegendPanel(posMaxColor, posMinColor, posMaxLabel, "0", false);
 			JLabel posLabel = new JLabel("Positive");
 			SwingUtil.makeSmall(posLabel);
 			
@@ -322,12 +328,12 @@ public class LegendPanel extends JPanel implements LegendContent {
 				.addGap(0, 0, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 					.addComponent(posLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(clpPos, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(chartPosLegend, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				);
 			ParallelGroup vertical = layout.createParallelGroup(Alignment.CENTER, false)
 				.addGroup(layout.createSequentialGroup()
 					.addComponent(posLabel)
-					.addComponent(clpPos)
+					.addComponent(chartPosLegend)
 				);
 	
 			
@@ -335,17 +341,17 @@ public class LegendPanel extends JPanel implements LegendContent {
 				String negMinLabel = min < 0 ? String.format("%.2f", min) : "N/A";
 				Color negMaxColor = colors.get(colors.size()-1);
 				Color negMinColor = colors.get(colors.size()/2);
-				ColorLegendPanel clpNeg = new ColorLegendPanel(negMinColor, negMaxColor, "0", negMinLabel, false);
+				chartNegLegend = new ColorLegendPanel(negMinColor, negMaxColor, "0", negMinLabel, false);
 				JLabel negLabel = new JLabel("Negative");
 				SwingUtil.makeSmall(negLabel);
 				
 				horizontal.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 					.addComponent(negLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(clpNeg, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(chartNegLegend, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				);
 				vertical.addGroup(layout.createSequentialGroup()
 					.addComponent(negLabel)
-					.addComponent(clpNeg)
+					.addComponent(chartNegLegend)
 				);
 			}
 			
@@ -359,13 +365,14 @@ public class LegendPanel extends JPanel implements LegendContent {
 		}
 	}
 	
-	private void updateNodeShapePanel(EnrichmentMap map) {
+	private void updateNodeShapePanel() {
 		JPanel p = getNodeShapePanel();
 		p.removeAll();
 		
 		CyNetworkView netView = options.getNetworkView();
 		VisualStyle style = netView != null ? visualMappingManager.getVisualStyle(netView) : null;
 		
+		EnrichmentMap map = options.getEnrichmentMap();
 		nodeShapeIcon1.setVisible(style != null);
 		nodeShapeDesc1.setVisible(style != null);
 		nodeShapeIcon2.setVisible(style != null && map.hasSignatureDataSets());
@@ -386,7 +393,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 		p.revalidate();
 	}
 	
-	private void updateNodeChartPanel(Collection<EMDataSet> dataSets, EnrichmentMap map) {
+	private void updateNodeChartPanel(Collection<EMDataSet> dataSets) {
 		JPanel p = getNodeChartPanel();
 		chartLegendPanel.removeAll();
 		
@@ -450,95 +457,89 @@ public class LegendPanel extends JPanel implements LegendContent {
 		return chartPanel;
 	}
 
-	private void updateEdgeColorPanel(EnrichmentMap map) {
+	
+	private void updateEdgeColorPanel() {
 		JPanel p = getEdgeColorPanel();
+		Dimension iconSize = new Dimension(LEGEND_ICON_SIZE, LEGEND_ICON_SIZE / 2);
 		
-		CyNetworkView netView = options.getNetworkView();
-		VisualStyle style = netView != null ? visualMappingManager.getVisualStyle(netView) : null;
+		Map<Object, Paint> dmMap = getEdgeColors();
 		
-		JComponent[][] entries = null;
+		JComponent[][] entries = new JComponent[dmMap.size()][2];
 		
-		if (map != null) {
-			Dimension iconSize = new Dimension(LEGEND_ICON_SIZE, LEGEND_ICON_SIZE / 2);
-			boolean distinctEdges = map.getParams().getCreateDistinctEdges();
+		int i = 0;
+		for (Entry<?, Paint> e : dmMap.entrySet()) {
+			Color color = null;
+			if (e.getValue() instanceof Color)
+				color = (Color) e.getValue();
+				
+			JLabel iconLabel = createColorLabel(color, iconSize);
+			JLabel descLabel = new JLabel("" + e.getKey());
 			
-			if (distinctEdges) {
-				VisualMappingFunction<?, Paint> mf =
-						style.getVisualMappingFunction(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
-				
-				if (mf instanceof DiscreteMapping) {
-					DiscreteMapping<?, Paint> dm = (DiscreteMapping<?, Paint>) mf;
-					final Collator collator = Collator.getInstance();
-					
-					Map<Object, Paint> dmMap = new TreeMap<>((Object o1, Object o2) -> {
-						if (Columns.EDGE_DATASET_VALUE_SIG.equals(o1)) return 1;
-						if (Columns.EDGE_DATASET_VALUE_SIG.equals(o2)) return -1;
-						return collator.compare("" + o1, "" + o2);
-					});
-					dmMap.putAll(dm.getAll());
-					dmMap.remove(Columns.EDGE_DATASET_VALUE_COMPOUND);
-					
-					// Special case of 1 dataset with distinct edges and maybe signature genesets as well
-					if (map.getDataSetCount() == 1) {
-						Paint p1 = dmMap.remove(Columns.EDGE_INTERACTION_VALUE_OVERLAP);
-						Paint p2 = dmMap.remove(Columns.EDGE_INTERACTION_VALUE_SIG);
-						
-						if (p1 != null)
-							dmMap.put(map.getDataSetList().iterator().next().getName(), p1);
-						if (p2 != null)
-							dmMap.put(Columns.EDGE_DATASET_VALUE_SIG, p2);
-					}
-					
-					if (!map.hasSignatureDataSets())
-						dmMap.remove(Columns.EDGE_DATASET_VALUE_SIG);
-					
-					if (dmMap.size() > 0) {
-						entries = new JComponent[dmMap.size()][2];
-						int i = 0;
-						
-						for (Entry<?, Paint> e : dmMap.entrySet()) {
-							Color color = null;
-							
-							if (e.getValue() instanceof Color)
-								color = (Color) e.getValue();
-								
-							JLabel iconLabel = createColorLabel(color, iconSize);
-							JLabel descLabel = new JLabel("" + e.getKey());
-							
-							if (Columns.EDGE_DATASET_VALUE_SIG.equals(e.getKey()))
-								descLabel.setFont(descLabel.getFont().deriveFont(Font.ITALIC));
-							
-							entries[i++] = new JComponent[]{ iconLabel, descLabel };
-						}
-					}
-				}
-			}
+			if (Columns.EDGE_DATASET_VALUE_SIG.equals(e.getKey()))
+				descLabel.setFont(descLabel.getFont().deriveFont(Font.ITALIC));
 			
-			if (entries == null) {
-				int rows = map.hasSignatureDataSets() ? 2 : 1;
-				entries = new JComponent[rows][2];
-				
-				{
-					JLabel iconLabel = createColorLabel(Colors.COMPOUND_EDGE_COLOR, iconSize);
-					JLabel descLabel = new JLabel(Columns.EDGE_DATASET_VALUE_COMPOUND);
-					descLabel.setFont(descLabel.getFont().deriveFont(Font.ITALIC));
-					
-					entries[0] = new JComponent[]{ iconLabel, descLabel };
-				}
-				
-				if (rows == 2) {
-					JLabel iconLabel = createColorLabel(Colors.SIG_EDGE_COLOR, iconSize);
-					JLabel descLabel = new JLabel(Columns.EDGE_DATASET_VALUE_SIG);
-					descLabel.setFont(descLabel.getFont().deriveFont(Font.ITALIC));
-					
-					entries[1] = new JComponent[]{ iconLabel, descLabel };
-				}
-			}
+			entries[i++] = new JComponent[]{ iconLabel, descLabel };
 		}
 		
 		updateStyleLegendPanel(entries, p);
 	}
+	
+	
+	@Override
+	public Map<Object,Paint> getEdgeColors() {
+		EnrichmentMap map = options.getEnrichmentMap();
+		
+		CyNetworkView netView = options.getNetworkView();
+		VisualStyle style = netView != null ? visualMappingManager.getVisualStyle(netView) : null;
+		
+		final Collator collator = Collator.getInstance();
+		Map<Object,Paint> dmMap = new TreeMap<>((Object o1, Object o2) -> {
+			if (Columns.EDGE_DATASET_VALUE_SIG.equals(o1)) return 1;
+			if (Columns.EDGE_DATASET_VALUE_SIG.equals(o2)) return -1;
+			return collator.compare("" + o1, "" + o2);
+		});
+		
+		boolean distinctEdges = map.getParams().getCreateDistinctEdges();
+		if (distinctEdges) {
+			VisualMappingFunction<?, Paint> mf = style.getVisualMappingFunction(BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT);
+			
+			if (mf instanceof DiscreteMapping) {
+				DiscreteMapping<?, Paint> dm = (DiscreteMapping<?, Paint>) mf;
+				
+				dmMap.putAll(dm.getAll());
+				dmMap.remove(Columns.EDGE_DATASET_VALUE_COMPOUND);
+				
+				// Special case of 1 dataset with distinct edges and maybe signature genesets as well
+				if (map.getDataSetCount() == 1) {
+					Paint p1 = dmMap.remove(Columns.EDGE_INTERACTION_VALUE_OVERLAP);
+					Paint p2 = dmMap.remove(Columns.EDGE_INTERACTION_VALUE_SIG);
+					
+					if (p1 != null)
+						dmMap.put(map.getDataSetList().iterator().next().getName(), p1);
+					if (p2 != null)
+						dmMap.put(Columns.EDGE_DATASET_VALUE_SIG, p2);
+				}
+				
+				if (!map.hasSignatureDataSets())
+					dmMap.remove(Columns.EDGE_DATASET_VALUE_SIG);
+				
+				if (dmMap.size() > 0) {
+					
+				}
+			}
+		}
+		
+		if (dmMap.isEmpty()) {
+			dmMap.put(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.COMPOUND_EDGE_COLOR);			
+			if (map.hasSignatureDataSets()) {
+				dmMap.put(Columns.EDGE_DATASET_VALUE_SIG, Colors.SIG_EDGE_COLOR);
+			}
+		}
+		
+		return dmMap;
+	}
 
+	
 	BasicCollapsiblePanel getNodeLegendPanel() {
 		if (nodeLegendPanel == null) {
 			nodeLegendPanel = new BasicCollapsiblePanel("Nodes (Gene Sets)");
@@ -596,7 +597,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 	private JPanel getNodeColorPanel() {
 		if (nodeColorPanel == null) {
 			nodeColorPanel = createStyleLegendPanel(null);
-			nodeColorPanel.setToolTipText("Node Fill Color: Phenotype * (1-P_value)");
+			nodeColorPanel.setToolTipText(LegendContent.NODE_COLOR_HEADER);
 		}
 		
 		return nodeColorPanel;
@@ -605,7 +606,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 	private JPanel getNodeChartColorPanel() {
 		if (nodeChartColorPanel == null) {
 			nodeChartColorPanel = createStyleLegendPanel(null);
-			nodeChartColorPanel.setToolTipText("Node Chart Colors");
+			nodeChartColorPanel.setToolTipText(LegendContent.NODE_CHART_COLOR_HEADER);
 		}
 		
 		return nodeChartColorPanel;
@@ -614,7 +615,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 	JPanel getNodeShapePanel() {
 		if (nodeShapePanel == null) {
 			nodeShapePanel = createStyleLegendPanel(null);
-			nodeShapePanel.setToolTipText("Node Shape");
+			nodeShapePanel.setToolTipText(LegendContent.NODE_SHAPE_HEADER);
 			
 			GroupLayout layout = (GroupLayout) nodeShapePanel.getLayout();
 
@@ -641,7 +642,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 	private JPanel getNodeChartPanel() {
 		if (nodeChartPanel == null) {
 			nodeChartPanel = createStyleLegendPanel(null);
-			nodeChartPanel.setToolTipText("Node Charts");
+			nodeChartPanel.setToolTipText(LegendContent.NODE_CHART_HEADER);
 			
 			int h = 200;
 			
@@ -668,7 +669,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 	private JPanel getEdgeColorPanel() {
 		if (edgeColorPanel == null) {
 			edgeColorPanel = createStyleLegendPanel(null);
-			edgeColorPanel.setToolTipText("Edge Stroke Color");
+			edgeColorPanel.setToolTipText(LegendContent.EDGE_COLOR_HEADER);
 		}
 		
 		return edgeColorPanel;
