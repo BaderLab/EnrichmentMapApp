@@ -43,6 +43,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis2.PADialogMediator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -62,6 +63,7 @@ public class DataSetSelector extends JPanel {
 	private JTable table;
 	private JScrollPane tableScrollPane;
 	private JButton addButton;
+	private JButton addButton2;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
 	
@@ -169,6 +171,7 @@ public class DataSetSelector extends JPanel {
    				)
 				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getAddButton2(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    		);
    		layout.setVerticalGroup(layout.createSequentialGroup()
    				.addGroup(layout.createParallelGroup(CENTER, false)
@@ -178,6 +181,7 @@ public class DataSetSelector extends JPanel {
    				)
    				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    				.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				.addComponent(getAddButton2(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    		);
 		
 		if (isAquaLAF())
@@ -325,7 +329,7 @@ public class DataSetSelector extends JPanel {
 	
 	JButton getAddButton() {
 		if (addButton == null) {
-			addButton = new JButton("Add Signature Gene Sets...");
+			addButton = new JButton(PADialogMediator.NAME);
 			addButton.setToolTipText("Post Analysis");
 			makeSmall(addButton);
 			
@@ -334,6 +338,20 @@ public class DataSetSelector extends JPanel {
 		}
 		
 		return addButton;
+	}
+	
+
+	JButton getAddButton2() {
+		if (addButton2 == null) {
+			addButton2 = new JButton(PADialogMediator.NAME);
+			addButton2.setToolTipText("Post Analysis");
+			makeSmall(addButton);
+			
+			if (isAquaLAF())
+				addButton2.putClientProperty("JButton.buttonType", "gradient");
+		}
+		
+		return addButton2;
 	}
 	
 	JButton getSelectAllButton() {

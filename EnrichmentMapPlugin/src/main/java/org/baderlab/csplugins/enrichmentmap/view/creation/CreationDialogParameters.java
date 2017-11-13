@@ -22,9 +22,7 @@ public class CreationDialogParameters implements CardDialogParameters {
 	
 	@Override
 	public List<CardDialogPage> getPages() {
-		return Arrays.asList(
-			masterDetailDialogPage.get()
-		);
+		return Arrays.asList(masterDetailDialogPage.get());
 	}
 	
 	@Override

@@ -91,8 +91,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Inject private ErrorMessageDialog.Factory errorMessageDialogFactory;
 
 	@Inject private CutoffPropertiesPanel cutoffPanel;
-	@Inject private NetworkNamePanel networkNamePanel;
 	
+	private NamePanel networkNamePanel;
 	private DetailCommonPanel commonPanel;
 	private DataSetListItem commonParams;
 	
@@ -113,15 +113,10 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	}
 
 	@Override
-	public String getPageTitle() {
+	public String getPageComboText() {
 		return "Create Enrichment Map";
 	}
 
-	@Override
-	public String getPageComboText() {
-		return "Master/Detail - Experimental";
-	}
-	
 	@Override
 	public void finish() {
 		if(!validateInput())
@@ -136,7 +131,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		double cutoff = cutoffPanel.getCutoff();
 		double combined = cutoffPanel.getCombinedConstant();
 		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
-		String networkName = networkNamePanel.getNetworkName();
+		String networkName = networkNamePanel.getNameText();
 		EdgeStrategy edgeStrategy = cutoffPanel.getEdgeStrategy();
 		
 		EMCreationParameters params = 
@@ -189,6 +184,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		commonParams = new DataSetListItem(commonPanel);
 				
 		JPanel dataPanel = createDataSetPanel();
+		networkNamePanel = new NamePanel("Network Name");
 		
 		JPanel bottom = new JPanel(new GridBagLayout());
 		bottom.add(networkNamePanel, GBCFactory.grid(0,0).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
@@ -322,7 +318,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	private void updateAutomaticNetworkName() {
 		if(dataSetListModel.size() > 1) {
 			String name = dataSetListModel.get(1).getDetailPanel().getDataSetName();
-			networkNamePanel.setAutomaticNetworkName(name);
+			networkNamePanel.setAutomaticName(name);
 		}
 	}
 	
@@ -444,7 +440,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			}
 		}
 		
-		if(networkNamePanel.getNetworkName().trim().isEmpty()) {
+		if(networkNamePanel.getNameText().trim().isEmpty()) {
 			dialog.addSection(Message.error("Network name is missing"), "Network Name", commonPanel.getIcon());
 		}
 			

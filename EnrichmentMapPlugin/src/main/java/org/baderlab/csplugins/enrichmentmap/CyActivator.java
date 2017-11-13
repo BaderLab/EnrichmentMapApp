@@ -7,7 +7,6 @@ import java.util.Properties;
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.BuildCommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.GSEACommand;
@@ -21,6 +20,7 @@ import org.baderlab.csplugins.enrichmentmap.rest.EnrichmentMapResource;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChartFactory;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.cytoscape.application.CyApplicationConfiguration;
@@ -144,7 +144,7 @@ public class CyActivator extends AbstractCyActivator {
 					legendPanelMediator.hideDialog();
 					
 					// Dispose the creation dialog, or else lots of memory leaks.
-					ShowEnrichmentMapDialogAction dialogAction = injector.getInstance(ShowEnrichmentMapDialogAction.class);
+					CreationDialogShowAction dialogAction = injector.getInstance(CreationDialogShowAction.class);
 					dialogAction.dispose();
 				}
 			}

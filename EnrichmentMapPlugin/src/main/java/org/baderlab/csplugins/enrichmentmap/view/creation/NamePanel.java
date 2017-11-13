@@ -10,45 +10,47 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
-public class NetworkNamePanel extends JPanel {
+public class NamePanel extends JPanel {
 
 	private JCheckBox useAutomaticCheck;
-	private JTextField networkNameText;
+	private JTextField nameText;
 	
 	private String automaticValue;
 	private String manualValue;
 	
-	@AfterInjection
-	public void createContents() {
+	public NamePanel(String labelText) {
+		createContents(labelText);
+	}
+	
+	private void createContents(String labelText) {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 		
-		JLabel label = new JLabel("Network Name:");
+		JLabel label = new JLabel(labelText + ":");
 		useAutomaticCheck = new JCheckBox("Use Default");
-		networkNameText = new JTextField();
+		nameText = new JTextField();
 		
-		SwingUtil.makeSmall(label, useAutomaticCheck, networkNameText);
+		SwingUtil.makeSmall(label, useAutomaticCheck, nameText);
 		
 		useAutomaticCheck.setSelected(true);
-		networkNameText.setEnabled(false);
+		nameText.setEnabled(false);
 		
 		useAutomaticCheck.addActionListener(e -> {
 			if(isAutomatic()) {
-				networkNameText.setText(automaticValue);
-				networkNameText.setEnabled(false);
+				nameText.setText(automaticValue);
+				nameText.setEnabled(false);
 			} else {
-				networkNameText.setText(manualValue);
-				networkNameText.setEnabled(true);
+				nameText.setText(manualValue);
+				nameText.setEnabled(true);
 			}
 		});
 		
-		networkNameText.getDocument().addDocumentListener(simpleDocumentListener(() -> {
+		nameText.getDocument().addDocumentListener(simpleDocumentListener(() -> {
 			if(!isAutomatic()) {
-				manualValue = networkNameText.getText();
+				manualValue = nameText.getText();
 			}
 		}));
 		
@@ -61,13 +63,13 @@ public class NetworkNamePanel extends JPanel {
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 			.addComponent(label)
 			.addComponent(useAutomaticCheck)
-			.addComponent(networkNameText)
+			.addComponent(nameText)
 		);
 		
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
 			.addComponent(label)
 			.addComponent(useAutomaticCheck)
-			.addComponent(networkNameText, 0, DEFAULT_SIZE, Short.MAX_VALUE)
+			.addComponent(nameText, 0, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 	}
 	
@@ -75,14 +77,14 @@ public class NetworkNamePanel extends JPanel {
 		return useAutomaticCheck.isSelected();
 	}
 
-	public String getNetworkName() {
+	public String getNameText() {
 		return isAutomatic() ? automaticValue : manualValue;
 	}
 	
-	public void setAutomaticNetworkName(String networkName) {
+	public void setAutomaticName(String networkName) {
 		this.automaticValue = networkName;
 		if(isAutomatic()	) {
-			networkNameText.setText(automaticValue);
+			nameText.setText(automaticValue);
 		}
 	}
 }

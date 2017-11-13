@@ -39,7 +39,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.actions.ShowEnrichmentMapDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -66,10 +65,12 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDat
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
+import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
 import org.baderlab.csplugins.enrichmentmap.view.legend.CreationParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis2.PADialogMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
@@ -114,10 +115,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 
 	@Inject private Provider<ControlPanel> controlPanelProvider;
 	@Inject private Provider<LegendPanelMediator> legendPanelMediatorProvider;
-	@Inject private Provider<PostAnalysisPanelMediator> postAnalysisPanelMediatorProvider;
+	@Inject private Provider<PostAnalysisPanelMediator> oldPAPanelMediatorProvider;
+	@Inject private Provider<PADialogMediator> paDialogMediatorProvider;
 	@Inject private Provider<EdgeWidthDialog> dialogProvider;
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private ShowEnrichmentMapDialogAction masterMapDialogAction;
+	@Inject private CreationDialogShowAction masterMapDialogAction;
 	@Inject private VisualMappingManager visualMappingManager;
 	
 	@Inject private CyServiceRegistrar serviceRegistrar;
@@ -492,8 +494,13 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		});
 		
 		viewPanel.getDataSetSelector().getAddButton().addActionListener(evt -> {
-			postAnalysisPanelMediatorProvider.get().showDialog(viewPanel, netView);
+			oldPAPanelMediatorProvider.get().showDialog(viewPanel, netView);
 		});
+		
+		viewPanel.getDataSetSelector().getAddButton2().addActionListener(evt -> {
+			paDialogMediatorProvider.get().showDialog(netView);
+		});
+		
 		viewPanel.getDataSetSelector().getTable().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(final MouseEvent e) {

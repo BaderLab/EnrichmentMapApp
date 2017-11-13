@@ -7,11 +7,7 @@ public interface CardDialogPage {
 	
 	String getID();
 	
-	String getPageTitle();
-	
-	default String getPageComboText() {
-		return getPageTitle();
-	}
+	String getPageComboText();
 	
 	JPanel createBodyPanel(CardDialogCallback callback);
 	
