@@ -20,7 +20,7 @@ public class PADialogMediator  {
 	public static final String NAME = "Add Signature Gene Sets...";
 	
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private Provider<PADialogParameters> paDialogParametersProvider;
+	@Inject private PADialogParameters.Factory paDialogParametersFactory;
 	@Inject private Provider<JFrame> jFrameProvider;
 	
 	
@@ -33,7 +33,7 @@ public class PADialogMediator  {
 			return;
 		
 		CardDialog dialog = dialogs.computeIfAbsent(map, k -> {
-			CardDialogParameters params = paDialogParametersProvider.get();
+			CardDialogParameters params = paDialogParametersFactory.create(map);
 			return new CardDialog(jFrameProvider.get(), params);
 		});
 		

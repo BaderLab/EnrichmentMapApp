@@ -32,6 +32,9 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankO
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisInputPanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisKnownSignaturePanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisSignatureDiscoveryPanel;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis2.PADialogPage;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis2.PADialogParameters;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis2.PAWeightPanel;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.property.CyProperty;
 import org.osgi.framework.BundleContext;
@@ -108,6 +111,9 @@ class FactoryModule extends AbstractModule {
 		installFactory(PathTextField.Factory.class);
 		installFactory(CreateDiseaseSignatureTaskFactory.Factory.class);
 		installFactory(OpenPathwayCommonsTask.Factory.class);
+		installFactory(PADialogParameters.Factory.class);
+		installFactory(PADialogPage.Factory.class);
+		installFactory(PAWeightPanel.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

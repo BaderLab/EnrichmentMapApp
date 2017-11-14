@@ -3,29 +3,66 @@ package org.baderlab.csplugins.enrichmentmap.view.postanalysis2;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
 
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.util.ResultTaskObserver;
 import org.baderlab.csplugins.enrichmentmap.view.creation.NamePanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
-import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
-import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListPanel;
+import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.swing.DialogTaskManager;
+
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 
 public class PADialogPage implements CardDialogPage {
 
-	private NamePanel namePanel;
+	@Inject private PAWeightPanel.Factory weightPanelFactory;
+	@Inject private FileUtil fileUtil;
+	@Inject private DialogTaskManager dialogTaskManager;
 	
+	private final EnrichmentMap map;
 	private CardDialogCallback callback;
+	
+	private NamePanel namePanel;
+	private PAWeightPanel weightPanel;
+	
+	private JTable table;
+	private SigGeneSetTableModel tableModel;
+	
+	
+	public interface Factory {
+		PADialogPage create(EnrichmentMap map);
+	}
+	
+	@Inject
+	public PADialogPage(@Assisted EnrichmentMap map) {
+		this.map = map;
+	}
 	
 	@Override
 	public String getID() {
@@ -47,12 +84,12 @@ public class PADialogPage implements CardDialogPage {
 		this.callback = callback;
 		
 		JPanel geneSetsPanel = createGeneSetsPanel();
-		namePanel = createNamePanel();
-		JPanel edgePanel = createEdgePanel();
+		namePanel = new NamePanel("Data Set Name");
+		weightPanel = weightPanelFactory.create(map);
 		
 		JPanel bottom = new JPanel(new GridBagLayout());
 		bottom.add(namePanel, GBCFactory.grid(0,0).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
-		bottom.add(edgePanel, GBCFactory.grid(0,1).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
+		bottom.add(weightPanel, GBCFactory.grid(0,1).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(geneSetsPanel, BorderLayout.CENTER);
@@ -66,60 +103,52 @@ public class PADialogPage implements CardDialogPage {
 		JPanel panel = new JPanel();
 		
 		JLabel title = new JLabel("Signature Gene Sets");
+		JPanel tablePanel = createTablePanel();
+		
 		JButton loadFileButton = new JButton("Load from File...");
 		JButton loadWebButton = new JButton("Load from Web...");
+		JButton selectAllButton = new JButton("Select All");
+		JButton selectNoneButton = new JButton("Select None");
+		JButton filterButton = new JButton("Filter...");
 		loadWebButton.setEnabled(false);
 		
-		CheckboxListPanel<String> geneSetPanel = new CheckboxListPanel<>(false, false);
-		geneSetPanel.getModel().addElement(new CheckboxData<String>("foo", "foo"));
-		geneSetPanel.getModel().addElement(new CheckboxData<String>("bar", "bar"));
+		loadFileButton.addActionListener(e -> loadFromFile());
 		
-		JLabel filterLabel = new JLabel("Filter:");
-		JComboBox filterCombo = new JComboBox<>();
-		JTextField textField = new JTextField();
-		JButton applyButton = new JButton("Apply");
-		
-		SwingUtil.makeSmall(title, loadFileButton, loadWebButton, filterLabel, filterCombo, textField, applyButton);
-		LookAndFeelUtil.equalizeSize(loadFileButton, loadWebButton);
+		SwingUtil.makeSmall(title, loadFileButton, loadWebButton, selectAllButton, selectNoneButton, filterButton);
+		LookAndFeelUtil.equalizeSize(loadFileButton, loadWebButton, selectAllButton, selectNoneButton, filterButton);
 		
 		final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
-		layout.setAutoCreateContainerGaps(false);
-		layout.setAutoCreateGaps(false);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
+			.addComponent(title)
 			.addGroup(layout.createSequentialGroup()
-				.addComponent(title)
-				.addGap(0, 0, Short.MAX_VALUE)
-				.addComponent(loadWebButton)
-				.addComponent(loadFileButton)
-			)
-			.addComponent(geneSetPanel)
-			.addGroup(layout.createSequentialGroup()
-				.addComponent(geneSetPanel.getSelectAllButton())
-				.addComponent(geneSetPanel.getSelectNoneButton())
-				.addGap(0, 0, Short.MAX_VALUE)
-				.addComponent(filterLabel)
-				.addComponent(filterCombo)
-				.addComponent(textField, 60, 60, 60)
-				.addComponent(applyButton)
+				.addComponent(tablePanel)
+				.addGroup(layout.createParallelGroup()
+					.addComponent(loadFileButton)
+					.addComponent(loadWebButton)
+					.addComponent(selectAllButton)
+					.addComponent(selectNoneButton)
+					.addComponent(filterButton)
+				)
 			)
 		);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(title)
-				.addComponent(loadWebButton)
-				.addComponent(loadFileButton)
-			)
-			.addComponent(geneSetPanel)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(geneSetPanel.getSelectAllButton())
-				.addComponent(geneSetPanel.getSelectNoneButton())
-				.addComponent(filterLabel)
-				.addComponent(filterCombo)
-				.addComponent(textField)
-				.addComponent(applyButton)
+			.addComponent(title)
+			.addGroup(layout.createParallelGroup()
+				.addComponent(tablePanel)
+				.addGroup(layout.createSequentialGroup()
+					.addComponent(loadFileButton)
+					.addComponent(loadWebButton)
+					.addGap(20)
+					.addComponent(selectAllButton)
+					.addComponent(selectNoneButton)
+					.addGap(20)
+					.addComponent(filterButton)
+				)
 			)
 		);
 		
@@ -129,62 +158,63 @@ public class PADialogPage implements CardDialogPage {
 	}
 	
 	
-	private NamePanel createNamePanel() {
-		NamePanel namePanel = new NamePanel("Data Set Name:");
-		return namePanel;
+	private JPanel createTablePanel() {
+		table = new JTable();
+		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		table.setFillsViewportHeight(true);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		table.setCellSelectionEnabled(true);
+		table.setAutoCreateRowSorter(true);
+		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		JTableHeader header = table.getTableHeader();
+		header.setReorderingAllowed(false);
+		
+		updateTableModel(null);
+
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(scrollPane, BorderLayout.CENTER);
+		panel.setOpaque(false);
+		return panel;
 	}
 	
+	private void updateTableModel(SetOfGeneSets setOfGeneSets) {
+		List<SigGeneSetDescriptor> descriptors;
+		if(setOfGeneSets == null) {
+			descriptors = Collections.emptyList();
+		} else {
+			descriptors = new ArrayList<>(setOfGeneSets.size());
+			for(GeneSet geneSet : setOfGeneSets.getGeneSets().values()) {
+				descriptors.add(new SigGeneSetDescriptor(geneSet, 0));
+			}
+		}
+
+		tableModel = new SigGeneSetTableModel(descriptors);
+		table.setModel(tableModel);
+		
+		TableColumnModel columnModel = table.getColumnModel();
+		columnModel.getColumn(0).setPreferredWidth(600);
+		columnModel.getColumn(1).setPreferredWidth(100);
+		columnModel.getColumn(2).setPreferredWidth(100);
+	}
 	
-	private JPanel createEdgePanel() {
-		JPanel panel = new JPanel();
-		panel.setBorder(LookAndFeelUtil.createPanelBorder());
-		
-		JLabel title = new JLabel("Edge Weight Parameters");
-		JLabel testLabel = new JLabel("Test:");
-		JLabel cutoffLabel = new JLabel("Cutoff:");
-		JLabel dataSetLabel = new JLabel("Data Set:");
-		
-		JComboBox testCombo = new JComboBox<>();
-		JTextField cutoffText = new JTextField();
-		JComboBox dataSetCombo = new JComboBox<>();
-		
-		final GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
-		layout.setAutoCreateContainerGaps(false);
-		layout.setAutoCreateGaps(false);
-		
-		layout.setHorizontalGroup(layout.createSequentialGroup()
-			.addGroup(layout.createParallelGroup(Alignment.TRAILING)
-				.addComponent(testLabel)
-				.addComponent(cutoffLabel)
-				.addComponent(dataSetLabel)
-			)
-			.addGroup(layout.createParallelGroup(Alignment.LEADING)
-				.addComponent(testCombo)
-				.addComponent(cutoffText)
-				.addComponent(dataSetCombo)
-			)
-		);
-		
-		layout.setVerticalGroup(layout.createSequentialGroup()
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(testLabel)
-				.addComponent(testCombo)
-			)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(cutoffLabel)
-				.addComponent(cutoffText)
-			)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(dataSetLabel)
-				.addComponent(dataSetCombo)
-			)
-		);
-		
-		
-		if(LookAndFeelUtil.isAquaLAF())
-			panel.setOpaque(false);
-		return panel;
+	private void loadFromFile() {
+		System.out.println("PADialogPage.loadFromFile()");
+		Optional<Path> gmtPath = FileBrowser.browse(fileUtil, callback.getDialogFrame(), FileBrowser.Filter.GMT);
+		if(gmtPath.isPresent()) {
+			System.out.println("here");
+			SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
+			GMTFileReaderTask gmtTask = new GMTFileReaderTask(map, gmtPath.get().toString(), setOfGeneSets);
+			TaskIterator taskIterator = new TaskIterator(gmtTask);
+			dialogTaskManager.execute(taskIterator, new ResultTaskObserver() {
+				@Override
+				public void allFinished(FinishStatus finishStatus) {
+					updateTableModel(setOfGeneSets);
+				}
+			});
+		}
 	}
 	
 
