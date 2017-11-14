@@ -54,6 +54,10 @@ public class PADialogPage implements CardDialogPage {
 	private JTable table;
 	private SigGeneSetTableModel tableModel;
 	
+	private JButton selectAllButton;
+	private JButton selectNoneButton;
+	
+	
 	
 	public interface Factory {
 		PADialogPage create(EnrichmentMap map);
@@ -107,15 +111,19 @@ public class PADialogPage implements CardDialogPage {
 		
 		JButton loadFileButton = new JButton("Load from File...");
 		JButton loadWebButton = new JButton("Load from Web...");
-		JButton selectAllButton = new JButton("Select All");
-		JButton selectNoneButton = new JButton("Select None");
+		selectAllButton = new JButton("Select All");
+		selectNoneButton = new JButton("Select None");
 		JButton filterButton = new JButton("Filter...");
 		loadWebButton.setEnabled(false);
 		
 		loadFileButton.addActionListener(e -> loadFromFile());
+		selectAllButton .addActionListener(e -> tableModel.setAllWanted(true));
+		selectNoneButton.addActionListener(e -> tableModel.setAllWanted(false));
 		
 		SwingUtil.makeSmall(title, loadFileButton, loadWebButton, selectAllButton, selectNoneButton, filterButton);
 		LookAndFeelUtil.equalizeSize(loadFileButton, loadWebButton, selectAllButton, selectNoneButton, filterButton);
+		
+		updateTableModel(null);
 		
 		final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -165,20 +173,39 @@ public class PADialogPage implements CardDialogPage {
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		table.setFillsViewportHeight(true);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-		table.setCellSelectionEnabled(true);
+		table.setCellSelectionEnabled(false);
+		table.setRowSelectionAllowed(true);
 		table.setAutoCreateRowSorter(true);
-		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		
 		JTableHeader header = table.getTableHeader();
 		header.setReorderingAllowed(false);
 		
-		updateTableModel(null);
-
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(scrollPane, BorderLayout.CENTER);
 		panel.setOpaque(false);
 		return panel;
 	}
+	
+	
+	private void updateSelectionButtons() {
+		List<SigGeneSetDescriptor> descriptors = tableModel.getGeneSetDescriptors();
+		int selectedCount = (int)descriptors.stream().filter(SigGeneSetDescriptor::isWanted).count();
+		if(descriptors.isEmpty()) {
+			selectAllButton.setEnabled(false);
+			selectNoneButton.setEnabled(false);
+		} else if(selectedCount == descriptors.size()) {
+			selectAllButton.setEnabled(false);
+			selectNoneButton.setEnabled(true);
+		} else if(selectedCount == 0) {
+			selectAllButton.setEnabled(true);
+			selectNoneButton.setEnabled(false);
+		} else {
+			selectAllButton.setEnabled(true);
+			selectNoneButton.setEnabled(true);
+		}
+	}
+	
 	
 	private void updateTableModel(SetOfGeneSets setOfGeneSets) {
 		List<SigGeneSetDescriptor> descriptors;
@@ -195,16 +222,19 @@ public class PADialogPage implements CardDialogPage {
 		table.setModel(tableModel);
 		
 		TableColumnModel columnModel = table.getColumnModel();
-		columnModel.getColumn(0).setPreferredWidth(600);
-		columnModel.getColumn(1).setPreferredWidth(100);
+		columnModel.getColumn(0).setPreferredWidth(100);
+		columnModel.getColumn(1).setPreferredWidth(550);
 		columnModel.getColumn(2).setPreferredWidth(100);
+		columnModel.getColumn(3).setPreferredWidth(100);
+		
+		tableModel.addTableModelListener(e -> updateSelectionButtons());
+		updateSelectionButtons();
 	}
 	
+	
 	private void loadFromFile() {
-		System.out.println("PADialogPage.loadFromFile()");
 		Optional<Path> gmtPath = FileBrowser.browse(fileUtil, callback.getDialogFrame(), FileBrowser.Filter.GMT);
 		if(gmtPath.isPresent()) {
-			System.out.println("here");
 			SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
 			GMTFileReaderTask gmtTask = new GMTFileReaderTask(map, gmtPath.get().toString(), setOfGeneSets);
 			TaskIterator taskIterator = new TaskIterator(gmtTask);
