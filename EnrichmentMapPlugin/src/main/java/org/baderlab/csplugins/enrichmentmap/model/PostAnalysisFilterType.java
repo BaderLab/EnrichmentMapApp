@@ -73,11 +73,59 @@ public enum PostAnalysisFilterType {
 	/**
 	 * Returns a new mutable Map that contains all the default values.
 	 */
-	public static Map<PostAnalysisFilterType,Double> createMapOfDefaults() {
+	public static Map<PostAnalysisFilterType,String> createMapOfDefaults() {
+		Map<PostAnalysisFilterType,String> map = new HashMap<>();
+		for(PostAnalysisFilterType type : PostAnalysisFilterType.values()) {
+			map.put(type, String.valueOf(type.defaultValue));
+		}
+		return map;
+	}
+	
+	@Deprecated
+	public static Map<PostAnalysisFilterType,Double> createMapOfDefaultsOld() {
 		Map<PostAnalysisFilterType,Double> map = new HashMap<>();
 		for(PostAnalysisFilterType type : PostAnalysisFilterType.values()) {
 			map.put(type, type.defaultValue);
 		}
 		return map;
+	}
+	
+	
+	public boolean isValid(Number value) {
+		switch(this) {
+			case NO_FILTER:
+				return true;
+			case HYPERGEOM:
+				return value != null && value.doubleValue() >= 0.0 && value.intValue() <= 1.0;
+			case MANN_WHIT_TWO_SIDED:
+			case MANN_WHIT_LESS:
+			case MANN_WHIT_GREATER:
+				return value != null && value.doubleValue() >= 0.0 && value.intValue() <= 1.0;
+			case PERCENT:
+			case SPECIFIC:
+				return value != null && value.intValue() >= 0 && value.intValue() <= 100;
+			case NUMBER:
+				return value != null && value.intValue() >= 0;
+			default:
+				return false;
+		}
+	}
+	
+	public String getErrorMessage() {
+		switch(this) {
+			case HYPERGEOM:
+			case MANN_WHIT_TWO_SIDED:
+			case MANN_WHIT_LESS:
+			case MANN_WHIT_GREATER:
+				return "Must be between 0 and 1";
+			case PERCENT:
+			case SPECIFIC:
+				return "Must be between 0 and 100";
+			case NUMBER:
+				return "Must be greater than 0";
+			default:
+				return null;
+		}
+
 	}
 }

@@ -476,7 +476,7 @@ public class CutoffPropertiesPanel extends JPanel {
 	}
 	
 	
-	private static AbstractFormatterFactory getFormatterFactory(boolean scientific) {
+	public static AbstractFormatterFactory getFormatterFactory(boolean scientific) {
 		return new AbstractFormatterFactory() {
 			@Override
 			public AbstractFormatter getFormatter(JFormattedTextField tf) {

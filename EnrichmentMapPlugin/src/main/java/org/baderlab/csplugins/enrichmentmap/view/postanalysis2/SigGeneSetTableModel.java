@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.view.postanalysis2;
 
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.event.TableModelEvent;
@@ -15,10 +14,6 @@ public class SigGeneSetTableModel extends AbstractTableModel {
 	
 	public SigGeneSetTableModel(List<SigGeneSetDescriptor> geneSets) {
 		this.geneSets = geneSets;
-	}
-	
-	public SigGeneSetTableModel() {
-		this(Collections.emptyList());
 	}
 	
 	public List<SigGeneSetDescriptor> getGeneSetDescriptors() {

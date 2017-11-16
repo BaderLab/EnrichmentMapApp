@@ -93,7 +93,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
     
 	private SetOfGeneSets signatureGenesets;
 	private String autoName;
-	private final Map<PostAnalysisFilterType, Double> savedFilterValues = PostAnalysisFilterType.createMapOfDefaults();
+	private final Map<PostAnalysisFilterType, Double> savedFilterValues = PostAnalysisFilterType.createMapOfDefaultsOld();
 	
 	public interface Factory {
 		PostAnalysisSignatureDiscoveryPanel create(PostAnalysisInputPanel parentPanel);

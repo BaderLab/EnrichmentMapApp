@@ -15,18 +15,23 @@ public interface FilterMetric {
 	
 	PostAnalysisFilterType getFilterType(); // Used for optimization, to avoid processing when the filter type is None
 	
+	double getCutoff();
 	
 	abstract class BaseFilterMetric implements FilterMetric {
-		protected final double filter;
+		protected final double cutoff;
 		protected final PostAnalysisFilterType type;
 		
 		public BaseFilterMetric(PostAnalysisFilterType type, double filter) {
-			this.filter = filter;
+			this.cutoff = filter;
 			this.type = type;
 		}
 		
 		public PostAnalysisFilterType getFilterType() {
 			return type;
+		}
+		
+		public double getCutoff() {
+			return cutoff;
 		}
 	}
 	
@@ -51,7 +56,7 @@ public interface FilterMetric {
 		
 		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
 			double relative_per = (double) intersection.size() / (double) mapGenesetSize;
-			return relative_per >= filter / 100.0;
+			return relative_per >= cutoff / 100.0;
 		}
 	}
 	
@@ -63,7 +68,7 @@ public interface FilterMetric {
 		}
 		
 		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
-			return intersection.size() >= filter;
+			return intersection.size() >= cutoff;
 		}
 	}
 
@@ -76,7 +81,7 @@ public interface FilterMetric {
 		
 		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
 			double relative_per = (double) intersection.size() / (double) signatureSet.size();
-			return relative_per >= filter / 100.0;
+			return relative_per >= cutoff / 100.0;
 		}
 	}
 
@@ -108,7 +113,7 @@ public interface FilterMetric {
 				return false;
 			}
 
-			return hyperPval <= filter;
+			return hyperPval <= cutoff;
 		}
 	}
 
@@ -138,7 +143,7 @@ public interface FilterMetric {
 				double[] scores = ranks.getScores();
 				MannWhitneyUTestSided mann_whit = new MannWhitneyUTestSided();
 				double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, type.mannWhitneyTestType());
-				if(mannPval <= filter) {
+				if(mannPval <= cutoff) {
 					return true;
 				}
 			}

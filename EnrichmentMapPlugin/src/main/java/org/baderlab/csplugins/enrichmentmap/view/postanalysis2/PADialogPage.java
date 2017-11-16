@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Optional;
 
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -23,6 +25,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.util.ResultTaskObserver;
 import org.baderlab.csplugins.enrichmentmap.view.creation.NamePanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
@@ -31,12 +34,16 @@ import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 public class PADialogPage implements CardDialogPage {
@@ -44,19 +51,23 @@ public class PADialogPage implements CardDialogPage {
 	@Inject private PAWeightPanel.Factory weightPanelFactory;
 	@Inject private FileUtil fileUtil;
 	@Inject private DialogTaskManager dialogTaskManager;
+	@Inject private Provider<JFrame> jFrameProvider;
+	@Inject private IconManager iconManager;
 	
 	private final EnrichmentMap map;
+	private FilterMetric filterMetric = new FilterMetric.None();
+	private List<SigGeneSetDescriptor> loadedGeneSets = Collections.emptyList();
 	private CardDialogCallback callback;
 	
 	private NamePanel namePanel;
 	private PAWeightPanel weightPanel;
-	
 	private JTable table;
 	private SigGeneSetTableModel tableModel;
 	
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
-	
+	private JButton filterButton;
+	private JLabel statusLabel;
 	
 	
 	public interface Factory {
@@ -113,17 +124,19 @@ public class PADialogPage implements CardDialogPage {
 		JButton loadWebButton = new JButton("Load from Web...");
 		selectAllButton = new JButton("Select All");
 		selectNoneButton = new JButton("Select None");
-		JButton filterButton = new JButton("Filter...");
+		filterButton = new JButton("Filter...");
 		loadWebButton.setEnabled(false);
+		statusLabel = new JLabel();
 		
 		loadFileButton.addActionListener(e -> loadFromFile());
 		selectAllButton .addActionListener(e -> tableModel.setAllWanted(true));
 		selectNoneButton.addActionListener(e -> tableModel.setAllWanted(false));
+		filterButton.addActionListener(e -> filterSigGeneSets());
 		
-		SwingUtil.makeSmall(title, loadFileButton, loadWebButton, selectAllButton, selectNoneButton, filterButton);
+		SwingUtil.makeSmall(title, loadFileButton, loadWebButton, selectAllButton, selectNoneButton, filterButton, statusLabel);
 		LookAndFeelUtil.equalizeSize(loadFileButton, loadWebButton, selectAllButton, selectNoneButton, filterButton);
 		
-		updateTableModel(null);
+		updateTableArea(Collections.emptyList());
 		
 		final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -142,6 +155,7 @@ public class PADialogPage implements CardDialogPage {
 					.addComponent(filterButton)
 				)
 			)
+			.addComponent(statusLabel)
 		);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
@@ -158,6 +172,7 @@ public class PADialogPage implements CardDialogPage {
 					.addComponent(filterButton)
 				)
 			)
+			.addComponent(statusLabel)
 		);
 		
 		if(LookAndFeelUtil.isAquaLAF())
@@ -191,9 +206,11 @@ public class PADialogPage implements CardDialogPage {
 	private void updateSelectionButtons() {
 		List<SigGeneSetDescriptor> descriptors = tableModel.getGeneSetDescriptors();
 		int selectedCount = (int)descriptors.stream().filter(SigGeneSetDescriptor::isWanted).count();
+		filterButton.setEnabled(true);
 		if(descriptors.isEmpty()) {
 			selectAllButton.setEnabled(false);
 			selectNoneButton.setEnabled(false);
+			filterButton.setEnabled(false);
 		} else if(selectedCount == descriptors.size()) {
 			selectAllButton.setEnabled(false);
 			selectNoneButton.setEnabled(true);
@@ -207,7 +224,7 @@ public class PADialogPage implements CardDialogPage {
 	}
 	
 	
-	private void updateTableModel(SetOfGeneSets setOfGeneSets) {
+	private static List<SigGeneSetDescriptor> createDescriptors(SetOfGeneSets setOfGeneSets) {
 		List<SigGeneSetDescriptor> descriptors;
 		if(setOfGeneSets == null) {
 			descriptors = Collections.emptyList();
@@ -217,8 +234,33 @@ public class PADialogPage implements CardDialogPage {
 				descriptors.add(new SigGeneSetDescriptor(geneSet, 0));
 			}
 		}
-
-		tableModel = new SigGeneSetTableModel(descriptors);
+		return descriptors;
+	}
+	
+	
+	private void runFilterTask() {
+		filterButton.setEnabled(false);
+		FilterSignatureGSTask task = new FilterSignatureGSTask(map, loadedGeneSets, filterMetric);
+		
+		dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
+			
+			@Override
+			public void taskFinished(ObservableTask task) {
+				@SuppressWarnings("unchecked")
+				List<SigGeneSetDescriptor> filteredGeneSets = task.getResults(List.class);
+				updateTableArea(filteredGeneSets);
+			}
+			
+			@Override
+			public void allFinished(FinishStatus finishStatus) {
+				filterButton.setEnabled(true);
+				updateSelectionButtons();
+			}
+		});
+	}
+	
+	private void updateTableArea(List<SigGeneSetDescriptor> filteredGenesets) {
+		tableModel = new SigGeneSetTableModel(filteredGenesets);
 		table.setModel(tableModel);
 		
 		TableColumnModel columnModel = table.getColumnModel();
@@ -229,6 +271,26 @@ public class PADialogPage implements CardDialogPage {
 		
 		tableModel.addTableModelListener(e -> updateSelectionButtons());
 		updateSelectionButtons();
+		updateStatusLabel();
+	}
+	
+	private void updateStatusLabel() {
+		String status;
+		if(loadedGeneSets.isEmpty()) {
+			status = "";
+		} else {
+			List<SigGeneSetDescriptor> filteredGenesets = tableModel.getGeneSetDescriptors();
+			if(loadedGeneSets.size() == filteredGenesets.size() && loadedGeneSets.size() == 1) {
+				status = "1 gene set loaded";
+			} else if(loadedGeneSets.size() == filteredGenesets.size()) {
+				status = MessageFormat.format("{0} gene sets loaded", loadedGeneSets.size());
+			} else if(loadedGeneSets.size() == 1) {
+				status = MessageFormat.format("1 gene set loaded, {0} filtered from view", filteredGenesets.size());
+			} else {
+				status = MessageFormat.format("{0} gene sets loaded, {1} filtered from view", loadedGeneSets.size(), filteredGenesets.size());
+			}
+		}
+		statusLabel.setText(status);
 	}
 	
 	
@@ -241,11 +303,22 @@ public class PADialogPage implements CardDialogPage {
 			dialogTaskManager.execute(taskIterator, new ResultTaskObserver() {
 				@Override
 				public void allFinished(FinishStatus finishStatus) {
-					updateTableModel(setOfGeneSets);
+					filterMetric = new FilterMetric.None();
+					loadedGeneSets = createDescriptors(setOfGeneSets);
+					updateTableArea(loadedGeneSets);
 				}
 			});
 		}
 	}
 	
+	
+	private void filterSigGeneSets() {
+		PAFilterDialog dialog = new PAFilterDialog(jFrameProvider.get(), iconManager, map, filterMetric);
+		Optional<FilterMetric> result = dialog.open();
+		if(result.isPresent()) {
+			this.filterMetric = result.get();
+			runFilterTask();
+		}
+	}
 
 }

@@ -39,4 +39,8 @@ public class SigGeneSetDescriptor {
 	public int getMaxOverlap() {
 		return maxOverlap;
 	}
+	
+	public GeneSet getGeneSet() {
+		return geneSet;
+	}
 }

@@ -60,7 +60,7 @@ public class PAWeightPanel extends JPanel {
 	private DefaultComboBoxModel<String> datasetModel;
 	private EnablementComboBoxRenderer<PostAnalysisFilterType> rankingEnablementRenderer;
     private JPanel cardPanel;
-    private Map<PostAnalysisFilterType,Double> savedFilterValues = PostAnalysisFilterType.createMapOfDefaults();
+    private Map<PostAnalysisFilterType,String> savedFilterValues = PostAnalysisFilterType.createMapOfDefaults();
     
     public interface Factory {
     		PAWeightPanel create(EnrichmentMap map);
@@ -68,7 +68,7 @@ public class PAWeightPanel extends JPanel {
     
     @Inject
 	public PAWeightPanel(@Assisted EnrichmentMap map) {
-		savedFilterValues.put(PostAnalysisFilterType.HYPERGEOM, HYPERGOM_DEFAULT);
+		savedFilterValues.put(PostAnalysisFilterType.HYPERGEOM, String.valueOf(HYPERGOM_DEFAULT));
 		this.map = map;
 	}
 	
