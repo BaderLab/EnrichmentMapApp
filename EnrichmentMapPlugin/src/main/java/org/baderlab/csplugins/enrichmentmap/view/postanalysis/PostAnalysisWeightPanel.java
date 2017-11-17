@@ -64,7 +64,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 	private DefaultComboBoxModel<String> datasetModel;
 	private EnablementComboBoxRenderer<PostAnalysisFilterType> rankingEnablementRenderer;
     private JPanel cardPanel;
-    private Map<PostAnalysisFilterType,Double> savedFilterValues = PostAnalysisFilterType.createMapOfDefaultsOld();
+    private Map<PostAnalysisFilterType,Double> savedFilterValues = PostAnalysisFilterType.createMapOfDefaultsNumbers();
     
     private final CyServiceRegistrar serviceRegistrar;
     
@@ -386,7 +386,7 @@ public class PostAnalysisWeightPanel extends JPanel {
 		rankTestCombo.setSelectedItem(filterType);
 		rankTestTextField.setValue(filterType.defaultValue);
 		
-		savedFilterValues = PostAnalysisFilterType.createMapOfDefaultsOld();
+		savedFilterValues = PostAnalysisFilterType.createMapOfDefaultsNumbers();
 		savedFilterValues.put(PostAnalysisFilterType.HYPERGEOM, HYPERGOM_DEFAULT);
 	}
 

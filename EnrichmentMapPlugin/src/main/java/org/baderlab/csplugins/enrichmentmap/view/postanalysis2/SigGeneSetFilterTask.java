@@ -15,7 +15,7 @@ import org.cytoscape.work.TaskMonitor;
 import com.google.common.collect.Sets;
 
 
-public class FilterSignatureGSTask extends AbstractTask implements ObservableTask {
+public class SigGeneSetFilterTask extends AbstractTask implements ObservableTask {
 
 	private final EnrichmentMap map;
 	private final List<SigGeneSetDescriptor> geneSets;
@@ -24,7 +24,7 @@ public class FilterSignatureGSTask extends AbstractTask implements ObservableTas
 	private List<SigGeneSetDescriptor> resultGeneSets;
 	
 	
-	public FilterSignatureGSTask(EnrichmentMap map, List<SigGeneSetDescriptor> geneSets, FilterMetric filterMetric) {
+	public SigGeneSetFilterTask(EnrichmentMap map, List<SigGeneSetDescriptor> geneSets, FilterMetric filterMetric) {
 		this.map = map;
 		this.geneSets = geneSets;
 		this.filterMetric = filterMetric;
@@ -51,6 +51,8 @@ public class FilterSignatureGSTask extends AbstractTask implements ObservableTas
 					
 					Set<Integer> geneSetGenes = allGenesets.get(mapGeneset);
 					Set<Integer> sigSetGenes  = descriptor.getGeneSet().getGenes();
+					
+					// MKTODO why can't the filterMetric do the intersection itself?
 					Set<Integer> intersection = Sets.intersection(geneSetGenes, sigSetGenes);
 					
 					if(filterMetric.match(geneSetGenes.size(), intersection, sigSetGenes)) {

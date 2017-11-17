@@ -7,6 +7,7 @@ import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall
 import java.awt.CardLayout;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Map;
 
 import javax.swing.ButtonGroup;
@@ -28,6 +29,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
+import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.view.EnablementComboBoxRenderer;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -37,6 +39,9 @@ import com.google.inject.assistedinject.Assisted;
 
 @SuppressWarnings("serial")
 public class PAWeightPanel extends JPanel {
+	
+	private static final String WARN_CARD = "warn";
+	private static final String MANN_WHIT_CARD = "mannWhitney";
 
 	private static final String LABEL_CUTOFF = "Cutoff:";
 	private static final String LABEL_TEST   = "Test:";
@@ -60,7 +65,7 @@ public class PAWeightPanel extends JPanel {
 	private DefaultComboBoxModel<String> datasetModel;
 	private EnablementComboBoxRenderer<PostAnalysisFilterType> rankingEnablementRenderer;
     private JPanel cardPanel;
-    private Map<PostAnalysisFilterType,String> savedFilterValues = PostAnalysisFilterType.createMapOfDefaults();
+    private Map<PostAnalysisFilterType,Double> savedFilterValues = PostAnalysisFilterType.createMapOfDefaultsNumbers();
     
     public interface Factory {
     		PAWeightPanel create(EnrichmentMap map);
@@ -68,7 +73,7 @@ public class PAWeightPanel extends JPanel {
     
     @Inject
 	public PAWeightPanel(@Assisted EnrichmentMap map) {
-		savedFilterValues.put(PostAnalysisFilterType.HYPERGEOM, String.valueOf(HYPERGOM_DEFAULT));
+		savedFilterValues.put(PostAnalysisFilterType.HYPERGEOM, HYPERGOM_DEFAULT);
 		this.map = map;
 	}
 	
@@ -77,19 +82,18 @@ public class PAWeightPanel extends JPanel {
 		setBorder(LookAndFeelUtil.createTitledBorder("Edge Weight Parameters"));
 
 		JPanel selectPanel = createRankTestSelectPanel();
-		JPanel hypergeomCard = createHypergeomPanel();
-		JPanel mannWhittCard = createMannWhittPanel();
-		JPanel warnCard = createWarningPanel();
+		
+		JPanel hypeCard = createHypergeomCard();
+		JPanel mannCard = createMannWhittCard();
+		JPanel warnCard = createWarningCard();
 		
 		cardPanel = new JPanel(new CardLayout());
-		cardPanel.add(mannWhittCard, PostAnalysisFilterType.MANN_WHIT_TWO_SIDED.name());
-		cardPanel.add(mannWhittCard, PostAnalysisFilterType.MANN_WHIT_GREATER.name());
-		cardPanel.add(mannWhittCard, PostAnalysisFilterType.MANN_WHIT_LESS.name());
-		cardPanel.add(hypergeomCard, PostAnalysisFilterType.HYPERGEOM.name());
+		cardPanel.add(mannCard, MANN_WHIT_CARD);
+		cardPanel.add(hypeCard, PostAnalysisFilterType.HYPERGEOM.name());
 		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.PERCENT.name());
 		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.NUMBER.name());
 		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.SPECIFIC.name());
-		cardPanel.add(warnCard, "warn");
+		cardPanel.add(warnCard, WARN_CARD);
         
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
@@ -98,17 +102,19 @@ public class PAWeightPanel extends JPanel {
 
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 			.addComponent(selectPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-			.addComponent(cardPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			.addComponent(cardPanel, 300, 300, 300)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 			.addComponent(selectPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			.addComponent(cardPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addComponent(cardPanel, 130, 130, 130)
 		);
 
 		if (LookAndFeelUtil.isAquaLAF()) {
 			setOpaque(false);
 			cardPanel.setOpaque(false);
 		}
+		
+		initialize();
 	}
 	
 	
@@ -120,7 +126,7 @@ public class PAWeightPanel extends JPanel {
 	}
 	
 	
-	private JPanel createWarningPanel() {
+	private JPanel createWarningCard() {
 		JLabel iconLabel = new JLabel(IconManager.ICON_WARNING);
 		iconLabel.setFont(iconManager.getIconFont(16.0f));
 		iconLabel.setForeground(LookAndFeelUtil.getWarnColor());
@@ -198,8 +204,10 @@ public class PAWeightPanel extends JPanel {
 			rankTestTextField.setValue(savedFilterValues.get(filterType));
 			CardLayout cardLayout = (CardLayout) cardPanel.getLayout();
 
-			if (filterType.isMannWhitney() && map.getAllRanks().isEmpty())
-				cardLayout.show(cardPanel, "warn");
+			if(filterType.isMannWhitney() && map.getAllRanks().isEmpty())
+				cardLayout.show(cardPanel, WARN_CARD);
+			else if(filterType.isMannWhitney())
+				cardLayout.show(cardPanel, MANN_WHIT_CARD);
 			else
 				cardLayout.show(cardPanel, filterType.name());
 		});
@@ -258,7 +266,7 @@ public class PAWeightPanel extends JPanel {
 	}
 	
 	
-	private JPanel createHypergeomPanel() {
+	private JPanel createHypergeomCard() {
 		ActionListener universeSelectActionListener = e -> {
 			boolean enable = e.getActionCommand().equals("User Defined");
 			universeSelectionTextField.setEnabled(enable);
@@ -342,18 +350,38 @@ public class PAWeightPanel extends JPanel {
 	}
 	
 	
-	private JPanel createMannWhittPanel() {
-		JPanel panel = new JPanel();
-		final GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
-
-		if (LookAndFeelUtil.isAquaLAF())
-			panel.setOpaque(false);
-
-		return panel;
+	private JPanel createMannWhittCard() {
+		return new MannWhitRanksPanel(map);
 	}	
+	
+	
+	private void initialize() {
+		datasetModel.removeAllElements();
+		datasetModel.addElement("-- All Data Sets --");
+		for (String dataset : map.getDataSetNames()) {
+			datasetModel.addElement(dataset);
+		}
+		datasetCombo.setEnabled(datasetModel.getSize() > 2);
+		if (datasetModel.getSize() > 0) {
+			datasetCombo.setSelectedIndex(0);
+		}
+
+		Map<String, Ranking> rankingMap = map.getAllRanks();
+		String[] rankingArray = rankingMap.keySet().toArray(new String[rankingMap.size()]);
+		Arrays.sort(rankingArray);
+
+		PostAnalysisFilterType typeToUse = rankingArray.length == 0 ? PostAnalysisFilterType.HYPERGEOM : PostAnalysisFilterType.MANN_WHIT_TWO_SIDED;
+		rankTestCombo.setSelectedItem(typeToUse);
+		rankTestTextField.setValue(typeToUse.defaultValue);
+
+		rankingEnablementRenderer.enableAll();
+		if (rankingArray.length == 0) {
+			rankingEnablementRenderer.disableItems(
+					PostAnalysisFilterType.MANN_WHIT_TWO_SIDED, 
+					PostAnalysisFilterType.MANN_WHIT_LESS, 
+					PostAnalysisFilterType.MANN_WHIT_GREATER);
+		}
+	}
 	
 	
 	private void updateUniverseSize(String dataset) {

@@ -81,8 +81,7 @@ public enum PostAnalysisFilterType {
 		return map;
 	}
 	
-	@Deprecated
-	public static Map<PostAnalysisFilterType,Double> createMapOfDefaultsOld() {
+	public static Map<PostAnalysisFilterType,Double> createMapOfDefaultsNumbers() {
 		Map<PostAnalysisFilterType,Double> map = new HashMap<>();
 		for(PostAnalysisFilterType type : PostAnalysisFilterType.values()) {
 			map.put(type, type.defaultValue);

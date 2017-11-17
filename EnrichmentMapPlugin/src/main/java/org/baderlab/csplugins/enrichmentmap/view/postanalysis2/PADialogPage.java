@@ -240,7 +240,7 @@ public class PADialogPage implements CardDialogPage {
 	
 	private void runFilterTask() {
 		filterButton.setEnabled(false);
-		FilterSignatureGSTask task = new FilterSignatureGSTask(map, loadedGeneSets, filterMetric);
+		SigGeneSetFilterTask task = new SigGeneSetFilterTask(map, loadedGeneSets, filterMetric);
 		
 		dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
 			
@@ -285,9 +285,9 @@ public class PADialogPage implements CardDialogPage {
 			} else if(loadedGeneSets.size() == filteredGenesets.size()) {
 				status = MessageFormat.format("{0} gene sets loaded", loadedGeneSets.size());
 			} else if(loadedGeneSets.size() == 1) {
-				status = MessageFormat.format("1 gene set loaded, {0} filtered from view", filteredGenesets.size());
+				status = MessageFormat.format("1 gene set loaded, {0} removed from view", filteredGenesets.size());
 			} else {
-				status = MessageFormat.format("{0} gene sets loaded, {1} filtered from view", loadedGeneSets.size(), filteredGenesets.size());
+				status = MessageFormat.format("{0} gene sets loaded, {1} removed from view", loadedGeneSets.size(), filteredGenesets.size());
 			}
 		}
 		statusLabel.setText(status);
