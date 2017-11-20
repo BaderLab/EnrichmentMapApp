@@ -194,7 +194,7 @@ public class PAFilterDialog extends JDialog {
 		
 		switch(type) {
 			case NO_FILTER:
-				return Optional.of(new FilterMetric.None());
+				return Optional.of(new FilterMetric.NoFilter());
 			case NUMBER:
 				return Optional.of(new FilterMetric.Number(value));
 			case PERCENT:

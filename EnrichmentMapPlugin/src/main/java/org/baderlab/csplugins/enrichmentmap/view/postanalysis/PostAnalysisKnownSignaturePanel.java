@@ -139,7 +139,7 @@ public class PostAnalysisKnownSignaturePanel extends JPanel {
 		// Manually fire the same action listener that is used by the signature discovery panel.
 		// Use the synchronousTaskManager so that this blocks
 		
-		LoadSignatureSetsActionListener loadAction = loadSignatureSetsFactory.create(new File(filePath), new FilterMetric.None(), parentPanel.getEnrichmentMap());
+		LoadSignatureSetsActionListener loadAction = loadSignatureSetsFactory.create(new File(filePath), new FilterMetric.NoFilter(), parentPanel.getEnrichmentMap());
 		loadAction.actionPerformed(null);
 		
 		this.signatureGenesets = loadAction.getResultGeneSets();

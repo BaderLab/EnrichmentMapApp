@@ -12,8 +12,6 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
-import com.google.common.collect.Sets;
-
 
 public class SigGeneSetFilterTask extends AbstractTask implements ObservableTask {
 
@@ -46,18 +44,20 @@ public class SigGeneSetFilterTask extends AbstractTask implements ObservableTask
 			if(filterMetric.getFilterType() == PostAnalysisFilterType.NO_FILTER) {
 				resultGeneSets.add(descriptor);
 			} else {
+				boolean done = false;
 				for(String mapGeneset : allGenesets.keySet()) {
-					//check if this set overlaps with current gene set
 					
-					Set<Integer> geneSetGenes = allGenesets.get(mapGeneset);
-					Set<Integer> sigSetGenes  = descriptor.getGeneSet().getGenes();
+					Set<Integer> geneSet = allGenesets.get(mapGeneset);
+					Set<Integer> sigSet  = descriptor.getGeneSet().getGenes();
 					
-					// MKTODO why can't the filterMetric do the intersection itself?
-					Set<Integer> intersection = Sets.intersection(geneSetGenes, sigSetGenes);
+					if(filterMetric.getFilterType() == PostAnalysisFilterType.HYPERGEOM) {
+						System.out.println(mapGeneset + "\t" + descriptor.getName() + "\t" + filterMetric.computeValue(geneSet, sigSet));
+					}
 					
-					if(filterMetric.match(geneSetGenes.size(), intersection, sigSetGenes)) {
+					if(!done && filterMetric.passes(geneSet, sigSet)) {
 						resultGeneSets.add(descriptor);
-						break;
+//						break;
+						done = true;
 					}
 				}
 			} 

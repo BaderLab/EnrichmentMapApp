@@ -61,7 +61,6 @@ public enum PostAnalysisFilterType {
 	public static PostAnalysisFilterType fromDisplayString(String val) {
 		if(OLD_MANN_WHIT_LABEL.equals(val))
 			return MANN_WHIT_TWO_SIDED;
-
 		for(PostAnalysisFilterType metric : values()) {
 			if(metric.display.equals(val)) {
 				return metric;

@@ -162,7 +162,7 @@ public abstract class BaseNetworkTest {
 		// Load the gene-sets from the file
 		SerialTestTaskManager testTaskManager = new SerialTestTaskManager();
 		File file = new File(builder.getSignatureGMTFileName());
-		LoadSignatureSetsActionListener loader = loadSignatureSetsActionListenerFactory.create(file, new FilterMetric.None(), map);
+		LoadSignatureSetsActionListener loader = loadSignatureSetsActionListenerFactory.create(file, new FilterMetric.NoFilter(), map);
 		loader.setTaskManager(testTaskManager);
 		loader.actionPerformed(null);
 		builder.setLoadedGMTGeneSets(loader.getResultGeneSets());

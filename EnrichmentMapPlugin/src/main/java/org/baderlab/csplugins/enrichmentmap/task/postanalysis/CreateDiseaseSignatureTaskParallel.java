@@ -141,20 +141,25 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 						
 						GeneSet enrGeneSet = dataSet.getGeneSetsOfInterest().getGeneSetByName(geneSetName);
 						if(enrGeneSet != null) {
+							
 							// restrict to a common gene universe
-							Set<Integer> enrGenes = Sets.intersection(enrGeneSet.getGenes(), geneUniverse);
+							Set<Integer> enrGenes = Sets.intersection(enrGeneSet.getGenes(), geneUniverse); // wait, is this necessary??, isn't enrGeneSet a subset of geneUniverse???
 							Set<Integer> union = Sets.union(sigGeneSet.getGenes(), enrGenes);
 							Set<Integer> intersection = Sets.intersection(sigGenesInUniverse, enrGenes);
 
 							if(!intersection.isEmpty()) {
+								// Jaccard or whatever from the original map
 								double coeffecient = ComputeSimilarityTaskParallel.computeSimilarityCoeffecient(map.getParams(), intersection, union, sigGeneSet.getGenes(), enrGenes);
+								
 								GenesetSimilarity comparison = new GenesetSimilarity(hubName, geneSetName, coeffecient, INTERACTION, intersection);
 
 								PostAnalysisFilterType filterType = params.getRankTestParameters().getType();
+								
 								switch (filterType) {
 									case HYPERGEOM:
 										int hyperUniverseSize1 = getHypergeometricUniverseSize(dataSet);
-										hypergeometric(hyperUniverseSize1, sigGenesInUniverse, enrGenes, intersection, comparison);
+										double pval = hypergeometric(hyperUniverseSize1, sigGenesInUniverse, enrGenes, intersection, comparison);
+										System.out.println(geneSetName + "\t" + hubName + "\t" + pval);
 										break;
 									case MANN_WHIT_TWO_SIDED:
 									case MANN_WHIT_GREATER:
@@ -195,7 +200,7 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 		}
 	}
 	
-	private void hypergeometric(int universeSize, Set<Integer> sigGenesInUniverse, Set<Integer> enrGenes,
+	private double hypergeometric(int universeSize, Set<Integer> sigGenesInUniverse, Set<Integer> enrGenes,
 			Set<Integer> intersection, GenesetSimilarity comparison) {
 		// Calculate Hypergeometric pValue for Overlap
 		int u = universeSize; //number of total genes (size of population / total number of balls)
@@ -214,6 +219,7 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 		comparison.setHypergeomN(n);
 		comparison.setHypergeomM(m);
 		comparison.setHypergeomK(k);
+		return hyperPval;
 	}
 	
 

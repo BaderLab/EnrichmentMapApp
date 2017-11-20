@@ -6,16 +6,22 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.mannwhit.MannWhitneyUTestSided;
 
+import com.google.common.collect.Sets;
+
 /**
  * Filters used by post-analysis.
  */
 public interface FilterMetric {
 	
-	boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet);
-	
 	PostAnalysisFilterType getFilterType(); // Used for optimization, to avoid processing when the filter type is None
 	
 	double getCutoff();
+	
+	boolean passes(Set<Integer> geneSet, Set<Integer> sigSet);
+	
+	double computeValue(Set<Integer> geneSet, Set<Integer> sigSet) throws ArithmeticException;
+	
+	
 	
 	abstract class BaseFilterMetric implements FilterMetric {
 		protected final double cutoff;
@@ -24,6 +30,10 @@ public interface FilterMetric {
 		public BaseFilterMetric(PostAnalysisFilterType type, double filter) {
 			this.cutoff = filter;
 			this.type = type;
+		}
+		
+		public BaseFilterMetric(PostAnalysisFilterType type) {
+			this(type, type.defaultValue);
 		}
 		
 		public PostAnalysisFilterType getFilterType() {
@@ -36,14 +46,18 @@ public interface FilterMetric {
 	}
 	
 	
-	class None extends BaseFilterMetric {
+	class NoFilter extends BaseFilterMetric {
 		
-		public None() {
+		public NoFilter() {
 			super(PostAnalysisFilterType.NO_FILTER, 0.0);
 		}
 		
-		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
+		public boolean passes(Set<Integer> geneSet, Set<Integer> sigSet) {
 			return true;
+		}
+
+		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet) {
+			return 0;
 		}
 	}
 	
@@ -54,9 +68,13 @@ public interface FilterMetric {
 			super(PostAnalysisFilterType.PERCENT, filter);
 		}
 		
-		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
-			double relative_per = (double) intersection.size() / (double) mapGenesetSize;
-			return relative_per >= cutoff / 100.0;
+		public boolean passes(Set<Integer> geneSet, Set<Integer> sigSet) {
+			return computeValue(geneSet, sigSet) >= (cutoff / 100.0);
+		}
+
+		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet) {
+			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
+			return (double) intersection.size() / (double) geneSet.size();
 		}
 	}
 	
@@ -67,8 +85,12 @@ public interface FilterMetric {
 			super(PostAnalysisFilterType.NUMBER, filter);
 		}
 		
-		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
-			return intersection.size() >= cutoff;
+		public boolean passes(Set<Integer> geneSet, Set<Integer> sigSet) {
+			return computeValue(geneSet, sigSet) >= cutoff;
+		}
+		
+		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet) {
+			return Sets.intersection(geneSet, sigSet).size();
 		}
 	}
 
@@ -79,9 +101,13 @@ public interface FilterMetric {
 			super(PostAnalysisFilterType.SPECIFIC, filter);
 		}
 		
-		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
-			double relative_per = (double) intersection.size() / (double) signatureSet.size();
-			return relative_per >= cutoff / 100.0;
+		public boolean passes(Set<Integer> geneSet, Set<Integer> sigSet) {
+			return computeValue(geneSet, sigSet) >= (cutoff / 100.0);
+		}
+
+		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet) {
+			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
+			return (double) intersection.size() / (double) sigSet.size();
 		}
 	}
 
@@ -95,26 +121,24 @@ public interface FilterMetric {
 			this.N = N;
 		}
 
-		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
+		public boolean passes(Set<Integer> geneSet, Set<Integer> sigSet) {
+			return computeValue(geneSet, sigSet) <= cutoff;
+		}
+
+		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet) throws ArithmeticException {
+			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
 			// Calculate Hypergeometric pValue for Overlap
 			// N: number of total genes (size of population / total number of balls)
-			int n = signatureSet.size(); //size of signature geneset (sample size / number of extracted balls)
-			int m = mapGenesetSize; //size of enrichment geneset (success Items / number of white balls in population)
+			int n = sigSet.size(); //size of signature geneset (sample size / number of extracted balls)
+			int m = geneSet.size(); //size of enrichment geneset (success Items / number of white balls in population)
 			int k = intersection.size(); //size of intersection (successes /number of extracted white balls)
 
-			double hyperPval;
-			try {
-				if(k > 0)
-					hyperPval = Hypergeometric.hyperGeomPvalueSum(N, n, m, k, 0);
-				else // Correct p-value of empty intersections to 1 (i.e. not significant)
-					hyperPval = 1.0;
-			} catch(ArithmeticException e) {
-				e.printStackTrace();
-				return false;
-			}
-
-			return hyperPval <= cutoff;
+			if(k > 0)
+				return Hypergeometric.hyperGeomPvalueSum(N, n, m, k, 0);
+			else // Correct p-value of empty intersections to 1 (i.e. not significant)
+				return 1.0;
 		}
+		
 	}
 
 	
@@ -129,8 +153,14 @@ public interface FilterMetric {
 			this.ranks = ranks;
 		}
 
-		public boolean match(int mapGenesetSize, Set<Integer> intersection, Set<Integer> signatureSet) {
-			// Calculate Mann-Whitney U pValue for Overlap
+		@Override
+		public boolean passes(Set<Integer> geneSet, Set<Integer> sigSet) {
+			return computeValue(geneSet, sigSet) <= cutoff;
+		}
+
+		@Override
+		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet) {
+			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
 			Integer[] overlap_gene_ids = intersection.toArray(new Integer[0]);
 			if(overlap_gene_ids.length > 0) {
 				double[] overlap_gene_scores = new double[overlap_gene_ids.length];
@@ -142,12 +172,9 @@ public interface FilterMetric {
 
 				double[] scores = ranks.getScores();
 				MannWhitneyUTestSided mann_whit = new MannWhitneyUTestSided();
-				double mannPval = mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, type.mannWhitneyTestType());
-				if(mannPval <= cutoff) {
-					return true;
-				}
+				return mann_whit.mannWhitneyUTest(overlap_gene_scores, scores, type.mannWhitneyTestType());
 			}
-			return false;
+			return 1.0;
 		}
 	}
 	

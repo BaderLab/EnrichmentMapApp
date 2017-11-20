@@ -86,7 +86,7 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	
 	
 	private void loadGeneSets(EnrichmentMap map) {
-		LoadSignatureSetsActionListener loadAction = loadSignatureSetsFactory.create(gmtFile, new FilterMetric.None(), map);
+		LoadSignatureSetsActionListener loadAction = loadSignatureSetsFactory.create(gmtFile, new FilterMetric.NoFilter(), map);
 		loadAction.actionPerformed(null);
 		
 		signatureGenesets = loadAction.getResultGeneSets();

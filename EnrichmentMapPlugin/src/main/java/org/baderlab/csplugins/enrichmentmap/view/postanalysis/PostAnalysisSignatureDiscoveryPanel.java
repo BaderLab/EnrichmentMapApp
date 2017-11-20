@@ -496,7 +496,7 @@ public class PostAnalysisSignatureDiscoveryPanel extends JPanel implements ListS
 //			case MANN_WHIT_LESS:
 //				return new FilterMetric.MannWhit(value, mannWhitRanks, type);
 			default:
-				return new FilterMetric.None();
+				return new FilterMetric.NoFilter();
 		}
 	}
 	

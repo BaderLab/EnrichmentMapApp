@@ -55,7 +55,7 @@ public class PADialogPage implements CardDialogPage {
 	@Inject private IconManager iconManager;
 	
 	private final EnrichmentMap map;
-	private FilterMetric filterMetric = new FilterMetric.None();
+	private FilterMetric filterMetric = new FilterMetric.NoFilter();
 	private List<SigGeneSetDescriptor> loadedGeneSets = Collections.emptyList();
 	private CardDialogCallback callback;
 	
@@ -303,7 +303,7 @@ public class PADialogPage implements CardDialogPage {
 			dialogTaskManager.execute(taskIterator, new ResultTaskObserver() {
 				@Override
 				public void allFinished(FinishStatus finishStatus) {
-					filterMetric = new FilterMetric.None();
+					filterMetric = new FilterMetric.NoFilter();
 					loadedGeneSets = createDescriptors(setOfGeneSets);
 					updateTableArea(loadedGeneSets);
 				}

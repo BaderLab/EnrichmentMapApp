@@ -68,13 +68,11 @@ public class FilterSignatureGSTask extends AbstractTask implements ObservableTas
 			if(filterMetric.getFilterType() != PostAnalysisFilterType.NO_FILTER) {
 				//only add the name if it overlaps with the sets in the map.
 				for(String mapGeneset : genesets_in_map.keySet()) {
-					//check if this set overlaps with current geneset
-					Set<Integer> mapset = new HashSet<>(genesets_in_map.get(mapGeneset));
-					int original_size = mapset.size();
-					Set<Integer> paset = new HashSet<>(signatureGenesets.getGeneSets().get(signatureGeneset).getGenes());
-					mapset.retainAll(paset);
+					
+					Set<Integer> geneSet = new HashSet<>(genesets_in_map.get(mapGeneset));
+					Set<Integer> sigSet  = new HashSet<>(signatureGenesets.getGeneSets().get(signatureGeneset).getGenes());
 
-					matchfound = filterMetric.match(original_size, mapset, paset);
+					matchfound = filterMetric.passes(geneSet, sigSet);
 					if(matchfound)
 						break;
 				}
