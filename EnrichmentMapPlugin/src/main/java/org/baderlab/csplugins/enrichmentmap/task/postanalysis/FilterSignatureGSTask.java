@@ -72,7 +72,7 @@ public class FilterSignatureGSTask extends AbstractTask implements ObservableTas
 					Set<Integer> geneSet = new HashSet<>(genesets_in_map.get(mapGeneset));
 					Set<Integer> sigSet  = new HashSet<>(signatureGenesets.getGeneSets().get(signatureGeneset).getGenes());
 
-					matchfound = filterMetric.passes(geneSet, sigSet);
+					matchfound = filterMetric.passes(filterMetric.computeValue(geneSet, sigSet, null));
 					if(matchfound)
 						break;
 				}

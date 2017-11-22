@@ -11,14 +11,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
-import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.model.SignatureGenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
@@ -59,7 +57,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	private final PostAnalysisParameters params;
 	
 	private final Map<String,GeneSet> signatureGeneSets;
-	private final Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities;
+	private final Map<SimilarityKey,SignatureGenesetSimilarity> geneSetSimilarities;
 	
 	// Some caches for performance reasons
 	private Map<EdgeCacheKey,CyEdge> existingEdgeCache;
@@ -69,12 +67,12 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	
 	
 	public static interface Factory {
-		CreateDiseaseSignatureNetworkTask create(EnrichmentMap map, PostAnalysisParameters params, Map<String,GeneSet> signatureGeneSets, Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities);
+		CreateDiseaseSignatureNetworkTask create(EnrichmentMap map, PostAnalysisParameters params, Map<String,GeneSet> signatureGeneSets, Map<SimilarityKey,SignatureGenesetSimilarity> geneSetSimilarities);
 	}
 	
 	@Inject
 	public CreateDiseaseSignatureNetworkTask(@Assisted EnrichmentMap map, @Assisted PostAnalysisParameters params, 
-			@Assisted Map<String,GeneSet> signatureGeneSets, @Assisted Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities) {
+			@Assisted Map<String,GeneSet> signatureGeneSets, @Assisted Map<SimilarityKey,SignatureGenesetSimilarity> geneSetSimilarities) {
 		this.map = map;
 		this.params = params;
 		this.signatureGeneSets = signatureGeneSets;
@@ -128,8 +126,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		DiscreteTaskMonitor dtm = new DiscreteTaskMonitor(tm, geneSetSimilarities.size(), 0.4, 0.9);
 		dtm.setStatusMessageTemplate("Similarity {0} of {1}");
 		for(SimilarityKey similarityKey : geneSetSimilarities.keySet()) {
-			boolean passedCutoff = passesCutoff(similarityKey, sigDataSet);
-			createEdge(similarityKey, network, networkView, prefix, edgeTable, nodeTable, passedCutoff, sigDataSet);
+			createEdge(similarityKey, network, networkView, prefix, edgeTable, nodeTable, sigDataSet);
 			dtm.inc();
 		}
 
@@ -251,14 +248,14 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	 * does not pass the new cutoff. If the edge already exists it will be
 	 * returned, if the edge had to be created it will not be returned.
 	 */
-	private void createEdge(SimilarityKey similarityKey, CyNetwork network, CyNetworkView netView, String prefix, CyTable edgeTable, CyTable nodeTable, boolean passedCutoff, EMSignatureDataSet sigDataSet) {
+	private void createEdge(SimilarityKey similarityKey, CyNetwork network, CyNetworkView netView, String prefix, CyTable edgeTable, CyTable nodeTable, EMSignatureDataSet sigDataSet) {
 		
 		// PA always generates distinct edges
 		final String edgeName = similarityKey.toString();
-		GenesetSimilarity genesetSimilarity = geneSetSimilarities.get(similarityKey);
+		SignatureGenesetSimilarity genesetSimilarity = geneSetSimilarities.get(similarityKey);
 		
 		CyEdge edge = existingEdgeCache.get(new EdgeCacheKey(edgeName, sigDataSet.getName()));
-		
+		boolean passedCutoff = genesetSimilarity.getPassesCutoff();
 		if (edge == null) {
 			if (passedCutoff) {
 				CyNode hubNode = nodeCache.get(genesetSimilarity.getGeneset1Name());
@@ -303,16 +300,17 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		Columns.EDGE_DATASET.set(row, prefix, null, similarityKey.getName());
 		Columns.EDGE_SIG_DATASET.set(row, prefix, null, sigDataSet.getName());
 		
+		String dataset = genesetSimilarity.getDataSetName();
 		if (passedCutoff)
-			Columns.EDGE_CUTOFF_TYPE.set(row, prefix, null, params.getRankTestParameters().getType().display);
+			Columns.EDGE_CUTOFF_TYPE.set(row, prefix, null, params.getRankTestParameters().get(dataset).getFilterType().display);
 
-		PostAnalysisFilterType filterType = params.getRankTestParameters().getType();
+		PostAnalysisFilterType filterType = params.getRankTestParameters().get(dataset).getFilterType();
 
 		if (filterType.isMannWhitney()) {
 			Columns.EDGE_MANN_WHIT_TWOSIDED_PVALUE.set(row, prefix, null, genesetSimilarity.getMannWhitPValueTwoSided());
 			Columns.EDGE_MANN_WHIT_GREATER_PVALUE.set(row, prefix, null, genesetSimilarity.getMannWhitPValueGreater());
 			Columns.EDGE_MANN_WHIT_LESS_PVALUE.set(row, prefix, null, genesetSimilarity.getMannWhitPValueLess());
-			Columns.EDGE_MANN_WHIT_CUTOFF.set(row, prefix, null, params.getRankTestParameters().getValue());
+			Columns.EDGE_MANN_WHIT_CUTOFF.set(row, prefix, null, params.getRankTestParameters().get(dataset).getCutoff());
 		}
 
 		// always calculate hypergeometric
@@ -321,46 +319,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 		Columns.EDGE_HYPERGEOM_N.set(row, prefix, null, genesetSimilarity.getHypergeomN());
 		Columns.EDGE_HYPERGEOM_M.set(row, prefix, null, genesetSimilarity.getHypergeomM());
 		Columns.EDGE_HYPERGEOM_K.set(row, prefix, null, genesetSimilarity.getHypergeomK());
-		Columns.EDGE_HYPERGEOM_CUTOFF.set(row, prefix, null, params.getRankTestParameters().getValue());
-	}
-	
-	
-	/**
-	 * Why not put this in CreateDiseaseSignatureTaskParallel... don't even create the GenesetSimilarity object if it fails!!!
-	 * @param similarityKey
-	 * @return
-	 */
-	private boolean passesCutoff(SimilarityKey similarityKey, EMSignatureDataSet sigDataSet) {
-		GenesetSimilarity similarity = geneSetSimilarities.get(similarityKey);
-		
-		PostAnalysisFilterParameters filterParams = params.getRankTestParameters();
-		switch (filterParams.getType()) {
-			case HYPERGEOM:
-				return similarity.getHypergeomPValue() <= filterParams.getValue();
-			case MANN_WHIT_TWO_SIDED:
-				return !similarity.isMannWhitMissingRanks() && similarity.getMannWhitPValueTwoSided() <= filterParams.getValue();
-			case MANN_WHIT_GREATER:
-				return !similarity.isMannWhitMissingRanks() && similarity.getMannWhitPValueGreater() <= filterParams.getValue();
-			case MANN_WHIT_LESS:
-				return !similarity.isMannWhitMissingRanks() && similarity.getMannWhitPValueLess() <= filterParams.getValue();
-			case NUMBER:
-				return similarity.getSizeOfOverlap() >= filterParams.getValue();
-			case PERCENT:
-				EMDataSet dataSet = map.getDataSet(similarityKey.getName());
-				String enrGeneSetName = similarity.getGeneset2Name();
-				GeneSet enrGeneset = dataSet.getGeneSetsOfInterest().getGeneSetByName(enrGeneSetName);
-				int enrGenesetSize = enrGeneset.getGenes().size();
-				double relative_per = (double) similarity.getSizeOfOverlap() / (double) enrGenesetSize;
-				return relative_per >= filterParams.getValue() / 100.0;
-			case SPECIFIC:
-				String hubName = similarity.getGeneset1Name();
-				GeneSet sigGeneSet = sigDataSet.getGeneSetsOfInterest().getGeneSetByName(hubName);
-				int sigGeneSetSize = sigGeneSet.getGenes().size();
-				double relativePer2 = (double) similarity.getSizeOfOverlap() / (double) sigGeneSetSize;
-				return relativePer2 >= filterParams.getValue() / 100.0;
-			default:
-				return false;
-		}
+		Columns.EDGE_HYPERGEOM_CUTOFF.set(row, prefix, null, params.getRankTestParameters().get(dataset).getCutoff());
 	}
 	
 	

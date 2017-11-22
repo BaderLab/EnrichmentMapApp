@@ -63,21 +63,6 @@ public class GenesetSimilarity {
 	// either jaccard or overlap coeffecient, depends on statistic user specified.
 	private double similarityCoeffecient;
 
-	// Hypergeometric
-	private double hypergeomPValue;
-	private int hypergeomU;
-	private int hypergeomN;
-	private int hypergeomK;
-	private int hypergeomM;
-
-	// Mann-Whitney U
-	private double mannWhitPValueTwoSided;
-	private double mannWhitPValueGreater;
-	private double mannWhitPValueLess;
-
-	// flag that indicates if either of the gene sets has no ranks (and therefore we cannot calculated mann-whit
-	private boolean mannWhitMissingRanks;
-
 	// set of genes in common to both gene sets.
 	private Set<Integer> overlappingGenes;
 
@@ -100,31 +85,11 @@ public class GenesetSimilarity {
 		this.overlappingGenes = overlappingGenes;
 		this.interactionType = interactionType;
 		this.datasetName = datasetName;
-		this.hypergeomPValue = -1.0;
 	}
 
 	@Override
 	public String toString() {
 		return "GenesetSimilarity [geneset1Name=" + geneset1Name + ", geneset2Name=" + geneset2Name + "]";
-	}
-
-	/**
-	 * @param geneset1Name - gene set 1 name
-	 * @param geneset2Name - gene set 2 name
-	 * @param similarityCoeffecient - jaccard or overlap coeffecient for geneset 1 and geneset 2
-	 * @param overlappingGenes - set of genes in common to gene set 1 and gene set 2
-	 */
-	public GenesetSimilarity(String geneset1Name, String geneset2Name, double similarityCoeffecient,
-			String interactionType, Set<Integer> overlappingGenes) {
-		Objects.requireNonNull(interactionType);
-		
-		this.geneset1Name = geneset1Name;
-		this.geneset2Name = geneset2Name;
-		this.similarityCoeffecient = similarityCoeffecient;
-		this.overlappingGenes = overlappingGenes;
-		this.interactionType = interactionType;
-		this.datasetName = "Signature";
-		this.hypergeomPValue = -1.0;
 	}
 
 	public String getGeneset1Name() {
@@ -155,14 +120,6 @@ public class GenesetSimilarity {
 		this.similarityCoeffecient = value;
 	}
 
-	public void setHypergeomPValue(double hypergeomPValue) {
-		this.hypergeomPValue = hypergeomPValue;
-	}
-
-	public double getHypergeomPValue() {
-		return hypergeomPValue;
-	}
-
 	public Set<Integer> getOverlappingGenes() {
 		return overlappingGenes;
 	}
@@ -179,99 +136,5 @@ public class GenesetSimilarity {
 		return datasetName;
 	}
 
-	/**
-	 * Get the N value used in the Hypergeometric test. 'U' denotes the size of
-	 * the universe (i.e. the size of the union of all gene sets)
-	 */
-	public int getHypergeomU() {
-		return hypergeomU;
-	}
 
-	/**
-	 * Set the N value used in the Hypergeometric test. 'U' denotes the size of
-	 * the universe (i.e. the size of the union of all gene sets)
-	 */
-	public void setHypergeomU(int value) {
-		this.hypergeomU = value;
-	}
-
-	/**
-	 * Get the n value used in the Hypergeometric test. 'n' denotes the size of
-	 * the sample being taken from the universe (i.e. the size of the signature gene set)
-	 */
-	public int getHypergeomN() {
-		return hypergeomN;
-	}
-
-	/**
-	 * Set the n value used in the Hypergeometric test. 'n' denotes the size of
-	 * the sample being taken from the universe (i.e. the size of the signature gene set)
-	 */
-	public void setHypergeomN(int value) {
-		this.hypergeomN = value;
-	}
-
-	/**
-	 * Get the k value used in the Hypergeometric test. 'k' denotes the number of
-	 * successes in the sample (i.e. the size of the overlap)
-	 */
-	public int getHypergeomK() {
-		return hypergeomK;
-	}
-
-	/**
-	 * Set the k value used in the Hypergeometric test. 'k' denotes the number of
-	 * successes in the sample (i.e. the size of the overlap)
-	 */
-	public void setHypergeomK(int value) {
-		this.hypergeomK = value;
-	}
-
-	/**
-	 * Get the m value used in the Hypergeometric test. 'm' denotes the total
-	 * number of successes in the universe (i.e. the size of the enriched gene set)
-	 */
-	public int getHypergeomM() {
-		return hypergeomM;
-	}
-
-	/**
-	 * Set the m value used in the Hypergeometric test. 'm' denotes the total
-	 * number of successes in the universe (i.e. the size of the enriched gene set)
-	 */
-	public void setHypergeomM(int value) {
-		this.hypergeomM = value;
-	}
-
-	public double getMannWhitPValueTwoSided() {
-		return mannWhitPValueTwoSided;
-	}
-
-	public void setMannWhitPValueTwoSided(double value) {
-		this.mannWhitPValueTwoSided = value;
-	}
-
-	public double getMannWhitPValueGreater() {
-		return mannWhitPValueGreater;
-	}
-
-	public void setMannWhitPValueGreater(double value) {
-		this.mannWhitPValueGreater = value;
-	}
-
-	public double getMannWhitPValueLess() {
-		return mannWhitPValueLess;
-	}
-
-	public void setMannWhitPValueLess(double value) {
-		this.mannWhitPValueLess = value;
-	}
-
-	public boolean isMannWhitMissingRanks() {
-		return mannWhitMissingRanks;
-	}
-
-	public void setMannWhitMissingRanks(boolean value) {
-		this.mannWhitMissingRanks = value;
-	}
 }

@@ -66,7 +66,7 @@ public class PADialogPage implements CardDialogPage {
 	
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
-	private JButton filterButton;
+//	private JButton filterButton;
 	private JLabel statusLabel;
 	
 	
@@ -103,12 +103,14 @@ public class PADialogPage implements CardDialogPage {
 		weightPanel = weightPanelFactory.create(map);
 		
 		JPanel bottom = new JPanel(new GridBagLayout());
-		bottom.add(namePanel, GBCFactory.grid(0,0).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
-		bottom.add(weightPanel, GBCFactory.grid(0,1).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
+		bottom.add(weightPanel, GBCFactory.grid(0,0).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
+		bottom.add(namePanel,   GBCFactory.grid(0,1).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(geneSetsPanel, BorderLayout.CENTER);
 		panel.add(bottom, BorderLayout.SOUTH);
+		
+		weightPanel.addPropertyChangeListener(PAWeightPanel.PROPERTY_PARAMETERS, e -> runFilterTask());
 		
 		return panel;
 	}
@@ -124,17 +126,17 @@ public class PADialogPage implements CardDialogPage {
 		JButton loadWebButton = new JButton("Load from Web...");
 		selectAllButton = new JButton("Select All");
 		selectNoneButton = new JButton("Select None");
-		filterButton = new JButton("Filter...");
+//		filterButton = new JButton("Filter...");
 		loadWebButton.setEnabled(false);
 		statusLabel = new JLabel();
 		
 		loadFileButton.addActionListener(e -> loadFromFile());
 		selectAllButton .addActionListener(e -> tableModel.setAllWanted(true));
 		selectNoneButton.addActionListener(e -> tableModel.setAllWanted(false));
-		filterButton.addActionListener(e -> filterSigGeneSets());
+//		filterButton.addActionListener(e -> filterSigGeneSets());
 		
-		SwingUtil.makeSmall(title, loadFileButton, loadWebButton, selectAllButton, selectNoneButton, filterButton, statusLabel);
-		LookAndFeelUtil.equalizeSize(loadFileButton, loadWebButton, selectAllButton, selectNoneButton, filterButton);
+		SwingUtil.makeSmall(title, loadFileButton, loadWebButton, selectAllButton, selectNoneButton, statusLabel);
+		LookAndFeelUtil.equalizeSize(loadFileButton, loadWebButton, selectAllButton, selectNoneButton);
 		
 		updateTableArea(Collections.emptyList());
 		
@@ -152,7 +154,7 @@ public class PADialogPage implements CardDialogPage {
 					.addComponent(loadWebButton)
 					.addComponent(selectAllButton)
 					.addComponent(selectNoneButton)
-					.addComponent(filterButton)
+//					.addComponent(filterButton)
 				)
 			)
 			.addComponent(statusLabel)
@@ -169,7 +171,7 @@ public class PADialogPage implements CardDialogPage {
 					.addComponent(selectAllButton)
 					.addComponent(selectNoneButton)
 					.addGap(20)
-					.addComponent(filterButton)
+//					.addComponent(filterButton)
 				)
 			)
 			.addComponent(statusLabel)
@@ -206,11 +208,11 @@ public class PADialogPage implements CardDialogPage {
 	private void updateSelectionButtons() {
 		List<SigGeneSetDescriptor> descriptors = tableModel.getGeneSetDescriptors();
 		int selectedCount = (int)descriptors.stream().filter(SigGeneSetDescriptor::isWanted).count();
-		filterButton.setEnabled(true);
+//		filterButton.setEnabled(true);
 		if(descriptors.isEmpty()) {
 			selectAllButton.setEnabled(false);
 			selectNoneButton.setEnabled(false);
-			filterButton.setEnabled(false);
+//			filterButton.setEnabled(false);
 		} else if(selectedCount == descriptors.size()) {
 			selectAllButton.setEnabled(false);
 			selectNoneButton.setEnabled(true);
@@ -239,7 +241,7 @@ public class PADialogPage implements CardDialogPage {
 	
 	
 	private void runFilterTask() {
-		filterButton.setEnabled(false);
+//		filterButton.setEnabled(false);
 		SigGeneSetFilterTask task = new SigGeneSetFilterTask(map, loadedGeneSets, filterMetric);
 		
 		dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
@@ -253,7 +255,7 @@ public class PADialogPage implements CardDialogPage {
 			
 			@Override
 			public void allFinished(FinishStatus finishStatus) {
-				filterButton.setEnabled(true);
+//				filterButton.setEnabled(true);
 				updateSelectionButtons();
 			}
 		});
@@ -312,13 +314,13 @@ public class PADialogPage implements CardDialogPage {
 	}
 	
 	
-	private void filterSigGeneSets() {
-		PAFilterDialog dialog = new PAFilterDialog(jFrameProvider.get(), iconManager, map, filterMetric);
-		Optional<FilterMetric> result = dialog.open();
-		if(result.isPresent()) {
-			this.filterMetric = result.get();
-			runFilterTask();
-		}
-	}
+//	private void filterSigGeneSets() {
+//		PAFilterDialog dialog = new PAFilterDialog(jFrameProvider.get(), iconManager, map, filterMetric);
+//		Optional<FilterMetric> result = dialog.open();
+//		if(result.isPresent()) {
+//			this.filterMetric = result.get();
+//			runFilterTask();
+//		}
+//	}
 
 }

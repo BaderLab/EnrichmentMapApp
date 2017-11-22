@@ -55,8 +55,8 @@ public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 		StringBuilder errorBuilder = new StringBuilder();
 		checkMinimalRequirements(errorBuilder, params);
 		
-		if (params.getRankTestParameters().getType().isMannWhitney() && map.getAllRanks().isEmpty())
-			errorBuilder.append("Mann-Whitney requires ranks. \n");
+//		if (params.getRankTestParameters().getType().isMannWhitney() && map.getAllRanks().isEmpty())
+//			errorBuilder.append("Mann-Whitney requires ranks. \n");
 		
 		errors = errorBuilder.toString();
 

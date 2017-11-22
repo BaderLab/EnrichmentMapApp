@@ -19,7 +19,6 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -27,10 +26,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
@@ -454,32 +451,32 @@ public class PostAnalysisWeightPanel extends JPanel {
 	
 	
 	public boolean build(PostAnalysisParameters.Builder builder) {
-		double value = ((Number) rankTestTextField.getValue()).doubleValue();
-		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(getFilterType(), value);
-		
-		builder.setDataSetName(getDataSet());
-		builder.setUniverseType(getUniverseType());
-		builder.setUserDefinedUniverseSize(getUserDefinedUniverseSize());
-		builder.setRankTestParameters(rankTest);
-		
-		if(getFilterType().isMannWhitney()) {
-			if(map.isSingleRanksPerDataset()) {
-				for(EMDataSet dataset : map.getDataSetList()) {
-					String ranksName = dataset.getAllRanksNames().iterator().next();
-					builder.addDataSetToRankFile(dataset.getName(), ranksName);
-				}
-			} else {
-				JFrame jframe = serviceRegistrar.getService(CySwingApplication.class).getJFrame();
-				MannWhitneyRanksDialog dialog = new MannWhitneyRanksDialog(jframe, map);
-				Optional<Map<String,String>> result = dialog.open();
-				if(result.isPresent()) {
-					Map<String,String> dataSetToRank = result.get();
-					dataSetToRank.forEach(builder::addDataSetToRankFile);
-				} else {
-					return false;
-				}
-			}
-		}
+//		double value = ((Number) rankTestTextField.getValue()).doubleValue();
+//		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(getFilterType(), value);
+//		
+//		builder.setDataSetName(getDataSet());
+//		builder.setUniverseType(getUniverseType());
+//		builder.setUserDefinedUniverseSize(getUserDefinedUniverseSize());
+//		builder.setRankTestParameters(rankTest);
+//		
+//		if(getFilterType().isMannWhitney()) {
+//			if(map.isSingleRanksPerDataset()) {
+//				for(EMDataSet dataset : map.getDataSetList()) {
+//					String ranksName = dataset.getAllRanksNames().iterator().next();
+//					builder.addDataSetToRankFile(dataset.getName(), ranksName);
+//				}
+//			} else {
+//				JFrame jframe = serviceRegistrar.getService(CySwingApplication.class).getJFrame();
+//				MannWhitneyRanksDialog dialog = new MannWhitneyRanksDialog(jframe, map);
+//				Optional<Map<String,String>> result = dialog.open();
+//				if(result.isPresent()) {
+//					Map<String,String> dataSetToRank = result.get();
+//					dataSetToRank.forEach(builder::addDataSetToRankFile);
+//				} else {
+//					return false;
+//				}
+//			}
+//		}
 		return true;
 	}
 }

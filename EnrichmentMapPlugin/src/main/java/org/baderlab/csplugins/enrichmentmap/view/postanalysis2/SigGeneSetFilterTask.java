@@ -50,11 +50,7 @@ public class SigGeneSetFilterTask extends AbstractTask implements ObservableTask
 					Set<Integer> geneSet = allGenesets.get(mapGeneset);
 					Set<Integer> sigSet  = descriptor.getGeneSet().getGenes();
 					
-					if(filterMetric.getFilterType() == PostAnalysisFilterType.HYPERGEOM) {
-						System.out.println(mapGeneset + "\t" + descriptor.getName() + "\t" + filterMetric.computeValue(geneSet, sigSet));
-					}
-					
-					if(!done && filterMetric.passes(geneSet, sigSet)) {
+					if(!done && filterMetric.passes(filterMetric.computeValue(geneSet, sigSet, null))) {
 						resultGeneSets.add(descriptor);
 //						break;
 						done = true;

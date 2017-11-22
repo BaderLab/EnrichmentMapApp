@@ -44,12 +44,12 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 
 public class PostAnalysisParameters {
 
@@ -71,13 +71,11 @@ public class PostAnalysisParameters {
 	private final String name; // name given by user, overrides autoName
 	private final String autoName; // name automatically assigned
 	private final AnalysisType analysisType;
-	private final UniverseType universeType;
-	private final PostAnalysisFilterParameters rankTestParameters;
+	private final Map<String,FilterMetric> rankTestParameters;
 	private final String signatureGMTFileName;
 	private final SetOfGeneSets loadedGMTGeneSets;
 	private final Collection<String> selectedGeneSetNames;
-	private final Map<String,String> dataSetToRankFile; // only used by Mann-Whitney
-	private final int userDefinedUniverseSize;
+
 	private final String attributePrefix;
 	private final Optional<String> datasetName;
 	
@@ -85,13 +83,10 @@ public class PostAnalysisParameters {
 		this.name = builder.name;
 		this.autoName = builder.autoName;
 		this.analysisType = builder.analysisType;
-		this.universeType = builder.universeType;
 		this.rankTestParameters = builder.rankTestParameters;
 		this.signatureGMTFileName = builder.signatureGMTFileName;
 		this.loadedGMTGeneSets = builder.loadedGMTGeneSets;
 		this.selectedGeneSetNames = builder.selectedGeneSetNames;
-		this.dataSetToRankFile = builder.dataSetToRankFile;
-		this.userDefinedUniverseSize = builder.userDefinedUniverseSize;
 		this.attributePrefix = builder.attributePrefix;
 		this.datasetName = builder.datasetName;
 	}
@@ -112,11 +107,7 @@ public class PostAnalysisParameters {
 		return analysisType;
 	}
 	
-	public UniverseType getUniverseType() {
-		return universeType;
-	}
-	
-	public PostAnalysisFilterParameters getRankTestParameters() {
+	public Map<String,FilterMetric> getRankTestParameters() {
 		return rankTestParameters;
 	}
 	
@@ -134,14 +125,6 @@ public class PostAnalysisParameters {
 		return selectedGeneSetNames;
 	}
 	
-	public Map<String,String> getDataSetToRankFile() {
-		return Collections.unmodifiableMap(dataSetToRankFile);
-	}
-	
-	public int getUserDefinedUniverseSize() {
-		return userDefinedUniverseSize;
-	}
-
 	public String getAttributePrefix() {
 		return attributePrefix;
 	}
@@ -152,13 +135,10 @@ public class PostAnalysisParameters {
 		private String name;
 		private String autoName;
 		private AnalysisType analysisType;
-		private UniverseType universeType;
-		private PostAnalysisFilterParameters rankTestParameters;
+		private Map<String,FilterMetric> rankTestParameters;
 		private String signatureGMTFileName;
 		private SetOfGeneSets loadedGMTGeneSets;
 		private Set<String> selectedGeneSetNames = new HashSet<>();
-		private Map<String,String> dataSetToRankFile = new HashMap<>();
-		private int userDefinedUniverseSize;
 		private String attributePrefix;
 		private Optional<String> datasetName = Optional.empty();
 		
@@ -176,8 +156,6 @@ public class PostAnalysisParameters {
 			b.setSignatureGMTFileName(other.signatureGMTFileName);
 			b.setLoadedGMTGeneSets(other.loadedGMTGeneSets);
 			b.addSelectedGeneSetNames(other.selectedGeneSetNames);
-			b.addDataSetToRankFile(other.dataSetToRankFile);
-			b.setUserDefinedUniverseSize(other.userDefinedUniverseSize);
 			b.setAttributePrefix(other.attributePrefix);
 			b.setDataSetName(other.datasetName.orElse(null));
 			return b;
@@ -213,14 +191,13 @@ public class PostAnalysisParameters {
 			return this;
 		}
 		
-		public Builder setUniverseType(UniverseType universeType) {
-			this.universeType = universeType;
-			return this;
-		}
-
-		public Builder setRankTestParameters(PostAnalysisFilterParameters rankTestParameters) {
+		public Builder setRankTestParameters(Map<String,FilterMetric> rankTestParameters) {
 			this.rankTestParameters = rankTestParameters;
 			return this;
+		}
+		
+		public Map<String,FilterMetric> getRankTestParameters() {
+			return rankTestParameters;
 		}
 
 		public Builder setSignatureGMTFileName(String signatureGMTFileName) {
@@ -232,30 +209,11 @@ public class PostAnalysisParameters {
 			return signatureGMTFileName;
 		}
 		
-		public Map<String,String> getDataSetToRankFile() {
-			return dataSetToRankFile;
-		}
-
 		public Builder setLoadedGMTGeneSets(SetOfGeneSets loadedGMTGeneSets) {
 			this.loadedGMTGeneSets = loadedGMTGeneSets;
 			return this;
 		}
 		
-		public Builder addDataSetToRankFile(String dataSet, String rankFile) {
-			this.dataSetToRankFile.put(dataSet, rankFile);
-			return this;
-		}
-		
-		public Builder addDataSetToRankFile(Map<String,String> map) {
-			this.dataSetToRankFile.putAll(map);
-			return this;
-		}
-
-		public Builder setUserDefinedUniverseSize(int universeSize) {
-			this.userDefinedUniverseSize = universeSize;
-			return this;
-		}
-
 		public Builder setAttributePrefix(String attributePrefix) {
 			this.attributePrefix = attributePrefix;
 			return this;

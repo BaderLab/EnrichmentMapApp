@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.task.postanalysis;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,15 +15,12 @@ import java.util.stream.Collectors;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
-import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.model.SignatureGenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTaskParallel;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
-import org.baderlab.csplugins.mannwhit.MannWhitneyMemoized;
-import org.baderlab.csplugins.mannwhit.MannWhitneyTestResult;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
@@ -54,8 +50,6 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 	private final EnrichmentMap map;
 	private final PostAnalysisParameters params;
 	private final List<EMDataSet> dataSets;
-	
-	private final MannWhitneyMemoized mannWhitneyCache = new MannWhitneyMemoized();
 	
 	
 	public static interface Factory {
@@ -91,7 +85,7 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
  		Map<String,GeneSet> signatureGeneSets = getSignatureGeneSets();
  		handleDuplicateNames(enrichmentGeneSetNames, signatureGeneSets);
      		
-        Map<SimilarityKey,GenesetSimilarity> geneSetSimilarities = startBuildDiseaseSignatureParallel(tm, executor, enrichmentGeneSetNames, signatureGeneSets);
+        Map<SimilarityKey,SignatureGenesetSimilarity> geneSetSimilarities = startBuildDiseaseSignatureParallel(tm, executor, enrichmentGeneSetNames, signatureGeneSets);
 
         // Support cancellation
 		Timer timer = new Timer();
@@ -118,14 +112,14 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 	/**
 	 * Returns immediately, need to wait on the executor to join all threads.
 	 */
-	private Map<SimilarityKey,GenesetSimilarity> startBuildDiseaseSignatureParallel(TaskMonitor tm, 
+	private Map<SimilarityKey,SignatureGenesetSimilarity> startBuildDiseaseSignatureParallel(TaskMonitor tm, 
 			ExecutorService executor, Set<String> enrichmentGeneSetNames, Map<String,GeneSet> signatureGeneSets) {
 		
 		DiscreteTaskMonitor taskMonitor = discreteTaskMonitor(tm, signatureGeneSets.size());
 		
 		Set<Integer> geneUniverse = map.getAllEnrichmentGenes(); // Gene universe is all enrichment genes in the map
 		
-		Map<SimilarityKey, GenesetSimilarity> geneSetSimilarities = new ConcurrentHashMap<>();
+		Map<SimilarityKey, SignatureGenesetSimilarity> geneSetSimilarities = new ConcurrentHashMap<>();
 		
 		for(String hubName : signatureGeneSets.keySet()) {
 			GeneSet sigGeneSet = signatureGeneSets.get(hubName);
@@ -135,6 +129,8 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 			executor.execute(() -> {
 				loop:
 				for(String geneSetName : enrichmentGeneSetNames) {
+					Map<String,FilterMetric> rankTests = params.getRankTestParameters();
+					
 					for(EMDataSet dataSet : dataSets) {
 						if(Thread.interrupted())
 							break loop;
@@ -150,26 +146,20 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 							if(!intersection.isEmpty()) {
 								// Jaccard or whatever from the original map
 								double coeffecient = ComputeSimilarityTaskParallel.computeSimilarityCoeffecient(map.getParams(), intersection, union, sigGeneSet.getGenes(), enrGenes);
+								SignatureGenesetSimilarity comparison = new SignatureGenesetSimilarity(hubName, geneSetName, coeffecient, INTERACTION, intersection, dataSet.getName());
 								
-								GenesetSimilarity comparison = new GenesetSimilarity(hubName, geneSetName, coeffecient, INTERACTION, intersection);
-
-								PostAnalysisFilterType filterType = params.getRankTestParameters().getType();
+								FilterMetric metric = rankTests.get(dataSet.getName());
 								
-								switch (filterType) {
-									case HYPERGEOM:
-										int hyperUniverseSize1 = getHypergeometricUniverseSize(dataSet);
-										double pval = hypergeometric(hyperUniverseSize1, sigGenesInUniverse, enrGenes, intersection, comparison);
-										System.out.println(geneSetName + "\t" + hubName + "\t" + pval);
-										break;
-									case MANN_WHIT_TWO_SIDED:
-									case MANN_WHIT_GREATER:
-									case MANN_WHIT_LESS:
-										mannWhitney(intersection, comparison, dataSet);
-									default: // want mann-whit to fall through
-										int hyperUniverseSize2 = map.getNumberOfGenes(); // #70 calculate hypergeometric also
-										hypergeometric(hyperUniverseSize2, sigGenesInUniverse, enrGenes, intersection, comparison);
-										break;
+								// always compute hypergeometric
+								if(metric.getFilterType() != PostAnalysisFilterType.HYPERGEOM) {
+									FilterMetric hypergeom = new FilterMetric.Hypergeom(PostAnalysisFilterType.HYPERGEOM.defaultValue, map.getNumberOfGenes()); // use GMT for universe size
+									hypergeom.computeValue(enrGeneSet.getGenes(), sigGeneSet.getGenes(), comparison);
 								}
+								
+								// now compute the similarity using the metric chosen by the user
+								double value = metric.computeValue(enrGeneSet.getGenes(), sigGeneSet.getGenes(), comparison);
+								boolean passesCutoff = metric.passes(value);
+								comparison.setPassesCutoff(passesCutoff);
 
 								SimilarityKey key = new SimilarityKey(hubName, geneSetName, INTERACTION, dataSet.getName());
 								geneSetSimilarities.put(key, comparison);
@@ -185,76 +175,6 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 		return geneSetSimilarities;
 	}
 	
-	
-	private int getHypergeometricUniverseSize(EMDataSet dataSet) {
-		switch(params.getUniverseType()) {
-			default:
-			case GMT:
-				return map.getNumberOfGenes();
-			case EXPRESSION_SET:
-				return dataSet.getExpressionSets().getExpressionUniverse();
-			case INTERSECTION:
-				return dataSet.getExpressionSets().getExpressionMatrix().size();
-			case USER_DEFINED:
-				return params.getUserDefinedUniverseSize();
-		}
-	}
-	
-	private double hypergeometric(int universeSize, Set<Integer> sigGenesInUniverse, Set<Integer> enrGenes,
-			Set<Integer> intersection, GenesetSimilarity comparison) {
-		// Calculate Hypergeometric pValue for Overlap
-		int u = universeSize; //number of total genes (size of population / total number of balls)
-		int n = sigGenesInUniverse.size(); //size of signature geneset (sample size / number of extracted balls)
-		int m = enrGenes.size(); //size of enrichment geneset (success Items / number of white balls in population)
-		int k = intersection.size(); //size of intersection (successes /number of extracted white balls)
-		double hyperPval;
-
-		if (k > 0)
-			hyperPval = Hypergeometric.hyperGeomPvalueSum(u, n, m, k, 0);
-		else // Correct p-value of empty intersections to 1 (i.e. not significant)
-			hyperPval = 1.0;
-
-		comparison.setHypergeomPValue(hyperPval);
-		comparison.setHypergeomU(u);
-		comparison.setHypergeomN(n);
-		comparison.setHypergeomM(m);
-		comparison.setHypergeomK(k);
-		return hyperPval;
-	}
-	
-
-	private void mannWhitney(Set<Integer> intersection, GenesetSimilarity comparison, EMDataSet dataSet) {
-		String rankFile = params.getDataSetToRankFile().get(dataSet.getName());
-		Ranking ranks = dataSet.getRanks().get(rankFile);
-
-		// Calculate Mann-Whitney U pValue for Overlap
-		Integer[] overlapGeneIds = intersection.toArray(new Integer[intersection.size()]);
-
-		double[] overlapGeneScores = new double[overlapGeneIds.length];
-		int j = 0;
-		
-		for (Integer geneId : overlapGeneIds) {
-			Double score = ranks.getScore(geneId);
-			if (score != null) {
-				overlapGeneScores[j++] = score; // unbox
-			}
-		}
-
-		overlapGeneScores = Arrays.copyOf(overlapGeneScores, j);
-		
-		if (ranks.isEmpty()) {
-			comparison.setMannWhitPValueTwoSided(1.5); // avoid NoDataException
-			comparison.setMannWhitPValueGreater(1.5);
-			comparison.setMannWhitPValueLess(1.5);
-			comparison.setMannWhitMissingRanks(true);
-		} else {
-			double[] scores = ranks.getScores();
-			MannWhitneyTestResult result = mannWhitneyCache.mannWhitneyUTestBatch(overlapGeneScores, scores);
-			comparison.setMannWhitPValueTwoSided(result.twoSided);
-			comparison.setMannWhitPValueGreater(result.greater);
-			comparison.setMannWhitPValueLess(result.less);
-		}
-	}
 	
 	/**
 	 * Return the signature gene sets that the user want's to add.

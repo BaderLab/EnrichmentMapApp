@@ -74,6 +74,10 @@ public class MannWhitRanksPanel extends JPanel {
 		setOpaque(false);
 	}
 	
+	public String getRanks(String dataset) {
+		return results.get(dataset);
+	}
+	
 	public Map<String,String> getResults() {
 		return results;
 	}

@@ -5,17 +5,20 @@ import static org.baderlab.csplugins.enrichmentmap.commands.ResolverCommandTask.
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
+import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSignatureTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
@@ -130,9 +133,6 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 			.setSignatureGMTFileName(gmtFile.getAbsolutePath())
 			.setLoadedGMTGeneSets(signatureGenesets)
 			.addSelectedGeneSetNames(selectedGenesetNames)
-			.setUniverseType(universe)
-			.setUserDefinedUniverseSize(userDefinedUniverseSize)
-			.setRankTestParameters(new PostAnalysisFilterParameters(filter, cutoff))
 			.setName(name)
 			.setAutoName(autoName);
 		
@@ -145,10 +145,12 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 			builder.setDataSetName(dataSetName);
 		}
 		
-		// Mann-Whitney requires ranks
-		if(filter.isMannWhitney()) {
-			processMannWhitneyArgs(map, builder);
+		Map<String,FilterMetric> rankTest = new HashMap<>();
+		for(EMDataSet dataset : getDataSets(map)) {
+			rankTest.put(dataset.getName(), getFilterMetric(map, dataset, filter, universe));
 		}
+		
+		builder.setRankTestParameters(rankTest);
 		
 		TaskFactory taskFactory = taskFactoryFactory.create(selectedView, builder.build());
 		TaskIterator taskIterator = new TaskIterator();
@@ -167,35 +169,74 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	}
 	
 	
-	private void processMannWhitneyArgs(EnrichmentMap map, PostAnalysisParameters.Builder builder) {
+	private int getUniverse(EnrichmentMap map, EMDataSet dataset, UniverseType type) {
+		GeneExpressionMatrix expressionSets = map.getDataSet(dataset.getName()).getExpressionSets();
+		switch(type) {
+			default:
+			case GMT:
+				return map.getNumberOfGenes();
+			case EXPRESSION_SET:
+				return expressionSets.getExpressionUniverse();
+			case INTERSECTION:
+				return expressionSets.getExpressionMatrix().size();
+			case USER_DEFINED:
+				return userDefinedUniverseSize;
+		}
+	}
+	
+	private FilterMetric getFilterMetric(EnrichmentMap map, EMDataSet dataset, PostAnalysisFilterType type, UniverseType universeType) {
+		switch(type) {
+			case NO_FILTER:
+				return new FilterMetric.NoFilter();
+			case NUMBER:
+				return new FilterMetric.Number(cutoff);
+			case PERCENT:
+				return new FilterMetric.Percent(cutoff);
+			case SPECIFIC:
+				return new FilterMetric.Specific(cutoff);
+			case HYPERGEOM:
+				int universe = getUniverse(map, dataset, universeType);
+				return new FilterMetric.Hypergeom(cutoff, universe);
+			case MANN_WHIT_TWO_SIDED:
+			case MANN_WHIT_GREATER:
+			case MANN_WHIT_LESS:
+				return processMannWhitneyArgs(map, dataset, type);
+			default:
+				return null;
+		}
+	}
+	
+	private List<EMDataSet> getDataSets(EnrichmentMap map) {
+		return isBatch() ? map.getDataSetList() : Arrays.asList(map.getDataSet(dataSetName));
+	}
+	
+	private FilterMetric.MannWhit processMannWhitneyArgs(EnrichmentMap map, EMDataSet dataset, PostAnalysisFilterType type) {
 		if(mannWhitRanks.isEmpty() && map.isSingleRanksPerDataset()) {
-			for(EMDataSet dataset : map.getDataSetList()) {
-				String ranksName = dataset.getAllRanksNames().iterator().next();
-				builder.addDataSetToRankFile(dataset.getName(), ranksName);
-			}
+			String ranksName = dataset.getAllRanksNames().iterator().next();
+			Ranking ranking = dataset.getRanksByName(ranksName);
+			return new FilterMetric.MannWhit(cutoff, ranking, type);
+		} else if(mannWhitRanks.isEmpty()) {
+			throw new IllegalArgumentException("At least one of the data sets you have specified has more than one ranks file. "
+					+ "You must use the 'mannWhitRanks' parameter to specify which ranking to use for each data set.");
 		} else {
-			if(mannWhitRanks.isEmpty()) {
-				throw new IllegalArgumentException("At least one of the data sets you have specified has more than one ranks file. "
-						+ "You must use the 'mannWhitRanks' parameter to specify which ranking to use for each data set.");
+			String dsName = dataset.getName();
+			String rankFile = mannWhitRanks.getRankFile(dsName);
+			Set<String> ranksNames = dataset.getAllRanksNames();
+			
+			if(ranksNames.size() > 1) {
+				if(rankFile == null)
+					throw new IllegalArgumentException("The data set '" + dsName + "' has more than one ranks file, you must specify the rank file using the 'mannWhatRanks' parameter.");
+				if(!ranksNames.contains(rankFile))
+					throw new IllegalArgumentException("The data set '" + dsName + "' does not contain the rank file '" + rankFile + "'.");
 			}
-			List<EMDataSet> dataSetList = isBatch() ? map.getDataSetList() : Arrays.asList(map.getDataSet(dataSetName));
-			for(EMDataSet dataSet : dataSetList) {
-				String dsName = dataSet.getName();
-				String rankFile = mannWhitRanks.getRankFile(dsName);
-				Set<String> ranksNames = dataSet.getAllRanksNames();
-				
-				if(ranksNames.size() > 1) {
-					if(rankFile == null)
-						throw new IllegalArgumentException("The data set '" + dsName + "' has more than one ranks file, you must specify the rank file using the 'mannWhatRanks' parameter.");
-					if(!ranksNames.contains(rankFile))
-						throw new IllegalArgumentException("The data set '" + dsName + "' does not contain the rank file '" + rankFile + "'.");
-				}
-				
-				if(rankFile == null && ranksNames.size() == 1) {
-					builder.addDataSetToRankFile(dsName, ranksNames.iterator().next());
-				} else {
-					builder.addDataSetToRankFile(dsName, rankFile);
-				}
+			
+			if(rankFile == null && ranksNames.size() == 1) {
+				String ranksName = ranksNames.iterator().next();
+				Ranking ranking = dataset.getRanksByName(ranksName);
+				return new FilterMetric.MannWhit(cutoff, ranking, type);
+			} else {
+				Ranking ranking = dataset.getRanksByName(rankFile);
+				return new FilterMetric.MannWhit(cutoff, ranking, type);
 			}
 		}
 	}

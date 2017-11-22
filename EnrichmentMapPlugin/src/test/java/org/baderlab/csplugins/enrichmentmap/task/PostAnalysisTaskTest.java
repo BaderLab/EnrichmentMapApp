@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -21,14 +22,14 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
+import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -99,18 +100,20 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	 * Uses the network that was created by the previous test method.
 	 */
 	@Test
-	public void test_2_PostAnalysisMannWhitney(@Continuous VisualMappingFunctionFactory cmFactory) throws Exception {
+	public void test_2_PostAnalysisMannWhitney(@Continuous VisualMappingFunctionFactory cmFactory, EnrichmentMapManager emManager) throws Exception {
 		mockContinuousMappingFactory(cmFactory);
 		
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
 		builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
-		builder.setUniverseType(UniverseType.USER_DEFINED);
-		builder.setUserDefinedUniverseSize(11445);
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
-		builder.addDataSetToRankFile(LegacySupport.DATASET1, LegacySupport.DATASET1);
 		
-		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED);
+		EnrichmentMap map = emManager.getEnrichmentMap(emNetwork.getSUID());
+		Map<String,FilterMetric> rankTest = new HashMap<>();
+		Ranking ranking = map.getRanksByName(LegacySupport.DATASET1);
+		PostAnalysisFilterType mannWhitTwoSided = PostAnalysisFilterType.MANN_WHIT_TWO_SIDED;
+		rankTest.put(LegacySupport.DATASET1, new FilterMetric.MannWhit(mannWhitTwoSided.defaultValue, ranking, mannWhitTwoSided));
+		
 		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
@@ -126,12 +129,12 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 	   	CyEdge edge1 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) TOP8_PLUS100");
 	   	assertNotNull(edge1);
 	   	assertEquals(1.40E-6, emNetwork.getRow(edge1).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
-	   	assertEquals(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(mannWhitTwoSided.toString(), emNetwork.getRow(edge1).get("EM1_Overlap_cutoff", String.class));
 	   	
 	   	CyEdge edge2 = edges.getEdge("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) BOTTOM8_PLUS100");
 	   	assertNotNull(edge2);
 	   	assertEquals(1.40E-6, emNetwork.getRow(edge2).get("EM1_Overlap_Mann_Whit_pVal", Double.class), 0.001);
-	   	assertEquals(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
+	   	assertEquals(mannWhitTwoSided.toString(), emNetwork.getRow(edge2).get("EM1_Overlap_cutoff", String.class));
 	}
 	
 	/**
@@ -145,12 +148,11 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
 		builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
-		builder.setUniverseType(UniverseType.USER_DEFINED);
-		builder.setUserDefinedUniverseSize(11445);
 		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
 		
-		PostAnalysisFilterParameters rankTest = new PostAnalysisFilterParameters(PostAnalysisFilterType.HYPERGEOM, 0.25);
+		Map<String,FilterMetric> rankTest = new HashMap<>();
+		rankTest.put(LegacySupport.DATASET1, new FilterMetric.Hypergeom(0.25, 11445));
 		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
