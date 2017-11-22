@@ -22,10 +22,10 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
-public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
+public class PATaskFactory extends AbstractTaskFactory {
 
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private CreateDiseaseSignatureTaskParallel.Factory signatureTaskFactory;
+	@Inject private PASimilarityTaskParallel.Factory signatureTaskFactory;
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
 	
@@ -35,11 +35,11 @@ public class CreateDiseaseSignatureTaskFactory extends AbstractTaskFactory {
 	private final PostAnalysisParameters params;
 	
 	public interface Factory {
-		CreateDiseaseSignatureTaskFactory create(CyNetworkView netView, PostAnalysisParameters params);
+		PATaskFactory create(CyNetworkView netView, PostAnalysisParameters params);
 	}
 	
 	@Inject
-	public CreateDiseaseSignatureTaskFactory(@Assisted CyNetworkView netView, @Assisted PostAnalysisParameters params) {
+	public PATaskFactory(@Assisted CyNetworkView netView, @Assisted PostAnalysisParameters params) {
 		this.netView = netView;
 		this.params = params;
 	}

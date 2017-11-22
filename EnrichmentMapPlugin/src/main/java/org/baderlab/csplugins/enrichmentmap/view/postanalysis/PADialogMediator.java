@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.postanalysis2;
+package org.baderlab.csplugins.enrichmentmap.view.postanalysis;
 
 import java.util.WeakHashMap;
 
@@ -38,5 +38,9 @@ public class PADialogMediator  {
 		});
 		
 		dialog.open();
+	}
+	
+	public void removeEnrichmentMap(EnrichmentMap map) {
+		dialogs.remove(map);
 	}
 }

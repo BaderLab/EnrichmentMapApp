@@ -15,7 +15,7 @@ import org.cytoscape.view.model.CyNetworkView;
  * 
  * @author mkucera
  */
-public class CreateDiseaseSignatureTaskResult {
+public class CreatePANetworkTaskResult {
 
 	private final Set<CyEdge> existingEdgesFailingCutoff;
 	private final Set<CyEdge> newEdges;
@@ -25,7 +25,7 @@ public class CreateDiseaseSignatureTaskResult {
 	private final int passedCutoffCount;
 	private final boolean cancelled;
 
-	private CreateDiseaseSignatureTaskResult(Builder builder) {
+	private CreatePANetworkTaskResult(Builder builder) {
 		// Not making copies of the Sets, this is why Builder.build() should only be called once.
 		this.existingEdgesFailingCutoff = builder.existingEdgesFailingCutoff;
 		this.newEdges = builder.newEdges;
@@ -77,7 +77,7 @@ public class CreateDiseaseSignatureTaskResult {
 		private int passedCutoffCount = 0;
 		private boolean cancelled = false;
 
-		private CreateDiseaseSignatureTaskResult result = null;
+		private CreatePANetworkTaskResult result = null;
 
 		public void addExistingEdgeFailsCutoff(CyEdge edge) {
 			if(edge != null)
@@ -110,9 +110,9 @@ public class CreateDiseaseSignatureTaskResult {
 			this.cancelled = cancelled;
 		}
 
-		public CreateDiseaseSignatureTaskResult build() {
+		public CreatePANetworkTaskResult build() {
 			if(result == null) {
-				result = new CreateDiseaseSignatureTaskResult(this);
+				result = new CreatePANetworkTaskResult(this);
 			}
 			return result;
 		}

@@ -69,8 +69,7 @@ import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowActi
 import org.baderlab.csplugins.enrichmentmap.view.legend.CreationParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisPanelMediator;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis2.PADialogMediator;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
@@ -115,7 +114,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 
 	@Inject private Provider<ControlPanel> controlPanelProvider;
 	@Inject private Provider<LegendPanelMediator> legendPanelMediatorProvider;
-	@Inject private Provider<PostAnalysisPanelMediator> oldPAPanelMediatorProvider;
 	@Inject private Provider<PADialogMediator> paDialogMediatorProvider;
 	@Inject private Provider<EdgeWidthDialog> dialogProvider;
 	@Inject private EnrichmentMapManager emManager;
@@ -494,10 +492,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		});
 		
 		viewPanel.getDataSetSelector().getAddButton().addActionListener(evt -> {
-			oldPAPanelMediatorProvider.get().showDialog(viewPanel, netView);
-		});
-		
-		viewPanel.getDataSetSelector().getAddButton2().addActionListener(evt -> {
 			paDialogMediatorProvider.get().showDialog(netView);
 		});
 		

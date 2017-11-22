@@ -44,7 +44,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
-public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements ObservableTask {
+public class CreatePANetworkTask extends AbstractTask implements ObservableTask {
 
 	private static final double HUB_NODE_Y_GAP = 150.0;
 	
@@ -63,15 +63,15 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	private Map<EdgeCacheKey,CyEdge> existingEdgeCache;
 	private final Map<String,CyNode> nodeCache = new LinkedHashMap<>(); // maintain insertion order so layout is deterministic
 	
-	private CreateDiseaseSignatureTaskResult.Builder taskResult = new CreateDiseaseSignatureTaskResult.Builder();
+	private CreatePANetworkTaskResult.Builder taskResult = new CreatePANetworkTaskResult.Builder();
 	
 	
 	public static interface Factory {
-		CreateDiseaseSignatureNetworkTask create(EnrichmentMap map, PostAnalysisParameters params, Map<String,GeneSet> signatureGeneSets, Map<SimilarityKey,SignatureGenesetSimilarity> geneSetSimilarities);
+		CreatePANetworkTask create(EnrichmentMap map, PostAnalysisParameters params, Map<String,GeneSet> signatureGeneSets, Map<SimilarityKey,SignatureGenesetSimilarity> geneSetSimilarities);
 	}
 	
 	@Inject
-	public CreateDiseaseSignatureNetworkTask(@Assisted EnrichmentMap map, @Assisted PostAnalysisParameters params, 
+	public CreatePANetworkTask(@Assisted EnrichmentMap map, @Assisted PostAnalysisParameters params, 
 			@Assisted Map<String,GeneSet> signatureGeneSets, @Assisted Map<SimilarityKey,SignatureGenesetSimilarity> geneSetSimilarities) {
 		this.map = map;
 		this.params = params;
@@ -164,7 +164,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	private static Map<EdgeCacheKey,CyEdge> createExistingEdgeCache(String prefix, CyNetwork network, CyTable edgeTable) {
 		Map<EdgeCacheKey,CyEdge> cache = new HashMap<>();
 		// Get rows for signature edges
-		Collection<CyRow> rows = edgeTable.getMatchingRows(CyEdge.INTERACTION, CreateDiseaseSignatureTaskParallel.INTERACTION);
+		Collection<CyRow> rows = edgeTable.getMatchingRows(CyEdge.INTERACTION, PASimilarityTaskParallel.INTERACTION);
 		for(CyRow row : rows) {
 			String name = row.get(CyNetwork.NAME, String.class);
 			Long suid = row.get(CyIdentifiable.SUID, Long.class);
@@ -356,7 +356,7 @@ public class CreateDiseaseSignatureNetworkTask extends AbstractTask implements O
 	
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
-		if (CreateDiseaseSignatureTaskResult.class.equals(type)) {
+		if (CreatePANetworkTaskResult.class.equals(type)) {
 			taskResult.setCancelled(cancelled);
 			return type.cast(taskResult.build());
 		}

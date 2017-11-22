@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.postanalysis2;
+package org.baderlab.csplugins.enrichmentmap.view.postanalysis;
 
 import static java.awt.GridBagConstraints.EAST;
 import static java.awt.GridBagConstraints.NONE;

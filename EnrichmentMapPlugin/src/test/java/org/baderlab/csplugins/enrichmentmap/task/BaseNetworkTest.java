@@ -32,7 +32,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.N
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
-import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSignatureTaskParallel;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PASimilarityTaskParallel;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
@@ -113,7 +113,7 @@ public abstract class BaseNetworkTest {
     
     @Inject private CreateEnrichmentMapTaskFactory.Factory masterMapTaskFactoryFactory;
     @Inject private LoadSignatureSetsActionListener.Factory  loadSignatureSetsActionListenerFactory;
-    @Inject private CreateDiseaseSignatureTaskParallel.Factory buildDiseaseSignatureTaskFactory;
+    @Inject private PASimilarityTaskParallel.Factory buildDiseaseSignatureTaskFactory;
     
     
 	@Before
@@ -173,7 +173,7 @@ public abstract class BaseNetworkTest {
 		
 		// Run post-analysis
 		EMDataSet dataSet = map.getDataSet(dataSetName);
-		CreateDiseaseSignatureTaskParallel signatureTask = buildDiseaseSignatureTaskFactory.create(paParams, map, Arrays.asList(dataSet));
+		PASimilarityTaskParallel signatureTask = buildDiseaseSignatureTaskFactory.create(paParams, map, Arrays.asList(dataSet));
 		testTaskManager = new SerialTestTaskManager();
 		testTaskManager.execute(new TaskIterator(signatureTask));
 	}

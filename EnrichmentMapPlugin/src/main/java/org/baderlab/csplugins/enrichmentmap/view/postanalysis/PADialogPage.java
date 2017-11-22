@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.postanalysis2;
+package org.baderlab.csplugins.enrichmentmap.view.postanalysis;
 
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;

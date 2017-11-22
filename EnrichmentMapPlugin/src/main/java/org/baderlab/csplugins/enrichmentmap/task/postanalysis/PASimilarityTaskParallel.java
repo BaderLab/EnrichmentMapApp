@@ -40,12 +40,12 @@ import com.google.inject.assistedinject.AssistedInject;
  * task, CreateDiseaseSignatureNetworkTask has all the side effects of adding
  * nodes/edges to the network.
  */
-public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
+public class PASimilarityTaskParallel extends AbstractTask {
 
 	public static final String INTERACTION = PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
 
 	
-	@Inject private CreateDiseaseSignatureNetworkTask.Factory networkTaskFactory;
+	@Inject private CreatePANetworkTask.Factory networkTaskFactory;
 	
 	private final EnrichmentMap map;
 	private final PostAnalysisParameters params;
@@ -53,17 +53,17 @@ public class CreateDiseaseSignatureTaskParallel extends AbstractTask {
 	
 	
 	public static interface Factory {
-		CreateDiseaseSignatureTaskParallel create(PostAnalysisParameters params, EnrichmentMap map);
-		CreateDiseaseSignatureTaskParallel create(PostAnalysisParameters params, EnrichmentMap map, List<EMDataSet> dataSets);
+		PASimilarityTaskParallel create(PostAnalysisParameters params, EnrichmentMap map);
+		PASimilarityTaskParallel create(PostAnalysisParameters params, EnrichmentMap map, List<EMDataSet> dataSets);
 	}
 	
 	@AssistedInject
-	public CreateDiseaseSignatureTaskParallel(@Assisted PostAnalysisParameters params, @Assisted EnrichmentMap map) {
+	public PASimilarityTaskParallel(@Assisted PostAnalysisParameters params, @Assisted EnrichmentMap map) {
 		this(params, map, map.getDataSetList());
 	}
 	
 	@AssistedInject
-	public CreateDiseaseSignatureTaskParallel(@Assisted PostAnalysisParameters params, @Assisted EnrichmentMap map, @Assisted List<EMDataSet> dataSets) {
+	public PASimilarityTaskParallel(@Assisted PostAnalysisParameters params, @Assisted EnrichmentMap map, @Assisted List<EMDataSet> dataSets) {
 		this.map = map;
 		this.dataSets = dataSets;
 		

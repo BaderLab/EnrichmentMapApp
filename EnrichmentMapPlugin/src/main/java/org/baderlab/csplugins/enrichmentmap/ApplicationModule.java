@@ -15,9 +15,9 @@ import org.baderlab.csplugins.enrichmentmap.task.CreateEMViewTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.SelectNodesEdgesTask;
-import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSignatureNetworkTask;
-import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSignatureTaskFactory;
-import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSignatureTaskParallel;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreatePANetworkTask;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PASimilarityTaskParallel;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.view.creation.DetailDataSetPanel;
 import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog;
@@ -29,12 +29,9 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.ExportTXTAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMainPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParentPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankOptionRenderer;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisInputPanel;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisKnownSignaturePanel;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PostAnalysisSignatureDiscoveryPanel;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis2.PADialogPage;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis2.PADialogParameters;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis2.PAWeightPanel;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogPage;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogParameters;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PAWeightPanel;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.property.CyProperty;
 import org.osgi.framework.BundleContext;
@@ -85,13 +82,10 @@ class FactoryModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		// Factories using AssistedInject
-		installFactory(PostAnalysisInputPanel.Factory.class);
-		installFactory(CreateDiseaseSignatureNetworkTask.Factory.class);
-		installFactory(CreateDiseaseSignatureTaskParallel.Factory.class);
+		installFactory(CreatePANetworkTask.Factory.class);
+		installFactory(PASimilarityTaskParallel.Factory.class);
 		installFactory(RemoveSignatureDataSetsTask.Factory.class);
 		installFactory(LoadSignatureSetsActionListener.Factory.class);
-		installFactory(PostAnalysisKnownSignaturePanel.Factory.class);
-		installFactory(PostAnalysisSignatureDiscoveryPanel.Factory.class);
 		installFactory(EnrichmentMapParameters.Factory.class);
 		installFactory(CreateEnrichmentMapTaskFactory.Factory.class);
 		installFactory(CreateEMNetworkTask.Factory.class);
@@ -109,7 +103,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(ErrorMessageDialog.Factory.class);
 		installFactory(ColumnHeaderRankOptionRenderer.Factory.class);
 		installFactory(PathTextField.Factory.class);
-		installFactory(CreateDiseaseSignatureTaskFactory.Factory.class);
+		installFactory(PATaskFactory.Factory.class);
 		installFactory(OpenPathwayCommonsTask.Factory.class);
 		installFactory(PADialogParameters.Factory.class);
 		installFactory(PADialogPage.Factory.class);

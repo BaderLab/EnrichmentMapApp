@@ -20,7 +20,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
-import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreateDiseaseSignatureTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.cytoscape.application.CyApplicationManager;
@@ -73,7 +73,7 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	@Inject private CyNetworkViewManager networkViewManager;
 	
 	@Inject private LoadSignatureSetsActionListener.Factory loadSignatureSetsFactory;
-	@Inject private CreateDiseaseSignatureTaskFactory.Factory taskFactoryFactory;
+	@Inject private PATaskFactory.Factory taskFactoryFactory;
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	@Inject private EnrichmentMapManager emManager;
 	
