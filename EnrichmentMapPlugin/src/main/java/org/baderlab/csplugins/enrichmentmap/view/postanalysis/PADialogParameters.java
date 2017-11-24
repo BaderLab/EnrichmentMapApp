@@ -40,7 +40,7 @@ public class PADialogParameters implements CardDialogParameters {
 
 	@Override
 	public Dimension getPreferredSize() {
-		return new Dimension(820, 700);
+		return new Dimension(900, 700);
 	}
 	
 	@Override

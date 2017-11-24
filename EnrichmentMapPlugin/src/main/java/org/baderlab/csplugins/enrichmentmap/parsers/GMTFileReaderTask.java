@@ -55,6 +55,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.common.collect.ImmutableSet;
@@ -62,7 +63,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * This class parses a GMT (gene set) file and creates a set of genesets
  */
-public class GMTFileReaderTask extends AbstractTask {
+public class GMTFileReaderTask extends AbstractTask implements ObservableTask {
 
 	private final EnrichmentMap map;
 	private final String gmtFileName;
@@ -138,4 +139,11 @@ public class GMTFileReaderTask extends AbstractTask {
 		return pattern.matcher(nfdNormalizedString).replaceAll("");
 	}
 	
+	@Override
+	public <R> R getResults(Class<? extends R> type) {
+		if(SetOfGeneSets.class.equals(type)) {
+			return type.cast(setOfgenesets);
+		}
+		return null;
+	}
 }

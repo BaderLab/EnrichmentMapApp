@@ -4,12 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -19,9 +15,9 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SignatureGenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
+import org.baderlab.csplugins.enrichmentmap.task.CancellableParallelTask;
 import org.baderlab.csplugins.enrichmentmap.task.ComputeSimilarityTaskParallel;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 
@@ -40,7 +36,7 @@ import com.google.inject.assistedinject.AssistedInject;
  * task, CreateDiseaseSignatureNetworkTask has all the side effects of adding
  * nodes/edges to the network.
  */
-public class PASimilarityTaskParallel extends AbstractTask {
+public class PASimilarityTaskParallel extends CancellableParallelTask<Map<SimilarityKey,SignatureGenesetSimilarity>> {
 
 	public static final String INTERACTION = PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE;
 
@@ -50,6 +46,8 @@ public class PASimilarityTaskParallel extends AbstractTask {
 	private final EnrichmentMap map;
 	private final PostAnalysisParameters params;
 	private final List<EMDataSet> dataSets;
+	
+	private final Map<String,GeneSet> signatureGeneSets;
 	
 	
 	public static interface Factory {
@@ -72,48 +70,27 @@ public class PASimilarityTaskParallel extends AbstractTask {
 			this.params = PostAnalysisParameters.Builder.from(params).setAttributePrefix("EM1_").build();
 		else
 			this.params = params;
-	}
-	
-	
-	@Override
-	public void run(TaskMonitor tm) throws InterruptedException {
-		int cpus = Runtime.getRuntime().availableProcessors();
-        ExecutorService executor = Executors.newFixedThreadPool(cpus);
-        
-        // Compare enrichment gene sets to signature gene sets
- 		Set<String> enrichmentGeneSetNames = getEnrichmentGeneSetNames();
- 		Map<String,GeneSet> signatureGeneSets = getSignatureGeneSets();
- 		handleDuplicateNames(enrichmentGeneSetNames, signatureGeneSets);
-     		
-        Map<SimilarityKey,SignatureGenesetSimilarity> geneSetSimilarities = startBuildDiseaseSignatureParallel(tm, executor, enrichmentGeneSetNames, signatureGeneSets);
-
-        // Support cancellation
-		Timer timer = new Timer();
-		timer.scheduleAtFixedRate(new TimerTask() {
-			public void run() {
-				if(cancelled) {
-					executor.shutdownNow();
-				}
-			}
-		}, 0, 1000);
-			
-		executor.shutdown();
-		executor.awaitTermination(3, TimeUnit.HOURS);
-		timer.cancel();
 		
-		// create the network here
-		if(!cancelled) {
-			Task networkTask = networkTaskFactory.create(map, params, signatureGeneSets, geneSetSimilarities);
-			insertTasksAfterCurrentTask(networkTask);
+		Map<String,GeneSet> loadedGeneSets = params.getLoadedGMTGeneSets().getGeneSets();
+		this.signatureGeneSets = new HashMap<>();
+		for(String geneset : params.getSelectedGeneSetNames()) {
+			signatureGeneSets.put(geneset, loadedGeneSets.get(geneset));
 		}
 	}
-
+	
+	@Override
+	public void done(Map<SimilarityKey,SignatureGenesetSimilarity> similarities) {
+		Task networkTask = networkTaskFactory.create(map, params, signatureGeneSets, similarities);
+		insertTasksAfterCurrentTask(networkTask);
+	}
 
 	/**
 	 * Returns immediately, need to wait on the executor to join all threads.
 	 */
-	private Map<SimilarityKey,SignatureGenesetSimilarity> startBuildDiseaseSignatureParallel(TaskMonitor tm, 
-			ExecutorService executor, Set<String> enrichmentGeneSetNames, Map<String,GeneSet> signatureGeneSets) {
+	@Override
+	public Map<SimilarityKey,SignatureGenesetSimilarity> compute(TaskMonitor tm, ExecutorService executor) {
+		Set<String> enrichmentGeneSetNames = getEnrichmentGeneSetNames();
+		handleDuplicateNames(enrichmentGeneSetNames, signatureGeneSets);
 		
 		DiscreteTaskMonitor taskMonitor = discreteTaskMonitor(tm, signatureGeneSets.size());
 		
@@ -176,20 +153,6 @@ public class PASimilarityTaskParallel extends AbstractTask {
 	}
 	
 	
-	/**
-	 * Return the signature gene sets that the user want's to add.
-	 * Take all the gene sets that were loaded and filter out ones that were not selected.
-	 */
-	private Map<String,GeneSet> getSignatureGeneSets() {
-		Map<String,GeneSet> loadedGeneSets = params.getLoadedGMTGeneSets().getGeneSets();
-		Map<String,GeneSet> selectedGeneSets = new HashMap<>();
-		for(String geneset : params.getSelectedGeneSetNames()) {
-			selectedGeneSets.put(geneset, loadedGeneSets.get(geneset));
-		}
-		return selectedGeneSets;
-	}
-	
-	
 	private static void handleDuplicateNames(Set<String> enrichmentGeneSetNames, Map<String,GeneSet> signatureGeneSets) {
 		Set<String> duplicates = signatureGeneSets.keySet().stream().filter(enrichmentGeneSetNames::contains).collect(Collectors.toSet());
 		for(String name : duplicates) {
@@ -203,14 +166,6 @@ public class PASimilarityTaskParallel extends AbstractTask {
 	private Set<String> getEnrichmentGeneSetNames() {
 		Set<String> names = map.getAllGeneSetOfInterestNames();
 		return names;
-	}
-	
-	
-	private static DiscreteTaskMonitor discreteTaskMonitor(TaskMonitor tm, int size) {
-		DiscreteTaskMonitor taskMonitor = new DiscreteTaskMonitor(tm, size);
-        taskMonitor.setTitle("Post Analysis Geneset Similarities...");
-        taskMonitor.setStatusMessageTemplate("Computing Geneset Similarity: {0} of {1} tasks");
-        return taskMonitor;
 	}
 	
 }

@@ -6,18 +6,16 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 
 public class SigGeneSetDescriptor {
 
+	private final GeneSet geneSet;
+	private final double mostSimilar;
+	private final boolean passes;
+	
 	private boolean wanted = true;
 	
-	private final GeneSet geneSet;
-	private final int maxOverlap;
-	
-//	private final double smallestHypergeomPValue;
-//	private final double smallestMannWhitPValue;
-	
-	
-	public SigGeneSetDescriptor(GeneSet geneSet, int maxOverlap) {
+	public SigGeneSetDescriptor(GeneSet geneSet, double mostSimilar, boolean passes) {
 		this.geneSet = Objects.requireNonNull(geneSet);
-		this.maxOverlap = maxOverlap;
+		this.mostSimilar = mostSimilar;
+		this.passes = passes;
 	}
 	
 	public boolean isWanted() {
@@ -36,11 +34,15 @@ public class SigGeneSetDescriptor {
 		return geneSet.getGenes().size();
 	}
 	
-	public int getMaxOverlap() {
-		return maxOverlap;
+	public double getMostSimilar() {
+		return mostSimilar;
 	}
 	
 	public GeneSet getGeneSet() {
 		return geneSet;
+	}
+	
+	public boolean passes() {
+		return passes;
 	}
 }

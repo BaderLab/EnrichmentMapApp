@@ -10,7 +10,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +34,9 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetricSet;
 import org.baderlab.csplugins.enrichmentmap.view.EnablementComboBoxRenderer;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -78,6 +79,8 @@ public class PAWeightPanel extends JPanel {
     private MannWhitRanksPanel mannWhitPanel;
     private Map<PostAnalysisFilterType,Double> savedFilterValues = PostAnalysisFilterType.createMapOfDefaultsNumbers();
     
+    private boolean rankTestUpdating = false;
+    
 
     public interface Factory {
     		PAWeightPanel create(EnrichmentMap map);
@@ -91,8 +94,7 @@ public class PAWeightPanel extends JPanel {
 	
 	@AfterInjection
 	private void createContents() {
-		setBorder(LookAndFeelUtil.createTitledBorder("Edge Weight Parameters"));
-
+		setBorder(LookAndFeelUtil.createPanelBorder());
 		JPanel selectPanel = createRankTestSelectPanel();
 		
 		JPanel hypeCard = createHypergeomCard();
@@ -106,19 +108,28 @@ public class PAWeightPanel extends JPanel {
 		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.NUMBER.name());
 		cardPanel.add(createEmptyPanel(), PostAnalysisFilterType.SPECIFIC.name());
 		cardPanel.add(warnCard, WARN_CARD);
+		
+		JLabel title = new JLabel("Edge Weight Parameters");
+		SwingUtil.makeSmall(title);
         
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 
-		layout.setHorizontalGroup(layout.createSequentialGroup()
-			.addComponent(selectPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-			.addComponent(cardPanel, 300, 300, 300)
+		layout.setHorizontalGroup(layout.createParallelGroup()
+			.addComponent(title)
+			.addGroup(layout.createSequentialGroup()
+				.addComponent(selectPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(cardPanel, 300, 300, 300)
+			)
 		);
-		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
-			.addComponent(selectPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			.addComponent(cardPanel, 130, 130, 130)
+		layout.setVerticalGroup(layout.createSequentialGroup()
+			.addComponent(title)
+			.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(selectPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(cardPanel, 130, 130, 130)
+			)
 		);
 
 		if (LookAndFeelUtil.isAquaLAF()) {
@@ -178,6 +189,7 @@ public class PAWeightPanel extends JPanel {
 		warnLabel.setVisible(message != null);
 	}
 	
+	
 	@SuppressWarnings("unchecked")
 	private JPanel createRankTestSelectPanel() {
 		JLabel testLabel = new JLabel(LABEL_TEST);
@@ -200,21 +212,8 @@ public class PAWeightPanel extends JPanel {
 				showWarning("Not a number");
 			}
 			
-//			StringBuilder message = new StringBuilder("The value you have entered is invalid.\n");
-//			Number number = (Number) rankTestTextField.getValue();
-//			PostAnalysisFilterType filterType = getFilterType();
-//
-//			Optional<Double> value = PostAnalysisInputPanel.validateAndGetFilterValue(number, filterType, message);
-//			double def = filterType == PostAnalysisFilterType.HYPERGEOM ? HYPERGOM_DEFAULT : filterType.defaultValue;
-//			savedFilterValues.put(filterType, value.orElse(def));
-//			
-//			if (!value.isPresent()) {
-//				rankTestTextField.setValue(def);
-//				JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this), message.toString(), "Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
-//			}
-			
-			System.out.println("fire");
-			firePropertyChange(PROPERTY_PARAMETERS, false, true);
+			if(!rankTestUpdating)
+				firePropertyChange(PROPERTY_PARAMETERS, false, true);
 		});
 
 		rankingEnablementRenderer = new EnablementComboBoxRenderer<>();
@@ -230,6 +229,7 @@ public class PAWeightPanel extends JPanel {
 		rankTestCombo.addItem(PostAnalysisFilterType.SPECIFIC);
         
 		rankTestCombo.addActionListener(e -> {
+			rankTestUpdating = true;
 			PostAnalysisFilterType filterType = (PostAnalysisFilterType) rankTestCombo.getSelectedItem();
 			rankTestTextField.setValue(savedFilterValues.get(filterType));
 			CardLayout cardLayout = (CardLayout) cardPanel.getLayout();
@@ -240,8 +240,8 @@ public class PAWeightPanel extends JPanel {
 				cardLayout.show(cardPanel, MANN_WHIT_CARD);
 			else
 				cardLayout.show(cardPanel, filterType.name());
-			System.out.println("fire");
 			firePropertyChange(PROPERTY_PARAMETERS, false, true);
+			rankTestUpdating = false;
 		});
 		
 		datasetCombo = new JComboBox<>();
@@ -506,8 +506,8 @@ public class PAWeightPanel extends JPanel {
 	}
 	
 	
-	public Map<String,FilterMetric> getResults() {
-		Map<String,FilterMetric> results = new HashMap<>();
+	public FilterMetricSet getResults() {
+		FilterMetricSet results = new FilterMetricSet(getFilterType());
 		for(String dataset : getDataSets()) {
 			FilterMetric metric = createFilterMetric(dataset);
 			if(metric != null)

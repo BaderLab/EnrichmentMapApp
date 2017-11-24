@@ -27,6 +27,8 @@ public interface FilterMetric {
 	
 	boolean passes(double value);
 	
+	double moreSimilar(double x, double y);
+	
 	
 	abstract class BaseFilterMetric implements FilterMetric {
 		protected final double cutoff;
@@ -60,10 +62,15 @@ public interface FilterMetric {
 		public boolean passes(double value) {
 			return true;
 		}
+		
+		public double moreSimilar(double x, double y) {
+			return x;
+		}
 
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) {
 			return 0;
 		}
+		
 	}
 	
 	
@@ -75,6 +82,10 @@ public interface FilterMetric {
 		
 		public boolean passes(double value) {
 			return value >= (cutoff / 100.0);
+		}
+		
+		public double moreSimilar(double x, double y) {
+			return Math.max(x, y);
 		}
 
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) {
@@ -94,6 +105,10 @@ public interface FilterMetric {
 			return value >= cutoff;
 		}
 		
+		public double moreSimilar(double x, double y) {
+			return Math.max(x, y);
+		}
+		
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) {
 			return Sets.intersection(geneSet, sigSet).size();
 		}
@@ -108,6 +123,10 @@ public interface FilterMetric {
 		
 		public boolean passes(double value) {
 			return value >= (cutoff / 100.0);
+		}
+		
+		public double moreSimilar(double x, double y) {
+			return Math.max(x, y);
 		}
 
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) {
@@ -130,6 +149,10 @@ public interface FilterMetric {
 			return value <= cutoff;
 		}
 
+		public double moreSimilar(double x, double y) {
+			return Math.min(x, y);
+		}
+		
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) throws ArithmeticException {
 			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
 			// Calculate Hypergeometric pValue for Overlap
@@ -170,25 +193,28 @@ public interface FilterMetric {
 			this.ranks = ranks;
 		}
 
-		@Override
 		public boolean passes(double value) {
 			return value <= cutoff;
 		}
 
-		@Override
+		public double moreSimilar(double x, double y) {
+			return Math.min(x, y);
+		}
+		
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) {
-			if(ranks.isEmpty()) {
+			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
+			int size = intersection.size();
+			if(ranks.isEmpty() || size == 0) {
 				if(similarity != null) {
-					similarity.setMannWhitPValueTwoSided(1.5); // avoid NoDataException
-					similarity.setMannWhitPValueGreater(1.5);
-					similarity.setMannWhitPValueLess(1.5);
+					similarity.setMannWhitPValueTwoSided(1.0); // avoid NoDataException
+					similarity.setMannWhitPValueGreater(1.0);
+					similarity.setMannWhitPValueLess(1.0);
 					similarity.setMannWhitMissingRanks(true);
 				}
-				return 1.5;
+				return 1.0;
 			}
 			
-			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
-			Integer[] overlapGeneIds = intersection.toArray(new Integer[intersection.size()]);
+			Integer[] overlapGeneIds = intersection.toArray(new Integer[size]);
 			double[] overlapGeneScores = new double[overlapGeneIds.length];
 			
 			int j = 0;

@@ -3,12 +3,8 @@ package org.baderlab.csplugins.enrichmentmap.task;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
@@ -19,12 +15,11 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.common.collect.Sets;
 
-public class ComputeSimilarityTaskParallel extends AbstractTask {
+public class ComputeSimilarityTaskParallel extends CancellableParallelTask<Map<SimilarityKey,GenesetSimilarity>> {
 
 	private final EnrichmentMap map;
 	private final Consumer<Map<SimilarityKey,GenesetSimilarity>> consumer;
@@ -35,53 +30,15 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 	}
 	
 	@Override
-	public void run(TaskMonitor tm) throws InterruptedException {
-		int cpus = Runtime.getRuntime().availableProcessors();
-        ExecutorService executor = Executors.newFixedThreadPool(cpus);
-        
-        boolean distinct = useDistinctEdges();
-        map.getParams().setCreateDistinctEdges(distinct); // set this value for access by UI components 
-        
-        Map<SimilarityKey,GenesetSimilarity> similarities = startComputeSimilarities(tm, executor, distinct);
-
-        // Support cancellation
-		Timer timer = new Timer();
-		timer.scheduleAtFixedRate(new TimerTask() {
-			public void run() {
-				if(cancelled) {
-					executor.shutdownNow();
-				}
-			}
-		}, 0, 1000);
-			
-		executor.shutdown();
-		executor.awaitTermination(3, TimeUnit.HOURS);
-		timer.cancel();
+	public void done(Map<SimilarityKey,GenesetSimilarity> similarities) {
+		consumer.accept(similarities);
+	}
+	
+	@Override
+	public Map<SimilarityKey,GenesetSimilarity> compute(TaskMonitor tm, ExecutorService executor) {
+		boolean distinct = useDistinctEdges();
+		map.getParams().setCreateDistinctEdges(distinct); // set this value for access by UI components 
 		
-		if(!cancelled)
-			consumer.accept(similarities);
-	}
-	
-	
-	private boolean useDistinctEdges() {
-		switch(map.getParams().getEdgeStrategy()) {
-			case DISTINCT: 
-				return true;
-			case COMPOUND: 
-				return false;
-			default:
-			case AUTOMATIC:
-				if(map.getDataSetCount() == 1)
-					return true; // doesn't really matter but its more consistent with the common 2-dataset case
-				if(map.getDataSetCount() == 2)
-					return map.isDistinctExpressionSets(); // emulate EM2 behaviour
-				// 3 or more datasets use compound edges
-				return false; 
-		}
-	}
-	
-	
-	private Map<SimilarityKey,GenesetSimilarity> startComputeSimilarities(TaskMonitor tm, ExecutorService executor, boolean distinct) {
 		Set<String> names = map.getAllGeneSetOfInterestNames();
 		Map<String,Set<Integer>> unionedGenesets = distinct ? null : map.unionAllGeneSetsOfInterest();
 		
@@ -144,11 +101,21 @@ public class ComputeSimilarityTaskParallel extends AbstractTask {
 	}
 	
 	
-	private static DiscreteTaskMonitor discreteTaskMonitor(TaskMonitor tm, int size) {
-		DiscreteTaskMonitor taskMonitor = new DiscreteTaskMonitor(tm, size);
-        taskMonitor.setTitle("Computing Geneset Similarities...");
-        taskMonitor.setStatusMessageTemplate("Computing Geneset Similarity: {0} of {1} tasks");
-        return taskMonitor;
+	private boolean useDistinctEdges() {
+		switch(map.getParams().getEdgeStrategy()) {
+			case DISTINCT: 
+				return true;
+			case COMPOUND: 
+				return false;
+			default:
+			case AUTOMATIC:
+				if(map.getDataSetCount() == 1)
+					return true; // doesn't really matter but its more consistent with the common 2-dataset case
+				if(map.getDataSetCount() == 2)
+					return map.isDistinctExpressionSets(); // emulate EM2 behaviour
+				// 3 or more datasets use compound edges
+				return false; 
+		}
 	}
 
 	
