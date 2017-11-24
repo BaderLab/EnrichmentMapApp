@@ -31,7 +31,9 @@ public class SigGeneSetCellRenderer implements TableCellRenderer {
 				case MANN_WHIT_GREATER:
 				case MANN_WHIT_LESS:
 				case MANN_WHIT_TWO_SIDED:
-					if(val == 0.0)
+					if(!Double.isFinite(val))
+						label.setText("#ERR");
+					else if(val == 0.0)
 						label.setText("0.0");
 					else if(val < 0.0001)
 						label.setText(scientificFormat.format(val));

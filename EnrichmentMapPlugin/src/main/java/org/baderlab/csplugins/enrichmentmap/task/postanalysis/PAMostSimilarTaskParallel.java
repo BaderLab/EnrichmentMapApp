@@ -62,7 +62,7 @@ public class PAMostSimilarTaskParallel extends CancellableParallelTask<List<SigG
 			executor.execute(() -> {
 				
 				boolean first = true;
-				double mostSimilar = 0;
+				double mostSimilar = Double.NaN;
 				boolean passes = false;
 				
 				loop:
@@ -76,15 +76,19 @@ public class PAMostSimilarTaskParallel extends CancellableParallelTask<List<SigG
 						if(enrGeneSet != null) {
 							
 							FilterMetric metric = metrics.get(dataSetName);
-							double value = metric.computeValue(enrGeneSet.getGenes(), sigGeneSet.getGenes(), null);
-							
-							if(first) {
-								mostSimilar = value;
-								passes = metric.passes(value);
-								first = false;
-							} else {
-								mostSimilar = metric.moreSimilar(mostSimilar, value);
-								passes |= metric.passes(value);
+							try {
+								double value = metric.computeValue(enrGeneSet.getGenes(), sigGeneSet.getGenes(), null);
+								
+								if(first) {
+									mostSimilar = value;
+									passes = metric.passes(value);
+									first = false;
+								} else {
+									mostSimilar = metric.moreSimilar(mostSimilar, value);
+									passes |= metric.passes(value);
+								}
+							} catch(ArithmeticException e) {
+								// ignore exception, but if every call to computeValue throws an exception then 'mostSimilar' will be NaN
 							}
 							
 						}

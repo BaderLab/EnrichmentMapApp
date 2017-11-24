@@ -13,6 +13,8 @@ public interface CardDialogPage {
 	
 	void finish();
 
+	default void opened() { };
+	
 	/**
 	 * Called when one of the buttons returned by 
 	 * {@link CardDialogParameters#getAdditionalButtons()} is clicked.

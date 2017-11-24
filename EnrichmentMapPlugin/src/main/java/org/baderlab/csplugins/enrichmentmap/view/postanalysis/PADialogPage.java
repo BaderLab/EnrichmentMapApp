@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -15,8 +16,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableRowSorter;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
@@ -45,8 +49,6 @@ public class PADialogPage implements CardDialogPage {
 	@Inject private PAWeightPanel.Factory weightPanelFactory;
 	@Inject private FileUtil fileUtil;
 	@Inject private DialogTaskManager dialogTaskManager;
-//	@Inject private Provider<JFrame> jFrameProvider;
-//	@Inject private IconManager iconManager;
 	
 	private final EnrichmentMap map;
 	private SetOfGeneSets loadedGeneSets = new SetOfGeneSets();
@@ -108,6 +110,11 @@ public class PADialogPage implements CardDialogPage {
 		return panel;
 	}
 	
+	@Override
+	public void opened() {
+		System.out.println("PADialogPage.opened()");
+		weightPanel.updateMannWhitRanks();
+	}
 	
 	private JPanel createGeneSetsPanel() {
 		JPanel panel = new JPanel();
@@ -211,25 +218,6 @@ public class PADialogPage implements CardDialogPage {
 	}
 	
 	
-	private void updateSelectionButtons() {
-//		List<SigGeneSetDescriptor> descriptors = tableModel.getGeneSetDescriptors();
-//		int selectedCount = (int)descriptors.stream().filter(SigGeneSetDescriptor::isWanted).count();
-//		if(descriptors.isEmpty()) {
-//			selectAllButton.setEnabled(false);
-//			selectNoneButton.setEnabled(false);
-//		} else if(selectedCount == descriptors.size()) {
-//			selectAllButton.setEnabled(false);
-//			selectNoneButton.setEnabled(true);
-//		} else if(selectedCount == 0) {
-//			selectAllButton.setEnabled(true);
-//			selectNoneButton.setEnabled(false);
-//		} else {
-//			selectAllButton.setEnabled(true);
-//			selectNoneButton.setEnabled(true);
-//		}
-	}
-	
-	
 	private TaskObserver filterTaskObserver = new TaskObserver() {
 		@Override
 		@SuppressWarnings("unchecked")
@@ -240,14 +228,15 @@ public class PADialogPage implements CardDialogPage {
 			if(task instanceof PAMostSimilarTaskParallel) {
 				List<SigGeneSetDescriptor> filteredGeneSets = task.getResults(List.class);
 				PostAnalysisFilterType filterType = task.getResults(PostAnalysisFilterType.class);
+				for(SigGeneSetDescriptor descriptor : filteredGeneSets) {
+					descriptor.setWanted(descriptor.passes());
+				}
 				updateTableArea(filteredGeneSets, filterType, true);
 			}
 		}
 		
 		@Override
-		public void allFinished(FinishStatus finishStatus) {
-			updateSelectionButtons();
-		}
+		public void allFinished(FinishStatus finishStatus) { }
 	};
 
 	
@@ -269,9 +258,10 @@ public class PADialogPage implements CardDialogPage {
 		
 	
 	private synchronized void updateTableArea(List<SigGeneSetDescriptor> filteredGenesets, PostAnalysisFilterType type, boolean preserveWidths) {
+		System.out.println("PADialogPage.updateTableArea()");
 		TableColumnModel columnModel = table.getColumnModel();
 		
-		int[] widths;
+		int[] widths = {60, 510, 80, 230};
 		if(preserveWidths) {
 			widths = new int[] {
 				columnModel.getColumn(0).getWidth(),
@@ -279,9 +269,7 @@ public class PADialogPage implements CardDialogPage {
 				columnModel.getColumn(2).getWidth(),
 				columnModel.getColumn(3).getWidth()
 			};
-		} else {
-			widths = new int[] {60, 510, 80, 230};
-		}
+		} 
 		
 		table.setModel(tableModel = new SigGeneSetTableModel(filteredGenesets, type));
 		
@@ -290,9 +278,18 @@ public class PADialogPage implements CardDialogPage {
 		columnModel.getColumn(2).setPreferredWidth(widths[2]);
 		columnModel.getColumn(3).setPreferredWidth(widths[3]);
 		
-		tableModel.addTableModelListener(e -> updateSelectionButtons());
-		updateSelectionButtons();
+		// Auto-sort
+		TableRowSorter<?> sorter = ((TableRowSorter<?>)table.getRowSorter());
+		RowSorter.SortKey sortKey = new RowSorter.SortKey(SigGeneSetTableModel.COL_OVERLAP, getSortOrder(type));
+		sorter.setSortKeys(Arrays.asList(sortKey));
+		sorter.sort();
+		
 		updateStatusLabel();
+	}
+	
+	
+	private static SortOrder getSortOrder(PostAnalysisFilterType type) {
+		return (type.isMannWhitney() || type == PostAnalysisFilterType.HYPERGEOM) ? SortOrder.ASCENDING : SortOrder.DESCENDING;
 	}
 	
 	
