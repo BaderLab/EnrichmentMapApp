@@ -86,6 +86,10 @@ public class CardDialog {
 		dialog.add(buttonPanel, BorderLayout.SOUTH);
 	}
 
+	public CardDialogCallback getCallback() {
+		return new Callback();
+	}
+	
 	private JPanel createBodyPanel() {
 		Callback callback = new Callback();
 

@@ -28,7 +28,6 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PAMostSimilarTaskParallel;
-import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.creation.NamePanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
@@ -39,11 +38,9 @@ import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -55,7 +52,7 @@ public class PADialogPage implements CardDialogPage {
 	@Inject private PAWeightPanel.Factory weightPanelFactory;
 	@Inject private FileUtil fileUtil;
 	@Inject private DialogTaskManager dialogTaskManager;
-	@Inject private PATaskFactory.Factory taskFactoryFactory;
+	@Inject private PADialogMediator mediator;
 	
 	private final EnrichmentMap map;
 	private final CyNetworkView netView;
@@ -106,19 +103,9 @@ public class PADialogPage implements CardDialogPage {
 			.addSelectedGeneSetNames(tableModel.getSelectedGeneSetNames())
 			.setRankTestParameters(weightPanel.getResults());
 		
-		TaskIterator tasks = new TaskIterator();
-		PATaskFactory taskFactory = taskFactoryFactory.create(netView, builder.build());
-		tasks.append(taskFactory.createTaskIterator());
-		
-		// Close this dialog after the progress dialog finishes normally
-		tasks.append(new AbstractTask() {
-			public void run(TaskMonitor taskMonitor) {
-				callback.close();
-			}
-		});
-		
-		dialogTaskManager.execute(tasks);
+		mediator.runPostAnalysis(map, netView, builder.build());
 	}
+	
 	
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
