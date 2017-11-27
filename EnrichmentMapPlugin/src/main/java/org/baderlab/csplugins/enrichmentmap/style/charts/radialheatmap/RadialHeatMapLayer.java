@@ -127,7 +127,7 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 		Color upperColor = Color.BLUE;
 		Color zeroColor = Color.WHITE;
 		Color lowerColor = Color.RED;
-		Color nanColor = DEFAULT_ITEM_BG_COLOR;
+		Color nanColor = TRANSPARENT_COLOR;
 		
 		if (colorPoints.isEmpty() || colorPoints.size() != colors.size()) {
 			if (range != null && range.size() >= 2 && range.get(0) != null && range.get(1) != null) {
