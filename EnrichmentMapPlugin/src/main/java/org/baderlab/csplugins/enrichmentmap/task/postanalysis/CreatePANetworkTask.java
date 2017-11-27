@@ -39,7 +39,6 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
-import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
@@ -145,9 +144,6 @@ public class CreatePANetworkTask extends AbstractTask implements ObservableTask 
 	 */
 	private EMSignatureDataSet createSignatureDataSet() {
 		String name = params.getName();
-		if(Strings.isNullOrEmpty(name)) {
-			name = params.getAutoName();
-		}
 		return new EMSignatureDataSet(map, name);
 	}
 	

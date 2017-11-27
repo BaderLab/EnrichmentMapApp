@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -23,6 +22,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetricSet;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -43,6 +43,7 @@ import org.junit.runners.MethodSorters;
 public class PostAnalysisCutoffTest extends BaseNetworkTest {
 
 	private static final String PATH = "src/test/resources/org/baderlab/csplugins/enrichmentmap/task/EMandPA/";
+	private static final String GMT_FILE = PATH + "PA_top8_middle8_bottom8.gmt";
 	
 	public static class TestModule extends BaseNetworkTest.TestModule { }
 	
@@ -50,10 +51,6 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 	
 	private PostAnalysisParameters.Builder getBuilder() {
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-		builder.setAnalysisType(PostAnalysisParameters.AnalysisType.KNOWN_SIGNATURE);
-//    	builder.setUniverseType(UniverseType.USER_DEFINED);
-//		builder.setUserDefinedUniverseSize(11445);
-		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
 		return builder;
 	}
@@ -83,12 +80,13 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		mockContinuousMappingFactory(cmFactory);
 		
 		PostAnalysisParameters.Builder builder = getBuilder();
+		builder.setName("test_1_FilterType_Number");
 		
-		Map<String,FilterMetric> rankTest = new HashMap<>();
+		FilterMetricSet rankTest = new FilterMetricSet(PostAnalysisFilterType.NUMBER);
 		rankTest.put(LegacySupport.DATASET1, new FilterMetric.Number(5));
 		builder.setRankTestParameters(rankTest);
 		
-		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
+		runPostAnalysis(emNetwork, builder, GMT_FILE, LegacySupport.DATASET1);
 	   	
 	   	Map<String,CyEdge> edges = TestUtils.getEdges(emNetwork);
 	   	assertEquals(9, edges.size());
@@ -117,16 +115,17 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		mockContinuousMappingFactory(cmFactory);
 		
 		PostAnalysisParameters.Builder builder = getBuilder();
+		builder.setName("test_2_FilterType_Percent");
 		
-		Map<String,FilterMetric> rankTest = new HashMap<>();
+		FilterMetricSet rankTest = new FilterMetricSet(PostAnalysisFilterType.PERCENT);
 		rankTest.put(LegacySupport.DATASET1, new FilterMetric.Percent(7));
 		builder.setRankTestParameters(rankTest);
 		
-		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
+		runPostAnalysis(emNetwork, builder, GMT_FILE, LegacySupport.DATASET1);
 		
 		assertEquals(12, emNetwork.getEdgeCount());
 		
-	   	Map<String,CyEdge> edges = TestUtils.getSignatureEdges(emNetwork, "EM1_", "PA_top8_middle8_bottom8(1)");
+	   	Map<String,CyEdge> edges = TestUtils.getSignatureEdges(emNetwork, "EM1_", "test_2_FilterType_Percent");
 	   	assertEquals(3, edges.size());
 	   	
 	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) MIDDLE8_PLUS100");
@@ -153,16 +152,17 @@ public class PostAnalysisCutoffTest extends BaseNetworkTest {
 		mockContinuousMappingFactory(cmFactory);
 		
 		PostAnalysisParameters.Builder builder = getBuilder();
+		builder.setName("test_3_FilterType_Specific");
 		
-		Map<String,FilterMetric> rankTest = new HashMap<>();
+		FilterMetricSet rankTest = new FilterMetricSet(PostAnalysisFilterType.SPECIFIC);
 		rankTest.put(LegacySupport.DATASET1, new FilterMetric.Specific(25));
 		builder.setRankTestParameters(rankTest);
 		
-		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
+		runPostAnalysis(emNetwork, builder, GMT_FILE, LegacySupport.DATASET1);
 		
 		assertEquals(15, emNetwork.getEdgeCount());
 		
-		Map<String,CyEdge> edges = TestUtils.getSignatureEdges(emNetwork, "EM1_", "PA_top8_middle8_bottom8(2)");
+		Map<String,CyEdge> edges = TestUtils.getSignatureEdges(emNetwork, "EM1_", "test_3_FilterType_Specific");
 	   	assertEquals(3, edges.size());
 	   	
 	   	CyEdge edge = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) MIDDLE8_PLUS100");

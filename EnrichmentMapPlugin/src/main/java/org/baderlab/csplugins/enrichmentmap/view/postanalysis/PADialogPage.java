@@ -24,9 +24,12 @@ import javax.swing.table.TableRowSorter;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PAMostSimilarTaskParallel;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PATaskFactory;
+import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.creation.NamePanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
@@ -35,9 +38,12 @@ import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -49,8 +55,11 @@ public class PADialogPage implements CardDialogPage {
 	@Inject private PAWeightPanel.Factory weightPanelFactory;
 	@Inject private FileUtil fileUtil;
 	@Inject private DialogTaskManager dialogTaskManager;
+	@Inject private PATaskFactory.Factory taskFactoryFactory;
 	
 	private final EnrichmentMap map;
+	private final CyNetworkView netView;
+	
 	private SetOfGeneSets loadedGeneSets = new SetOfGeneSets();
 	private CardDialogCallback callback;
 	
@@ -64,14 +73,17 @@ public class PADialogPage implements CardDialogPage {
 	private JButton selectPassedButton;
 	private JLabel statusLabel;
 	
+	private String autoDataSetName = null;
+	
 	
 	public interface Factory {
-		PADialogPage create(EnrichmentMap map);
+		PADialogPage create(EnrichmentMap map, CyNetworkView netView);
 	}
 	
 	@Inject
-	public PADialogPage(@Assisted EnrichmentMap map) {
+	public PADialogPage(@Assisted EnrichmentMap map, @Assisted CyNetworkView netView) {
 		this.map = map;
+		this.netView = netView;
 	}
 	
 	@Override
@@ -86,7 +98,26 @@ public class PADialogPage implements CardDialogPage {
 
 	@Override
 	public void finish() {
-
+		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder()
+			.setName(namePanel.getNameText())
+			.setAttributePrefix(map.getParams().getAttributePrefix())
+			.setDataSetName(weightPanel.getDataSet()) // null for all data sets
+			.setLoadedGMTGeneSets(loadedGeneSets)
+			.addSelectedGeneSetNames(tableModel.getSelectedGeneSetNames())
+			.setRankTestParameters(weightPanel.getResults());
+		
+		TaskIterator tasks = new TaskIterator();
+		PATaskFactory taskFactory = taskFactoryFactory.create(netView, builder.build());
+		tasks.append(taskFactory.createTaskIterator());
+		
+		// Close this dialog after the progress dialog finishes normally
+		tasks.append(new AbstractTask() {
+			public void run(TaskMonitor taskMonitor) {
+				callback.close();
+			}
+		});
+		
+		dialogTaskManager.execute(tasks);
 	}
 	
 	@Override
@@ -112,8 +143,11 @@ public class PADialogPage implements CardDialogPage {
 	
 	@Override
 	public void opened() {
-		System.out.println("PADialogPage.opened()");
 		weightPanel.updateMannWhitRanks();
+		if(autoDataSetName == null)
+			namePanel.setAutomaticName("SignatureDataSet");
+		else
+			namePanel.setAutomaticName(NamingUtil.getUniqueName(autoDataSetName, map.getSignatureDataSets().keySet()));
 	}
 	
 	private JPanel createGeneSetsPanel() {
@@ -134,21 +168,21 @@ public class PADialogPage implements CardDialogPage {
 		
 		selectAllButton .addActionListener(e -> {
 			tableModel.setAllWanted(true);
-			updateStatusLabel();
+//			updateStatusLabel();
 		});
 		selectNoneButton.addActionListener(e -> {
 			tableModel.setAllWanted(false);
-			updateStatusLabel();
+//			updateStatusLabel();
 		});
 		selectPassedButton.addActionListener(e -> {
 			tableModel.setPassedWanted();
-			updateStatusLabel();
+//			updateStatusLabel();
 		});
 		
 		SwingUtil.makeSmall(title, loadFileButton, loadWebButton, selectAllButton, selectNoneButton, statusLabel, selectPassedButton);
 		LookAndFeelUtil.equalizeSize(loadFileButton, loadWebButton, selectAllButton, selectNoneButton, selectPassedButton);
 		
-		updateTableArea(Collections.emptyList(), PostAnalysisFilterType.NO_FILTER, false);
+		updateTable(Collections.emptyList(), PostAnalysisFilterType.NO_FILTER, false);
 		
 		final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -231,7 +265,7 @@ public class PADialogPage implements CardDialogPage {
 				for(SigGeneSetDescriptor descriptor : filteredGeneSets) {
 					descriptor.setWanted(descriptor.passes());
 				}
-				updateTableArea(filteredGeneSets, filterType, true);
+				updateTable(filteredGeneSets, filterType, true);
 			}
 		}
 		
@@ -249,6 +283,13 @@ public class PADialogPage implements CardDialogPage {
 	private void loadFromFile() {
 		Optional<Path> gmtPath = FileBrowser.browse(fileUtil, callback.getDialogFrame(), FileBrowser.Filter.GMT);
 		if(gmtPath.isPresent()) {
+			// remember the file name so we can use it as the data set name
+			String name = gmtPath.get().getFileName().toString();
+			if(name.toLowerCase().endsWith(".gmt"))
+				name = name.substring(0, name.length() - ".gmt".length()).trim();
+			autoDataSetName = NamingUtil.getUniqueName(name, map.getSignatureDataSets().keySet());
+			namePanel.setAutomaticName(autoDataSetName);
+			
 			SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
 			GMTFileReaderTask gmtTask = new GMTFileReaderTask(map, gmtPath.get().toString(), setOfGeneSets);
 			PAMostSimilarTaskParallel filterTask = new PAMostSimilarTaskParallel(map, setOfGeneSets, weightPanel.getResults());
@@ -257,8 +298,7 @@ public class PADialogPage implements CardDialogPage {
 	}
 		
 	
-	private synchronized void updateTableArea(List<SigGeneSetDescriptor> filteredGenesets, PostAnalysisFilterType type, boolean preserveWidths) {
-		System.out.println("PADialogPage.updateTableArea()");
+	private synchronized void updateTable(List<SigGeneSetDescriptor> filteredGenesets, PostAnalysisFilterType type, boolean preserveWidths) {
 		TableColumnModel columnModel = table.getColumnModel();
 		
 		int[] widths = {60, 510, 80, 230};
@@ -271,7 +311,16 @@ public class PADialogPage implements CardDialogPage {
 			};
 		} 
 		
-		table.setModel(tableModel = new SigGeneSetTableModel(filteredGenesets, type));
+		tableModel = new SigGeneSetTableModel(filteredGenesets, type);
+		table.setModel(tableModel);
+		
+		tableModel.addTableModelListener(e -> {
+			if(e.getColumn() == SigGeneSetTableModel.COL_WANTED) {
+				updateStatusLabel();
+				updateFinishButton();
+			}
+		});
+
 		
 		columnModel.getColumn(0).setPreferredWidth(widths[0]);
 		columnModel.getColumn(1).setPreferredWidth(widths[1]);
@@ -285,6 +334,7 @@ public class PADialogPage implements CardDialogPage {
 		sorter.sort();
 		
 		updateStatusLabel();
+		updateFinishButton();
 	}
 	
 	
@@ -309,6 +359,13 @@ public class PADialogPage implements CardDialogPage {
 			status = sb.toString();
 		}
 		statusLabel.setText(status);
+	}
+	
+	private void updateFinishButton() {
+		boolean enabled = true;
+		if(loadedGeneSets.isEmpty() || tableModel.getSelectedCount() == 0)
+			enabled = false;
+		callback.setFinishButtonEnabled(enabled);
 	}
 
 }

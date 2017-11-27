@@ -45,11 +45,10 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetricSet;
 
 public class PostAnalysisParameters {
 
@@ -60,31 +59,20 @@ public class PostAnalysisParameters {
 	final public static String SIGNATURE_INTERACTION_TYPE_SET2 = "sig_set2";
 	
 	
-	public static enum AnalysisType {
-		KNOWN_SIGNATURE, SIGNATURE_DISCOVERY
-	}
-	
 	public static enum UniverseType {
 		GMT, EXPRESSION_SET, INTERSECTION, USER_DEFINED
 	}
 	
-	private final String name; // name given by user, overrides autoName
-	private final String autoName; // name automatically assigned
-	private final AnalysisType analysisType;
-	private final Map<String,FilterMetric> rankTestParameters;
-	private final String signatureGMTFileName;
+	private final String name;
+	private final FilterMetricSet rankTestParameters;
 	private final SetOfGeneSets loadedGMTGeneSets;
 	private final Collection<String> selectedGeneSetNames;
-
 	private final String attributePrefix;
 	private final Optional<String> datasetName;
 	
 	private PostAnalysisParameters(PostAnalysisParameters.Builder builder) {
 		this.name = builder.name;
-		this.autoName = builder.autoName;
-		this.analysisType = builder.analysisType;
 		this.rankTestParameters = builder.rankTestParameters;
-		this.signatureGMTFileName = builder.signatureGMTFileName;
 		this.loadedGMTGeneSets = builder.loadedGMTGeneSets;
 		this.selectedGeneSetNames = builder.selectedGeneSetNames;
 		this.attributePrefix = builder.attributePrefix;
@@ -95,28 +83,14 @@ public class PostAnalysisParameters {
 		return name;
 	}
 	
-	public String getAutoName() {
-		return autoName;
-	}
-	
 	public Optional<String> getDataSetName() {
 		return datasetName;
 	}
 	
-	public AnalysisType getAnalysisType() {
-		return analysisType;
-	}
-	
-	public Map<String,FilterMetric> getRankTestParameters() {
+	public FilterMetricSet getRankTestParameters() {
 		return rankTestParameters;
 	}
-	
-	public String getSignatureGMTFileName() {
-		return signatureGMTFileName;
-	}
 
-	// MKTODO should be just one list of selected gene sets
-	// Right now it stores all the gene sets that were loaded, and a list of the ones that were selected
 	public SetOfGeneSets getLoadedGMTGeneSets() {
 		return loadedGMTGeneSets;
 	}
@@ -133,27 +107,17 @@ public class PostAnalysisParameters {
 	public static class Builder {
 		
 		private String name;
-		private String autoName;
-		private AnalysisType analysisType;
-		private Map<String,FilterMetric> rankTestParameters;
-		private String signatureGMTFileName;
+		private FilterMetricSet rankTestParameters;
 		private SetOfGeneSets loadedGMTGeneSets;
 		private Set<String> selectedGeneSetNames = new HashSet<>();
 		private String attributePrefix;
 		private Optional<String> datasetName = Optional.empty();
 		
-		public Builder() {
-			// defaults
-			setSignatureGMTFileName("");
-		}
 
 		public static Builder from(PostAnalysisParameters other) {
 			Builder b = new Builder();
 			b.setName(other.name);
-			b.setAutoName(other.autoName);
-			b.setAnalysisType(other.analysisType);
 			b.setRankTestParameters(other.rankTestParameters);
-			b.setSignatureGMTFileName(other.signatureGMTFileName);
 			b.setLoadedGMTGeneSets(other.loadedGMTGeneSets);
 			b.addSelectedGeneSetNames(other.selectedGeneSetNames);
 			b.setAttributePrefix(other.attributePrefix);
@@ -163,11 +127,6 @@ public class PostAnalysisParameters {
 		
 		public Builder setName(String name) {
 			this.name = name;
-			return this;
-		}
-		
-		public Builder setAutoName(String autoName) {
-			this.autoName = autoName;
 			return this;
 		}
 		
@@ -186,29 +145,15 @@ public class PostAnalysisParameters {
 			return this;
 		}
 
-		public Builder setAnalysisType(AnalysisType analysisType) {
-			this.analysisType = analysisType;
-			return this;
-		}
-		
-		public Builder setRankTestParameters(Map<String,FilterMetric> rankTestParameters) {
+		public Builder setRankTestParameters(FilterMetricSet rankTestParameters) {
 			this.rankTestParameters = rankTestParameters;
 			return this;
 		}
 		
-		public Map<String,FilterMetric> getRankTestParameters() {
+		public FilterMetricSet getRankTestParameters() {
 			return rankTestParameters;
 		}
 
-		public Builder setSignatureGMTFileName(String signatureGMTFileName) {
-			this.signatureGMTFileName = signatureGMTFileName;
-			return this;
-		}
-		
-		public String getSignatureGMTFileName() {
-			return signatureGMTFileName;
-		}
-		
 		public Builder setLoadedGMTGeneSets(SetOfGeneSets loadedGMTGeneSets) {
 			this.loadedGMTGeneSets = loadedGMTGeneSets;
 			return this;

@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -24,12 +23,12 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.N
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.AnalysisType;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetricSet;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -104,19 +103,18 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		mockContinuousMappingFactory(cmFactory);
 		
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-		builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
-		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
 		
 		EnrichmentMap map = emManager.getEnrichmentMap(emNetwork.getSUID());
-		Map<String,FilterMetric> rankTest = new HashMap<>();
+		
 		Ranking ranking = map.getRanksByName(LegacySupport.DATASET1);
 		PostAnalysisFilterType mannWhitTwoSided = PostAnalysisFilterType.MANN_WHIT_TWO_SIDED;
-		rankTest.put(LegacySupport.DATASET1, new FilterMetric.MannWhit(mannWhitTwoSided.defaultValue, ranking, mannWhitTwoSided));
 		
+		FilterMetricSet rankTest = new FilterMetricSet(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED);
+		rankTest.put(LegacySupport.DATASET1, new FilterMetric.MannWhit(mannWhitTwoSided.defaultValue, ranking, mannWhitTwoSided));
 		builder.setRankTestParameters(rankTest);
 		
-		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
+		runPostAnalysis(emNetwork, builder, PATH + "PA_top8_middle8_bottom8.gmt", LegacySupport.DATASET1);
 		// Assert that post-analysis created the new nodes correctly
 		
 		Map<String,CyNode> nodes = TestUtils.getNodes(emNetwork);
@@ -147,22 +145,21 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		mockContinuousMappingFactory(cmFactory);
 		
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder();
-		builder.setAnalysisType(AnalysisType.KNOWN_SIGNATURE);
-		builder.setSignatureGMTFileName(PATH + "PA_top8_middle8_bottom8.gmt");
 		builder.setAttributePrefix("EM1_");
+		builder.setName("test_3_PostAnalysisHypergeometric_overlap");
 		
-		Map<String,FilterMetric> rankTest = new HashMap<>();
+		FilterMetricSet rankTest = new FilterMetricSet(PostAnalysisFilterType.HYPERGEOM);
 		rankTest.put(LegacySupport.DATASET1, new FilterMetric.Hypergeom(0.25, 11445));
 		builder.setRankTestParameters(rankTest);
 		
-		runPostAnalysis(emNetwork, builder, LegacySupport.DATASET1);
+		runPostAnalysis(emNetwork, builder, PATH + "PA_top8_middle8_bottom8.gmt", LegacySupport.DATASET1);
 		
 		// Assert that post-analysis created the new nodes correctly
 		Map<String,CyNode> nodes = TestUtils.getNodes(emNetwork);
 	   	assertEquals(5, nodes.size());
 	   	assertTrue(nodes.containsKey("PA_TOP8_MIDDLE8_BOTTOM8"));
 	   	
-	   	Map<String,CyEdge> edges = TestUtils.getSignatureEdges(emNetwork, "EM1_", "PA_top8_middle8_bottom8(1)");
+	   	Map<String,CyEdge> edges = TestUtils.getSignatureEdges(emNetwork, "EM1_", "test_3_PostAnalysisHypergeometric_overlap");
 	   	assertEquals(4, edges.size());
 	   	
 	   	CyEdge edge1 = edges.get("PA_TOP8_MIDDLE8_BOTTOM8 (sig_Dataset 1) TOP8_PLUS100");

@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
+import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -14,6 +15,9 @@ public abstract class CancellableParallelTask<T> extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws InterruptedException {
+		if(tm == null)
+			tm = new NullTaskMonitor();
+			
 		int cpus = Runtime.getRuntime().availableProcessors();
 		ExecutorService executor = Executors.newFixedThreadPool(cpus);
 

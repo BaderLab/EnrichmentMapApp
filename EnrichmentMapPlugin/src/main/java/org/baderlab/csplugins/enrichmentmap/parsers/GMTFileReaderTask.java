@@ -54,6 +54,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -88,6 +89,8 @@ public class GMTFileReaderTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		if(taskMonitor == null)
+			taskMonitor = new NullTaskMonitor();
 		taskMonitor.setTitle("Parsing GMT file");
 		parse();
 	}

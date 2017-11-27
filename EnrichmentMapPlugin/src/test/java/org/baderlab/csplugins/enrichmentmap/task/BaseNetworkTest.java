@@ -19,7 +19,6 @@ import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
 import org.baderlab.csplugins.enrichmentmap.LogSilenceRule;
 import org.baderlab.csplugins.enrichmentmap.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.TestUtils;
-import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
@@ -31,10 +30,12 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PASimilarityTaskParallel;
-import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -102,6 +103,7 @@ public abstract class BaseNetworkTest {
 	// OR You can explicitly bind the service in the TestModule above.
 	@Inject private RenderingEngineManager renderingEngineManager;
 	@Inject private CyColumnIdentifierFactory columnIdentifierFactory;
+	@Inject private CySwingApplication cySwingApplication;
 	@Inject private @Continuous  VisualMappingFunctionFactory cmFactory;
 	@Inject private @Discrete    VisualMappingFunctionFactory dmFactory;
 	@Inject private @Passthrough VisualMappingFunctionFactory pmFactory;
@@ -112,7 +114,6 @@ public abstract class BaseNetworkTest {
     @Inject private EnrichmentMapManager emManager;
     
     @Inject private CreateEnrichmentMapTaskFactory.Factory masterMapTaskFactoryFactory;
-    @Inject private LoadSignatureSetsActionListener.Factory  loadSignatureSetsActionListenerFactory;
     @Inject private PASimilarityTaskParallel.Factory buildDiseaseSignatureTaskFactory;
     
     
@@ -144,7 +145,7 @@ public abstract class BaseNetworkTest {
 	   	testTaskManager.execute(taskIterator, observer);
 	}
 	
-	protected void runPostAnalysis(CyNetwork emNetwork, PostAnalysisParameters.Builder builder, String dataSetName) throws Exception {
+	protected void runPostAnalysis(CyNetwork emNetwork, PostAnalysisParameters.Builder builder, String gmtFilePath, String dataSetName) throws Exception {
 		// Set up mocks
 		when(applicationManager.getCurrentNetwork()).thenReturn(emNetwork);
 		CyNetworkView networkViewMock = mock(CyNetworkView.class);
@@ -161,13 +162,21 @@ public abstract class BaseNetworkTest {
 		
 		// Load the gene-sets from the file
 		SerialTestTaskManager testTaskManager = new SerialTestTaskManager();
-		File file = new File(builder.getSignatureGMTFileName());
-		LoadSignatureSetsActionListener loader = loadSignatureSetsActionListenerFactory.create(file, new FilterMetric.NoFilter(), map);
-		loader.setTaskManager(testTaskManager);
-		loader.actionPerformed(null);
-		builder.setLoadedGMTGeneSets(loader.getResultGeneSets());
-		builder.addSelectedGeneSetNames(loader.getFilteredSignatureSets());
-		builder.setAutoName(loader.getAutoName());
+		File file = new File(gmtFilePath);
+		
+		SetOfGeneSets setOfGeneSets = new SetOfGeneSets();
+		GMTFileReaderTask gmtTask = new GMTFileReaderTask(map, file.toString(), setOfGeneSets);
+		gmtTask.run(null);
+//		PAMostSimilarTaskParallel filterTask = new PAMostSimilarTaskParallel(map, setOfGeneSets, builder.getRankTestParameters());
+//		filterTask.run(null);
+//		List<String> selectedGeneSetNames = filterTask.getPassingGeneSetNames();
+//		
+//		System.out.println("runPostAnalysis");
+//		System.out.println(setOfGeneSets.size());
+//		System.out.println(selectedGeneSetNames.size());
+		
+		builder.setLoadedGMTGeneSets(setOfGeneSets);
+		builder.addSelectedGeneSetNames(setOfGeneSets.getGeneSetNames());
 		
 		PostAnalysisParameters paParams = builder.build();
 		
@@ -178,7 +187,7 @@ public abstract class BaseNetworkTest {
 		testTaskManager.execute(new TaskIterator(signatureTask));
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked", "rawtypes", "deprecation" })
 	protected void mockContinuousMappingFactory(VisualMappingFunctionFactory cmFactory) {
 		ContinuousMapping<Double, Double> cm = mock(ContinuousMapping.class);
 		when(cm.getMappedValue(Matchers.<CyRow>anyObject())).thenReturn(-1.0);

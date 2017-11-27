@@ -6,7 +6,6 @@ import java.util.List;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
@@ -96,24 +95,8 @@ public class PATaskFactory extends AbstractTaskFactory {
 	 * @see org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters#checkMinimalRequirements()
 	 */
 	public void checkMinimalRequirements(StringBuilder errors, PostAnalysisParameters params) {
-		errors.append(checkGMTfiles(params));
 		if(params.getSelectedGeneSetNames().isEmpty()) {
 			errors.append("No Signature Genesets selected \n");
 		}
-	}
-
-	/**
-	 * Checks if SignatureGMTFileName is provided and if the file can be read.
-	 * 
-	 * @return String with error messages (one error per line) or empty String if everything is okay.
-	 */
-	public String checkGMTfiles(PostAnalysisParameters params) {
-		String signatureGMTFileName = params.getSignatureGMTFileName();
-		
-		if (signatureGMTFileName == null || signatureGMTFileName.isEmpty()
-				|| !EnrichmentMapParameters.checkFile(signatureGMTFileName))
-			return "Signature GMT file can not be found \n";
-		
-		return "";
 	}
 }

@@ -33,7 +33,7 @@ public class PADialogMediator  {
 			return;
 		
 		CardDialog dialog = dialogs.computeIfAbsent(map, k -> {
-			CardDialogParameters params = paDialogParametersFactory.create(map);
+			CardDialogParameters params = paDialogParametersFactory.create(map, netView);
 			return new CardDialog(jFrameProvider.get(), params);
 		});
 		

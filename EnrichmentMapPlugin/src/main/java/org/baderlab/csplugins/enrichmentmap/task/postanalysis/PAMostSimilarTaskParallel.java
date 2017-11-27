@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -101,6 +102,14 @@ public class PAMostSimilarTaskParallel extends CancellableParallelTask<List<SigG
 		}
 		
 		return results;
+	}
+	
+	public List<SigGeneSetDescriptor> getDescriptors() {
+		return results;
+	}
+	
+	public List<String> getPassingGeneSetNames() {
+		return results.stream().filter(SigGeneSetDescriptor::passes).map(SigGeneSetDescriptor::getName).collect(Collectors.toList());
 	}
 	
 	@Override

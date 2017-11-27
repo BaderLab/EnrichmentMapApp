@@ -5,12 +5,9 @@ import static org.baderlab.csplugins.enrichmentmap.commands.ResolverCommandTask.
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -20,14 +17,18 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
-import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PATaskFactory;
+import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetricSet;
+import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PATaskFactory;
+import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -35,6 +36,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
@@ -71,8 +73,8 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private CyNetworkViewManager networkViewManager;
+	@Inject private SynchronousTaskManager<?> syncTaskManager;
 	
-	@Inject private LoadSignatureSetsActionListener.Factory loadSignatureSetsFactory;
 	@Inject private PATaskFactory.Factory taskFactoryFactory;
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	@Inject private EnrichmentMapManager emManager;
@@ -89,12 +91,18 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	
 	
 	private void loadGeneSets(EnrichmentMap map) {
-		LoadSignatureSetsActionListener loadAction = loadSignatureSetsFactory.create(gmtFile, new FilterMetric.NoFilter(), map);
-		loadAction.actionPerformed(null);
-		
-		signatureGenesets = loadAction.getResultGeneSets();
-		selectedGenesetNames = loadAction.getFilteredSignatureSets();
-		autoName = loadAction.getAutoName();
+		signatureGenesets = new SetOfGeneSets();
+		GMTFileReaderTask gmtTask = new GMTFileReaderTask(map, gmtFile.getAbsolutePath(), signatureGenesets);
+		syncTaskManager.execute(new TaskIterator(gmtTask));
+		selectedGenesetNames = signatureGenesets.getGeneSets().keySet(); // all of them
+		autoName = getAutoName(gmtFile, map);
+	}
+	
+	private static String getAutoName(File gmtFile, EnrichmentMap map) {
+		String name = gmtFile.getName();
+		if(name.toLowerCase().endsWith(".gmt"))
+			name = name.substring(0, name.length() - ".gmt".length()).trim();
+		return NamingUtil.getUniqueName(name, map.getSignatureDataSets().keySet());
 	}
 	
 	@Override
@@ -130,11 +138,9 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 		
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder()
 			.setAttributePrefix(map.getParams().getAttributePrefix())
-			.setSignatureGMTFileName(gmtFile.getAbsolutePath())
 			.setLoadedGMTGeneSets(signatureGenesets)
 			.addSelectedGeneSetNames(selectedGenesetNames)
-			.setName(name)
-			.setAutoName(autoName);
+			.setName(Strings.isNullOrEmpty(name) ? autoName : name);
 		
 		if(isBatch()) {
 			builder.setDataSetName(null); // run in batch mode
@@ -145,7 +151,8 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 			builder.setDataSetName(dataSetName);
 		}
 		
-		Map<String,FilterMetric> rankTest = new HashMap<>();
+		
+		FilterMetricSet rankTest = new FilterMetricSet(filter);
 		for(EMDataSet dataset : getDataSets(map)) {
 			rankTest.put(dataset.getName(), getFilterMetric(map, dataset, filter, universe));
 		}

@@ -5,7 +5,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.util.Properties;
 
-import org.baderlab.csplugins.enrichmentmap.actions.LoadSignatureSetsActionListener;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTask;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
@@ -85,7 +84,6 @@ class FactoryModule extends AbstractModule {
 		installFactory(CreatePANetworkTask.Factory.class);
 		installFactory(PASimilarityTaskParallel.Factory.class);
 		installFactory(RemoveSignatureDataSetsTask.Factory.class);
-		installFactory(LoadSignatureSetsActionListener.Factory.class);
 		installFactory(EnrichmentMapParameters.Factory.class);
 		installFactory(CreateEnrichmentMapTaskFactory.Factory.class);
 		installFactory(CreateEMNetworkTask.Factory.class);

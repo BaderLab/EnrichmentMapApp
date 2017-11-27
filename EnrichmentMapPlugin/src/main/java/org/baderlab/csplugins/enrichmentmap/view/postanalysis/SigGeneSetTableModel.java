@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view.postanalysis;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
@@ -22,6 +23,13 @@ public class SigGeneSetTableModel extends AbstractTableModel {
 	
 	public List<SigGeneSetDescriptor> getGeneSetDescriptors() {
 		return geneSets;
+	}
+	
+	public List<String> getSelectedGeneSetNames() {
+		return geneSets.stream()
+				.filter(SigGeneSetDescriptor::isWanted)
+				.map(SigGeneSetDescriptor::getName)
+				.collect(Collectors.toList());
 	}
 	
 	public SigGeneSetDescriptor getDescriptor(int row) {
@@ -49,6 +57,7 @@ public class SigGeneSetTableModel extends AbstractTableModel {
 	public int getSelectedCount() {
 		return (int) geneSets.stream().filter(SigGeneSetDescriptor::isWanted).count();
 	}
+	
 	
 	@Override
 	public Object getValueAt(int row, int col) {

@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -41,6 +43,10 @@ public class SetOfGeneSets {
 		}
 		
 		geneSets = filteredGenesets;
+	}
+	
+	public Collection<String> getGeneSetNames() {
+		return Collections.unmodifiableCollection(geneSets.keySet());
 	}
 	
 	public Map<String, GeneSet> getGeneSets() {

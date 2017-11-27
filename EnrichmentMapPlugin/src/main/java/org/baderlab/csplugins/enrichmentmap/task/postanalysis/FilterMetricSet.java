@@ -7,6 +7,14 @@ import java.util.Objects;
 
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 
+/**
+ * Each data set may be filtered using a different universe size in the case of hypergeometric
+ * or a different rank file in the case of mann-whitney. However all the datasets must use
+ * the same type of filter. 
+ * 
+ * @author mkucera
+ *
+ */
 public class FilterMetricSet {
 
 	private final Map<String,FilterMetric> metrics = new HashMap<>();

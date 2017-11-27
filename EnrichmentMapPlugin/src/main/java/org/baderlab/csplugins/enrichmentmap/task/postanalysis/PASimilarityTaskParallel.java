@@ -106,7 +106,7 @@ public class PASimilarityTaskParallel extends CancellableParallelTask<Map<Simila
 			executor.execute(() -> {
 				loop:
 				for(String geneSetName : enrichmentGeneSetNames) {
-					Map<String,FilterMetric> rankTests = params.getRankTestParameters();
+					FilterMetricSet rankTests = params.getRankTestParameters();
 					
 					for(EMDataSet dataSet : dataSets) {
 						if(Thread.interrupted())

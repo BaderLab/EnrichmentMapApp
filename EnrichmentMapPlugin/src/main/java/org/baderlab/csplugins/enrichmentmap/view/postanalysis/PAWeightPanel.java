@@ -596,7 +596,6 @@ public class PAWeightPanel extends JPanel {
 		return results;
 	}
 	
-	
 	public FilterMetric createFilterMetric(String dataset) {
 		String text = rankTestTextField.getText();
 		double value = Double.parseDouble(text);
