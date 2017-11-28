@@ -11,12 +11,11 @@ import java.util.Set;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.baderlab.csplugins.enrichmentmap.model.UniverseType;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetricSet;
@@ -176,21 +175,6 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	}
 	
 	
-	private int getUniverse(EnrichmentMap map, EMDataSet dataset, UniverseType type) {
-		GeneExpressionMatrix expressionSets = map.getDataSet(dataset.getName()).getExpressionSets();
-		switch(type) {
-			default:
-			case GMT:
-				return map.getNumberOfGenes();
-			case EXPRESSION_SET:
-				return expressionSets.getExpressionUniverse();
-			case INTERSECTION:
-				return expressionSets.getExpressionMatrix().size();
-			case USER_DEFINED:
-				return userDefinedUniverseSize;
-		}
-	}
-	
 	private FilterMetric getFilterMetric(EnrichmentMap map, EMDataSet dataset, PostAnalysisFilterType type, UniverseType universeType) {
 		switch(type) {
 			case NO_FILTER:
@@ -202,7 +186,7 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 			case SPECIFIC:
 				return new FilterMetric.Specific(cutoff);
 			case HYPERGEOM:
-				int universe = getUniverse(map, dataset, universeType);
+				int universe = universeType.getGeneUniverse(map, dataset.getName(), userDefinedUniverseSize);
 				return new FilterMetric.Hypergeom(cutoff, universe);
 			case MANN_WHIT_TWO_SIDED:
 			case MANN_WHIT_GREATER:

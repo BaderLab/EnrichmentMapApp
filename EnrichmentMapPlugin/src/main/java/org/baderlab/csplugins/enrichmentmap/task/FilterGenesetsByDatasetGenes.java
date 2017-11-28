@@ -42,9 +42,9 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 				
 				//only filter the genesets if dataset genes are not null or empty
 				// MKTODO yeah but we fill the data set with Dummy expressions, so dataSet genes will never by empty right?
-				Set<Integer> datasetGenes = current_set.getExpressionGenes();
-				if(datasetGenes != null && !datasetGenes.isEmpty()) {
-					current_set.getGeneSetsOfInterest().filterGeneSets(datasetGenes);
+				Set<Integer> expressionGenes = current_set.getExpressionGenes();
+				if(expressionGenes != null && !expressionGenes.isEmpty()) {
+					current_set.getGeneSetsOfInterest().filterGeneSets(expressionGenes);
 				} else {
 					System.out.println("Dataset Genes is empty, because expression and ranks not provided: " + current_set.getName());
 				}

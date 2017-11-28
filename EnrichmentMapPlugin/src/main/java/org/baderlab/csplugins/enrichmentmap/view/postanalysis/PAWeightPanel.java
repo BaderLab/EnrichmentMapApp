@@ -36,10 +36,9 @@ import javax.swing.SwingUtilities;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
-import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters.UniverseType;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.model.UniverseType;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetricSet;
 import org.baderlab.csplugins.enrichmentmap.view.EnablementComboBoxRenderer;
@@ -262,7 +261,7 @@ public class PAWeightPanel extends JPanel {
 		datasetCombo.setModel(datasetModel);
 		datasetCombo.addActionListener(e -> {
 			rankTestUpdating = true;
-			updateUniverseSize(getDataSet());
+			updateUniverseSize();
 			firePropertyChange(PROPERTY_PARAMETERS, false, true);
 			rankTestUpdating = false;
 		});
@@ -378,7 +377,6 @@ public class PAWeightPanel extends JPanel {
 		gmtRadioButton.setText("GMT");
 		expressionSetRadioButton.setText("Expression Set");
 		intersectionRadioButton.setText("Intersection");
-		universeSelectionTextField.setValue(map.getNumberOfGenes());
 		
 		makeSmall(gmtRadioButton, expressionSetRadioButton, intersectionRadioButton, userDefinedRadioButton, universeSelectionTextField);
 
@@ -514,35 +512,30 @@ public class PAWeightPanel extends JPanel {
 	}
 	
 	
-	private void updateUniverseSize(String dataset) {
-		if(dataset == null) {
+	private void updateUniverseSize() {
+		if(datasetCombo.getSelectedIndex() > 0 || datasetCombo.getItemCount() == 2) {
+			String dataset;
+			if(datasetCombo.getSelectedIndex() == 0)
+				dataset = datasetCombo.getItemAt(1);
+			else 
+				dataset = (String) datasetCombo.getSelectedItem();
+			
+			int gmt   = UniverseType.GMT.getGeneUniverse(map, dataset);
+			int expr  = UniverseType.EXPRESSION_SET.getGeneUniverse(map, dataset);
+			int inter = UniverseType.INTERSECTION.getGeneUniverse(map, dataset);
+			
+			gmtRadioButton.setText("GMT (" + gmt + ")");
+			expressionSetRadioButton.setText("Expression Set (" + expr + ")");
+			intersectionRadioButton.setText("Intersection (" + inter + ")");
+			universeSelectionTextField.setValue(expr);
+		} else {
 			gmtRadioButton.setText("GMT");
 			expressionSetRadioButton.setText("Expression Set");
 			intersectionRadioButton.setText("Intersection");
 			universeSelectionTextField.setValue(map.getNumberOfGenes());
 		}
-		else {
-			gmtRadioButton.setText("GMT (" + getUniverse(dataset, UniverseType.GMT) + ")");
-			expressionSetRadioButton.setText("Expression Set (" + getUniverse(dataset, UniverseType.EXPRESSION_SET) + ")");
-			intersectionRadioButton.setText("Intersection (" + getUniverse(dataset, UniverseType.INTERSECTION) + ")");
-			universeSelectionTextField.setValue(getUniverse(dataset, UniverseType.EXPRESSION_SET));
-		}
 	}
 	
-	private int getUniverse(String dataset, UniverseType type) {
-		GeneExpressionMatrix expressionSets = map.getDataSet(dataset).getExpressionSets();
-		switch(type) {
-			default:
-			case GMT:
-				return map.getNumberOfGenes();
-			case EXPRESSION_SET:
-				return expressionSets.getExpressionUniverse();
-			case INTERSECTION:
-				return expressionSets.getExpressionMatrix().size();
-			case USER_DEFINED:
-				return getUserDefinedUniverseSize();
-		}
-	}
 	
 	public UniverseType getUniverseType() {
 		if(gmtRadioButton.isSelected())
@@ -612,7 +605,7 @@ public class PAWeightPanel extends JPanel {
 				return new FilterMetric.Specific(value);
 			case HYPERGEOM:
 				UniverseType universeType = getUniverseType();
-				int universe = getUniverse(dataset, universeType);
+				int universe = universeType.getGeneUniverse(map, dataset, getUserDefinedUniverseSize());
 				return new FilterMetric.Hypergeom(value, universe);
 			case MANN_WHIT_TWO_SIDED:
 			case MANN_WHIT_GREATER:

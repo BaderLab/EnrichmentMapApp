@@ -59,10 +59,6 @@ public class PostAnalysisParameters {
 	final public static String SIGNATURE_INTERACTION_TYPE_SET2 = "sig_set2";
 	
 	
-	public static enum UniverseType {
-		GMT, EXPRESSION_SET, INTERSECTION, USER_DEFINED
-	}
-	
 	private final String name;
 	private final FilterMetricSet rankTestParameters;
 	private final SetOfGeneSets loadedGMTGeneSets;

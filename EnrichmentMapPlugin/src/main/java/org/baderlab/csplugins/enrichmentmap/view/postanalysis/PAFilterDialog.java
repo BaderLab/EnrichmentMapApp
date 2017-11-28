@@ -28,6 +28,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
+@Deprecated
 public class PAFilterDialog extends JDialog {
 
 	private IconManager iconManager;

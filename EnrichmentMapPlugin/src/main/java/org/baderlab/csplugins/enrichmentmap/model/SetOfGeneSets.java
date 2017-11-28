@@ -27,7 +27,7 @@ public class SetOfGeneSets {
 	 * FilterGenesets - restrict the genes contained in each gene set to only
 	 * the genes found in the expression file.
 	 */
-	public void filterGeneSets(Set<Integer> datasetGenes) {
+	public void filterGeneSets(Set<Integer> expressionGenes) {
 		HashMap<String, GeneSet> filteredGenesets = new HashMap<>();
 
 		//iterate through each geneset and filter each one
@@ -36,7 +36,7 @@ public class SetOfGeneSets {
 			Set<Integer> genesetGenes = geneSet.getGenes();
 			
 			Set<Integer> intersection = new HashSet<>(genesetGenes);
-			intersection.retainAll(datasetGenes);
+			intersection.retainAll(expressionGenes);
 			
 			GeneSet newGeneSet = new GeneSet(geneSetName, geneSet.getDescription(), intersection);
 			filteredGenesets.put(geneSetName, newGeneSet);
