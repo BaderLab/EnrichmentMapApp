@@ -6,12 +6,14 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.parsers.LineReader;
 
 public class GSEAResolver {
 
@@ -53,21 +55,38 @@ public class GSEAResolver {
 			return Optional.empty();
 
 		Map<String,String> params = optParams.get();
+		String timestamp = params.get("producer_timestamp");
 
 		// Attempt to resolve the files from the RPT
 		Optional<Path> gmtPath  = getRptGmt(gseaFolder, params);
 		String[] phenotypes     = getRptPhenotypes(params);
-		Optional<Path> classes  = getRptClassFile(params);
+		Optional<Path> classes  = getRptClassFile(gseaFolder, params);
 		
-		String timestamp = params.get("producer_timestamp");
 		String results1FileName = "gsea_report_for_" + phenotypes[0] + "_" + timestamp + ".xls";
 		String results2FileName = "gsea_report_for_" + phenotypes[1] + "_" + timestamp + ".xls";
-		String rnkFileName      = "ranked_gene_list_" + phenotypes[0] + "_versus_" + phenotypes[1] +"_" + timestamp + ".xls";
 		
 		Optional<Path> results1 = getRptResultsFile(gseaFolder, results1FileName, params);
 		Optional<Path> results2 = getRptResultsFile(gseaFolder, results2FileName, params);
-		Optional<Path> rnk      = getRptResultsFile(gseaFolder, rnkFileName, params);
-		Optional<Path> expr     = getRptExpressionFile(params);
+		
+		
+		if((!results1.isPresent() || !results2.isPresent()) && classes.isPresent()) {
+			// try again using the values from the class file
+			Optional<String[]> phenotypesFromClassFile = parseClasses(classes.get());
+			if(phenotypesFromClassFile.isPresent()) {
+				phenotypes = phenotypesFromClassFile.get();
+				
+				results1FileName = "gsea_report_for_" + phenotypes[0] + "_" + timestamp + ".xls";
+				results2FileName = "gsea_report_for_" + phenotypes[1] + "_" + timestamp + ".xls";
+				
+				results1 = getRptResultsFile(gseaFolder, results1FileName, params);
+				results2 = getRptResultsFile(gseaFolder, results2FileName, params);
+			}
+		}
+		
+		String rnkFileName  = "ranked_gene_list_" + phenotypes[0] + "_versus_" + phenotypes[1] +"_" + timestamp + ".xls";
+		Optional<Path> rnk  = getRptResultsFile(gseaFolder, rnkFileName, params);
+		Optional<Path> expr = getRptExpressionFile(gseaFolder, params);
+		
 		
 		if(!gmtPath.isPresent() && !results1.isPresent() && !results2.isPresent() && !rnk.isPresent() && !expr.isPresent())
 			return Optional.empty();
@@ -82,11 +101,24 @@ public class GSEAResolver {
 		expr.ifPresent(path -> files.setExpressionFileName(path.toString()));
 		classes.ifPresent(path -> files.setClassFile(path.toString()));
 		
-		return Optional.of(new DataSetParameters(getDatasetNameGSEA(gseaFolder), Method.GSEA, files));
+		String datasetName = getDatasetNameGSEA(gseaFolder, timestamp);
+		return Optional.of(new DataSetParameters(datasetName, Method.GSEA, files));
 	}
 	
+	private static Optional<String[]> parseClasses(Path classFile) {
+		try {
+			List<String> lines = LineReader.readLines(classFile.toString(), 4);
+			if(lines.size() >= 2) {
+				String[] tokens = lines.get(1).split("\\s");
+				if(tokens.length >= 3) {
+					return Optional.of(new String[] { tokens[1], tokens[2] });
+				}
+			}
+		} catch (IOException e) { }
+		return Optional.empty();
+	}
 	
-	private static Optional<Path> getRptExpressionFile(Map<String,String> params) {
+	private static Optional<Path> getRptExpressionFile(Path root, Map<String,String> params) {
 		String method = params.get("producer_class").split("\\p{Punct}")[2]; // Gsea or GseaPreranked
 		String data;
 		if(method.equalsIgnoreCase("Gsea")) {
@@ -104,6 +136,17 @@ public class GSEAResolver {
 			Path exprfile = Paths.get(data);
 			if(Files.exists(exprfile))
 				return Optional.of(exprfile);
+			
+			Path exprFileName = exprfile.getFileName();
+			
+			Path exprGuess1 = root.resolve(exprFileName);
+			if(Files.exists(exprGuess1))
+				return Optional.of(exprGuess1);
+			
+			Path exprGuess2 = root.getParent().resolve(exprFileName);
+			if(Files.exists(exprGuess2))
+				return Optional.of(exprGuess2);
+			
 		} catch(InvalidPathException e) {
 			e.printStackTrace();
 		}
@@ -175,25 +218,20 @@ public class GSEAResolver {
 			
 			// Search up the tree a few levels
 			Path gmtFileName = rptGmtPath.getFileName();
+			
 			Path gmtGuess1 = root.resolve(gmtFileName);
 			if(Files.exists(gmtGuess1))
 				return Optional.of(gmtGuess1);
+			
 			Path gmtGuess2 = root.getParent().resolve(gmtFileName);
 			if(Files.exists(gmtGuess2))
 				return Optional.of(gmtGuess2);
-			Path gmtGuess3 = root.getParent().getParent().resolve(gmtFileName);
-			if(Files.exists(gmtGuess3))
-				return Optional.of(gmtGuess3);
 			
-		} catch(InvalidPathException e) {
-			e.printStackTrace();
-		}
-		try {
 			Path edbGmtPath = root.resolve("edb/gene_sets.gmt");
 			if(Files.exists(edbGmtPath))
 				return Optional.of(edbGmtPath);
-		}
-		catch(InvalidPathException e) {
+			
+		} catch(InvalidPathException e) {
 			e.printStackTrace();
 		}
 		return Optional.empty();
@@ -238,7 +276,7 @@ public class GSEAResolver {
 	}
 	
 	
-	private static Optional<Path> getRptClassFile(Map<String, String> params) {
+	private static Optional<Path> getRptClassFile(Path root, Map<String, String> params) {
 		String classes = params.get("param cls");
 		String method = params.get("producer_class").split("\\p{Punct}")[2]; // Gsea or GseaPreranked
 
@@ -249,6 +287,17 @@ public class GSEAResolver {
 				if(Files.exists(path)) {
 					return Optional.of(path);
 				}
+				
+				Path clsFileName = path.getFileName();
+				
+				Path clsGuess1 = root.resolve(clsFileName);
+				if(Files.exists(clsGuess1))
+					return Optional.of(clsGuess1);
+				
+				Path edbGuess = root.resolve("edb").resolve(clsFileName);
+				if(Files.exists(edbGuess))
+					return Optional.of(edbGuess);
+				
 			} catch(InvalidPathException e) {
 				e.printStackTrace();
 			}
@@ -295,6 +344,15 @@ public class GSEAResolver {
 		return new DataSetParameters(getDatasetNameGSEA(root), Method.GSEA, toDataSetFilesEDB(root));
 	}
 	
+	
+	public static String getDatasetNameGSEA(Path folder, String timestamp) {
+		String folderName = folder.getFileName().toString();
+		if(folderName.endsWith("." + timestamp))
+			folderName = folderName.substring(0, folderName.length() - timestamp.length()-1);
+		if(folderName.regionMatches(true, folderName.length() - 5, ".gsea", 0, 5))
+			folderName = folderName.substring(0, folderName.length() - 5);
+		return folderName;
+	}
 	
 	public static String getDatasetNameGSEA(Path folder) {
 		String folderName = folder.getFileName().toString();
