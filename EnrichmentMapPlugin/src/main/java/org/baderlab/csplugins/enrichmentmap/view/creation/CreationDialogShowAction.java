@@ -6,7 +6,6 @@ import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialog;
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogParameters;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 
 import com.google.inject.Inject;
@@ -20,7 +19,7 @@ public class CreationDialogShowAction extends AbstractAction {
 	@Inject private Provider<CreationDialogParameters> dialogParametersProvider;
 	@Inject private Provider<JFrame> jframeProvider;
 	
-	private CardDialog masterMapDialog;
+	private CardDialog<Void> masterMapDialog;
 	
 	public CreationDialogShowAction() {
 		super("New EnrichmentMap...");
@@ -29,8 +28,8 @@ public class CreationDialogShowAction extends AbstractAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (masterMapDialog == null) {
-			CardDialogParameters params = dialogParametersProvider.get();
-			masterMapDialog = new CardDialog(jframeProvider.get(), params);
+			CreationDialogParameters params = dialogParametersProvider.get();
+			masterMapDialog = new CardDialog<>(jframeProvider.get(), params);
 		}
 		masterMapDialog.open();
 	}

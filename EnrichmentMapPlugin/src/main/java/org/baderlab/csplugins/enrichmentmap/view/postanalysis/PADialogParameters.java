@@ -12,7 +12,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
-public class PADialogParameters implements CardDialogParameters {
+public class PADialogParameters implements CardDialogParameters<Void> {
 
 	public static final String TITLE = "EnrichmentMap: Add Signature Gene Sets (Post-Analysis)";
 	
@@ -37,7 +37,7 @@ public class PADialogParameters implements CardDialogParameters {
 	}
 
 	@Override
-	public List<CardDialogPage> getPages() {
+	public List<CardDialogPage<Void>> getPages() {
 		return Arrays.asList(
 			pageFactory.create(map, view)
 		);

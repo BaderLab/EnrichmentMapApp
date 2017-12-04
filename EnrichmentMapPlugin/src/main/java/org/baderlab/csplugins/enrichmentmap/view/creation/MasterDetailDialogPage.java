@@ -76,7 +76,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 @SuppressWarnings("serial")
-public class MasterDetailDialogPage implements CardDialogPage {
+public class MasterDetailDialogPage implements CardDialogPage<Void> {
 
 	@Inject private IconManager iconManager;
 	@Inject private DialogTaskManager dialogTaskManager;
@@ -118,9 +118,9 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	}
 
 	@Override
-	public void finish() {
+	public Void finish() {
 		if(!validateInput())
-			return;
+			return null;
 		
 		String prefix = legacySupport.getNextAttributePrefix();
 		SimilarityMetric similarityMetric = cutoffPanel.getSimilarityMetric();
@@ -174,6 +174,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		});
 		
 		dialogTaskManager.execute(tasks);
+		return null;
 	}
 	
 	

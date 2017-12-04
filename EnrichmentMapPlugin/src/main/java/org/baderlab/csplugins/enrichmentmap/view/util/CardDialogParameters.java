@@ -6,11 +6,11 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.Icon;
 
-public interface CardDialogParameters {
+public interface CardDialogParameters<T> {
 	
 	String getTitle();
 	
-	List<CardDialogPage> getPages();
+	List<CardDialogPage<T>> getPages();
 
 	default Icon getIcon() {
 		return null;

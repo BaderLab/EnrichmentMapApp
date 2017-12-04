@@ -134,6 +134,7 @@ public class PathTextField {
 		return button;
 	}
 
+	@SuppressWarnings("unused")
 	private static JLabel createErrorIcon(IconManager iconManager) {
 		JLabel icon = new JLabel(IconManager.ICON_TIMES_CIRCLE);
 		icon.setFont(iconManager.getIconFont(13f));

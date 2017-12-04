@@ -25,23 +25,30 @@ import javax.swing.border.Border;
 
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
-public class CardDialog {
+public class CardDialog<T> {
 
 	private JDialog dialog;
+	private T result = null;
 
-	private JComboBox<ComboItem<CardDialogPage>> pageChooserCombo;
-	private CardDialogPage currentPage;
+	private JComboBox<ComboItem<CardDialogPage<T>>> pageChooserCombo;
+	private CardDialogPage<T> currentPage;
 
 	private JButton finishButton;
 
-	private final CardDialogParameters params;
+	private final CardDialogParameters<T> params;
 
-	public CardDialog(JFrame parent, CardDialogParameters params) {
+	public CardDialog(JFrame parent, CardDialogParameters<T> params) {
 		if (params == null)
 			throw new IllegalArgumentException("'params' must not be null.");
-
 		this.params = params;
-
+		dialog = new JDialog(parent);
+		createComponents();
+	}
+	
+	public CardDialog(JDialog parent, CardDialogParameters<T> params) {
+		if (params == null)
+			throw new IllegalArgumentException("'params' must not be null.");
+		this.params = params;
 		dialog = new JDialog(parent);
 		createComponents();
 	}
@@ -57,6 +64,10 @@ public class CardDialog {
 	public void dispose() {
 		dialog.setVisible(false);
 		dialog.dispose();
+	}
+	
+	public T getResults() {
+		return result;
 	}
 
 	public boolean isVisible() {
@@ -93,13 +104,13 @@ public class CardDialog {
 	private JPanel createBodyPanel() {
 		Callback callback = new Callback();
 
-		List<CardDialogPage> pages = params.getPages();
+		List<CardDialogPage<T>> pages = params.getPages();
 		if (pages == null || pages.isEmpty()) {
 			throw new IllegalArgumentException("must be at least one page");
 		}
 
 		if (pages.size() == 1) {
-			CardDialogPage page = pages.get(0);
+			CardDialogPage<T> page = pages.get(0);
 
 			JPanel body = page.createBodyPanel(callback);
 			if (body == null) {
@@ -119,14 +130,14 @@ public class CardDialog {
 		CardLayout cardLayout = new CardLayout();
 		JPanel cards = new JPanel(cardLayout);
 
-		for (CardDialogPage page : pages) {
+		for (CardDialogPage<T> page : pages) {
 			JPanel pagePanel = page.createBodyPanel(callback);
 			cards.add(pagePanel, page.getID());
 		}
 
 		pageChooserCombo.addActionListener(e -> {
-			ComboItem<CardDialogPage> selected = pageChooserCombo.getItemAt(pageChooserCombo.getSelectedIndex());
-			CardDialogPage page = selected.getValue();
+			ComboItem<CardDialogPage<T>> selected = pageChooserCombo.getItemAt(pageChooserCombo.getSelectedIndex());
+			CardDialogPage<T> page = selected.getValue();
 			cardLayout.show(cards, page.getID());
 			currentPage = page;
 			currentPage.opened();
@@ -141,11 +152,11 @@ public class CardDialog {
 		return body;
 	}
 
-	private JPanel createChooserPanel(List<CardDialogPage> pages) {
+	private JPanel createChooserPanel(List<CardDialogPage<T>> pages) {
 		JLabel label = new JLabel(params.getPageChooserLabelText());
 		pageChooserCombo = new JComboBox<>();
 
-		for (CardDialogPage page : pages) {
+		for (CardDialogPage<T> page : pages) {
 			pageChooserCombo.addItem(new ComboItem<>(page, page.getPageComboText()));
 		}
 
@@ -177,7 +188,7 @@ public class CardDialog {
 	private JPanel createButtonPanel() {
 		finishButton = new JButton(new AbstractAction(params.getFinishButtonText()) {
 			public void actionPerformed(ActionEvent e) {
-				currentPage.finish();
+				result = currentPage.finish();
 			}
 		});
 		JButton cancelButton = new JButton(new AbstractAction("Cancel") {

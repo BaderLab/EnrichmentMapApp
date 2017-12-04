@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -30,6 +31,8 @@ import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PAMostSimilarTaskParallel;
 import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.creation.NamePanel;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.web.WebLoadDialogParameters;
+import org.baderlab.csplugins.enrichmentmap.view.util.CardDialog;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
@@ -47,7 +50,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
-public class PADialogPage implements CardDialogPage {
+public class PADialogPage implements CardDialogPage<Void> {
 
 	@Inject private PAWeightPanel.Factory weightPanelFactory;
 	@Inject private FileUtil fileUtil;
@@ -94,7 +97,7 @@ public class PADialogPage implements CardDialogPage {
 	}
 
 	@Override
-	public void finish() {
+	public Void finish() {
 		PostAnalysisParameters.Builder builder = new PostAnalysisParameters.Builder()
 			.setName(namePanel.getNameText())
 			.setAttributePrefix(map.getParams().getAttributePrefix())
@@ -104,6 +107,7 @@ public class PADialogPage implements CardDialogPage {
 			.setRankTestParameters(weightPanel.getResults());
 		
 		mediator.runPostAnalysis(map, netView, builder.build());
+		return null;
 	}
 	
 	
@@ -148,10 +152,10 @@ public class PADialogPage implements CardDialogPage {
 		selectAllButton = new JButton("Select All");
 		selectNoneButton = new JButton("Select None");
 		selectPassedButton = new JButton("Select Passing");
-		loadWebButton.setEnabled(false);
 		statusLabel = new JLabel();
 		
 		loadFileButton.addActionListener(e -> loadFromFile());
+		loadWebButton.addActionListener(e -> loadFromWeb());
 		
 		selectAllButton .addActionListener(e -> {
 			tableModel.setAllWanted(true);
@@ -284,6 +288,16 @@ public class PADialogPage implements CardDialogPage {
 		}
 	}
 		
+	private void loadFromWeb() {
+		JDialog parent = callback.getDialogFrame();
+		CardDialog<SetOfGeneSets> dialog = new CardDialog<SetOfGeneSets>(parent, new WebLoadDialogParameters());
+		dialog.open();
+		SetOfGeneSets geneSets = dialog.getResults();
+		if(geneSets != null) {
+			loadedGeneSets = geneSets;
+			runFilterTask();
+		}
+	}
 	
 	private synchronized void updateTable(List<SigGeneSetDescriptor> filteredGenesets, PostAnalysisFilterType type, boolean preserveWidths) {
 		TableColumnModel columnModel = table.getColumnModel();
