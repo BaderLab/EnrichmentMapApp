@@ -17,11 +17,9 @@ import org.baderlab.csplugins.enrichmentmap.view.util.CardDialog;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -43,7 +41,7 @@ public class PADialogMediator  {
 	@Inject private PADialogParameters.Factory paDialogParametersFactory;
 	
 	
-	private WeakHashMap<EnrichmentMap,CardDialog<Void>> dialogs = new WeakHashMap<>();
+	private WeakHashMap<EnrichmentMap,CardDialog> dialogs = new WeakHashMap<>();
 	
 
 	public void showDialog(CyNetworkView netView) {
@@ -51,9 +49,9 @@ public class PADialogMediator  {
 		if(map == null)
 			return;
 		
-		CardDialog<Void> dialog = dialogs.computeIfAbsent(map, k -> {
+		CardDialog dialog = dialogs.computeIfAbsent(map, k -> {
 			PADialogParameters params = paDialogParametersFactory.create(map, netView);
-			return new CardDialog<>(jFrameProvider.get(), params);
+			return new CardDialog(jFrameProvider.get(), params);
 		});
 		
 		dialog.open();
@@ -70,13 +68,8 @@ public class PADialogMediator  {
 		tasks.append(taskFactory.createTaskIterator());
 		
 		// Close the dialog after the progress dialog finishes normally
-		tasks.append(new AbstractTask() {
-			public void run(TaskMonitor taskMonitor) {
-				CardDialog<Void> dialog = dialogs.get(map);
-				if(dialog != null)
-					dialog.getCallback().close();
-			}
-		});
+		CardDialog dialog = dialogs.get(map);
+		tasks.append(dialog.getCallback().getCloseTask());
 		
 		dialogTaskManager.execute(tasks, new DialogObserver());
 	}

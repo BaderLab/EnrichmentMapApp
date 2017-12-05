@@ -13,7 +13,7 @@ import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogParameters;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-public class CreationDialogParameters implements CardDialogParameters<Void> {
+public class CreationDialogParameters implements CardDialogParameters {
 
 	static final String RESET_BUTTON_ACTION_COMMAND = "reset";
 	
@@ -21,7 +21,7 @@ public class CreationDialogParameters implements CardDialogParameters<Void> {
 	
 	
 	@Override
-	public List<CardDialogPage<Void>> getPages() {
+	public List<CardDialogPage> getPages() {
 		return Arrays.asList(masterDetailDialogPage.get());
 	}
 	

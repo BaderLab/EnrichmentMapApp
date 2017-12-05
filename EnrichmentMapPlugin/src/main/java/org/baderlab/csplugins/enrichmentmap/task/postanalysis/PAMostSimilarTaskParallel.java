@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -31,8 +32,8 @@ import org.cytoscape.work.TaskMonitor;
 public class PAMostSimilarTaskParallel extends CancellableParallelTask<List<SigGeneSetDescriptor>> implements ObservableTask {
 
 	private final EnrichmentMap map;
-	private final SetOfGeneSets sigGeneSets;
 	private final FilterMetricSet metrics; // key is name of em dataset
+	private final Supplier<SetOfGeneSets> geneSetSupplier;
 	
 	private List<SigGeneSetDescriptor> results;
 	
@@ -40,9 +41,9 @@ public class PAMostSimilarTaskParallel extends CancellableParallelTask<List<SigG
 	/**
 	 * It is assumed that all the FilterMetric objects have the same filter type (they are all Hypergometric for example).
 	 */
-	public PAMostSimilarTaskParallel(EnrichmentMap map, SetOfGeneSets sigGeneSets, FilterMetricSet metrics) {
+	public PAMostSimilarTaskParallel(EnrichmentMap map, FilterMetricSet metrics, Supplier<SetOfGeneSets> geneSetSupplier) {
 		this.map = map;
-		this.sigGeneSets = sigGeneSets;
+		this.geneSetSupplier = geneSetSupplier;
 		this.metrics = metrics;
 	}
 	
@@ -53,6 +54,7 @@ public class PAMostSimilarTaskParallel extends CancellableParallelTask<List<SigG
 	 */
 	@Override
 	public List<SigGeneSetDescriptor> compute(TaskMonitor tm, ExecutorService executor) {
+		SetOfGeneSets sigGeneSets = geneSetSupplier.get();
 		DiscreteTaskMonitor taskMonitor = discreteTaskMonitor(tm, sigGeneSets.size());
 		
 		Set<String> enrichmentGeneSetNames = map.getAllGeneSetOfInterestNames();

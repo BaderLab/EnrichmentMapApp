@@ -19,7 +19,7 @@ public class CreationDialogShowAction extends AbstractAction {
 	@Inject private Provider<CreationDialogParameters> dialogParametersProvider;
 	@Inject private Provider<JFrame> jframeProvider;
 	
-	private CardDialog<Void> masterMapDialog;
+	private CardDialog masterMapDialog;
 	
 	public CreationDialogShowAction() {
 		super("New EnrichmentMap...");
@@ -29,7 +29,7 @@ public class CreationDialogShowAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 		if (masterMapDialog == null) {
 			CreationDialogParameters params = dialogParametersProvider.get();
-			masterMapDialog = new CardDialog<>(jframeProvider.get(), params);
+			masterMapDialog = new CardDialog(jframeProvider.get(), params);
 		}
 		masterMapDialog.open();
 	}

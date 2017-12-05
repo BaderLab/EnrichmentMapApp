@@ -24,20 +24,22 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskMonitor;
 
-public class CardDialog<T> {
+public class CardDialog {
 
 	private JDialog dialog;
-	private T result = null;
 
-	private JComboBox<ComboItem<CardDialogPage<T>>> pageChooserCombo;
-	private CardDialogPage<T> currentPage;
+	private JComboBox<ComboItem<CardDialogPage>> pageChooserCombo;
+	private CardDialogPage currentPage;
 
 	private JButton finishButton;
 
-	private final CardDialogParameters<T> params;
+	private final CardDialogParameters params;
 
-	public CardDialog(JFrame parent, CardDialogParameters<T> params) {
+	public CardDialog(JFrame parent, CardDialogParameters params) {
 		if (params == null)
 			throw new IllegalArgumentException("'params' must not be null.");
 		this.params = params;
@@ -45,7 +47,7 @@ public class CardDialog<T> {
 		createComponents();
 	}
 	
-	public CardDialog(JDialog parent, CardDialogParameters<T> params) {
+	public CardDialog(JDialog parent, CardDialogParameters params) {
 		if (params == null)
 			throw new IllegalArgumentException("'params' must not be null.");
 		this.params = params;
@@ -66,9 +68,6 @@ public class CardDialog<T> {
 		dialog.dispose();
 	}
 	
-	public T getResults() {
-		return result;
-	}
 
 	public boolean isVisible() {
 		return dialog != null && dialog.isVisible();
@@ -104,13 +103,13 @@ public class CardDialog<T> {
 	private JPanel createBodyPanel() {
 		Callback callback = new Callback();
 
-		List<CardDialogPage<T>> pages = params.getPages();
+		List<CardDialogPage> pages = params.getPages();
 		if (pages == null || pages.isEmpty()) {
 			throw new IllegalArgumentException("must be at least one page");
 		}
 
 		if (pages.size() == 1) {
-			CardDialogPage<T> page = pages.get(0);
+			CardDialogPage page = pages.get(0);
 
 			JPanel body = page.createBodyPanel(callback);
 			if (body == null) {
@@ -130,14 +129,14 @@ public class CardDialog<T> {
 		CardLayout cardLayout = new CardLayout();
 		JPanel cards = new JPanel(cardLayout);
 
-		for (CardDialogPage<T> page : pages) {
+		for (CardDialogPage page : pages) {
 			JPanel pagePanel = page.createBodyPanel(callback);
 			cards.add(pagePanel, page.getID());
 		}
 
 		pageChooserCombo.addActionListener(e -> {
-			ComboItem<CardDialogPage<T>> selected = pageChooserCombo.getItemAt(pageChooserCombo.getSelectedIndex());
-			CardDialogPage<T> page = selected.getValue();
+			ComboItem<CardDialogPage> selected = pageChooserCombo.getItemAt(pageChooserCombo.getSelectedIndex());
+			CardDialogPage page = selected.getValue();
 			cardLayout.show(cards, page.getID());
 			currentPage = page;
 			currentPage.opened();
@@ -152,11 +151,11 @@ public class CardDialog<T> {
 		return body;
 	}
 
-	private JPanel createChooserPanel(List<CardDialogPage<T>> pages) {
+	private JPanel createChooserPanel(List<CardDialogPage> pages) {
 		JLabel label = new JLabel(params.getPageChooserLabelText());
 		pageChooserCombo = new JComboBox<>();
 
-		for (CardDialogPage<T> page : pages) {
+		for (CardDialogPage page : pages) {
 			pageChooserCombo.addItem(new ComboItem<>(page, page.getPageComboText()));
 		}
 
@@ -188,7 +187,8 @@ public class CardDialog<T> {
 	private JPanel createButtonPanel() {
 		finishButton = new JButton(new AbstractAction(params.getFinishButtonText()) {
 			public void actionPerformed(ActionEvent e) {
-				result = currentPage.finish();
+				finishButton.setEnabled(false);
+				currentPage.finish();
 			}
 		});
 		JButton cancelButton = new JButton(new AbstractAction("Cancel") {
@@ -212,6 +212,7 @@ public class CardDialog<T> {
 		return buttonPanel;
 	}
 
+	
 	public class Callback implements CardDialogCallback {
 
 		@Override
@@ -227,6 +228,21 @@ public class CardDialog<T> {
 		@Override
 		public void close() {
 			dialog.setVisible(false);
+		}
+		
+		@Override
+		public Task getCloseTask() {
+			return new AbstractTask() {
+				@Override
+				public void run(TaskMonitor taskMonitor) throws Exception {
+					close();
+				}
+			};
+		}
+		
+		@Override
+		public CardDialog getDialog() {
+			return CardDialog.this;
 		}
 
 	}

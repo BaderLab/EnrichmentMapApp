@@ -7,18 +7,21 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
+
+import javax.ws.rs.core.UriBuilder;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 public class BaderlabRequests {
 	
-	private static final String DATE_FOLDER_URL = "http://download.baderlab.org/EM_Genesets/cytoscape_list_dirs.php";
-	private static final String FILE_LIST_URL   = "http://download.baderlab.org/EM_Genesets/cytoscape_list_genesets.php?folder=";
-	
+	private static final String BASE_URL        = "http://download.baderlab.org/EM_Genesets/";
+	private static final String DATE_FOLDER_URL = BASE_URL + "cytoscape_list_dirs.php";
+	private static final String FILE_LIST_URL   = BASE_URL + "cytoscape_list_genesets.php?folder=";
 	
 	public static List<DateDir> requestDateFolders() throws IOException {
 		URL url = new URL(DATE_FOLDER_URL);
@@ -49,7 +52,8 @@ public class BaderlabRequests {
 		}
 	}
 	
-	public static void downloadFile(String dateFolder, String file) {
-		
+	public static URL buildUrl(String dateFolder, String gmtPath) throws MalformedURLException {
+		return UriBuilder.fromPath(BASE_URL).path(dateFolder).path(gmtPath).build().toURL();
 	}
+	
 }

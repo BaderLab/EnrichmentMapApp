@@ -48,6 +48,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.Normalizer;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -67,23 +69,30 @@ import com.google.common.collect.ImmutableSet;
 public class GMTFileReaderTask extends AbstractTask implements ObservableTask {
 
 	private final EnrichmentMap map;
-	private final String gmtFileName;
-	private final SetOfGeneSets setOfgenesets;
+	private final SetOfGeneSets setOfGeneSets;
+	private final Supplier<String> fileNameSupplier;
+	private final Consumer<SetOfGeneSets> geneSetConsumer;
 
 
 	public GMTFileReaderTask(EMDataSet dataset) {
 		this.map = dataset.getMap();
-		this.gmtFileName = dataset.getDataSetFiles().getGMTFileName();
-		this.setOfgenesets = dataset.getSetOfGeneSets();
+		this.fileNameSupplier = () -> dataset.getDataSetFiles().getGMTFileName();
+		this.setOfGeneSets = dataset.getSetOfGeneSets();
+		this.geneSetConsumer = null;
 	}
 	
-	/**
-	 * for BuildDiseaseSignatureTask
-	 */
-	public GMTFileReaderTask(EnrichmentMap map, String gmtFileName, SetOfGeneSets setOfgensets) {
+	public GMTFileReaderTask(EnrichmentMap map, String fileName, SetOfGeneSets geneSets) {
 		this.map = map;
-		this.gmtFileName = gmtFileName;
-		this.setOfgenesets = setOfgensets;
+		this.fileNameSupplier = () -> fileName;
+		this.setOfGeneSets = geneSets;
+		this.geneSetConsumer = null;
+		
+	}
+	public GMTFileReaderTask(EnrichmentMap map, Supplier<String> fileNameSupplier, Consumer<SetOfGeneSets> geneSetConsumer) {
+		this.map = map;
+		this.fileNameSupplier = fileNameSupplier;
+		this.setOfGeneSets = new SetOfGeneSets();
+		this.geneSetConsumer = geneSetConsumer;
 	}
 	
 	
@@ -96,15 +105,19 @@ public class GMTFileReaderTask extends AbstractTask implements ObservableTask {
 	}
 	
 	public void parse() throws IOException, InterruptedException {
-		try (BufferedReader reader = new BufferedReader(new FileReader(gmtFileName))) {
+		String fileName = fileNameSupplier.get();
+		try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
 			for (String line; (line = reader.readLine()) != null;) {
 				if (cancelled) {
 					throw new InterruptedException();
 				}
 				GeneSet gs = readGeneSet(map, line);
-				if (gs != null && setOfgenesets != null) {
-					Map<String, GeneSet> genesets = setOfgenesets.getGeneSets();
+				if (gs != null && setOfGeneSets != null) {
+					Map<String, GeneSet> genesets = setOfGeneSets.getGeneSets();
 					genesets.put(gs.getName(), gs);
+				}
+				if(geneSetConsumer != null) {
+					geneSetConsumer.accept(setOfGeneSets);
 				}
 			}
 		}
@@ -141,11 +154,11 @@ public class GMTFileReaderTask extends AbstractTask implements ObservableTask {
 		Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 		return pattern.matcher(nfdNormalizedString).replaceAll("");
 	}
-	
+
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
 		if(SetOfGeneSets.class.equals(type)) {
-			return type.cast(setOfgenesets);
+			return type.cast(setOfGeneSets);
 		}
 		return null;
 	}

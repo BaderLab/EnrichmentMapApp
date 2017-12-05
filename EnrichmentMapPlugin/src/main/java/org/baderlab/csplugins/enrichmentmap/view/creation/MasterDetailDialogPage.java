@@ -64,11 +64,9 @@ import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.IterableListModel;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -76,7 +74,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 @SuppressWarnings("serial")
-public class MasterDetailDialogPage implements CardDialogPage<Void> {
+public class MasterDetailDialogPage implements CardDialogPage {
 
 	@Inject private IconManager iconManager;
 	@Inject private DialogTaskManager dialogTaskManager;
@@ -118,9 +116,9 @@ public class MasterDetailDialogPage implements CardDialogPage<Void> {
 	}
 
 	@Override
-	public Void finish() {
+	public void finish() {
 		if(!validateInput())
-			return null;
+			return;
 		
 		String prefix = legacySupport.getNextAttributePrefix();
 		SimilarityMetric similarityMetric = cutoffPanel.getSimilarityMetric();
@@ -167,14 +165,9 @@ public class MasterDetailDialogPage implements CardDialogPage<Void> {
 		TaskIterator tasks = taskFactory.createTaskIterator();
 		
 		// Close this dialog after the progress dialog finishes normally
-		tasks.append(new AbstractTask() {
-			public void run(TaskMonitor taskMonitor) {
-				callback.close();
-			}
-		});
+		tasks.append(callback.getCloseTask());
 		
 		dialogTaskManager.execute(tasks);
-		return null;
 	}
 	
 	

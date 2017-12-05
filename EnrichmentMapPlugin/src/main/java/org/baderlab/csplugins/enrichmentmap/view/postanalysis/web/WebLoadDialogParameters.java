@@ -4,24 +4,31 @@ import java.awt.Dimension;
 import java.util.Arrays;
 import java.util.List;
 
-import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogParameters;
 
-public class WebLoadDialogParameters implements CardDialogParameters<SetOfGeneSets> {
+public class WebLoadDialogParameters implements CardDialogParameters {
 
 	public static final String TITLE = "Signature Gene Sets";
 	
-
+	private final PADialogPage parent;
+	
+	
+	public WebLoadDialogParameters(PADialogPage parent) {
+		this.parent = parent;
+	}
+	
+	
 	@Override
 	public String getTitle() {
 		return TITLE;
 	}
 
 	@Override
-	public List<CardDialogPage<SetOfGeneSets>> getPages() {
+	public List<CardDialogPage> getPages() {
 		return Arrays.asList(
-			new BaderlabDialogPage()
+			new BaderlabDialogPage(parent)
 		);
 	}
 	

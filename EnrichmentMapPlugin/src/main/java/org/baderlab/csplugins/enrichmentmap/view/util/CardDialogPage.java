@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.view.util;
 import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 
-public interface CardDialogPage<T> {
+public interface CardDialogPage {
 	
 	String getID();
 	
@@ -11,7 +11,7 @@ public interface CardDialogPage<T> {
 	
 	JPanel createBodyPanel(CardDialogCallback callback);
 	
-	T finish();
+	void finish();
 
 	/**
 	 * Lifecycle method called every time the page is made visible.

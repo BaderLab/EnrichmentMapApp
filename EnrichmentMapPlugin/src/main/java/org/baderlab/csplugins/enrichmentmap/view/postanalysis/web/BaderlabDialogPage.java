@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.postanalysis.web;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Comparator;
 import java.util.concurrent.Callable;
@@ -22,7 +23,7 @@ import javax.swing.LayoutStyle;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
 
-import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
@@ -30,18 +31,21 @@ import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 
-public class BaderlabDialogPage implements CardDialogPage<SetOfGeneSets> {
+public class BaderlabDialogPage implements CardDialogPage {
 
-	private CardDialogCallback callback;
+	private final PADialogPage parent;
 	
+	private CardDialogCallback callback;
 	private JComboBox<ComboItem<DateDir>> dateCombo;
 	private JLabel spinnerLabel;
 	private JList<String> fileList;
-	
 	private ActionListener dateActionListener;
-	
 	private boolean openCalled = false;
 	
+	
+	public BaderlabDialogPage(PADialogPage parent) {
+		this.parent = parent;
+	}
 	
 	@Override
 	public String getID() {
@@ -54,8 +58,20 @@ public class BaderlabDialogPage implements CardDialogPage<SetOfGeneSets> {
 	}
 
 	@Override
-	public SetOfGeneSets finish() {
-		return null;
+	public void finish() {
+		String dateFolder = getDateFolder();
+		String filePath = getGmtFilePath();
+		if(dateFolder == null || filePath == null) {
+			return;
+		}
+		
+		try {
+			URL url = BaderlabRequests.buildUrl(dateFolder, filePath);
+			parent.runLoadFromUrlTasks(url, callback.getDialog());
+			
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
@@ -142,7 +158,13 @@ public class BaderlabDialogPage implements CardDialogPage<SetOfGeneSets> {
 		return panel;
 	}
 
+	private String getDateFolder() {
+		return dateCombo.getItemAt(dateCombo.getSelectedIndex()).getValue().getFolder();
+	}
 	
+	private String getGmtFilePath() {
+		return fileList.getSelectedValue();
+	}
 	
 	private <T> void doRequest(Callable<T> doInBackground, Consumer<T> done) {
 		SwingWorker<T,Void> worker = new SwingWorker<T, Void>() {
@@ -195,16 +217,15 @@ public class BaderlabDialogPage implements CardDialogPage<SetOfGeneSets> {
 		);
 	}
 	
-	
 	private void requestFiles() {
 		DefaultListModel<String> model = new DefaultListModel<>();
 		model.addElement("Loading...");
 		fileList.setModel(model);
 			
-		DateDir dateDir = dateCombo.getItemAt(dateCombo.getSelectedIndex()).getValue();
+		String dateFolder = getDateFolder();
 		
 		doRequest(
-			() -> BaderlabRequests.requestFiles(dateDir.getFolder()),
+			() -> BaderlabRequests.requestFiles(dateFolder),
 			files -> {
 				DefaultListModel<String> model2 = new DefaultListModel<>();
 				files.forEach(model2::addElement);
