@@ -229,9 +229,9 @@ public class PADialogPage implements CardDialogPage {
 		table.setAutoCreateRowSorter(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		
-		table.setDefaultRenderer(String.class, new SigGeneSetCellRenderer());
+		table.setDefaultRenderer(String.class,  new SigGeneSetCellRenderer());
 		table.setDefaultRenderer(Integer.class, new SigGeneSetCellRenderer());
-		table.setDefaultRenderer(Double.class, new SigGeneSetCellRenderer());
+		table.setDefaultRenderer(Double.class,  new SigGeneSetCellRenderer());
 		
 		JTableHeader header = table.getTableHeader();
 		header.setReorderingAllowed(false);

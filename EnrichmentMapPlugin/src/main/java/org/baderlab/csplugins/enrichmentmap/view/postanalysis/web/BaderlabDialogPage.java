@@ -5,23 +5,24 @@ import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.LayoutStyle;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
+import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
@@ -38,7 +39,7 @@ public class BaderlabDialogPage implements CardDialogPage {
 	private CardDialogCallback callback;
 	private JComboBox<ComboItem<DateDir>> dateCombo;
 	private JLabel spinnerLabel;
-	private JList<String> fileList;
+	private JTable table;
 	private ActionListener dateActionListener;
 	private boolean openCalled = false;
 	
@@ -85,9 +86,10 @@ public class BaderlabDialogPage implements CardDialogPage {
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
 		this.callback = callback;
+		callback.setFinishButtonEnabled(false);
 		
 		JPanel datePanel = createDatePanel();
-		JPanel listPanel = createListPanel();
+		JPanel listPanel = createTablePanel();
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(datePanel, BorderLayout.NORTH);
@@ -147,15 +149,42 @@ public class BaderlabDialogPage implements CardDialogPage {
 		return panel;
 	}
 
-	private JPanel createListPanel() {
-		fileList = new JList<>();
-		fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		JScrollPane scrollPane = new JScrollPane(fileList);
+	private JPanel createTablePanel() {
+		table = new JTable();
+		
+		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		table.setFillsViewportHeight(true);
+		table.setCellSelectionEnabled(false);
+		table.setRowSelectionAllowed(true);
+		table.setAutoCreateRowSorter(true);
+		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		table.getSelectionModel().addListSelectionListener(e -> updateFinishButton());
+		
+		FileSizeCellRenderer fileSizeRenderer = new FileSizeCellRenderer();
+		fileSizeRenderer.setHorizontalAlignment(JLabel.RIGHT);
+		table.setDefaultRenderer(Integer.class, fileSizeRenderer);
+		
+		updateTable(null);
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(scrollPane, BorderLayout.CENTER);
 		panel.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 8));
 		return panel;
+	}
+	
+	private void updateFinishButton() {
+		callback.setFinishButtonEnabled(table.getSelectionModel().getMinSelectionIndex() >= 0);
+	}
+	
+	private void updateTable(List<GmtFile> gmtFiles) {
+		GmtFileTableModel tableModel = new GmtFileTableModel(gmtFiles);
+		table.setModel(tableModel);
+		
+		TableColumnModel columnModel = table.getColumnModel();
+		columnModel.getColumn(1).setMaxWidth(150);
 	}
 
 	private String getDateFolder() {
@@ -163,7 +192,9 @@ public class BaderlabDialogPage implements CardDialogPage {
 	}
 	
 	private String getGmtFilePath() {
-		return fileList.getSelectedValue();
+		int row = table.getSelectionModel().getMinSelectionIndex();
+		String gmtFilePath = (String) table.getModel().getValueAt(row, 0);
+		return gmtFilePath;
 	}
 	
 	private <T> void doRequest(Callable<T> doInBackground, Consumer<T> done) {
@@ -188,7 +219,7 @@ public class BaderlabDialogPage implements CardDialogPage {
 					callback.close();
 				} finally {
 					spinnerLabel.setVisible(false);
-					callback.setFinishButtonEnabled(true);
+					updateFinishButton();
 				}
 			}
 		};
@@ -218,19 +249,12 @@ public class BaderlabDialogPage implements CardDialogPage {
 	}
 	
 	private void requestFiles() {
-		DefaultListModel<String> model = new DefaultListModel<>();
-		model.addElement("Loading...");
-		fileList.setModel(model);
-			
+		updateTable(null);
 		String dateFolder = getDateFolder();
 		
 		doRequest(
 			() -> BaderlabRequests.requestFiles(dateFolder),
-			files -> {
-				DefaultListModel<String> model2 = new DefaultListModel<>();
-				files.forEach(model2::addElement);
-				fileList.setModel(model2);
-			}
+			this::updateTable
 		);
 	}
 	

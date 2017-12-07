@@ -23,15 +23,16 @@ public class BaderlabRequests {
 	private static final String DATE_FOLDER_URL = BASE_URL + "cytoscape_list_dirs.php";
 	private static final String FILE_LIST_URL   = BASE_URL + "cytoscape_list_genesets.php?folder=";
 	
+	
 	public static List<DateDir> requestDateFolders() throws IOException {
 		URL url = new URL(DATE_FOLDER_URL);
 		return requestAndParse(url, new TypeToken<List<DateDir>>(){}.getType());
 	}
 	
 	
-	public static List<String> requestFiles(String dateFolder) throws IOException {
+	public static List<GmtFile> requestFiles(String dateFolder) throws IOException {
 		URL url = new URL(FILE_LIST_URL + URLEncoder.encode(dateFolder));
-		return requestAndParse(url, new TypeToken<List<String>>(){}.getType());
+		return requestAndParse(url, new TypeToken<List<GmtFile>>(){}.getType());
 	}
 
 	
