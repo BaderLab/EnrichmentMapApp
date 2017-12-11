@@ -45,27 +45,18 @@ package org.baderlab.csplugins.enrichmentmap.task.cluster;
 
 import org.baderlab.csplugins.brainlib.DistanceMetric;
 
-/**
- * Created by User: risserlin Date: Nov 2, 2010 Time: 8:28:32 AM
- */
-public class EuclideanDistance extends DistanceMetric {
+public class EuclideanDistance implements DistanceMetric {
 
-	/**
-	 * Calculate the euclidean distance for two vectors
-	 */
-	public double calc(Object expr1, Object expr2) {
-
-		double[] vectorA = (double[]) expr1;
-		double[] vectorB = (double[]) expr2;
-		
+	@Override
+	public float calc(float[] vectorA, float[] vectorB) {
 		//euclidean distance: Sqrt(Sum( (x[i]-y[i])^2 ))
-		double distance = 0.0;
+		float distance = 0;
 		for(int j = 0; j < vectorA.length; j++) {
-			double a = vectorA[j];
-			double b = vectorB[j];
+			float a = vectorA[j];
+			float b = vectorB[j];
 			distance += Math.pow(a - b, 2);
 		}
-		return (Math.sqrt(distance));
+		return (float) Math.sqrt(distance);
 	}
 
 }

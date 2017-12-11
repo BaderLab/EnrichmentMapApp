@@ -45,38 +45,30 @@ package org.baderlab.csplugins.enrichmentmap.task.cluster;
 
 import org.baderlab.csplugins.brainlib.DistanceMetric;
 
-/**
- * Created by User: risserlin Date: Nov 2, 2010 Time: 9:42:43 AM
- */
-public class CosineDistance extends DistanceMetric {
+public class CosineDistance implements DistanceMetric {
 
 	/**
 	 * Calculate the cosine distance for two vectors
 	 */
-	public double calc(Object expr1, Object expr2) {
-
-		double[] vectorA = (double[]) expr1;
-		double[] vectorB = (double[]) expr2;
-
-		double result = 0.0;
-
+	@Override
+	public float calc(float[] vectorA, float[] vectorB) {
+		float result = 0;
 		//numerator - the dot product between A and B
-		double numerator = 0;
-
+		float numerator = 0;
 		//denominator - the magnitude of A time the magnitude of B
-		double denominator = 0;
+		float denominator = 0;
 
 		//make sure vectorA and vectorB are not null and the same leghth
 		if(vectorA.length == vectorB.length && vectorA.length > 0) {
-			double magnitudeA = 0;
-			double magnitudeB = 0;
+			float magnitudeA = 0;
+			float magnitudeB = 0;
 			for(int i = 0; i < vectorA.length; i++) {
 				numerator = numerator + (vectorA[i] * vectorB[i]);
 				magnitudeA = magnitudeA + (vectorA[i] * vectorA[i]);
 				magnitudeB = magnitudeB + (vectorB[i] * vectorB[i]);
 			}
 
-			denominator = Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB);
+			denominator = (float)Math.sqrt(magnitudeA) * (float)Math.sqrt(magnitudeB);
 		} else
 			throw new RuntimeException("vectors are not the same length. Can not compute cosine distance");
 

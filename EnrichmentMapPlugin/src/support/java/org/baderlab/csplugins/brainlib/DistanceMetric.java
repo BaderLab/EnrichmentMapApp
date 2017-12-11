@@ -38,7 +38,7 @@ package org.baderlab.csplugins.brainlib;
 /**
  * Class for calculation of a distance metric for hierarchical clustering
  */
-public class DistanceMetric {
+public interface DistanceMetric {
     /**
      * Calculates the distance between two objects. If two objects are identical, the distance between
      * them in any metric is zero.
@@ -47,11 +47,5 @@ public class DistanceMetric {
      * @param object2 Object2
      * @return the distance between the objects
      */
-    public double calc(Object object1, Object object2) {
-        //this is a basic method that must be overridden by a real distance method
-        if (object1.equals(object2)) {
-            return 0.0;
-        }
-        return 1.0;
-    }
+    public float calc(float[] object1, float[] object2);
 }

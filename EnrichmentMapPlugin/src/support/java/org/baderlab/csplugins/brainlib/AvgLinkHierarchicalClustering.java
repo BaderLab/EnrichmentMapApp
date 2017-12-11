@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 
 /**
@@ -415,7 +416,7 @@ public class AvgLinkHierarchicalClustering {
             leafOrderList.add(new Integer(index));
         }
 
-        ArrayList clusteredElementLabels = distanceMatrix.getLabels();
+        List<String> clusteredElementLabels = distanceMatrix.getLabels();
 
         /**
          * resultTree: Each row in the matrix describes one linking event,
@@ -1291,7 +1292,7 @@ public class AvgLinkHierarchicalClustering {
      */
     public void writeResultsToCytoscapeFormat(File sifFileName, File edgeAttributeFileName, double distanceCutoff) throws IOException {
         //initialization
-        ArrayList labels = distanceMatrix.getLabels();
+        List<String> labels = distanceMatrix.getLabels();
         BufferedWriter brSIF = new BufferedWriter(new FileWriter(sifFileName));
         BufferedWriter brEA = new BufferedWriter(new FileWriter(edgeAttributeFileName));
 
@@ -1398,7 +1399,7 @@ public class AvgLinkHierarchicalClustering {
         } else {
             sb.append("GID\tUNIQID\tNAME\tGWEIGHT");
         }
-        ArrayList labels = distanceMatrix.getLabels();
+        List<String> labels = distanceMatrix.getLabels();
         for (int i = 0; i < labels.size(); i++) {
             int indexi = leafOrder[i];
             sb.append("\t" + (String) labels.get(indexi));

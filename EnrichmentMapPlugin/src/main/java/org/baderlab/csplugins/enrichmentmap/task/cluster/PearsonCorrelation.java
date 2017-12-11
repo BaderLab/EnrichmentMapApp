@@ -46,29 +46,19 @@ package org.baderlab.csplugins.enrichmentmap.task.cluster;
 import org.baderlab.csplugins.brainlib.DistanceMetric;
 
 /**
- * Created by User: risserlin Date: Sep 24, 2009 Time: 3:29:24 PM
- *
  * Calculate the distance between two protein/gene expression sets using pearson
  * correlation
  */
-public class PearsonCorrelation extends DistanceMetric {
+public class PearsonCorrelation implements DistanceMetric {
 
-	public double calc(Object expr1, Object expr2) {
-
-		//        if ((!(expr1 instanceof double[])) || (!(expr2 instanceof double[]))) {
-		///            throw new RuntimeException("Non expression values passed to PearsonCorrelation");
-		//        }
-
-		double[] x = (double[]) expr1;
-		double[] y = (double[]) expr2;
-
+	@Override
+	public float calc(float[] x, float[] y) {
 		double result = 0;
 		double sum_x = 0;
 		double sum_y = 0;
 		double sum_xy = 0;
 		double sum_sq_x = 0;
 		double sum_sq_y = 0;
-		double sum_coproduct = 0;
 
 		//calculate the means of the data.
 		for(int i = 0; i < x.length; i++) {
@@ -101,6 +91,7 @@ public class PearsonCorrelation extends DistanceMetric {
 			throw new RuntimeException("standard deviation is zero");
 		} else
 			result = numerator / denominator;
-		return 1 - result;
+		return (float)(1 - result);
 	}
+
 }

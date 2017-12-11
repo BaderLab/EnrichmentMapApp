@@ -134,7 +134,6 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 			float bVal = bMid + prop * (bHigh - bMid);
 
 			return new Color(rVal, gVal, bVal);
-
 		}
 	}
 

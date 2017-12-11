@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.brainlib;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,7 +45,7 @@ import java.util.List;
 public class DistanceMatrix {
     private double[] distanceMatrix = null;
     private int matrixDim = 0;
-    private ArrayList labels = null;
+    private List<String> labels = null;
     private double minimumDistance = Double.MAX_VALUE;
     private int mini = -1;
     private int minj = -1;
@@ -107,7 +106,7 @@ public class DistanceMatrix {
      * Sets the labels of the elements in this matrix. The elements of the ArrayList must be
      * Strings corresponding to the elements in this matrix (in the same order)
      */
-    public void setLabels(ArrayList labels) {
+    public void setLabels(List<String> labels) {
         this.labels = labels;
     }
 
@@ -116,7 +115,7 @@ public class DistanceMatrix {
      *
      * @return An ArrayList containing Strings in the order corresponding to the rows or columns of the distance matrix
      */
-    public ArrayList getLabels() {
+    public List<String> getLabels() {
         return labels;
     }
 
@@ -128,12 +127,12 @@ public class DistanceMatrix {
      * @param objectList     The list of objects to use to calculate an NxN distance matrix
      * @param distanceMetric The distance metric to use
      */
-    public void calcDistances(List objectList, DistanceMetric distanceMetric) {
+    public void calcDistances(List<float[]> objectList, DistanceMetric distanceMetric) {
         //calculate the lower triangle of the distance matrix
         for (int i = 0; i < objectList.size(); i++) {
-            Object object1 = (Object) objectList.get(i);
+            float[] object1 = objectList.get(i);
             for (int j = 0; j < i; j++) {
-                Object object2 = (Object) objectList.get(j);
+                float[] object2 = objectList.get(j);
                 double distance = distanceMetric.calc(object1, object2);
                 if (distance < minimumDistance) {
                     minimumDistance = distance;
