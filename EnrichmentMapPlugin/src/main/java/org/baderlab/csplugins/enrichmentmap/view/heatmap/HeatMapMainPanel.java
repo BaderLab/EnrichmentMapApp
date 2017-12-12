@@ -223,11 +223,6 @@ public class HeatMapMainPanel extends JPanel {
 		normCombo.addItem(new ComboItem<>(Transform.ROW_NORMALIZE, "Row Norm"));
 		normCombo.addItem(new ComboItem<>(Transform.LOG_TRANSFORM, "Log"));
 		
-		compressCombo.addItem(new ComboItem<>(Compress.NONE, "-None-"));
-		compressCombo.addItem(new ComboItem<>(Compress.MEDIAN, "Median"));
-		compressCombo.addItem(new ComboItem<>(Compress.MIN, "Min"));
-		compressCombo.addItem(new ComboItem<>(Compress.MAX, "Max"));
-		
 		operatorCombo.addActionListener(operatorActionListener = e -> updateSetting_Operator(getOperator()));
 		normCombo.addActionListener(normActionListener = e -> updateSetting_Transform(getTransform(), getCompress()));
 		compressCombo.addActionListener(compressActionListener = e -> updateSetting_Transform(getTransform(), getCompress()));
@@ -341,7 +336,20 @@ public class HeatMapMainPanel extends JPanel {
 		operatorCombo.addItem(new ComboItem<>(Operator.INTERSECTION, "Common (" + intersection.size() + ")"));
 		operatorCombo.setSelectedItem(ComboItem.of(params.getOperator()));
 		
+		compressCombo.removeAllItems();
+		compressCombo.addItem(new ComboItem<>(Compress.NONE, "-None-"));
+		if(map.hasClassData()) {
+			compressCombo.addItem(new ComboItem<>(Compress.CLASS_MEDIAN, "Class: Median"));
+			compressCombo.addItem(new ComboItem<>(Compress.CLASS_MIN, "Class: Min"));
+			compressCombo.addItem(new ComboItem<>(Compress.CLASS_MAX, "Class: Max"));
+		}
+		compressCombo.addItem(new ComboItem<>(Compress.DATASET_MEDIAN, "Data Set: Median"));
+		compressCombo.addItem(new ComboItem<>(Compress.DATASET_MIN, "Data Set: Min"));
+		compressCombo.addItem(new ComboItem<>(Compress.DATASET_MAX, "Data Set: Max"));
+		
 		normCombo.setSelectedItem(ComboItem.of(params.getTransform()));
+		
+		// MKTODO this wont work if selected item is Class but doesn't exist anymore
 		compressCombo.setSelectedItem(ComboItem.of(params.getCompress()));
 		
 		selectedRankOption = getRankOptionFromParams(params);
@@ -379,6 +387,11 @@ public class HeatMapMainPanel extends JPanel {
 	}
 	
 	
+	private EnrichmentMap getEnrichmentMap() {
+		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
+		return model.getEnrichmentMap();
+	}
+	
 	private RankingOption getRankOptionFromParams(HeatMapParams params) {
 		String name = params.getRankingOptionName();
 		if(name == null) {
@@ -399,8 +412,7 @@ public class HeatMapMainPanel extends JPanel {
 	
 	
 	private void addRankings() {
-		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
-		EnrichmentMap map = model.getEnrichmentMap();
+		EnrichmentMap map = getEnrichmentMap();
 		AddRanksDialog dialog = ranksDialogFactory.create(map);
 		Optional<String> ranksName = dialog.open();
 		if(ranksName.isPresent()) {

@@ -177,7 +177,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			HeatMapParams.Builder builder = new HeatMapParams.Builder();
 			
 			if(map.totalExpressionCount() > COLLAPSE_THRESHOLD) 
-				builder.setCompress(Compress.MEDIAN);
+				builder.setCompress(Compress.DATASET_MEDIAN);
 			if(onlyEdges)
 				builder.setOperator(Operator.INTERSECTION);
 			

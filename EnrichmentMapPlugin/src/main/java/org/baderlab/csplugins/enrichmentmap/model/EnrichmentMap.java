@@ -119,6 +119,15 @@ public class EnrichmentMap {
 		return Collections.unmodifiableCollection(geneSets.keySet());
 	}
 	
+	public boolean hasClassData() {
+		for(EMDataSet dataset : dataSets.values()) {
+			String[] classes = dataset.getEnrichments().getPhenotypes();
+			if(classes != null && classes.length > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	/**
 	 * Method to transfer files specified in the parameters to the objects they correspond to.
