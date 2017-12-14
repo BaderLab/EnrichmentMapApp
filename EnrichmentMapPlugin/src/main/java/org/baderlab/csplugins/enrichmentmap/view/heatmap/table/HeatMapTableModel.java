@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -8,16 +9,22 @@ import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 import javax.swing.table.AbstractTableModel;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
+import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 
 
@@ -48,6 +55,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		String getColumnName(int col);
 		public default Optional<String> getPhenotype(int col) { return Optional.empty(); };
 		int getSize();
+		public default void transformChanged() {};
 	}
 	
 	
@@ -56,6 +64,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		// for Compress.NONE, but storing the expression data again would use too much memory, so we access through the EMDataSet object
 		private final NavigableMap<Integer,EMDataSet> colToDataSet = new TreeMap<>();
 		private final int expressionCount;
+		private final Cache<Pair<Integer,EMDataSet>, float[]> cache;
 		
 		public Uncompressed(List<EMDataSet> datasets) {
 			int rangeFloor = DESC_COL_COUNT;
@@ -66,6 +75,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 				rangeFloor += matrix.getNumConditions() - 2;
 			}
 			expressionCount = rangeFloor - DESC_COL_COUNT;
+			
+			cache = CacheBuilder.newBuilder().maximumSize(20).build();
 		}
 		
 		public EMDataSet getDataSet(int col) {
@@ -79,9 +90,15 @@ public class HeatMapTableModel extends AbstractTableModel {
 		
 		@Override
 		public double getValue(int geneID, int col) { // col value 
+			System.out.println("("+geneID+","+col+")");
 			EMDataSet dataset = getDataSet(col);
-			float[] vals = getExpression(dataset, geneID, transform);
-			return vals == null ? Double.NaN : (double) vals[getIndexInDataSet(col)];
+			
+			try {
+				float vals[] = cache.get(Pair.of(geneID, dataset), () -> getExpression(dataset, geneID, transform));
+				return vals == null ? Double.NaN : (double) vals[getIndexInDataSet(col)];
+			} catch (ExecutionException e) {
+				return Double.NaN;
+			}
 		}
 
 		@Override
@@ -107,6 +124,10 @@ public class HeatMapTableModel extends AbstractTableModel {
 			}
 			return Optional.empty();
 		}
+		
+		public void transformChanged() {
+			cache.invalidateAll();
+		}
 	}
 	
 	
@@ -114,7 +135,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	private class CompressDataset implements ExpressionData {
 		private final List<EMDataSet> datasets;
 		
-		CompressDataset(List<EMDataSet> datasets) {
+		public CompressDataset(List<EMDataSet> datasets) {
 			this.datasets = datasets;
 		}
 		
@@ -157,6 +178,83 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	
+	
+	private class CompressClass implements ExpressionData {
+
+		private List<Pair<EMDataSet,String>> headers = new ArrayList<>();
+		
+		public CompressClass(List<EMDataSet> datasets) {
+			for(EMDataSet dataset : datasets) {
+				SetOfEnrichmentResults enrichments = dataset.getEnrichments();
+				String pheno1 = enrichments.getPhenotype1();
+				String pheno2 = enrichments.getPhenotype2();
+				if(pheno1 != null)
+					headers.add(Pair.of(dataset, pheno1));
+				if(pheno2 != null)
+					headers.add(Pair.of(dataset, pheno2));
+			}
+		}
+		
+		@Override
+		public EMDataSet getDataSet(int col) {
+			return headers.get(col-DESC_COL_COUNT).getLeft();
+		}
+
+		@Override
+		public String getColumnName(int col) {
+			return headers.get(col-DESC_COL_COUNT).getRight();
+		}
+		
+		@Override
+		public Optional<String> getPhenotype(int col) {
+			return Optional.of(getColumnName(col));
+		}
+		
+		@Override
+		public double getValue(int geneID, int col) {
+			EMDataSet dataset = getDataSet(col);
+			String pheno = getColumnName(col);
+			
+			String[] phenotypes = dataset.getEnrichments().getPhenotypes();
+			if(phenotypes == null || phenotypes.length == 0)
+				return Double.NaN;
+			
+			float[] expressions = getExpression(dataset, geneID, transform); 
+			if(expressions == null || expressions.length == 0 || expressions.length != phenotypes.length)
+				return Double.NaN;
+			
+			int size = 0;
+			for(int i = 0; i < expressions.length; i++) {
+				if(pheno.equals(phenotypes[i])) {
+					size++;
+				}
+			}
+			
+			float[] vals = new float[size];
+			int vi = 0;
+			
+			for(int i = 0; i < expressions.length; i++) {
+				if(pheno.equals(phenotypes[i])) {
+					vals[vi++] = expressions[i];
+				}
+			}
+			
+			switch(compress) {
+				case CLASS_MEDIAN: return GeneExpression.median(vals);
+				case CLASS_MAX:    return GeneExpression.max(vals);
+				case CLASS_MIN:    return GeneExpression.min(vals);
+				default:	           return Double.NaN;
+			}
+		}
+
+		@Override
+		public int getSize() {
+			return headers.size();
+		}
+		
+	}
+	
+	
 	public HeatMapTableModel(EnrichmentMap map, Map<Integer,RankValue> ranking, List<String> genes, Transform transform, Compress compress) {
 		this.transform = transform;
 		this.compress = compress;
@@ -166,17 +264,21 @@ public class HeatMapTableModel extends AbstractTableModel {
 		
 		// if all the expression sets are the same then just show one of them
 		if(map.isCommonExpressionValues())
-			this.datasets = map.getDataSetList().subList(0, 1);
+			datasets = map.getDataSetList().subList(0, 1);
 		else
-			this.datasets = map.getDataSetList();
+			datasets = map.getDataSetList();
 		
 		ExpressionData uncompressed = new Uncompressed(datasets);
 		ExpressionData compressDataset = new CompressDataset(datasets);
+		ExpressionData compressClass = new CompressClass(datasets);
 		
 		data.put(Compress.NONE, uncompressed);
 		data.put(Compress.DATASET_MEDIAN, compressDataset);
 		data.put(Compress.DATASET_MAX, compressDataset);
 		data.put(Compress.DATASET_MIN, compressDataset);
+		data.put(Compress.CLASS_MEDIAN, compressClass);
+		data.put(Compress.CLASS_MAX, compressClass);
+		data.put(Compress.CLASS_MIN, compressClass);
 	}
 	
 	
@@ -188,6 +290,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		boolean structureChanged = !this.compress.sameStructure(compress);
 		this.transform = transform;
 		this.compress = compress;
+		data.values().forEach(ExpressionData::transformChanged);
 		if(structureChanged)
 			fireTableStructureChanged();
 		fireTableDataChanged();

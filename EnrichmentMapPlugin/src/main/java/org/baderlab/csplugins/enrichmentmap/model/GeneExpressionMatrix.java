@@ -64,7 +64,6 @@ public class GeneExpressionMatrix {
 	//and one with the row normalized values.  The row normalizes values are stored as opposed
 	//to being computing on the fly to decrease the time needed to update a heatmap.
 	private Map<Integer, GeneExpression> expressionMatrix = new HashMap<>();
-	private transient Map<Integer, GeneExpression> expressionMatrix_rowNormalized = null;
 
 
 	public static float getMaxExpression(Map<Integer,GeneExpression> matrix) {
@@ -107,16 +106,14 @@ public class GeneExpressionMatrix {
 	 * (Log normalization is computed on the fly)
 	 */
 	public synchronized Map<Integer, GeneExpression> rowNormalizeMatrix() {
-		if (expressionMatrix_rowNormalized == null) {
-			expressionMatrix_rowNormalized = new HashMap<Integer, GeneExpression>();
-
-			for (Integer key : expressionMatrix.keySet()) {
-				GeneExpression expression = (GeneExpression) expressionMatrix.get(key);
-				GeneExpression norm_row = new GeneExpression(expression.getName(), expression.getDescription());
-				float[] row_normalized = expression.rowNormalize();
-				norm_row.setExpression(row_normalized);
-				expressionMatrix_rowNormalized.put(key, norm_row);
-			}
+		System.out.println("GeneExpressionMatrix.rowNormalizeMatrix()");
+		Map<Integer, GeneExpression> expressionMatrix_rowNormalized = new HashMap<>();
+		for (Integer key : expressionMatrix.keySet()) {
+			GeneExpression expression = (GeneExpression) expressionMatrix.get(key);
+			GeneExpression norm_row = new GeneExpression(expression.getName(), expression.getDescription());
+			float[] row_normalized = expression.rowNormalize();
+			norm_row.setExpression(row_normalized);
+			expressionMatrix_rowNormalized.put(key, norm_row);
 		}
 		return expressionMatrix_rowNormalized;
 	}

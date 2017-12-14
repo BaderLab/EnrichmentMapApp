@@ -90,9 +90,7 @@ public class GeneExpression {
 			try {
 				expression[0] = parseAndRound(expres[1]);
 			} catch (NumberFormatException e) {
-				// if the column doesn't contain doubles then just assume that
-				// the expression
-				// file is empty
+				// if the column doesn't contain doubles then just assume that the expression file is empty
 				expression[0] = 0.0f;
 			}
 		}

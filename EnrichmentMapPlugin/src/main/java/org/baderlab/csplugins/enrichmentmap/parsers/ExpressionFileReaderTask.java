@@ -209,32 +209,7 @@ public class ExpressionFileReaderTask extends AbstractTask {
 
 		//set the number of genes
 		expressionMatrix.setExpressionUniverse(expressionUniverse);
-		//row Normalize expressionset
-		expressionMatrix.rowNormalizeMatrix();
-
 		return expressionMatrix;
-
-		//TODO: intialize phenotypes associated with class files from expression file load
-		/*
-		 * if(dataset == 1){ //set up the classes definition if it is set.
-		 * //check to see if the phenotypes were already set in the params from
-		 * a session load if(params.getTemp_class1() != null)
-		 * expressionMatrix.setPhenotypes(params.getTemp_class1());
-		 * if(params.getClassFile1() != null)
-		 * expressionMatrix.setPhenotypes(setClasses( params.getClassFile1()));
-		 * //params.getEM().addExpression(EnrichmentMap.DATASET1,
-		 * expressionMatrix); } else{ //set up the classes definition if it is
-		 * set.
-		 * 
-		 * //check to see if the phenotypes were already set in the params from
-		 * a session load if(params.getTemp_class2() != null)
-		 * expressionMatrix.setPhenotypes(params.getTemp_class2()); else
-		 * if(params.getClassFile2() != null)
-		 * expressionMatrix.setPhenotypes(setClasses( params.getClassFile2()));
-		 * //params.getEM().addExpression(EnrichmentMap.DATASET2,
-		 * expressionMatrix); }
-		 */
-
 	}
 
 

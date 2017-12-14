@@ -74,6 +74,7 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 	
 	
 	public DataSetColorRange getRange(EMDataSet dataset, Transform transform) {
+		// creating the color range for Transform.ROW_NORMALIZED consumes memory, so cache the value
 		return colorRanges.computeIfAbsent(dataset, ds -> DataSetColorRange.create(ds, transform));
 	}
 	

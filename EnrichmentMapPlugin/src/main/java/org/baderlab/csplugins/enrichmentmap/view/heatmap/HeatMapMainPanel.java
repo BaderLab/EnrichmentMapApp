@@ -204,7 +204,7 @@ public class HeatMapMainPanel extends JPanel {
 	
 	private JPanel createToolbarPanel() {
 		gradientLegendPanel = new GradientLegendPanel(table);
-		showValuesCheck = new JCheckBox("Show Values");
+		showValuesCheck = new JCheckBox("Values");
 		
 		JLabel operatorLabel = new JLabel("Genes:");
 		operatorCombo = new JComboBox<>();
