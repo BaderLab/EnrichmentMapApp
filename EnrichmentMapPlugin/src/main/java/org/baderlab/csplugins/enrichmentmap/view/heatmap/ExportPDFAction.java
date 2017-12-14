@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Optional;
@@ -11,7 +12,10 @@ import javax.swing.JTable;
 
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
@@ -43,10 +47,26 @@ public class ExportPDFAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 		Optional<File> file = FileBrowser.promptForPdfExport(fileUtil, jframeProvider.get());
 		if(file.isPresent()) {
-			ExportHeatMapPDFTask task = new ExportHeatMapPDFTask(file.get(), table, rankingSupplier.get());
-			dialogTaskManager.execute(new TaskIterator(task));
+			ExportHeatMapPDFTask exportPdfTask = new ExportHeatMapPDFTask(file.get(), table, rankingSupplier.get());
+			Task openPdfViewerTask = getOpenPdfViewerTask(file.get());
+			dialogTaskManager.execute(new TaskIterator(exportPdfTask, openPdfViewerTask));
 		}
 	}
+	
+	
+	private static Task getOpenPdfViewerTask(File file) {
+		return new AbstractTask() {
+			@Override
+			public void run(TaskMonitor taskMonitor) {
+				try {
+					if(Desktop.isDesktopSupported()) {
+						Desktop.getDesktop().open(file);
+					}
+				} catch(Exception e) { } // ignore, just make best attempt to open the viewer
+			}
+		};
+	}
+	
 }
 
 

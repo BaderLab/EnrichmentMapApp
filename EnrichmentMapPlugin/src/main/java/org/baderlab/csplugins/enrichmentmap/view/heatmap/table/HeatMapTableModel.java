@@ -90,7 +90,6 @@ public class HeatMapTableModel extends AbstractTableModel {
 		
 		@Override
 		public double getValue(int geneID, int col) { // col value 
-			System.out.println("("+geneID+","+col+")");
 			EMDataSet dataset = getDataSet(col);
 			
 			try {
