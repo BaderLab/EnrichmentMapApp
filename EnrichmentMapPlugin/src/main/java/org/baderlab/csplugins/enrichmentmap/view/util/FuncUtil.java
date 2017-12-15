@@ -23,7 +23,11 @@ public class FuncUtil {
 			return 0;
 		float x = expression[0];
 		for(int i = 1; i < expression.length; i++) {
-			x = op.apply(x, expression[i]);
+			float e = expression[i];
+			if(!Float.isFinite(x))
+				x = e;
+			else if(Float.isFinite(e))
+				x = op.apply(x, e);
 		}
 		return x;
 	}
@@ -33,7 +37,11 @@ public class FuncUtil {
 		Iterator<GeneExpression> iter = matrix.values().iterator();
 		float x = arrayop.apply(iter.next().getExpression());
 		while(iter.hasNext()) {
-			x = binop.apply(x, arrayop.apply(iter.next().getExpression()));
+			float e = arrayop.apply(iter.next().getExpression());
+			if(!Float.isFinite(x))
+				x = e;
+			else if(Float.isFinite(e))
+				x = binop.apply(x, e);
 		}
 		return x;
 	}

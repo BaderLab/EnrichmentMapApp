@@ -4,6 +4,7 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 
 import java.awt.BorderLayout;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -79,11 +80,11 @@ public class GradientLegendPanel extends JPanel {
 		if(value instanceof Double) {
 			EMDataSet dataset = tableModel.getDataSet(col);
 			HeatMapCellRenderer renderer = (HeatMapCellRenderer) table.getCellRenderer(row, col);
-			DataSetColorRange colorRange = renderer.getRange(dataset, tableModel.getTransform());
-			
-			JPanel panel = createExpressionLegendPanel(colorRange);
-			
-			add(panel, BorderLayout.CENTER);
+			Optional<DataSetColorRange> colorRange = renderer.getRange(dataset, tableModel.getTransform());
+			if(colorRange.isPresent()) {
+				JPanel panel = createExpressionLegendPanel(colorRange.get());
+				add(panel, BorderLayout.CENTER);
+			}
 			revalidate();
 		}
 	}

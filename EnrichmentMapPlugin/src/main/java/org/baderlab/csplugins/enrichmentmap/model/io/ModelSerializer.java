@@ -41,8 +41,10 @@ public class ModelSerializer {
 	public static String serialize(EnrichmentMap map, boolean pretty) {
 		// When saving to the session file DO NOT enable pretty printing, the Cytoscape
 		// CSV parser is very slow for multi-line text
-		GsonBuilder builder = new GsonBuilder().registerTypeHierarchyAdapter(Path.class, new PathAdapter())
-				.registerTypeAdapter(EnrichmentResult.class, new EnrichmentResultAdapter());
+		GsonBuilder builder = new GsonBuilder()
+				.registerTypeHierarchyAdapter(Path.class, new PathAdapter())
+				.registerTypeAdapter(EnrichmentResult.class, new EnrichmentResultAdapter())
+				.serializeSpecialFloatingPointValues(); // really important, we allow NaN in expression files
 
 		if (pretty) {
 			builder.setPrettyPrinting();
@@ -56,7 +58,8 @@ public class ModelSerializer {
 	public static EnrichmentMap deserialize(String json) {
 		Type immutableIntSetType = new TypeToken<ImmutableSet<Integer>>() {}.getType();
 
-		Gson gson = new GsonBuilder().registerTypeAdapter(BiMap.class, new BiMapAdapter())
+		Gson gson = new GsonBuilder()
+				.registerTypeAdapter(BiMap.class, new BiMapAdapter())
 				.registerTypeHierarchyAdapter(Path.class, new PathAdapter())
 				.registerTypeAdapter(EnrichmentResult.class, new EnrichmentResultAdapter())
 				.registerTypeAdapter(immutableIntSetType, new ImmutableIntSetAdapter()).create();

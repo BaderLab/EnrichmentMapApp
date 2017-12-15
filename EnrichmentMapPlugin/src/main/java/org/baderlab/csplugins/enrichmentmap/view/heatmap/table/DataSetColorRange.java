@@ -1,8 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
 import java.util.Map;
+import java.util.Optional;
 
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
@@ -22,8 +22,7 @@ public class DataSetColorRange {
 	/**
 	 * Reset color gradients based on a change in the data transformation.
 	 */
-	public static DataSetColorRange create(EMDataSet ds, Transform transform) {
-		GeneExpressionMatrix expression = ds.getExpressionSets();
+	public static Optional<DataSetColorRange> create(GeneExpressionMatrix expression, Transform transform) {
 		double minExpression = expression.getMinExpression();
 		double maxExpression = expression.getMaxExpression();
 		
@@ -41,18 +40,11 @@ public class DataSetColorRange {
 				Map<Integer,GeneExpression> rowNormalized = expression.rowNormalizeMatrix();
 				min = GeneExpressionMatrix.getMinExpression(rowNormalized);
 				max = GeneExpressionMatrix.getMaxExpression(rowNormalized);
-
-				//if both row normalization values are zero, can't perform row normalization issue warning
-				//This happens when there is only one data column in the dataset (or if it is rank file)
-				if((min == 0) && (max == 0)) {
-					//JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Row normalization does not work with only one data column per dataset.","Row normalization error",JOptionPane.WARNING_MESSAGE);
-				}
 				max = Math.max(Math.abs(min), max);
 				break;
 
 			case LOG_TRANSFORM:
-				//can't take a log of a negative number, if both the max and min are negative then log tranform won't work.
-				//issue a warning.
+				//can't take a log of a negative number, if both the max and min are negative then log tranform won't work. issue a warning.
 				if((minExpression <= 0) && (maxExpression <= 0)) {
 					//both the max and min are probably negative values
 					//JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Both the max and min expression are negative, log of negative numbers is not valid", "log normalization error", JOptionPane.WARNING_MESSAGE);
@@ -77,15 +69,19 @@ public class DataSetColorRange {
 				break;
 		}
 
+		if(!Double.isFinite(min) || !Double.isFinite(max) || (min == 0 && max == 0)) {
+			return Optional.empty();
+		}
+		
 		if(min >= 0) {
 			double median = max / 2;
 			ColorGradientRange range = ColorGradientRange.getInstance(0, median, median, max, 0, median, median, max);
 			ColorGradientTheme theme = ColorGradientTheme.GREEN_ONECOLOR_GRADIENT_THEME;
-			return new DataSetColorRange(theme, range);
+			return Optional.of(new DataSetColorRange(theme, range));
 		} else {
 			ColorGradientRange range = ColorGradientRange.getInstance(-max, 0, 0, max, -max, 0, 0, max);
 			ColorGradientTheme theme = ColorGradientTheme.PR_GN_GRADIENT_THEME;
-			return new DataSetColorRange(theme, range);
+			return Optional.of(new DataSetColorRange(theme, range));
 		}
 	}
 	

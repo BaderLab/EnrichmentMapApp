@@ -106,7 +106,6 @@ public class GeneExpressionMatrix {
 	 * (Log normalization is computed on the fly)
 	 */
 	public synchronized Map<Integer, GeneExpression> rowNormalizeMatrix() {
-		System.out.println("GeneExpressionMatrix.rowNormalizeMatrix()");
 		Map<Integer, GeneExpression> expressionMatrix_rowNormalized = new HashMap<>();
 		for (Integer key : expressionMatrix.keySet()) {
 			GeneExpression expression = (GeneExpression) expressionMatrix.get(key);

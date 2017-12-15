@@ -139,7 +139,19 @@ public class GeneExpression {
 	public static float median(float[] expression) {
 		if(expression == null || expression.length == 0)
 			return 0;
-		float[] copy = Arrays.copyOf(expression, expression.length);
+		
+		int ci = 0;
+		float[] copy = new float[expression.length];
+		for(float e : expression) {
+			if(Float.isFinite(e)) {
+				copy[ci++] = e;
+			}
+		}
+		if(ci == 0)
+			return Float.NaN;
+		if(ci != expression.length)
+			copy = Arrays.copyOf(copy, ci);
+		
 		Arrays.sort(copy);
 		if(copy.length % 2 == 0)
 		    return (copy[copy.length/2] + copy[copy.length/2 - 1]) / 2;

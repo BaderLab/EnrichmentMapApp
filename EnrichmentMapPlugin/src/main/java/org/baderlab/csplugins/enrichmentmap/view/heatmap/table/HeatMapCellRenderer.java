@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -21,7 +22,7 @@ import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientTheme;
 
 public class HeatMapCellRenderer implements TableCellRenderer {
 
-	private final Map<EMDataSet,DataSetColorRange> colorRanges = new HashMap<>();
+	private final Map<EMDataSet,Optional<DataSetColorRange>> colorRanges = new HashMap<>();
 	private final DecimalFormat format = new DecimalFormat("###.##");
 	private final boolean showValue;
 	
@@ -53,6 +54,8 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 					label.setFont(new Font((UIManager.getFont("TableHeader.font")).getName(), Font.PLAIN, (UIManager.getFont("TableHeader.font")).getSize()-2));
 		      	   	label.setHorizontalAlignment(SwingConstants.RIGHT);
 				}
+			} else if(Double.isNaN(d)) {
+				label.setToolTipText("NaN");
 			}
 		}
 		
@@ -67,15 +70,19 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 	public Color getColor(HeatMapTableModel model, int col, double d) {
 		EMDataSet dataset = model.getDataSet(col);
 		Transform transform = model.getTransform();
-		DataSetColorRange range = getRange(dataset, transform);
-		Color color = getColor(d, range);
-		return color;
+		Optional<DataSetColorRange> range = getRange(dataset, transform);
+		if(range.isPresent()) {
+			Color color = getColor(d, range.get());
+			return color;
+		} else {
+			return Color.GRAY;
+		}
 	}
 	
 	
-	public DataSetColorRange getRange(EMDataSet dataset, Transform transform) {
+	public Optional<DataSetColorRange> getRange(EMDataSet dataset, Transform transform) {
 		// creating the color range for Transform.ROW_NORMALIZED consumes memory, so cache the value
-		return colorRanges.computeIfAbsent(dataset, ds -> DataSetColorRange.create(ds, transform));
+		return colorRanges.computeIfAbsent(dataset, ds -> DataSetColorRange.create(ds.getExpressionSets(), transform));
 	}
 	
 	
