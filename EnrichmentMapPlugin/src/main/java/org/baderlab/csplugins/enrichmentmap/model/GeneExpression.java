@@ -46,7 +46,6 @@ package org.baderlab.csplugins.enrichmentmap.model;
 import java.util.Arrays;
 
 import org.apache.commons.math3.util.Precision;
-import org.baderlab.csplugins.enrichmentmap.view.util.FuncUtil;
 
 
 /**
@@ -129,11 +128,11 @@ public class GeneExpression {
 	
 	
 	public static float max(float[] expression) {
-		return FuncUtil.reduceExpression(expression, Math::max);
+		return reduceExpression(expression, Math::max);
 	}
 	
 	public static float min(float[] expression) {
-		return FuncUtil.reduceExpression(expression, Math::min);
+		return reduceExpression(expression, Math::min);
 	}
 	
 	public static float median(float[] expression) {
@@ -173,11 +172,14 @@ public class GeneExpression {
 	
 	
 	private float mean() {
-		return FuncUtil.reduceExpression(expression, (x,y) -> x + y) / expression.length;
+		return reduceExpression(expression, (x,y) -> x + y) / expression.length;
 	}
 
 	private float std(final float mean) {
-		float sum = FuncUtil.reduceExpression(expression, (s, exp) -> s + (float)Math.pow(exp - mean, 2));
+		float sum = 0;
+		for(float exp : expression) {
+			sum += (float)Math.pow(Math.abs(exp - mean), 2);
+		}
 		return (float) Math.sqrt(sum) / expression.length;
 	}
 
@@ -189,6 +191,27 @@ public class GeneExpression {
 	}
 
 
+	
+	@FunctionalInterface
+	private interface FloatFloatFunc {
+		float apply(float x, float y);
+	}
+
+	private static float reduceExpression(float[] expression, FloatFloatFunc op) {
+		if(expression == null || expression.length == 0)
+			return 0;
+		float x = expression[0];
+		for(int i = 1; i < expression.length; i++) {
+			float e = expression[i];
+			if(!Float.isFinite(x))
+				x = e;
+			else if(Float.isFinite(e))
+				x = op.apply(x, e);
+		}
+		return x;
+	}
+	
+	
 	public String getName() {
 		return name;
 	}

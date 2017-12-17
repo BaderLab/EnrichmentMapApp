@@ -168,8 +168,6 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		assertEquals(expected.getNumConditions(), actual.getNumConditions());
 		assertEquals(expected.getExpressionUniverse(), actual.getExpressionUniverse());
 		assertMapsEqual(ModelSerializerTest::assertGeneExpressionEquals, expected.getExpressionMatrix(), actual.getExpressionMatrix());
-		assertEquals(expected.getMaxExpression(), actual.getMaxExpression(), 0.0);
-		assertEquals(expected.getMinExpression(), actual.getMinExpression(), 0.0);
 		assertEquals(expected.getClosestToZero(), actual.getClosestToZero(), 0.0);
 	}
 	

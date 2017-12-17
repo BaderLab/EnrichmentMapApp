@@ -44,16 +44,20 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.view.util.FuncUtil;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 
 /**
  * Class representing a set of genes/proteins expresion profile
  */
 public class GeneExpressionMatrix {
 
+	
+	
+	
 	//name of columns - specified by first or second row in the expression matrix
 	private String[] columnNames;
 	//number of conditions - number of columns
@@ -66,24 +70,8 @@ public class GeneExpressionMatrix {
 	private Map<Integer, GeneExpression> expressionMatrix = new HashMap<>();
 
 
-	public static float getMaxExpression(Map<Integer,GeneExpression> matrix) {
-		return FuncUtil.reduceExpressionMatrix(matrix, GeneExpression::max, Math::max);
-	}
-	
-	public float getMaxExpression() {
-		return getMaxExpression(expressionMatrix);
-	}
-
-	public static float getMinExpression(Map<Integer,GeneExpression> matrix) {
-		return FuncUtil.reduceExpressionMatrix(matrix, GeneExpression::min, Math::min);
-	}
-	
-	public float getMinExpression() {
-		return getMinExpression(expressionMatrix);
-	}
-	
 	public float getClosestToZero() {
-		float closest = getMaxExpression();
+		float closest = getMinMax(Transform.AS_IS)[1];
 		if(closest <= 0)
 			return 0;
 		for(GeneExpression expression : expressionMatrix.values()) {
@@ -96,25 +84,43 @@ public class GeneExpressionMatrix {
 		return closest;
 	}
 	
-
-	/**
-	 * Compute the row Normalized version of the current expression matrix. Row
-	 * Normalization involves computing the mean and standard deviation for each
-	 * row in the matrix. Each value in that specific row has the mean
-	 * subtracted and is divided by the standard deviation. Row normalization is
-	 * computed lazily and cached with the expression matrix. 
-	 * (Log normalization is computed on the fly)
-	 */
-	public synchronized Map<Integer, GeneExpression> rowNormalizeMatrix() {
-		Map<Integer, GeneExpression> expressionMatrix_rowNormalized = new HashMap<>();
-		for (Integer key : expressionMatrix.keySet()) {
-			GeneExpression expression = (GeneExpression) expressionMatrix.get(key);
-			GeneExpression norm_row = new GeneExpression(expression.getName(), expression.getDescription());
-			float[] row_normalized = expression.rowNormalize();
-			norm_row.setExpression(row_normalized);
-			expressionMatrix_rowNormalized.put(key, norm_row);
+	
+	public float[] getMinMax(Transform transform) {
+		Iterator<GeneExpression> iter = expressionMatrix.values().iterator();
+		if(!iter.hasNext())
+			return null;
+		
+		float[] normValues = getExpressions(iter.next(), transform);
+		float min = GeneExpression.min(normValues);
+		float max = GeneExpression.max(normValues);
+		
+		while(iter.hasNext()) {
+			normValues = getExpressions(iter.next(), transform);
+			float newMin = GeneExpression.min(normValues);
+			float newMax = GeneExpression.max(normValues);
+			
+			if(!Float.isFinite(min))
+				min = newMin;
+			else if(Float.isFinite(newMin)) 
+				min = Math.min(min, newMin);
+			
+			if(!Float.isFinite(max))
+				max = newMax;
+			else if(Float.isFinite(newMax)) 
+				max = Math.max(max, newMax);
 		}
-		return expressionMatrix_rowNormalized;
+		
+		return new float[] { min, max };
+	}
+	
+	
+	private static float[] getExpressions(GeneExpression expression, Transform transform) {
+		switch(transform) {
+			default:
+			case AS_IS: return expression.getExpression();
+			case LOG_TRANSFORM: return expression.rowLogTransform();
+			case ROW_NORMALIZE: return expression.rowNormalize();
+		}
 	}
 
 	//Getters and Setters

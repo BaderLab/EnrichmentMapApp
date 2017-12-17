@@ -1,7 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
@@ -77,8 +76,8 @@ public class ExpressionOpsTest {
 		GeneExpressionMatrix matrix = new GeneExpressionMatrix();
 		matrix.setExpressionMatrix(map);
 		
-		assertEquals(3.0f,  matrix.getMaxExpression(), 0.0f);
-		assertEquals(-3.0f, matrix.getMinExpression(), 0.0f);
+		assertEquals(3.0f,  matrix.getMinMax(Transform.AS_IS)[1], 0.0f);
+		assertEquals(-3.0f, matrix.getMinMax(Transform.AS_IS)[0], 0.0f);
 		assertEquals(1.0f,  matrix.getClosestToZero(), 0.0f);
 	}
 	
@@ -91,8 +90,8 @@ public class ExpressionOpsTest {
 		GeneExpressionMatrix matrix = new GeneExpressionMatrix();
 		matrix.setExpressionMatrix(map);
 		
-		assertEquals(3.0f,  matrix.getMaxExpression(), 0.0f);
-		assertEquals(-3.0f, matrix.getMinExpression(), 0.0f);
+		assertEquals(3.0f,  matrix.getMinMax(Transform.AS_IS)[1], 0.0f);
+		assertEquals(-3.0f, matrix.getMinMax(Transform.AS_IS)[0], 0.0f);
 		assertEquals(1.0f,  matrix.getClosestToZero(), 0.0f);
 	}
 	
@@ -105,8 +104,8 @@ public class ExpressionOpsTest {
 		GeneExpressionMatrix matrix = new GeneExpressionMatrix();
 		matrix.setExpressionMatrix(map);
 		
-		assertEquals(0f, matrix.getMaxExpression(), 0.0f);
-		assertEquals(0f, matrix.getMinExpression(), 0.0f);
+		assertEquals(0f, matrix.getMinMax(Transform.AS_IS)[1], 0.0f);
+		assertEquals(0f, matrix.getMinMax(Transform.AS_IS)[0], 0.0f);
 		assertEquals(0f, matrix.getClosestToZero(), 0.0f);
 	}
 

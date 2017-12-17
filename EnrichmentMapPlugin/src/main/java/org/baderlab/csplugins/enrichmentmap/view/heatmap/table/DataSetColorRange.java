@@ -1,9 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
-import java.util.Map;
 import java.util.Optional;
 
-import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientRange;
@@ -23,51 +21,12 @@ public class DataSetColorRange {
 	 * Reset color gradients based on a change in the data transformation.
 	 */
 	public static Optional<DataSetColorRange> create(GeneExpressionMatrix expression, Transform transform) {
-		double minExpression = expression.getMinExpression();
-		double maxExpression = expression.getMaxExpression();
+		float[] minMax = expression.getMinMax(transform);
+		if(minMax == null || minMax.length < 2)
+			return Optional.empty();
 		
-		double min;
-		double max;
-
-		switch(transform) {
-			case AS_IS:
-			default:
-				min = minExpression;
-				max = Math.max(Math.abs(minExpression), maxExpression);
-				break;
-			
-			case ROW_NORMALIZE:
-				Map<Integer,GeneExpression> rowNormalized = expression.rowNormalizeMatrix();
-				min = GeneExpressionMatrix.getMinExpression(rowNormalized);
-				max = GeneExpressionMatrix.getMaxExpression(rowNormalized);
-				max = Math.max(Math.abs(min), max);
-				break;
-
-			case LOG_TRANSFORM:
-				//can't take a log of a negative number, if both the max and min are negative then log tranform won't work. issue a warning.
-				if((minExpression <= 0) && (maxExpression <= 0)) {
-					//both the max and min are probably negative values
-					//JOptionPane.showMessageDialog(Cytoscape.getDesktop(),"Both the max and min expression are negative, log of negative numbers is not valid", "log normalization error", JOptionPane.WARNING_MESSAGE);
-					min = 0;
-					max = 0;
-				}
-				//if min expression is negative then use the max expression as the max
-				else if(minExpression <= 0) {
-					double closestToZeroExpression = expression.getClosestToZero();
-					min = Math.min(Math.log(closestToZeroExpression), Math.log1p(maxExpression));
-					max = Math.max(Math.log(closestToZeroExpression), Math.log1p(maxExpression));
-				}
-				//if the max expression is negative then use the min expression as the max (should never happen!)
-				else if(maxExpression <= 0) {
-					min = 0;
-					max = Math.log1p(minExpression);
-				} else {
-					min = Math.log1p(minExpression);
-					max = Math.log1p(maxExpression);
-					max = Math.max(Math.abs(min), max);
-				}
-				break;
-		}
+		float min = minMax[0];
+		float max = minMax[1];
 
 		if(!Double.isFinite(min) || !Double.isFinite(max) || (min == 0 && max == 0)) {
 			return Optional.empty();
