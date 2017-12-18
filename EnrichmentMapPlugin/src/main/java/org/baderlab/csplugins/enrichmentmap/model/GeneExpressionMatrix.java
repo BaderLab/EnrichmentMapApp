@@ -54,9 +54,6 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform
  * Class representing a set of genes/proteins expresion profile
  */
 public class GeneExpressionMatrix {
-
-	
-	
 	
 	//name of columns - specified by first or second row in the expression matrix
 	private String[] columnNames;

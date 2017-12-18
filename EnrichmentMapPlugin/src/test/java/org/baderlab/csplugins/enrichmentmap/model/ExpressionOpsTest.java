@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ExpressionOpsTest {
@@ -111,7 +110,7 @@ public class ExpressionOpsTest {
 		assertEquals(0f, matrix.getClosestToZero(), 0.0f);
 	}
 
-	@Ignore
+	@Test
 	public void testDataSetColorRangeNaN() {
 		Map<Integer,GeneExpression> map = new HashMap<>();
 		map.put(1, new GeneExpression("ge1", "", new float[] {Float.NaN, Float.NaN, 1.0f, Float.NaN, Float.NaN}));

@@ -178,7 +178,9 @@ public class GeneExpression {
 	private float std(final float mean) {
 		float sum = 0;
 		for(float exp : expression) {
-			sum += (float)Math.pow(Math.abs(exp - mean), 2);
+			if(Float.isFinite(exp)) {
+				sum += (float)Math.pow(Math.abs(exp - mean), 2);
+			}
 		}
 		return (float) Math.sqrt(sum) / expression.length;
 	}

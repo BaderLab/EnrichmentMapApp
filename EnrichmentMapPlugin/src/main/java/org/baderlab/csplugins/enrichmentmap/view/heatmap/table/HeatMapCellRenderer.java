@@ -91,9 +91,9 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 	}
 	
 	public static Color getColor(Double measurement, ColorGradientTheme theme, ColorGradientRange range) {
-		if (theme == null || range == null || measurement == null)
+		if (theme == null)
 			return Color.GRAY;
-		if(!Double.isFinite(measurement)) // missing data can result in NaN, log transformed value of -1 can result in -Infinity
+		if(range == null || measurement == null || !Double.isFinite(measurement)) // missing data can result in NaN, log transformed value of -1 can result in -Infinity
 			return theme.getNoDataColor();
 
 		float rLow = (float)theme.getMinColor().getRed()   / 255f;

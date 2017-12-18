@@ -21,6 +21,7 @@ public class DataSetColorRange {
 	 * Reset color gradients based on a change in the data transformation.
 	 */
 	public static Optional<DataSetColorRange> create(GeneExpressionMatrix expression, Transform transform) {
+		System.out.println("DataSetColorRange.create()");
 		float[] minMax = expression.getMinMax(transform);
 		if(minMax == null || minMax.length < 2)
 			return Optional.empty();
@@ -36,6 +37,11 @@ public class DataSetColorRange {
 			double median = max / 2;
 			ColorGradientRange range = ColorGradientRange.getInstance(0, median, median, max, 0, median, median, max);
 			ColorGradientTheme theme = ColorGradientTheme.GREEN_ONECOLOR_GRADIENT_THEME;
+			return Optional.of(new DataSetColorRange(theme, range));
+		} else if(Math.abs(min) > max) {
+			min = Math.abs(min);
+			ColorGradientRange range = ColorGradientRange.getInstance(-min, 0, 0, min, -min, 0, 0, min);
+			ColorGradientTheme theme = ColorGradientTheme.PR_GN_GRADIENT_THEME;
 			return Optional.of(new DataSetColorRange(theme, range));
 		} else {
 			ColorGradientRange range = ColorGradientRange.getInstance(-max, 0, 0, max, -max, 0, 0, max);
