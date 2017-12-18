@@ -177,8 +177,8 @@ public class LegacySessionLoadTest extends BaseIntegrationTest {
 		assertEquals(20326, expressions.getExpressionUniverse());
 		assertEquals(3.686190609, expressions.getClosestToZero(), 0.001);
 //		assertEndsWith(expressions.getFilename(), "MCF7_ExprMx_v2_names.gct");
-		assertEquals(15380.42388, expressions.getMaxExpression(), 0.001);
-		assertEquals(3.686190609, expressions.getMinExpression(), 0.001);
+//		assertEquals(15380.42388, expressions.getMaxExpression(), 0.001);
+//		assertEquals(3.686190609, expressions.getMinExpression(), 0.001);
 		assertEquals(20, expressions.getNumConditions());
 		
 		assertEquals(12653, expressions.getExpressionMatrix().size());
