@@ -7,10 +7,12 @@ import java.util.List;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -52,6 +54,10 @@ public class DetailCommonPanel extends JPanel implements DetailPanel {
 		expressionsText = pathTextFactory.create("Expressions:", FileBrowser.Filter.EXPRESSION);
 		classText = pathTextFactory.create("Class File:", FileBrowser.Filter.CLASS);
 		
+		JButton resetButton = new JButton("Clear");
+		SwingUtil.makeSmall(resetButton);
+		resetButton.addActionListener(e -> reset());
+		
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
@@ -59,7 +65,6 @@ public class DetailCommonPanel extends JPanel implements DetailPanel {
 	   		
 		layout.setHorizontalGroup(
 			layout.createSequentialGroup()
-				
 				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
 					.addComponent(gmtText.getLabel())
 					.addComponent(expressionsText.getLabel())
@@ -69,6 +74,7 @@ public class DetailCommonPanel extends JPanel implements DetailPanel {
 					.addComponent(gmtText.getTextField())
 					.addComponent(expressionsText.getTextField())
 					.addComponent(classText.getTextField())
+					.addComponent(resetButton, Alignment.TRAILING)
 				)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(gmtText.getBrowseButton())
@@ -94,6 +100,7 @@ public class DetailCommonPanel extends JPanel implements DetailPanel {
 					.addComponent(classText.getTextField())
 					.addComponent(classText.getBrowseButton())
 				)
+				.addComponent(resetButton)
 		);
 		
    		if(LookAndFeelUtil.isAquaLAF())
