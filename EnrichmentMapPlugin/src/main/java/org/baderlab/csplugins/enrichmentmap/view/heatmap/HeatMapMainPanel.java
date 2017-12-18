@@ -142,6 +142,9 @@ public class HeatMapMainPanel extends JPanel {
 		table.setCellSelectionEnabled(true);
 		table.setAutoCreateRowSorter(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		table.setDefaultRenderer(Double.class, new HeatMapCellRenderer());
+		table.setDefaultRenderer(RankValue.class, new RankValueRenderer());
 
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(scrollPane, BorderLayout.CENTER);
@@ -486,8 +489,8 @@ public class HeatMapMainPanel extends JPanel {
 	}
 	
 	private void updateSetting_ShowValues(boolean showValues) {
-		table.setDefaultRenderer(Double.class, new HeatMapCellRenderer(showValues));
-		table.setDefaultRenderer(RankValue.class, new RankValueRenderer());
+		HeatMapCellRenderer renderer = (HeatMapCellRenderer) table.getDefaultRenderer(Double.class);
+		renderer.setShowValues(showValues);
 		clearTableHeader();
 		createTableHeader(showValues ? COLUMN_WIDTH_VALUE : COLUMN_WIDTH_COLOR);
 		table.revalidate();

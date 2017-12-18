@@ -15,6 +15,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientRange;
@@ -22,15 +23,14 @@ import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientTheme;
 
 public class HeatMapCellRenderer implements TableCellRenderer {
 
-	private final Map<EMDataSet,Optional<DataSetColorRange>> colorRanges = new HashMap<>();
+	private final Map<Pair<EMDataSet,Transform>,Optional<DataSetColorRange>> colorRanges = new HashMap<>();
 	private final DecimalFormat format = new DecimalFormat("###.##");
-	private final boolean showValue;
+	private boolean showValue;
 	
 	
-	public HeatMapCellRenderer(boolean showValue) {
+	public void setShowValues(boolean showValue) {
 		this.showValue = showValue;
 	}
-
 	
 	@Override
 	public JLabel getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
@@ -82,7 +82,9 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 	
 	public Optional<DataSetColorRange> getRange(EMDataSet dataset, Transform transform) {
 		// creating the color range for Transform.ROW_NORMALIZED consumes memory, so cache the value
-		return colorRanges.computeIfAbsent(dataset, ds -> DataSetColorRange.create(ds.getExpressionSets(), transform));
+		return colorRanges.computeIfAbsent(Pair.of(dataset, transform), 
+			pair -> DataSetColorRange.create(pair.getLeft().getExpressionSets(), pair.getRight())
+		);
 	}
 	
 	

@@ -21,7 +21,6 @@ public class DataSetColorRange {
 	 * Reset color gradients based on a change in the data transformation.
 	 */
 	public static Optional<DataSetColorRange> create(GeneExpressionMatrix expression, Transform transform) {
-		System.out.println("DataSetColorRange.create()");
 		float[] minMax = expression.getMinMax(transform);
 		if(minMax == null || minMax.length < 2)
 			return Optional.empty();
