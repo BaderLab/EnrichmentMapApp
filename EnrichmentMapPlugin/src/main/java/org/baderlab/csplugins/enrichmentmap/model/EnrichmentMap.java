@@ -456,10 +456,8 @@ public class EnrichmentMap {
 
 	public Map<String, Ranking> getAllRanks() {
 		Map<String, Ranking> allranks = new HashMap<>();
-		
 		for (EMDataSet dataset : dataSets.values())
 			allranks.putAll(dataset.getRanks());
-		
 		return allranks;
 	}
 	
@@ -581,6 +579,14 @@ public class EnrichmentMap {
 	 */
 	public boolean isLegacy() {
 		return isLegacy;
+	}
+	
+	public boolean isTwoPhenotypeGeneric() {
+		return dataSets.values().stream().allMatch(EMDataSet::getIsTwoPheotypeGeneric);
+	}
+	
+	public boolean hasNonGSEADataSet() {
+		return dataSets.values().stream().anyMatch(ds -> ds.getMethod() != Method.GSEA);
 	}
 	
 	@Override

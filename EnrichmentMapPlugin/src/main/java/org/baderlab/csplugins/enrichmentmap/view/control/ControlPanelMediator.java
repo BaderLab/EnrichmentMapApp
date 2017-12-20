@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
@@ -42,7 +41,6 @@ import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -591,20 +589,16 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	 * Call this method on the EDT only!
 	 */
 	private void setDefaults(EMViewControlPanel viewPanel, EnrichmentMap map) {
-		List<EMDataSet> dataSets = map.getDataSetList();
-		
-		if (dataSets.size() > 0) {
-			ChartData chartData = ChartData.NES_VALUE; // Default for GSEA data sets
+		if(map.getDataSetCount() > 0) {
 			EMCreationParameters params = map.getParams();
 			
-			if (params != null && params.isFDR()) {
-				Optional<EMDataSet> nonGsea = dataSets.stream()
-					.filter(ds -> ds.getMethod() != Method.GSEA)
-					.findFirst();
-				
-				if (nonGsea.isPresent())
-					chartData = ChartData.FDR_VALUE; // Default for other data sets
-			}
+			ChartData chartData;
+			if(map.isTwoPhenotypeGeneric())
+				chartData = ChartData.PHENOTYPES;
+			else if(params != null && params.isFDR() && map.hasNonGSEADataSet())
+				chartData = ChartData.FDR_VALUE; // Default for other data sets
+			else
+				chartData = ChartData.NES_VALUE; // Default for GSEA data sets
 			
 			viewPanel.getChartDataCombo().setSelectedItem(chartData);
 		}

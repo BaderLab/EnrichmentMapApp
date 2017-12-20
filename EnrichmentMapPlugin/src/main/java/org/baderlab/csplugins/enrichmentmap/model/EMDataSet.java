@@ -31,6 +31,7 @@ public class EMDataSet extends AbstractDataSet {
 	private Color color;
 	private DataSetFiles dataSetFiles;
 	private Map<String, Ranking> ranks = new HashMap<>();
+	private boolean isTwoPhenotypeGeneric;
 	
 	protected EMDataSet(EnrichmentMap map, String name, Method method, DataSetFiles files) {
 		super(map, name);
@@ -190,4 +191,12 @@ public class EMDataSet extends AbstractDataSet {
 		this.ranks.put(name, new_ranking);
 	}
 
+	
+	public void setIsTwoPhenotypeGeneric(boolean b) {
+		this.isTwoPhenotypeGeneric = b;
+	}
+	
+	public boolean getIsTwoPheotypeGeneric() {
+		return method == Method.Generic && isTwoPhenotypeGeneric;
+	}
 }

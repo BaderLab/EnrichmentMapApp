@@ -7,6 +7,7 @@ public enum ChartData {
 	NES_VALUE("NES Columns", Columns.NODE_NES),
 	P_VALUE("P-value Columns", Columns.NODE_PVALUE),
 	FDR_VALUE("Q-value (FDR) Columns", Columns.NODE_FDR_QVALUE),
+	PHENOTYPES("Phenotypes", Columns.NODE_COLOURING),
 	DATA_SET("Color by Data Set", Columns.DATASET_CHART);
 	
 	private final String label;

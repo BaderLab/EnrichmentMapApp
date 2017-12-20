@@ -18,7 +18,7 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 	
 	
 	public DiscreteTaskMonitor(TaskMonitor delegate, int totalWork, double low, double high) {
-		this.delegate = delegate;
+		this.delegate = delegate == null ? new NullTaskMonitor() : delegate;
 		this.totalWork = totalWork;
 		this.low = low;
 		this.high = high;

@@ -758,9 +758,12 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				EnrichmentMap map = getEnrichmentMap();
 				if (map != null) {
 					EMCreationParameters params = map.getParams();
-					if (params != null && params.isFDR())
+					if(params != null && params.isFDR())
 						chartDataCombo.addItem(ChartData.FDR_VALUE);
+					if(map.isTwoPhenotypeGeneric())
+						chartDataCombo.addItem(ChartData.PHENOTYPES);
 				}
+				
 				chartDataCombo.addItem(ChartData.DATA_SET);
 			}
 			
