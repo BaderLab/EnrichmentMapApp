@@ -1,22 +1,26 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 import javax.swing.AbstractAction;
+import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTable;
-import javax.swing.RowSorter;
 
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel;
-import org.cytoscape.util.swing.FileChooserFilter;
+import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
+import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -27,6 +31,7 @@ public class ExportTXTAction extends AbstractAction {
 	
 	@Inject private FileUtil fileUtil;
 	@Inject private Provider<JFrame> jframeProvider;
+	@Inject private DialogTaskManager dialogTaskManager;
 	
 	private final JTable table;
 	
@@ -40,71 +45,40 @@ public class ExportTXTAction extends AbstractAction {
 		this.table = table;
 	}
 	
-	private File promptForFile() {
-		List<FileChooserFilter> filter = Collections.singletonList(new FileChooserFilter("txt Files", "txt"));
-		File file = fileUtil.getFile(jframeProvider.get(), "Export Heatmap as txt File", FileUtil.SAVE, filter);
-		if(file == null)
-			return null;
-		
-		String fileName = file.toString();
-		if(!fileName.endsWith(".txt")) {
-			fileName += ".txt";
-			file = new File(fileName);
-		}
-		return file;
-	}
 	
 	private boolean promptForLeadingEdgeOnly(HeatMapTableModel tableModel) {
-		if(tableModel.hasSignificantRanks()) {
-			int response = JOptionPane.showConfirmDialog(jframeProvider.get(), "Would you like to save the leading edge only?");
-			if(response == JOptionPane.YES_OPTION || response == JOptionPane.OK_OPTION)
-				return true;
+		if(!tableModel.hasSignificantRanks()) {
+			return false;
 		}
-		return false;
+		
+		JLabel label = new JLabel("Genes to export:");
+		JRadioButton allButton = new JRadioButton("All genes");
+		JRadioButton leadingEdgeButton = new JRadioButton("Leading edge only");
+		SwingUtil.makeSmall(label, allButton, leadingEdgeButton);
+		allButton.setSelected(true);
+		
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(allButton);
+		buttonGroup.add(leadingEdgeButton);
+		
+		JPanel panel = new JPanel(new GridBagLayout());
+		panel.add(label, GBCFactory.grid(0,0).weightx(1.0).get());
+		panel.add(allButton, GBCFactory.grid(0,1).get());
+		panel.add(leadingEdgeButton, GBCFactory.grid(0,2).get());
+		
+		JOptionPane.showMessageDialog(jframeProvider.get(), panel, "Export to TXT", JOptionPane.QUESTION_MESSAGE);
+		return leadingEdgeButton.isSelected();
 	}
+	
 	
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		File file = promptForFile();
-		if(file == null)
-			return;
-
-		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
-		boolean leadingEdgeOnly = promptForLeadingEdgeOnly(tableModel);
+		boolean leadingEdgeOnly = promptForLeadingEdgeOnly((HeatMapTableModel)table.getModel());
 		
-		try(BufferedWriter out = new BufferedWriter(new FileWriter(file))) {
-			int numCols = tableModel.getColumnCount();
-			
-			// Print column headers
-			out.append(tableModel.getColumnName(HeatMapTableModel.GENE_COL));
-			out.append("\t");
-			// Skip the ranks column
-			for(int col = HeatMapTableModel.DESC_COL_COUNT; col < numCols; col++) {
-				out.append(tableModel.getColumnName(col));
-				out.append(col == numCols-1 ? "\n" : "\t");
-			}
-			
-			RowSorter<?> sorter = table.getRowSorter();
-			int numViewRows = sorter.getViewRowCount();
-			
-			// Print table data
-			for(int viewRow = 0; viewRow < numViewRows; viewRow++) { 
-				int modelRow = sorter.convertRowIndexToModel(viewRow);
-				
-				if(leadingEdgeOnly && !tableModel.getRankValue(modelRow).isSignificant())
-					continue;
-				
-				out.append(tableModel.getValueAt(modelRow, HeatMapTableModel.GENE_COL).toString());
-				out.append("\t");
-				for(int col = HeatMapTableModel.DESC_COL_COUNT; col < numCols; col++) {
-					out.append(tableModel.getValueAt(modelRow, col).toString());
-					out.append(col == numCols-1 ? "\n" : "\t");
-				}				
-			}
-			
-		} catch(IOException e) {
-			JOptionPane.showMessageDialog(jframeProvider.get(), e.getMessage(), "Error writing file", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+		Optional<File> file = FileBrowser.promptForTXTExport(fileUtil, jframeProvider.get());
+		if(file.isPresent()) {
+			ExportTXTTask task = new ExportTXTTask(file.get(), table, leadingEdgeOnly);
+			dialogTaskManager.execute(new TaskIterator(task));
 		}
 	}
 

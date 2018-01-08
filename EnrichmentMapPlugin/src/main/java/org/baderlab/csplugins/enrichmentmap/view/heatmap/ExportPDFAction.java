@@ -47,7 +47,7 @@ public class ExportPDFAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 		Optional<File> file = FileBrowser.promptForPdfExport(fileUtil, jframeProvider.get());
 		if(file.isPresent()) {
-			ExportHeatMapPDFTask exportPdfTask = new ExportHeatMapPDFTask(file.get(), table, rankingSupplier.get());
+			ExportPDFTask exportPdfTask = new ExportPDFTask(file.get(), table, rankingSupplier.get());
 			Task openPdfViewerTask = getOpenPdfViewerTask(file.get());
 			dialogTaskManager.execute(new TaskIterator(exportPdfTask, openPdfViewerTask));
 		}

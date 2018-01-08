@@ -9,6 +9,8 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.ExportTXTTask;
+
 @SuppressWarnings("serial")
 public class RankValueRenderer extends DefaultTableCellRenderer {
 
@@ -20,7 +22,7 @@ public class RankValueRenderer extends DefaultTableCellRenderer {
 		if(value instanceof RankValue) {
 			RankValue rankValue = (RankValue) value;
 			
-			JLabel label = new JLabel(getRankText(format, rankValue));
+			JLabel label = new JLabel(ExportTXTTask.getRankText(format, rankValue));
 			
 			if (rankValue.isSignificant()) {
 				label.setBackground(SIGNIFICANT_COLOR);
@@ -36,20 +38,6 @@ public class RankValueRenderer extends DefaultTableCellRenderer {
 			return label;
 		}
 		return new JLabel();
-	}
-	
-	
-	public static String getRankText(DecimalFormat format, RankValue rankValue) {
-		Double score = rankValue.getScore();
-		if(score == null) {
-			Integer rank = rankValue.getRank();
-			if(rank != null) {
-				return String.valueOf(rank);
-			}
-		} else {
-			return format.format(score);
-		}
-		return "";
 	}
 
 }

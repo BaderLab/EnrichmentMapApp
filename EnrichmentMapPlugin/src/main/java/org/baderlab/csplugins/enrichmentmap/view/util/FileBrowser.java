@@ -143,6 +143,20 @@ public class FileBrowser {
 		}
 		return Optional.ofNullable(file);
 	}
+	
+	public static Optional<File> promptForTXTExport(FileUtil fileUtil, Component parent) {
+		List<FileChooserFilter> filter = Collections.singletonList(new FileChooserFilter("txt Files", "txt"));
+		File file = fileUtil.getFile(parent, "Export Heatmap as TXT File", FileUtil.SAVE, filter);
+		if(file != null) {
+			String fileName = file.toString();
+			if(!fileName.endsWith(".txt")) {
+				fileName += ".txt";
+				file = new File(fileName);
+			}
+		}
+		return Optional.ofNullable(file);
+	}
+	
 
 	private static boolean endsWithIgnoreCase(String str, String suffix) {
 		int n = suffix.length();

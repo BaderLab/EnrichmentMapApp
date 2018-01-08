@@ -28,7 +28,7 @@ import com.itextpdf.text.pdf.PdfPRow;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
-public class ExportHeatMapPDFTask extends AbstractTask {
+public class ExportPDFTask extends AbstractTask {
 
 	private static final int MARGIN = 20;
 
@@ -38,7 +38,7 @@ public class ExportHeatMapPDFTask extends AbstractTask {
 	private final JTable jTable;
 	private final RankingOption ranking;
 	
-	public ExportHeatMapPDFTask(File file, JTable jTable, RankingOption ranking) {
+	public ExportPDFTask(File file, JTable jTable, RankingOption ranking) {
 		this.file = file;
 		this.jTable = jTable;
 		this.ranking = ranking;
@@ -164,21 +164,19 @@ public class ExportHeatMapPDFTask extends AbstractTask {
 	}
 	
 	private PdfPCell createGeneCell(int modelRow) {
-		String text = String.valueOf(getModel().getValueAt(modelRow, HeatMapTableModel.GENE_COL));
+		String text = ExportTXTTask.getGeneText(getModel(), modelRow);
 		return new PdfPCell(new Phrase(text));
 	}
 	
 	private PdfPCell createDescriptionCell(int modelRow) {
-		Object value = getModel().getValueAt(modelRow, HeatMapTableModel.DESC_COL);
-		String text = value == null ? "" : String.valueOf(value);
-		text = SwingUtil.abbreviate(text, 40);
+		String text = ExportTXTTask.getDescriptionText(getModel(), modelRow);
 		return new PdfPCell(new Phrase(text));
 	}
 	
 	private PdfPCell createRankCell(int modelRow) {
 		PdfPCell cell = new PdfPCell();
 		RankValue rankValue = (RankValue) getModel().getValueAt(modelRow, HeatMapTableModel.RANK_COL);
-		cell.setPhrase(new Phrase(RankValueRenderer.getRankText(getCellRenderer().getFormat(), rankValue)));
+		cell.setPhrase(new Phrase(ExportTXTTask.getRankText(HeatMapCellRenderer.getFormat(), rankValue)));
 		if(rankValue.isSignificant()) {
 			cell.setBackgroundColor(color(RankValueRenderer.SIGNIFICANT_COLOR));
 		}
@@ -193,7 +191,7 @@ public class ExportHeatMapPDFTask extends AbstractTask {
 		PdfPCell cell = new PdfPCell();
 		cell.setBackgroundColor(color(color));
 		if(Double.isFinite(value)) {
-			cell.setPhrase(new Phrase(getCellRenderer().getFormat().format(value)));
+			cell.setPhrase(new Phrase(ExportTXTTask.getExpressionText(value)));
 		}
 		
 		return cell;

@@ -24,7 +24,7 @@ import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientTheme;
 public class HeatMapCellRenderer implements TableCellRenderer {
 
 	private final Map<Pair<EMDataSet,Transform>,Optional<DataSetColorRange>> colorRanges = new HashMap<>();
-	private final DecimalFormat format = new DecimalFormat("###.##");
+	private final static DecimalFormat format = new DecimalFormat("###.##");
 	private boolean showValue;
 	
 	
@@ -46,24 +46,24 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 			Border border = BorderFactory.createMatteBorder(1, 1, 1, 1, isSelected ? table.getSelectionForeground() : color);
 			label.setBorder(border);
 			
-			if(Double.isFinite(d)) {
-				String text = format.format(d);
-				label.setToolTipText(text);
-				if(showValue) {
-					label.setText(text);
-					label.setFont(new Font((UIManager.getFont("TableHeader.font")).getName(), Font.PLAIN, (UIManager.getFont("TableHeader.font")).getSize()-2));
-		      	   	label.setHorizontalAlignment(SwingConstants.RIGHT);
-				}
-			} else if(Double.isNaN(d)) {
-				label.setToolTipText("NaN");
+			String text = getText(d);
+			label.setToolTipText(text);
+			
+			if(showValue && Double.isFinite(d)) {
+				label.setText(text);
+				label.setFont(new Font((UIManager.getFont("TableHeader.font")).getName(), Font.PLAIN, (UIManager.getFont("TableHeader.font")).getSize()-2));
+	      	   	label.setHorizontalAlignment(SwingConstants.RIGHT);
 			}
 		}
 		
 		return label;
 	}
 	
+	public static String getText(double d) {
+		return Double.isFinite(d) ? format.format(d) : "NaN";
+	}
 	
-	public DecimalFormat getFormat() {
+	public static DecimalFormat getFormat() {
 		return format;
 	}
 
