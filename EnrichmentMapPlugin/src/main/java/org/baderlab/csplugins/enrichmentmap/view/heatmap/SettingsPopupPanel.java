@@ -38,6 +38,8 @@ public class SettingsPopupPanel extends JPanel {
 	private JButton exportTxtButton;
 	private JButton exportPdfButton;
 	
+	private JButton geneManiaButton;
+	
 	private JRadioButton cosineRadio;
 	private JRadioButton euclideanRadio;
 	private JRadioButton pearsonRadio;
@@ -70,6 +72,9 @@ public class SettingsPopupPanel extends JPanel {
 		exportPdfButton.setIcon(SwingUtil.iconFromString(IconManager.ICON_EXTERNAL_LINK, iconFont));
 		SwingUtil.makeSmall(addRanksButton, exportTxtButton, exportPdfButton);
 		
+		geneManiaButton = new JButton("Open on GeneMANIA...");
+		SwingUtil.makeSmall(geneManiaButton);
+		
 		JLabel distanceLabel = new JLabel("  Hierarchical Cluster - Distance Metric  ");
 		cosineRadio = new JRadioButton("Cosine");
 		euclideanRadio = new JRadioButton("Euclidean");
@@ -97,6 +102,7 @@ public class SettingsPopupPanel extends JPanel {
 			.addComponent(addRanksButton)
 			.addComponent(exportTxtButton)
 			.addComponent(exportPdfButton)
+			.addComponent(geneManiaButton)
 			.addComponent(distanceLabel)
 			.addComponent(distanceRadioPanel)
 			.addComponent(autofocusCheckbox)
@@ -107,6 +113,8 @@ public class SettingsPopupPanel extends JPanel {
 			.addComponent(addRanksButton)
 			.addComponent(exportTxtButton)
 			.addComponent(exportPdfButton)
+			.addGap(5)
+			.addComponent(geneManiaButton)
 			.addGap(5)
 			.addComponent(distanceLabel)
 			.addComponent(distanceRadioPanel)
@@ -137,6 +145,10 @@ public class SettingsPopupPanel extends JPanel {
 
 	public JButton getExportPdfButton() {
 		return exportPdfButton;
+	}
+	
+	public JButton getGeneManiaButton() {
+		return geneManiaButton;
 	}
 	
 	public void update(HeatMapParams params) {

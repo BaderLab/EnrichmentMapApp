@@ -111,6 +111,10 @@ public class HeatMapTableModel extends AbstractTableModel {
 		return map;
 	}
 	
+	public List<String> getGenes() {
+		return new ArrayList<>(genes);
+	}
+	
 	public String getGene(int row) {
 		return genes.get(row);
 	}

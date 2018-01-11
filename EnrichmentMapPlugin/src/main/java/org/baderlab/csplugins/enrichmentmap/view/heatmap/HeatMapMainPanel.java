@@ -204,7 +204,6 @@ public class HeatMapMainPanel extends JPanel {
 		}
 	}
 	
-	
 	private JPanel createToolbarPanel() {
 		gradientLegendPanel = new GradientLegendPanel(table);
 		showValuesCheck = new JCheckBox("Values");
@@ -276,7 +275,6 @@ public class HeatMapMainPanel extends JPanel {
 		return panel;
 	}
 	
-	
 	public Operator getOperator() {
 		return operatorCombo.getItemAt(operatorCombo.getSelectedIndex()).getValue();
 	}
@@ -317,6 +315,11 @@ public class HeatMapMainPanel extends JPanel {
 				.build();
 	}
 	
+	public List<String> getGenes() {
+		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
+		
+		return model.getGenes();
+	}
 	
 	public void reset(EnrichmentMap map, HeatMapParams params, List<RankingOption> moreRankOptions, Set<String> union, Set<String> intersection) {
 		isResetting = true;
@@ -389,6 +392,9 @@ public class HeatMapMainPanel extends JPanel {
 		isResetting = false;
 	}
 	
+	protected SettingsPopupPanel getSettingsPanel() {
+		return settingsPanel;
+	}
 	
 	private EnrichmentMap getEnrichmentMap() {
 		HeatMapTableModel model = (HeatMapTableModel) table.getModel();

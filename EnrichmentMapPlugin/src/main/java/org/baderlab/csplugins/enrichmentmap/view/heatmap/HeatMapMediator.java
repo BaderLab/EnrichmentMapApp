@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -37,6 +39,11 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -59,6 +66,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private Provider<CySwingApplication> swingApplicationProvider;
 	@Inject private CyApplicationManager applicationManager;
+	@Inject private CommandExecutorTaskFactory commandExecutorTaskFactory;
+	@Inject private DialogTaskManager taskManager;
 	
 	private final CoalesceTimer selectionEventTimer = new CoalesceTimer(200, 1);
 	private HeatMapParentPanel heatMapPanel = null;
@@ -163,7 +172,14 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		HeatMapParams params = getHeatMapParams(map, network.getSUID(), onlyEdges);
 		
-		heatMapPanel.selectGenes(map, params, rankOptions, union, inter);
+		HeatMapMainPanel mainPanel = heatMapPanel.selectGenes(map, params, rankOptions, union, inter);
+		
+		if (mainPanel != null) {
+			SettingsPopupPanel settingsPanel = mainPanel.getSettingsPanel();
+			
+			if (settingsPanel != null && settingsPanel.getGeneManiaButton().getActionListeners().length == 0)
+				settingsPanel.getGeneManiaButton().addActionListener(e -> runGeneMANIA(mainPanel));
+		}
 		
 		if(propertyManager.getValue(PropertyManager.HEATMAP_AUTOFOCUS)) {
 			bringToFront();
@@ -265,6 +281,40 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		CyRow row = network.getRow(node);
 		// This is already the union of all the genes across data sets
 		return EMStyleBuilder.Columns.NODE_GENES.get(row, prefix, null);
+	}
+	
+	private void runGeneMANIA(HeatMapMainPanel mainPanel) {
+		// TODO Msg to user if genemania not installed--use AvailableCommands
+		
+		List<String> geneList = mainPanel.getGenes();
+		String genes = String.join("|", geneList);
+		
+		Map<String, Object> args = new HashMap<>();
+		args.put("organism", "Homo sapiens"); // TODO get from user...
+		args.put("genes", genes);
+		args.put("geneLimit", 0); // Do not find more genes
+		
+		TaskIterator taskIterator = commandExecutorTaskFactory.createTaskIterator("genemania", "search", args, new TaskObserver() {
+			
+			CyNetwork geneManiaNetwork;
+			
+			@Override
+			public void taskFinished(ObservableTask task) {
+				if (task instanceof ObservableTask) {
+					if (((ObservableTask) task).getResultClasses().contains(CyNetwork.class))
+						geneManiaNetwork = ((ObservableTask) task).getResults(CyNetwork.class);
+				}
+			}
+			@Override
+			public void allFinished(FinishStatus finishStatus) {
+				if (finishStatus == FinishStatus.getSucceeded() && geneManiaNetwork != null) {
+					// TODO Save the genemania network SUID
+					// TODO Maybe add EM Network SUID to genemania network's table.
+					// TODO add EM columns/data to genemania's network, update genemania's style, etc...
+				}
+			}
+		});
+		taskManager.execute(taskIterator);
 	}
 
 	public void shutDown() {
