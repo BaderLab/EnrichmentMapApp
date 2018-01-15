@@ -25,12 +25,14 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
+import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -72,8 +74,10 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private Provider<CySwingApplication> swingApplicationProvider;
 	@Inject private CyApplicationManager applicationManager;
+	@Inject private AvailableCommands availableCommands;
 	@Inject private CommandExecutorTaskFactory commandExecutorTaskFactory;
 	@Inject private DialogTaskManager taskManager;
+	@Inject private OpenBrowser openBrowser;
 	
 	private final CoalesceTimer selectionEventTimer = new CoalesceTimer(200, 1);
 	private HeatMapParentPanel heatMapPanel = null;
@@ -291,6 +295,21 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	
 	private void runGeneMANIA(HeatMapMainPanel mainPanel) {
 		// TODO Msg to user if genemania not installed--use AvailableCommands
+		List<String> commands = availableCommands.getCommands(GENEMANIA_NAMESPACE);
+		
+		if (commands == null || !commands.contains(GENEMANIA_SEARCH_COMMAND)) {
+			if (JOptionPane.showConfirmDialog(
+					SwingUtilities.getWindowAncestor(mainPanel),
+					"This action requires a version of the GeneMANIA app that is not installed?\n" +
+					"Would you like to install or update the GeneMANIA app now?",
+					"Cannot Find GeneMANIA App",
+					JOptionPane.YES_NO_OPTION
+				) == JOptionPane.YES_OPTION) {
+				openBrowser.openURL("http://apps.cytoscape.org/apps/genemania");
+			}
+			
+			return;
+		}
 		
 		List<String> geneList = mainPanel.getGenes();
 		String genes = String.join("|", geneList);
