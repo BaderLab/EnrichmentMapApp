@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.IconManager.ICON_BARS;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
@@ -25,6 +26,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
@@ -69,16 +71,17 @@ public class HeatMapMainPanel extends JPanel {
 	
 	@Inject private ExportTXTAction.Factory txtActionFactory;
 	@Inject private ExportPDFAction.Factory pdfActionFactory;
-	@Inject private Provider<SettingsPopupPanel> settingsPopupPanelProvider;
+	@Inject private Provider<OptionsPopup> optionsPopupProvider;
 	@Inject private AddRanksDialog.Factory ranksDialogFactory;
 	@Inject private ColumnHeaderRankOptionRenderer.Factory columnHeaderRankOptionRendererFactory;
 	@Inject private IconManager iconManager;
 
 	private GradientLegendPanel gradientLegendPanel;
-	private SettingsPopupPanel settingsPanel;
+	private OptionsPopup optionsPopup;
 	
 	private JTable table;
 	private JScrollPane scrollPane;
+	private JButton optionsButton;
 	private JComboBox<ComboItem<Operator>> operatorCombo;
 	private JComboBox<ComboItem<Transform>> normCombo;
 	private JComboBox<ComboItem<Compress>> compressCombo;
@@ -89,7 +92,7 @@ public class HeatMapMainPanel extends JPanel {
 	private ActionListener compressActionListener;
 	private ActionListener showValueActionListener;
 	
-	private ClusterRankingOption clusterRankOption = null;
+	private ClusterRankingOption clusterRankOption;
 	private List<RankingOption> moreRankOptions;
 	private RankingOption selectedRankOption;
 	
@@ -119,8 +122,8 @@ public class HeatMapMainPanel extends JPanel {
 	
 	@AfterInjection
 	private void createContents() {
-		settingsPanel = settingsPopupPanelProvider.get();
-		settingsPanel.setDistanceConsumer(this::updateSetting_Distance);
+		optionsPopup = optionsPopupProvider.get();
+		optionsPopup.setDistanceConsumer(this::updateSetting_Distance);
 		
 		JPanel expressionPanel = createTablePanel(); // must create table first
 		JPanel toolbarPanel = createToolbarPanel();
@@ -230,48 +233,52 @@ public class HeatMapMainPanel extends JPanel {
 		compressCombo.addActionListener(compressActionListener = e -> updateSetting_Transform(getTransform(), getCompress()));
 		showValuesCheck.addActionListener(showValueActionListener = e -> updateSetting_ShowValues(isShowValues()));
 		
-		JButton gearButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_GEAR, "Settings");
-		gearButton.addActionListener(e -> settingsPanel.popup(gearButton));
-		settingsPanel.getAddRanksButton().addActionListener(e -> addRankings());
-		settingsPanel.getExportTxtButton().addActionListener(txtActionFactory.create(table));
-		settingsPanel.getExportPdfButton().addActionListener(pdfActionFactory.create(table, this::getRankingOption));
+		optionsButton = new JButton(ICON_BARS);
+		optionsButton.setToolTipText("Options...");
+		SwingUtil.styleHeaderButton(optionsButton, iconManager.getIconFont(18.0f));
+		optionsButton.addActionListener(e -> optionsPopup.popup(optionsButton));
+		optionsPopup.getAddRanksButton().addActionListener(e -> addRankings());
+		optionsPopup.getExportTxtButton().addActionListener(txtActionFactory.create(table));
+		optionsPopup.getExportPdfButton().addActionListener(pdfActionFactory.create(table, this::getRankingOption));
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
-		final int gap = 3;
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-			.addComponent(gradientLegendPanel, 180, 180, 180)
-			.addGap(0, 0, Short.MAX_VALUE)
-			.addComponent(operatorLabel)
-			.addComponent(operatorCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			.addGap(gap)
-			.addComponent(normLabel)
-			.addComponent(normCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			.addGap(gap)
-			.addComponent(compressLabel)
-			.addComponent(compressCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			.addGap(gap)
-			.addComponent(showValuesCheck)
-			.addGap(gap)
-			.addComponent(gearButton)
+				.addContainerGap()
+				.addComponent(gradientLegendPanel, 140, 160, 180)
+				.addGap(15, 15, Short.MAX_VALUE)
+				.addComponent(operatorLabel)
+				.addComponent(operatorCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(normLabel)
+				.addComponent(normCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(compressLabel)
+				.addComponent(compressCombo, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(showValuesCheck)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(optionsButton)
+				.addContainerGap()
 		);
-		layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
-			.addComponent(gradientLegendPanel)
-			.addComponent(operatorLabel)
-			.addComponent(operatorCombo)
-			.addComponent(normLabel)
-			.addComponent(normCombo)
-			.addComponent(compressLabel)
-			.addComponent(compressCombo)
-			.addComponent(showValuesCheck)
-			.addComponent(gearButton)
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER)
+				.addComponent(gradientLegendPanel)
+				.addComponent(operatorLabel)
+				.addComponent(operatorCombo)
+				.addComponent(normLabel)
+				.addComponent(normCombo)
+				.addComponent(compressLabel)
+				.addComponent(compressCombo)
+				.addComponent(showValuesCheck)
+				.addComponent(optionsButton)
 		);
 		
 		panel.setOpaque(false);
+		
 		return panel;
 	}
 	
@@ -296,7 +303,7 @@ public class HeatMapMainPanel extends JPanel {
 	}
 	
 	public Distance getDistance() {
-		return settingsPanel.getDistance();
+		return optionsPopup.getDistance();
 	}
 	
 	public String getRankingOptionName() {
@@ -361,7 +368,7 @@ public class HeatMapMainPanel extends JPanel {
 		selectedRankOption = getRankOptionFromParams(params);
 
 		// Update the setings panel
-		settingsPanel.update(params);
+		optionsPopup.update(params);
 		showValuesCheck.setSelected(params.isShowValues());
 		
 		// Update the Table
@@ -392,8 +399,8 @@ public class HeatMapMainPanel extends JPanel {
 		isResetting = false;
 	}
 	
-	protected SettingsPopupPanel getSettingsPanel() {
-		return settingsPanel;
+	protected OptionsPopup getOptionsPopup() {
+		return optionsPopup;
 	}
 	
 	private EnrichmentMap getEnrichmentMap() {

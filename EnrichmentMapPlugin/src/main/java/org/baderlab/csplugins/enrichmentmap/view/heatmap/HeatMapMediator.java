@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
@@ -54,6 +57,9 @@ import com.google.inject.Singleton;
  */
 @Singleton
 public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewListener {
+
+	private static final String GENEMANIA_NAMESPACE = "genemania";
+	private static final String GENEMANIA_SEARCH_COMMAND = "search";
 
 	private static final int COLLAPSE_THRESHOLD = 50;
 	
@@ -174,11 +180,11 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		HeatMapMainPanel mainPanel = heatMapPanel.selectGenes(map, params, rankOptions, union, inter);
 		
-		if (mainPanel != null) {
-			SettingsPopupPanel settingsPanel = mainPanel.getSettingsPanel();
+		if(mainPanel != null) {
+			OptionsPopup optionsPopup = mainPanel.getOptionsPopup();
 			
-			if (settingsPanel != null && settingsPanel.getGeneManiaButton().getActionListeners().length == 0)
-				settingsPanel.getGeneManiaButton().addActionListener(e -> runGeneMANIA(mainPanel));
+			if (optionsPopup != null && optionsPopup.getGeneManiaButton().getActionListeners().length == 0)
+				optionsPopup.getGeneManiaButton().addActionListener(e -> runGeneMANIA(mainPanel));
 		}
 		
 		if(propertyManager.getValue(PropertyManager.HEATMAP_AUTOFOCUS)) {
@@ -294,7 +300,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		args.put("genes", genes);
 		args.put("geneLimit", 0); // Do not find more genes
 		
-		TaskIterator taskIterator = commandExecutorTaskFactory.createTaskIterator("genemania", "search", args, new TaskObserver() {
+		TaskIterator taskIterator = commandExecutorTaskFactory.createTaskIterator(
+				GENEMANIA_NAMESPACE, GENEMANIA_SEARCH_COMMAND, args, new TaskObserver() {
 			
 			CyNetwork geneManiaNetwork;
 			
@@ -305,6 +312,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 						geneManiaNetwork = ((ObservableTask) task).getResults(CyNetwork.class);
 				}
 			}
+			
 			@Override
 			public void allFinished(FinishStatus finishStatus) {
 				if (finishStatus == FinishStatus.getSucceeded() && geneManiaNetwork != null) {

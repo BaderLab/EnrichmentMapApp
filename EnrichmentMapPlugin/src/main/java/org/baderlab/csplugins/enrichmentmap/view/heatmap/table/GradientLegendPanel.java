@@ -6,6 +6,7 @@ import java.awt.BorderLayout;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -19,6 +20,9 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
 public class GradientLegendPanel extends JPanel {
+	
+	public static final int DEFAULT_HEIGHT = 25;
+	private static final int BORDER_WIDTH = 1;
 
 	public GradientLegendPanel(JTable table) {
 		Objects.requireNonNull(table);
@@ -27,6 +31,7 @@ public class GradientLegendPanel extends JPanel {
 		
 		table.getSelectionModel().addListSelectionListener(e -> handleChange(table));
 		table.getModel().addTableModelListener(e -> handleChange(table));
+		setBorder(BorderFactory.createEmptyBorder(BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH));
 	}
 	
 	private void handleChange(JTable table) {
@@ -44,28 +49,30 @@ public class GradientLegendPanel extends JPanel {
 		
 		GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(false);
 
 		ParallelGroup hGroup = layout.createParallelGroup(Alignment.CENTER, true);
 		SequentialGroup vGroup = layout.createSequentialGroup();
 		layout.setHorizontalGroup(hGroup);
 		layout.setVerticalGroup(vGroup);
 
-		ColorGradientWidget legend = ColorGradientWidget.getInstance("", range.getTheme(),
+		ColorGradientWidget legend = ColorGradientWidget.getInstance(null, range.getTheme(),
 				range.getRange(), true, ColorGradientWidget.LEGEND_POSITION.NA);
 
+		int h = DEFAULT_HEIGHT - 2 * BORDER_WIDTH;
+		
 		hGroup.addComponent(legend, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
-		vGroup.addComponent(legend, 25, 25, 25);
+		vGroup.addComponent(legend, h, h, h);
 		
 		if (LookAndFeelUtil.isAquaLAF())
 			panel.setOpaque(false);
 
 		panel.revalidate();
 		panel.setOpaque(false);
+		
 		return panel;
 	}
-	
 	
 	public void clear() {
 		removeAll();
@@ -88,5 +95,4 @@ public class GradientLegendPanel extends JPanel {
 			revalidate();
 		}
 	}
-	
 }

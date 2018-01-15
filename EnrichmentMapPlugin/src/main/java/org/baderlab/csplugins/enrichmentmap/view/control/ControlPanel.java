@@ -6,14 +6,13 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
-import static org.cytoscape.util.swing.IconManager.ICON_COG;
+import static org.cytoscape.util.swing.IconManager.ICON_BARS;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -216,7 +214,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	JButton getCreateEmButton() {
 		if (createEmButton == null) {
 			createEmButton = new JButton(IconManager.ICON_PLUS);
-			styleHeaderButton(createEmButton, iconManager.getIconFont(16.0f));
+			SwingUtil.styleHeaderButton(createEmButton, iconManager.getIconFont(16.0f));
 		}
 		
 		return createEmButton;
@@ -224,9 +222,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	JButton getOptionsButton() {
 		if (optionsButton == null) {
-			optionsButton = new JButton(ICON_COG);
+			optionsButton = new JButton(ICON_BARS);
 			optionsButton.setToolTipText("Options...");
-			styleHeaderButton(optionsButton, iconManager.getIconFont(18.0f));
+			SwingUtil.styleHeaderButton(optionsButton, iconManager.getIconFont(18.0f));
 		}
 		
 		return optionsButton;
@@ -351,17 +349,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	public Map<Long, EMViewControlPanel> getAllControlPanels() {
 		return new HashMap<>(emViewCtrlPanels);
-	}
-	
-	private void styleHeaderButton(final AbstractButton btn, final Font font) {
-		btn.setFont(font);
-		btn.setBorder(null);
-		btn.setContentAreaFilled(false);
-		btn.setBorderPainted(false);
-		
-		int h = getEmViewCombo().getPreferredSize().height;
-		btn.setMinimumSize(new Dimension(h, h));
-		btn.setPreferredSize(new Dimension(h, h));
 	}
 	
 	class EMViewControlPanel extends JPanel {
