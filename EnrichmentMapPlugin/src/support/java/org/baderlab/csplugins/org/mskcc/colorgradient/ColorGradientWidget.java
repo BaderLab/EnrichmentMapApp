@@ -41,13 +41,11 @@ import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -95,7 +93,6 @@ public class ColorGradientWidget extends JPanel {
 
 
 	// other required refs
-	private Image img;
 	private String title;
 	private String cookedTitle;
 	private Dimension cookedTitleDimension;
@@ -131,9 +128,6 @@ public class ColorGradientWidget extends JPanel {
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
-
-		if ((width > 0) && (height > 0))
-			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 	}
 
 	/**
@@ -391,15 +385,15 @@ public class ColorGradientWidget extends JPanel {
 		// set gradient height
 		gradientWidth = widgetWidth - positionLegendWidth;
 		gradientHeight = widgetHeight - maxStringHeight - VSPACER;
-		if (cookedTitle != null && cookedTitle.length() > 0) {
+		
+		if (cookedTitle != null && cookedTitle.length() > 0)
 			gradientHeight -= maxStringHeight + VSPACER;
-		}
 
 		// set rectangle y
 		int rectYPos = VSPACER;
-		if (cookedTitle != null && cookedTitle.length() > 0) {
+		
+		if (cookedTitle != null && cookedTitle.length() > 0)
 			rectYPos += maxStringHeight + VSPACER;
-		}
 
 		// compute normals
 		double centerLowNormal = (colorGradientRange.getCenterLowValue() - colorGradientRange.getMinValue()) / (colorGradientRange.getMaxValue() - colorGradientRange.getMinValue());
@@ -433,50 +427,45 @@ public class ColorGradientWidget extends JPanel {
 	 * This is where we render the gradient.
 	 */
     private void renderComponent(Graphics g, boolean renderStrings) {
-		if (img != null) {
-			// set our graphics context
-			Graphics2D g2d = ((BufferedImage) img).createGraphics();
-			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		// set our graphics context
+		Graphics2D g2d = (Graphics2D) g.create();
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-			// clear background
-			clearImage(g2d);
+		// clear background
+		clearImage(g2d);
 
-			// save font
-			Font savedFont = g2d.getFont();
+		// save font
+		Font savedFont = g2d.getFont();
 
-			// set new font
-			g2d.setFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
+		// set new font
+		g2d.setFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
 
-			if (isLegend) {
-				setPositionLegendDimensions(); // should come first
-				setCookedTitleString(g2d);
-				setCookedTitleStringDimension(g2d);
-				setConditionValueStringDimensions(g2d);
-				setMaxStringHeight();
-				computeLegendGradientRectangles();
-				
-				if (renderPositionLegend)
-					renderPositionLegend(g2d);
-				
-				renderLegendGradient(g2d);
-				
-				if (renderStrings) {
-					renderCookedTitleString(g2d);
-					renderConditionValueStrings(g2d);
-				}
-			} else {
-				computeGradientRectangles();
-				renderGradient(g2d);
-			}
-
-			// restore font
-			g2d.setFont(savedFont);
-
-			// render image
-			g.drawImage(img, 0, 0, null);
+		if (isLegend) {
+			setPositionLegendDimensions(); // should come first
+			setCookedTitleString(g2d);
+			setCookedTitleStringDimension(g2d);
+			setConditionValueStringDimensions(g2d);
+			setMaxStringHeight();
+			computeLegendGradientRectangles();
 			
-			g2d.dispose();
+			if (renderPositionLegend)
+				renderPositionLegend(g2d);
+			
+			renderLegendGradient(g2d);
+			
+			if (renderStrings) {
+				renderCookedTitleString(g2d);
+				renderConditionValueStrings(g2d);
+			}
+		} else {
+			computeGradientRectangles();
+			renderGradient(g2d);
 		}
+
+		// restore font
+		g2d.setFont(savedFont);
+		g2d.dispose();
     }
 
 	private void renderPositionLegend(Graphics2D g2d) {
@@ -485,9 +474,10 @@ public class ColorGradientWidget extends JPanel {
 
 		final int xPos = 0;
 		int gradientCenter = VSPACER;
-		if (cookedTitle != null && cookedTitle.length() > 0) {
+		
+		if (cookedTitle != null && cookedTitle.length() > 0)
 			gradientCenter += maxStringHeight + VSPACER;
-		}
+		
 		gradientCenter += gradientHeight / 2;
 		final int yPos = gradientCenter - renderHeight / 2;
 
