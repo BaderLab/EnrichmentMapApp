@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
+import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,12 +46,20 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.swing.DialogTaskManager;
+import org.cytoscape.work.util.ListSingleSelection;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -61,6 +71,7 @@ import com.google.inject.Singleton;
 public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewListener {
 
 	private static final String GENEMANIA_NAMESPACE = "genemania";
+	private static final String GENEMANIA_ORGANISMS_COMMAND = "organisms";
 	private static final String GENEMANIA_SEARCH_COMMAND = "search";
 
 	private static final int COLLAPSE_THRESHOLD = 50;
@@ -294,7 +305,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	}
 	
 	private void runGeneMANIA(HeatMapMainPanel mainPanel) {
-		// TODO Msg to user if genemania not installed--use AvailableCommands
+		// Show message to user if genemania not installed
 		List<String> commands = availableCommands.getCommands(GENEMANIA_NAMESPACE);
 		
 		if (commands == null || !commands.contains(GENEMANIA_SEARCH_COMMAND)) {
@@ -311,41 +322,171 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			return;
 		}
 		
-		List<String> geneList = mainPanel.getGenes();
-		String genes = String.join("|", geneList);
+		QueryGeneManiaTask queryTask = new QueryGeneManiaTask(mainPanel.getGenes());
 		
-		Map<String, Object> args = new HashMap<>();
-		args.put("organism", "Homo sapiens"); // TODO get from user...
-		args.put("genes", genes);
-		args.put("geneLimit", 0); // Do not find more genes
-		
-		TaskIterator taskIterator = commandExecutorTaskFactory.createTaskIterator(
-				GENEMANIA_NAMESPACE, GENEMANIA_SEARCH_COMMAND, args, new TaskObserver() {
-			
-			CyNetwork geneManiaNetwork;
+		// Get list of organisms from GeneMANIA
+		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
+				GENEMANIA_NAMESPACE, GENEMANIA_ORGANISMS_COMMAND, Collections.emptyMap(), new TaskObserver() {
 			
 			@Override
+			@SuppressWarnings("serial")
 			public void taskFinished(ObservableTask task) {
 				if (task instanceof ObservableTask) {
-					if (((ObservableTask) task).getResultClasses().contains(CyNetwork.class))
-						geneManiaNetwork = ((ObservableTask) task).getResults(CyNetwork.class);
+					if (((ObservableTask) task).getResultClasses().contains(JSONResult.class)) {
+						JSONResult json = ((ObservableTask) task).getResults(JSONResult.class);
+						
+						if (json != null && json.getJSON() != null) {
+							Gson gson = new Gson();
+							Type type = new TypeToken<GeneManiaOrganismsResult>(){}.getType();
+							GeneManiaOrganismsResult res = gson.fromJson(json.getJSON(), type);
+							
+							if (res != null && res.getOrganisms() != null && !res.getOrganisms().isEmpty())
+								queryTask.updatetOrganisms(res.getOrganisms());
+							else
+								throw new RuntimeException("Unable to retrieve available organisms from GeneMANIA.");
+						}
+					}
 				}
 			}
 			
 			@Override
 			public void allFinished(FinishStatus finishStatus) {
-				if (finishStatus == FinishStatus.getSucceeded() && geneManiaNetwork != null) {
-					// TODO Save the genemania network SUID
-					// TODO Maybe add EM Network SUID to genemania network's table.
-					// TODO add EM columns/data to genemania's network, update genemania's style, etc...
-				}
+				// Never called by Cytoscape?! Why?
 			}
 		});
-		taskManager.execute(taskIterator);
+		ti.append(queryTask);
+		taskManager.execute(ti);
 	}
 
 	public void shutDown() {
 		selectionEventTimer.shutdown();
 	}
 	
+	public class QueryGeneManiaTask extends AbstractTask {
+		
+		@Tunable(description = "Organism:")
+		public ListSingleSelection<GeneManiaOrganism> organisms;
+		
+		private final String genes;
+		
+		public QueryGeneManiaTask(List<String> geneList) {
+			genes = String.join("|", geneList);
+			organisms = new ListSingleSelection<>();
+		}
+		
+		@ProvidesTitle
+		public String getTitle() {
+			return "Select an Organism";
+		}
+		
+		public void updatetOrganisms(List<GeneManiaOrganism> orgValues) {
+			organisms.setPossibleValues(orgValues);
+			
+			if (!orgValues.isEmpty())
+				organisms.setSelectedValue(orgValues.get(0));
+		}
+		
+		@Override
+		public void run(TaskMonitor tm) throws Exception {
+			if (organisms.getSelectedValue() != null) {
+				tm.setTitle("EnrichmentMap");
+				tm.setStatusMessage("Querying GeneMANIA...");
+				
+				Map<String, Object> args = new HashMap<>();
+				args.put("organism", "" + organisms.getSelectedValue().getTaxonomyId());
+				args.put("genes", genes);
+				args.put("geneLimit", 0); // Do not find more genes
+				
+				TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
+						GENEMANIA_NAMESPACE, GENEMANIA_SEARCH_COMMAND, args, new TaskObserver() {
+					
+					CyNetwork geneManiaNetwork;
+					
+					@Override
+					public void taskFinished(ObservableTask task) {
+						if (task instanceof ObservableTask) {
+							if (((ObservableTask) task).getResultClasses().contains(CyNetwork.class))
+								geneManiaNetwork = ((ObservableTask) task).getResults(CyNetwork.class);
+						}
+					}
+					
+					@Override
+					public void allFinished(FinishStatus finishStatus) {
+						if (finishStatus == FinishStatus.getSucceeded() && geneManiaNetwork != null) {
+							System.out.println("[ ALL FINISHED ] : " + finishStatus + " - " + geneManiaNetwork);
+							// TODO Save the genemania network SUID
+							// TODO Maybe add EM Network SUID to genemania network's table.
+							// TODO add EM columns/data to genemania's network, update genemania's style, etc...
+						}
+					}
+				});
+				getTaskIterator().append(ti);
+			}
+		}
+	}
+	
+	class GeneManiaOrganismsResult implements Serializable {
+		
+		private static final long serialVersionUID = 8454506417358350512L;
+		
+		private List<GeneManiaOrganism> organisms;
+		
+		public List<GeneManiaOrganism> getOrganisms() {
+			return organisms;
+		}
+		
+		public void setOrganisms(List<GeneManiaOrganism> organisms) {
+			this.organisms = organisms;
+		}
+	}
+	
+	class GeneManiaOrganism implements Serializable {
+
+		private static final long serialVersionUID = -4488165932347985569L;
+		
+		private long taxonomyId;
+		private String scientificName;
+		private String abbreviatedName;
+		private String commonName;
+
+		public GeneManiaOrganism() {
+		}
+
+		public long getTaxonomyId() {
+			return taxonomyId;
+		}
+
+		public void setTaxonomyId(long taxonomyId) {
+			this.taxonomyId = taxonomyId;
+		}
+
+		public String getScientificName() {
+			return scientificName;
+		}
+
+		public void setScientificName(String scientificName) {
+			this.scientificName = scientificName;
+		}
+
+		public String getAbbreviatedName() {
+			return abbreviatedName;
+		}
+
+		public void setAbbreviatedName(String abbreviatedName) {
+			this.abbreviatedName = abbreviatedName;
+		}
+
+		public String getCommonName() {
+			return commonName;
+		}
+
+		public void setCommonName(String commonName) {
+			this.commonName = commonName;
+		}
+
+		@Override
+		public String toString() {
+			return scientificName;
+		}
+	}
 }
