@@ -53,7 +53,7 @@ public class TextIcon implements Icon {
         
         g2d.setPaint(fg);
         g2d.setFont(font);
-        drawText(g2d, x, y);
+        drawText(g2d, c, x, y);
         
         g2d.dispose();
 	}
@@ -68,7 +68,19 @@ public class TextIcon implements Icon {
 		return height;
 	}
 	
-	private void drawText(Graphics g, int x, int y) {
+	public String getText() {
+		return text;
+	}
+	
+	public Font getFont() {
+		return font;
+	}
+	
+	public Color getColor() {
+		return color;
+	}
+	
+	protected void drawText(Graphics g, Component c, int x, int y) {
 		FontMetrics fm = g.getFontMetrics(font);
 		Rectangle2D rect = fm.getStringBounds(text, g);
 
