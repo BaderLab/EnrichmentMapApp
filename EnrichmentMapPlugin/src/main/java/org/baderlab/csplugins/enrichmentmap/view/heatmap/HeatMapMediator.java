@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
+import java.awt.Component;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -322,7 +323,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			return;
 		}
 		
-		QueryGeneManiaTask queryTask = new QueryGeneManiaTask(mainPanel.getGenes());
+		QueryGeneManiaTask queryTask = new QueryGeneManiaTask(mainPanel.getGenes(),
+				SwingUtilities.getWindowAncestor(mainPanel));
 		
 		// Get list of organisms from GeneMANIA
 		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
@@ -368,10 +370,12 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		public ListSingleSelection<GeneManiaOrganism> organisms;
 		
 		private final String genes;
+		private final Component parentComponent;
 		
-		public QueryGeneManiaTask(List<String> geneList) {
+		public QueryGeneManiaTask(List<String> geneList, Component parentComponent) {
 			genes = String.join("|", geneList);
 			organisms = new ListSingleSelection<>();
+			this.parentComponent = parentComponent;
 		}
 		
 		@ProvidesTitle
@@ -405,8 +409,20 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 					@Override
 					public void taskFinished(ObservableTask task) {
 						if (task instanceof ObservableTask) {
-							if (((ObservableTask) task).getResultClasses().contains(CyNetwork.class))
+							if (((ObservableTask) task).getResultClasses().contains(CyNetwork.class)) {
 								geneManiaNetwork = ((ObservableTask) task).getResults(CyNetwork.class);
+								
+								if (geneManiaNetwork == null) {
+									SwingUtilities.invokeLater(() -> {
+										JOptionPane.showMessageDialog(
+												parentComponent,
+												"The GeneMANIA search returned no results.",
+												"No Results",
+												JOptionPane.INFORMATION_MESSAGE
+										);
+									});
+								}
+							}
 						}
 					}
 					
