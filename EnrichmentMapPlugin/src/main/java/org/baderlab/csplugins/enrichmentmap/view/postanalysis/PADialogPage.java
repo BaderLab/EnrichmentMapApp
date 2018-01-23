@@ -34,7 +34,7 @@ import org.baderlab.csplugins.enrichmentmap.util.Baton;
 import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.creation.NamePanel;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.web.DownloadGMTFileTask;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis.web.WebLoadDialogParameters;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.web.DialogParameters;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialog;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
@@ -282,7 +282,7 @@ public class PADialogPage implements CardDialogPage {
 	
 	private void openLoadFromWebDialog() {
 		JDialog parent = callback.getDialogFrame();
-		WebLoadDialogParameters params = new WebLoadDialogParameters(this);
+		DialogParameters params = new DialogParameters(this);
 		CardDialog dialog = new CardDialog(parent, params);
 		dialog.open();
 	}
