@@ -70,6 +70,10 @@ public class CardDialog {
 		});
 		dialog.setVisible(true);
 	}
+	
+	public CardDialogPage getCurrentPage() {
+		return currentPage;
+	}
 
 	public void dispose() {
 		dialog.setVisible(false);

@@ -29,6 +29,8 @@ public interface FilterMetric {
 	
 	double moreSimilar(double x, double y);
 	
+	String getDisplayString();
+	
 	
 	abstract class BaseFilterMetric implements FilterMetric {
 		protected final double cutoff;
@@ -71,6 +73,10 @@ public interface FilterMetric {
 			return 0;
 		}
 		
+		public String getDisplayString() {
+			return "no filter";
+		}
+		
 	}
 	
 	
@@ -92,6 +98,10 @@ public interface FilterMetric {
 			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
 			return (double) intersection.size() / (double) geneSet.size();
 		}
+		
+		public String getDisplayString() {
+			return "(intersection size)/(gene set size) >= " + (cutoff / 100.0);
+		}
 	}
 	
 
@@ -111,6 +121,10 @@ public interface FilterMetric {
 		
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) {
 			return Sets.intersection(geneSet, sigSet).size();
+		}
+		
+		public String getDisplayString() {
+			return "intersection size >= " + cutoff;
 		}
 	}
 
@@ -132,6 +146,10 @@ public interface FilterMetric {
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) {
 			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
 			return (double) intersection.size() / (double) sigSet.size();
+		}
+		
+		public String getDisplayString() {
+			return "(intersection size)/(signature gene set size) >= " + (cutoff / 100.0);
 		}
 	}
 
@@ -177,20 +195,26 @@ public interface FilterMetric {
 			
 			return hyperPval;
 		}
+		
+		public String getDisplayString() {
+			return "universe size = " + u;
+		}
 	}
 
 	
 	class MannWhit extends BaseFilterMetric {
 
+		private final String rankingName;
 		private final Ranking ranks;
 		private final MannWhitneyMemoized mannWhitneyCache = new MannWhitneyMemoized();
 		
 		
-		public MannWhit(double filter, Ranking ranks, PostAnalysisFilterType type) {
+		public MannWhit(double filter, String rankingName, Ranking ranks, PostAnalysisFilterType type) {
 			super(type, filter);
 			if(!type.isMannWhitney())
 				throw new IllegalArgumentException("FilterType is not Mann Whitney: " + type);
 			this.ranks = ranks;
+			this.rankingName = rankingName;
 		}
 
 		public boolean passes(double value) {
@@ -245,6 +269,10 @@ public interface FilterMetric {
 					case MANN_WHIT_LESS: return result.less;
 				}
 			}
+		}
+		
+		public String getDisplayString() {
+			return "ranks: " + rankingName;
 		}
 	}
 		

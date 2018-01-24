@@ -52,6 +52,8 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetricSet;
 
 public class PostAnalysisParameters {
 
+	public static final String SOURCE_LOCAL_FILE = "local file";
+	
 	final public static String SIGNATURE_INTERACTION_TYPE = "sig";
 	@Deprecated
 	final public static String SIGNATURE_INTERACTION_TYPE_SET1 = "sig_set1";
@@ -65,6 +67,8 @@ public class PostAnalysisParameters {
 	private final Collection<String> selectedGeneSetNames;
 	private final String attributePrefix;
 	private final Optional<String> datasetName;
+	private final String source;
+	private final String gmtFile;
 	
 	private PostAnalysisParameters(PostAnalysisParameters.Builder builder) {
 		this.name = builder.name;
@@ -73,6 +77,8 @@ public class PostAnalysisParameters {
 		this.selectedGeneSetNames = builder.selectedGeneSetNames;
 		this.attributePrefix = builder.attributePrefix;
 		this.datasetName = builder.datasetName;
+		this.source = builder.source;
+		this.gmtFile = builder.gmtFile;
 	}
 
 	public String getName() {
@@ -98,6 +104,14 @@ public class PostAnalysisParameters {
 	public String getAttributePrefix() {
 		return attributePrefix;
 	}
+	
+	public String getSource() {
+		return source;
+	}
+	
+	public String getGmtFile() {
+		return gmtFile;
+	}
 
 	
 	public static class Builder {
@@ -108,7 +122,8 @@ public class PostAnalysisParameters {
 		private Set<String> selectedGeneSetNames = new HashSet<>();
 		private String attributePrefix;
 		private Optional<String> datasetName = Optional.empty();
-		
+		private String source;
+		private String gmtFile;
 
 		public static Builder from(PostAnalysisParameters other) {
 			Builder b = new Builder();
@@ -118,6 +133,8 @@ public class PostAnalysisParameters {
 			b.addSelectedGeneSetNames(other.selectedGeneSetNames);
 			b.setAttributePrefix(other.attributePrefix);
 			b.setDataSetName(other.datasetName.orElse(null));
+			b.setSource(other.source);
+			b.setGmtFile(other.gmtFile);
 			return b;
 		}
 		
@@ -157,6 +174,16 @@ public class PostAnalysisParameters {
 		
 		public Builder setAttributePrefix(String attributePrefix) {
 			this.attributePrefix = attributePrefix;
+			return this;
+		}
+		
+		public Builder setSource(String source) {
+			this.source = source;
+			return this;
+		}
+		
+		public Builder setGmtFile(String gmtFile) {
+			this.gmtFile = gmtFile;
 			return this;
 		}
 		

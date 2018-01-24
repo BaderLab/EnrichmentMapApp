@@ -612,7 +612,7 @@ public class PAWeightPanel extends JPanel {
 			case MANN_WHIT_LESS:
 				String rankingName = mannWhitRanks.get(dataset);
 				Ranking ranking = map.getDataSet(dataset).getRanks().get(rankingName);
-				return new FilterMetric.MannWhit(value, ranking, type);
+				return new FilterMetric.MannWhit(value, rankingName, ranking, type);
 			default:
 				return null;
 		}
