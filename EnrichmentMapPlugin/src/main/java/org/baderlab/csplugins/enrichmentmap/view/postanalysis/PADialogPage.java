@@ -360,14 +360,11 @@ public class PADialogPage implements CardDialogPage {
 	private synchronized void updateTable(List<SigGeneSetDescriptor> filteredGenesets, PostAnalysisFilterType type, boolean preserveWidths) {
 		TableColumnModel columnModel = table.getColumnModel();
 		
-		int[] widths = {60, 510, 80, 230};
+		int[] widths = {60, 480, 80, 140, 230};
 		if(preserveWidths) {
-			widths = new int[] {
-				columnModel.getColumn(0).getWidth(),
-				columnModel.getColumn(1).getWidth(),
-				columnModel.getColumn(2).getWidth(),
-				columnModel.getColumn(3).getWidth()
-			};
+			for(int i = 0; i < 5; i++) {
+				widths[i] = columnModel.getColumn(i).getWidth();
+			}
 		} 
 		
 		tableModel = new SigGeneSetTableModel(filteredGenesets, type);
@@ -380,14 +377,13 @@ public class PADialogPage implements CardDialogPage {
 			}
 		});
 
-		columnModel.getColumn(0).setPreferredWidth(widths[0]);
-		columnModel.getColumn(1).setPreferredWidth(widths[1]);
-		columnModel.getColumn(2).setPreferredWidth(widths[2]);
-		columnModel.getColumn(3).setPreferredWidth(widths[3]);
+		for(int i = 0; i < 5; i++) {
+			columnModel.getColumn(i).setPreferredWidth(widths[i]);
+		}
 		
 		// Auto-sort
 		TableRowSorter<?> sorter = ((TableRowSorter<?>)table.getRowSorter());
-		RowSorter.SortKey sortKey = new RowSorter.SortKey(SigGeneSetTableModel.COL_OVERLAP, getSortOrder(type));
+		RowSorter.SortKey sortKey = new RowSorter.SortKey(SigGeneSetTableModel.COL_SIMILARITY, getSortOrder(type));
 		sorter.setSortKeys(Arrays.asList(sortKey));
 		sorter.sort();
 		

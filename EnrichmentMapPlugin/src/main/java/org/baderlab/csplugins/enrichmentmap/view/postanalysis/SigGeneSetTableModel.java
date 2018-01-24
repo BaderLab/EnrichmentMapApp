@@ -11,7 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 @SuppressWarnings("serial")
 public class SigGeneSetTableModel extends AbstractTableModel {
 
-	public static final int COL_WANTED = 0, COL_NAME = 1, COL_GENES = 2, COL_OVERLAP = 3;
+	public static final int COL_WANTED = 0, COL_NAME = 1, COL_GENES = 2, COL_OVERLAP = 3, COL_SIMILARITY = 4;
 	
 	private final List<SigGeneSetDescriptor> geneSets;
 	private final PostAnalysisFilterType filterType;
@@ -43,7 +43,7 @@ public class SigGeneSetTableModel extends AbstractTableModel {
 
 	@Override
 	public int getColumnCount() {
-		return 4;
+		return 5;
 	}
 	
 	public PostAnalysisFilterType getFilterType() {
@@ -63,10 +63,11 @@ public class SigGeneSetTableModel extends AbstractTableModel {
 	public Object getValueAt(int row, int col) {
 		SigGeneSetDescriptor geneSet = geneSets.get(row);
 		switch(col) {
-			case COL_WANTED:  return geneSet.isWanted();
-			case COL_NAME:    return geneSet.getName();
-			case COL_GENES:   return geneSet.getGeneCount();
-			case COL_OVERLAP: return geneSet.getMostSimilar();
+			case COL_WANTED:     return geneSet.isWanted();
+			case COL_NAME:       return geneSet.getName();
+			case COL_GENES:      return geneSet.getGeneCount();
+			case COL_OVERLAP:    return geneSet.getLargestOverlap();
+			case COL_SIMILARITY: return geneSet.getMostSimilar();
 		}
 		return null;
 	}
@@ -77,7 +78,8 @@ public class SigGeneSetTableModel extends AbstractTableModel {
 			case COL_WANTED: return "Import";
 			case COL_NAME: return "Name";
 			case COL_GENES: return "Genes";
-			case COL_OVERLAP:
+			case COL_OVERLAP: return "Largest Overlap";
+			case COL_SIMILARITY:
 				switch(filterType) {
 					case HYPERGEOM: return "Hypergeometric";
 					case MANN_WHIT_GREATER: return "Mann-Whitney (Greater)";
@@ -98,7 +100,8 @@ public class SigGeneSetTableModel extends AbstractTableModel {
 			case COL_WANTED:  return Boolean.class;
 			case COL_NAME:    return String.class;
 			case COL_GENES:   return Integer.class;
-			case COL_OVERLAP: return Double.class;
+			case COL_OVERLAP: return Integer.class;
+			case COL_SIMILARITY: return Double.class;
 		}
 		return null;
 	}

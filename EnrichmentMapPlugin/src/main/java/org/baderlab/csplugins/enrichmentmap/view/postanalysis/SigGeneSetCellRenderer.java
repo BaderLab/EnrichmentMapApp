@@ -22,7 +22,7 @@ public class SigGeneSetCellRenderer implements TableCellRenderer {
 		label.setOpaque(true); //MUST do this for background to show up.
 		SwingUtil.makeSmall(label);
 		
-		if(col == SigGeneSetTableModel.COL_OVERLAP && value instanceof Number) {
+		if(col == SigGeneSetTableModel.COL_SIMILARITY && value instanceof Number) {
 			double val = ((Number)value).doubleValue();
 			label.setToolTipText(String.valueOf(val));
 			
