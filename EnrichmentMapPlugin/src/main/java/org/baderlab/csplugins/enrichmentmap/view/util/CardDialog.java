@@ -7,6 +7,8 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -59,8 +61,14 @@ public class CardDialog {
 		dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		dialog.pack();
 		dialog.setLocationRelativeTo(dialog.getParent());
+		dialog.setModal(true);
+		dialog.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				currentPage.opened();
+			}
+		});
 		dialog.setVisible(true);
-		currentPage.opened();
 	}
 
 	public void dispose() {
