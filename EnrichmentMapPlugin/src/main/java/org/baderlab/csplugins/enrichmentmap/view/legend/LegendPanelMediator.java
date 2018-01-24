@@ -22,11 +22,13 @@ import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
+import org.baderlab.csplugins.enrichmentmap.view.util.OpenPDFViewerTask;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -128,8 +130,9 @@ public class LegendPanelMediator {
 	private void exportPDF() {
 		Optional<File> file = FileBrowser.promptForPdfExport(fileUtil, swingApplication.getJFrame());
 		if(file.isPresent()) {
-			ExportLegendPDFTask task = new ExportLegendPDFTask(file.get(), legendPanelProvider.get());
-			dialogTaskManager.execute(new TaskIterator(task));
+			ExportLegendPDFTask exportTask = new ExportLegendPDFTask(file.get(), legendPanelProvider.get());
+			Task openPdfViewerTask = new OpenPDFViewerTask(file.get());
+			dialogTaskManager.execute(new TaskIterator(exportTask, openPdfViewerTask));
 		}
 	}
 	
