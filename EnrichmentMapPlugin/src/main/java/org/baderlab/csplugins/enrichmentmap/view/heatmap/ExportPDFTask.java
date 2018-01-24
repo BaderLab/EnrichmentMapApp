@@ -186,14 +186,15 @@ public class ExportPDFTask extends AbstractTask {
 	
 	private PdfPCell createExpressionCell(int row, int col) {
 		double value = (double) getModel().getValueAt(row, col);
-		Color color = getCellRenderer().getColor(getModel(), col, value);
+		HeatMapCellRenderer cellRenderer = getCellRenderer();
+		Color color = cellRenderer.getColor(getModel(), col, value);
+		boolean showValues = cellRenderer.getShowValues();
 		
 		PdfPCell cell = new PdfPCell();
 		cell.setBackgroundColor(color(color));
-		if(Double.isFinite(value)) {
+		if(showValues && Double.isFinite(value)) {
 			cell.setPhrase(new Phrase(ExportTXTTask.getExpressionText(value)));
 		}
-		
 		return cell;
 	}
 	
@@ -206,11 +207,11 @@ public class ExportPDFTask extends AbstractTask {
 		widths[1] = getPreferredColumnWidth(table, 1);
 		widths[2] = getPreferredColumnWidth(table, 2);
 		
-		float maxExpression = 0;
+		// equalize widths of expression columns
+		float maxExpression = 30;
 		for(int col = 3; col < n; col++) {
 			maxExpression = Math.max(maxExpression, getPreferredColumnWidth(table, col));
 		}
-		
 		for(int col = 3; col < n; col++) {
 			widths[col] = maxExpression;
 		}

@@ -28,10 +28,6 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 	private boolean showValue;
 	
 	
-	public void setShowValues(boolean showValue) {
-		this.showValue = showValue;
-	}
-	
 	@Override
 	public JLabel getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 		JLabel label = new JLabel();
@@ -58,6 +54,16 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 		
 		return label;
 	}
+	
+	
+	public void setShowValues(boolean showValue) {
+		this.showValue = showValue;
+	}
+	
+	public boolean getShowValues() {
+		return showValue;
+	}
+	
 	
 	public static String getText(double d) {
 		return Double.isFinite(d) ? format.format(d) : "NaN";
