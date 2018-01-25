@@ -36,7 +36,7 @@ public class PropertyManager {
 	public static final Property<Double> Q_VALUE = new Property<>("default.qvalue", 0.1, Double::valueOf);
 	public static final Property<Boolean> CREATE_WARN = new Property<>("create.warn", true, Boolean::valueOf);
 	public static final Property<Distance> DISTANCE_METRIC = new Property<>("default.distanceMetric", Distance.PEARSON, Distance::valueOf);
-	public static final Property<String> PATHWAY_COMMONS_URL = new Property<>("pathway.commons.url", "https://beta.pathwaycommons.org/paint", String::valueOf);
+	public static final Property<String> PATHWAY_COMMONS_URL = new Property<>("pathway.commons.url", "http://apps.pathwaycommons.org/paint", String::valueOf);
 	
 	@Inject private CyProperty<Properties> cyProps;
 	
