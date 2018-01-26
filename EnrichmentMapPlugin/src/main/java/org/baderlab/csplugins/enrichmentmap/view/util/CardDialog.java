@@ -199,7 +199,7 @@ public class CardDialog {
 	private JPanel createButtonPanel() {
 		finishButton = new JButton(new AbstractAction(params.getFinishButtonText()) {
 			public void actionPerformed(ActionEvent e) {
-				finishButton.setEnabled(false);
+				finishButton.setEnabled(false); // prevent clicking the button twice quickly
 				currentPage.finish();
 			}
 		});
@@ -247,6 +247,7 @@ public class CardDialog {
 			return new AbstractTask() {
 				@Override
 				public void run(TaskMonitor taskMonitor) throws Exception {
+					finishButton.setEnabled(true); // because the finishButton listener disables the Finish button
 					close();
 				}
 			};
