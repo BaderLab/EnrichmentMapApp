@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -425,32 +426,35 @@ public class PAWeightPanel extends JPanel {
 		JPanel body = new JPanel(new GridBagLayout());
 		int y = 0;
 		for(EMDataSet dataset : dataSets) {
-			final String dataSetName = dataset.getName();
-			JLabel label = new JLabel(dataSetName + ":");
-			JComboBox<String> combo = new JComboBox<>();
-			for(String ranksName : dataset.getAllRanksNames()) {
-				combo.addItem(ranksName);
+			Set<String> ranksNames = dataset.getAllRanksNames();
+			if(ranksNames != null && !ranksNames.isEmpty()) {
+				final String dataSetName = dataset.getName();
+				JLabel label = new JLabel(dataSetName + ":");
+				JComboBox<String> combo = new JComboBox<>();
+				for(String ranksName : ranksNames) {
+					combo.addItem(ranksName);
+				}
+				SwingUtil.makeSmall(label, combo);
+				if(combo.getItemCount() <= 1) {
+					combo.setEnabled(false);
+				}
+				
+				String ranksName = mannWhitRanks.get(dataSetName);
+				if(ranksName == null)
+					mannWhitRanks.put(dataSetName, combo.getSelectedItem().toString());
+				else
+					combo.setSelectedItem(ranksName);
+				
+				combo.addActionListener(e -> {
+					String ranks = combo.getSelectedItem().toString();
+					mannWhitRanks.put(dataSetName, ranks);
+					firePropertyChange(PROPERTY_PARAMETERS, false, true);
+				});
+				
+				body.add(label, GBCFactory.grid(0,y).weightx(.5).anchor(EAST).fill(NONE).get());
+				body.add(combo, GBCFactory.grid(1,y).weightx(.5).get());
+				y++;
 			}
-			SwingUtil.makeSmall(label, combo);
-			if(combo.getItemCount() <= 1) {
-				combo.setEnabled(false);
-			}
-			
-			String ranksName = mannWhitRanks.get(dataSetName);
-			if(ranksName == null)
-				mannWhitRanks.put(dataSetName, combo.getSelectedItem().toString());
-			else
-				combo.setSelectedItem(ranksName);
-			
-			combo.addActionListener(e -> {
-				String ranks = combo.getSelectedItem().toString();
-				mannWhitRanks.put(dataSetName, ranks);
-				firePropertyChange(PROPERTY_PARAMETERS, false, true);
-			});
-			
-			body.add(label, GBCFactory.grid(0,y).weightx(.5).anchor(EAST).fill(NONE).get());
-			body.add(combo, GBCFactory.grid(1,y).weightx(.5).get());
-			y++;
 		}
 		
 		JPanel container = new JPanel(new BorderLayout());
@@ -611,8 +615,8 @@ public class PAWeightPanel extends JPanel {
 			case MANN_WHIT_GREATER:
 			case MANN_WHIT_LESS:
 				String rankingName = mannWhitRanks.get(dataset);
-				Ranking ranking = map.getDataSet(dataset).getRanks().get(rankingName);
-				return new FilterMetric.MannWhit(value, rankingName, ranking, type);
+				Ranking ranking = rankingName == null ? null :  map.getDataSet(dataset).getRanks().get(rankingName);
+				return new FilterMetric.MannWhit(type, value, rankingName, ranking);
 			default:
 				return null;
 		}

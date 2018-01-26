@@ -205,11 +205,11 @@ public interface FilterMetric {
 	class MannWhit extends BaseFilterMetric {
 
 		private final String rankingName;
-		private final Ranking ranks;
+		private final @Nullable Ranking ranks;
 		private final MannWhitneyMemoized mannWhitneyCache = new MannWhitneyMemoized();
+
 		
-		
-		public MannWhit(double filter, String rankingName, Ranking ranks, PostAnalysisFilterType type) {
+		public MannWhit(PostAnalysisFilterType type, double filter, String rankingName, Ranking ranks) {
 			super(type, filter);
 			if(!type.isMannWhitney())
 				throw new IllegalArgumentException("FilterType is not Mann Whitney: " + type);
@@ -228,7 +228,7 @@ public interface FilterMetric {
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) {
 			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
 			int size = intersection.size();
-			if(ranks.isEmpty() || size == 0) {
+			if(ranks == null || ranks.isEmpty() || size == 0) {
 				if(similarity != null) {
 					similarity.setMannWhitPValueTwoSided(1.0); // avoid NoDataException
 					similarity.setMannWhitPValueGreater(1.0);

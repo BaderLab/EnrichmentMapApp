@@ -111,7 +111,7 @@ public class PostAnalysisTaskTest extends BaseNetworkTest {
 		PostAnalysisFilterType mannWhitTwoSided = PostAnalysisFilterType.MANN_WHIT_TWO_SIDED;
 		
 		FilterMetricSet rankTest = new FilterMetricSet(PostAnalysisFilterType.MANN_WHIT_TWO_SIDED);
-		rankTest.put(LegacySupport.DATASET1, new FilterMetric.MannWhit(mannWhitTwoSided.defaultValue, null, ranking, mannWhitTwoSided));
+		rankTest.put(LegacySupport.DATASET1, new FilterMetric.MannWhit(mannWhitTwoSided, mannWhitTwoSided.defaultValue, null, ranking));
 		builder.setRankTestParameters(rankTest);
 		
 		runPostAnalysis(emNetwork, builder, PATH + "PA_top8_middle8_bottom8.gmt", LegacySupport.DATASET1);
