@@ -132,6 +132,9 @@ public class GSEAResolver {
 			return Optional.empty();
 		}
 		
+		if(data == null)
+			return Optional.empty();
+		
 		try {
 			Path exprfile = Paths.get(data);
 			if(Files.exists(exprfile))

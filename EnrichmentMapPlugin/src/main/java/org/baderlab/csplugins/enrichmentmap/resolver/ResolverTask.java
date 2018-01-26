@@ -37,9 +37,13 @@ public class ResolverTask extends AbstractTask implements ObservableTask, Cancel
 			if(cancelled)
 				break;
 			
-			if(Files.isDirectory(path)) {
-				List<DataSetParameters> dataSets = DataSetResolver.guessDataSets(path, (CancelStatus)this);
-				results.addAll(dataSets);
+			try {
+				if(Files.isDirectory(path)) {
+					List<DataSetParameters> dataSets = DataSetResolver.guessDataSets(path, (CancelStatus)this);
+					results.addAll(dataSets);
+				}
+			} catch(Exception e) {
+				throw new RuntimeException("Error while resolving path: " + path, e);
 			}
 		}
 	}
