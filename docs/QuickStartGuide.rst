@@ -28,7 +28,7 @@ have to go to the Full User Guide, File Format section, and make sure that the f
 with Enrichment Map requirements.
 
 You can use the parameter defaults. For a more careful choice of the parameter settings, please go 
-to the |Full User Guide, Tips on Parameter Choice|. 
+to :ref:`parameters`. 
 
 
 Graphical Mapping of Enrichment
@@ -89,7 +89,7 @@ Advanced Tips
         Browser. 
 
 * When loading GSEA results there is no need to specify each file. Use the GSEA RPT file to 
-  auto-populate all the file fields in the EM interface. Check out: |How to use RPT files|
+  auto-populate all the file fields in the EM interface. Check out: :ref:`rpt_files`
 * You can specify more lax p-value, q-value and coefficient threshold initially and fine tune them 
   after the network is created by adjusting them through the p-value, q-value and coefficient 
-  tuners in the results panel. Check out: |How to use Parameters Panel|
+  tuners in the results panel. Check out: :ref:`results_panel`

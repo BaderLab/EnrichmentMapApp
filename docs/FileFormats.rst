@@ -73,10 +73,8 @@ GCT (GSEA file type)
           primary key as used in the gene sets file (GMT file). You have the following options:
 
           * Use the GSEA desktop application: GSEA / Tools / Collapse Dataset
-          * Run this Python script ``collapse_ExpressionMatrix.py`` using the Chip platform file 
+          * Run this Python script :ref:`collapse_ExpressionMatrix` using the Chip platform file 
             that was used by GSEA. 
-
-|collapse_ExpressionMatrix.py|
 
 RNK (GSEA file type)
 ~~~~~~~~~~~~~~~~~~~~
@@ -180,8 +178,7 @@ DAVID Enrichment Result File
              query set and not the genes in your background set. This will drastically affect 
              the amount of overlap you see in the resulting Enrichment Map. 
 
-
-|See here for tutorial on how to generate David output files for Enrichment maps|
+:ref:`david_tutorial`
 
 
 BiNGO Enrichment Result File
@@ -211,8 +208,10 @@ BiNGO Enrichment Result File
              not the genes in your background set. This will drastically affect the amount 
              of overlap you see in the resulting Enrichment Map. 
 
-|See here for tutorial on how to generate Bingo output files for Enrichment maps|
+:ref:`david_tutorial`
 
+
+.. _rpt_files:
 
 RPT files
 ~~~~~~~~~

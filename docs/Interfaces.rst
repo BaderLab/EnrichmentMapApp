@@ -82,6 +82,8 @@ viewers is the set of gene listed.
     in the EM version for Cytoscape 3.0. 
 
 
+.. _results_panel:
+
 The Results Panel
 -----------------
 

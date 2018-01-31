@@ -1,5 +1,7 @@
-Parameters
-==========
+.. _parameters:
+
+Tips on Parameter Choice
+========================
 
 Node (Gene Set inclusion) Parameters
 ------------------------------------
