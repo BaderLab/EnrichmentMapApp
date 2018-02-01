@@ -1,12 +1,13 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
-import java.awt.Component;
-import java.io.Serializable;
+import static org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GENEMANIA_NAMESPACE;
+import static org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GENEMANIA_ORGANISMS_COMMAND;
+import static org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GENEMANIA_SEARCH_COMMAND;
+
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,8 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask;
+import org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GeneManiaOrganismsResult;
 import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
@@ -47,17 +50,12 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.swing.DialogTaskManager;
-import org.cytoscape.work.util.ListSingleSelection;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -71,16 +69,13 @@ import com.google.inject.Singleton;
 @Singleton
 public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewListener {
 
-	private static final String GENEMANIA_NAMESPACE = "genemania";
-	private static final String GENEMANIA_ORGANISMS_COMMAND = "organisms";
-	private static final String GENEMANIA_SEARCH_COMMAND = "search";
-
 	private static final int COLLAPSE_THRESHOLD = 50;
 	
 	@Inject private HeatMapParentPanel.Factory panelFactory;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private PropertyManager propertyManager;
 	@Inject private ClusterRankingOption.Factory clusterRankOptionFactory;
+	@Inject private QueryGeneManiaTask.Factory queryGeneManiaTaskFactory;
 	
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyServiceRegistrar serviceRegistrar;
@@ -92,7 +87,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@Inject private OpenBrowser openBrowser;
 	
 	private final CoalesceTimer selectionEventTimer = new CoalesceTimer(200, 1);
-	private HeatMapParentPanel heatMapPanel = null;
+	private HeatMapParentPanel heatMapPanel;
 	private boolean onlyEdges;
 	
 	
@@ -101,7 +96,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			heatMapPanel = (HeatMapParentPanel) serviceRegistrar.getService(CytoPanelComponent.class, "(id=" + HeatMapParentPanel.ID + ")");
 		} catch (Exception ex) { }
 		
-		if(heatMapPanel == null) {
+		if (heatMapPanel == null) {
 			heatMapPanel = panelFactory.create(this);
 			Properties props = new Properties();
 			props.setProperty("id", HeatMapParentPanel.ID);
@@ -323,8 +318,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			return;
 		}
 		
-		QueryGeneManiaTask queryTask = new QueryGeneManiaTask(mainPanel.getGenes(),
-				SwingUtilities.getWindowAncestor(mainPanel));
+		QueryGeneManiaTask queryTask = queryGeneManiaTaskFactory.create(mainPanel.getEnrichmentMap(),
+				mainPanel.getGenes(), SwingUtilities.getWindowAncestor(mainPanel));
 		
 		// Get list of organisms from GeneMANIA
 		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
@@ -362,147 +357,5 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 
 	public void shutDown() {
 		selectionEventTimer.shutdown();
-	}
-	
-	public class QueryGeneManiaTask extends AbstractTask {
-		
-		@Tunable(description = "Organism:")
-		public ListSingleSelection<GeneManiaOrganism> organisms;
-		
-		private final String genes;
-		private final Component parentComponent;
-		
-		public QueryGeneManiaTask(List<String> geneList, Component parentComponent) {
-			genes = String.join("|", geneList);
-			organisms = new ListSingleSelection<>();
-			this.parentComponent = parentComponent;
-		}
-		
-		@ProvidesTitle
-		public String getTitle() {
-			return "Select an Organism";
-		}
-		
-		public void updatetOrganisms(List<GeneManiaOrganism> orgValues) {
-			organisms.setPossibleValues(orgValues);
-			
-			if (!orgValues.isEmpty())
-				organisms.setSelectedValue(orgValues.get(0));
-		}
-		
-		@Override
-		public void run(TaskMonitor tm) throws Exception {
-			if (organisms.getSelectedValue() != null) {
-				tm.setTitle("EnrichmentMap");
-				tm.setStatusMessage("Querying GeneMANIA...");
-				
-				Map<String, Object> args = new HashMap<>();
-				args.put("organism", "" + organisms.getSelectedValue().getTaxonomyId());
-				args.put("genes", genes);
-				args.put("geneLimit", 0); // Do not find more genes
-				
-				TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
-						GENEMANIA_NAMESPACE, GENEMANIA_SEARCH_COMMAND, args, new TaskObserver() {
-					
-					CyNetwork geneManiaNetwork;
-					
-					@Override
-					public void taskFinished(ObservableTask task) {
-						if (task instanceof ObservableTask) {
-							if (((ObservableTask) task).getResultClasses().contains(CyNetwork.class)) {
-								geneManiaNetwork = ((ObservableTask) task).getResults(CyNetwork.class);
-								
-								if (geneManiaNetwork == null) {
-									SwingUtilities.invokeLater(() -> {
-										JOptionPane.showMessageDialog(
-												parentComponent,
-												"The GeneMANIA search returned no results.",
-												"No Results",
-												JOptionPane.INFORMATION_MESSAGE
-										);
-									});
-								}
-							}
-						}
-					}
-					
-					@Override
-					public void allFinished(FinishStatus finishStatus) {
-						if (finishStatus == FinishStatus.getSucceeded() && geneManiaNetwork != null) {
-							System.out.println("[ ALL FINISHED ] : " + finishStatus + " - " + geneManiaNetwork);
-							// TODO Save the genemania network SUID
-							// TODO Maybe add EM Network SUID to genemania network's table.
-							// TODO add EM columns/data to genemania's network, update genemania's style, etc...
-						}
-					}
-				});
-				getTaskIterator().append(ti);
-			}
-		}
-	}
-	
-	class GeneManiaOrganismsResult implements Serializable {
-		
-		private static final long serialVersionUID = 8454506417358350512L;
-		
-		private List<GeneManiaOrganism> organisms;
-		
-		public List<GeneManiaOrganism> getOrganisms() {
-			return organisms;
-		}
-		
-		public void setOrganisms(List<GeneManiaOrganism> organisms) {
-			this.organisms = organisms;
-		}
-	}
-	
-	class GeneManiaOrganism implements Serializable {
-
-		private static final long serialVersionUID = -4488165932347985569L;
-		
-		private long taxonomyId;
-		private String scientificName;
-		private String abbreviatedName;
-		private String commonName;
-
-		public GeneManiaOrganism() {
-		}
-
-		public long getTaxonomyId() {
-			return taxonomyId;
-		}
-
-		public void setTaxonomyId(long taxonomyId) {
-			this.taxonomyId = taxonomyId;
-		}
-
-		public String getScientificName() {
-			return scientificName;
-		}
-
-		public void setScientificName(String scientificName) {
-			this.scientificName = scientificName;
-		}
-
-		public String getAbbreviatedName() {
-			return abbreviatedName;
-		}
-
-		public void setAbbreviatedName(String abbreviatedName) {
-			this.abbreviatedName = abbreviatedName;
-		}
-
-		public String getCommonName() {
-			return commonName;
-		}
-
-		public void setCommonName(String commonName) {
-			this.commonName = commonName;
-		}
-
-		@Override
-		public String toString() {
-			return scientificName;
-		}
 	}
 }

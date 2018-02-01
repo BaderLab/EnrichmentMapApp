@@ -403,8 +403,9 @@ public class HeatMapMainPanel extends JPanel {
 		return optionsPopup;
 	}
 	
-	private EnrichmentMap getEnrichmentMap() {
+	protected EnrichmentMap getEnrichmentMap() {
 		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
+		
 		return model.getEnrichmentMap();
 	}
 	

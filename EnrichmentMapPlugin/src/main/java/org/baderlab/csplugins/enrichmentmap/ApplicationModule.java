@@ -14,6 +14,7 @@ import org.baderlab.csplugins.enrichmentmap.task.CreateEMViewTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.SelectNodesEdgesTask;
+import org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreatePANetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PASimilarityTaskParallel;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PATaskFactory;
@@ -106,6 +107,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(PADialogParameters.Factory.class);
 		installFactory(PADialogPage.Factory.class);
 		installFactory(PAWeightPanel.Factory.class);
+		installFactory(QueryGeneManiaTask.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

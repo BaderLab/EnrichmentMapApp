@@ -34,8 +34,7 @@ public class HeatMapParentPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private final HeatMapMediator mediator;
 	private HeatMapMainPanel mainPanel;
-	
-	
+
 	public interface Factory {
 		HeatMapParentPanel create(HeatMapMediator mediator);
 	}
