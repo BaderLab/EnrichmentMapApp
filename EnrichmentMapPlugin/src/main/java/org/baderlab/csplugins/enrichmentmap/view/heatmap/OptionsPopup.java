@@ -63,7 +63,7 @@ public class OptionsPopup extends JPopupMenu {
 		exportPdfButton = new JMenuItem("Export as PDF...");
 		exportPdfButton.setIcon(new TextIcon(IconManager.ICON_EXTERNAL_LINK, iconFont, iconColor, iconSize, iconSize));
 		
-		geneManiaButton = new JMenuItem("Open on GeneMANIA...");
+		geneManiaButton = new JMenuItem("Show on GeneMANIA...");
 		
 		JMenu distanceMenu = new JMenu("Hierarchical Cluster - Distance Metric");
 		
