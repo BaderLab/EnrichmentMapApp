@@ -107,8 +107,7 @@ report the bug to the Enrichment map issue tracker:
    Attributes
    AdditionalFeatures
    GeneSets
-   DavidTutorial
-   ExamplesOfGenericEnrichmentResultFiles
+   Tutorials
    collapse_ExpressionMatrix.py
   
 
