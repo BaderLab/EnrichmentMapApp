@@ -24,10 +24,13 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.task.genemania.GMOrganismsResult;
+import org.baderlab.csplugins.enrichmentmap.task.genemania.GMSearchResult;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask;
-import org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GeneManiaOrganismsResult;
 import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
@@ -40,11 +43,13 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
@@ -70,6 +75,7 @@ import com.google.inject.Singleton;
 public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewListener {
 
 	private static final int COLLAPSE_THRESHOLD = 50;
+	private static final String EM_NETWORK_SUID = "EM_Network.SUID";
 	
 	@Inject private HeatMapParentPanel.Factory panelFactory;
 	@Inject private EnrichmentMapManager emManager;
@@ -166,7 +172,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			emManager.registerHeatMapParams(suid, onlyEdges, params);
 		}
 	}
-	
 	
 	private void updateHeatMap(CyNetworkView networkView) {
 		if(heatMapPanel == null)
@@ -318,41 +323,121 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			return;
 		}
 		
-		QueryGeneManiaTask queryTask = queryGeneManiaTaskFactory.create(mainPanel.getEnrichmentMap(),
-				mainPanel.getGenes(), SwingUtilities.getWindowAncestor(mainPanel));
+		QueryGeneManiaTask queryTask = queryGeneManiaTaskFactory.create(mainPanel.getGenes());
 		
 		// Get list of organisms from GeneMANIA
 		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
 				GENEMANIA_NAMESPACE, GENEMANIA_ORGANISMS_COMMAND, Collections.emptyMap(), new TaskObserver() {
-			
-			@Override
-			@SuppressWarnings("serial")
-			public void taskFinished(ObservableTask task) {
-				if (task instanceof ObservableTask) {
-					if (((ObservableTask) task).getResultClasses().contains(JSONResult.class)) {
-						JSONResult json = ((ObservableTask) task).getResults(JSONResult.class);
-						
-						if (json != null && json.getJSON() != null) {
-							Gson gson = new Gson();
-							Type type = new TypeToken<GeneManiaOrganismsResult>(){}.getType();
-							GeneManiaOrganismsResult res = gson.fromJson(json.getJSON(), type);
-							
-							if (res != null && res.getOrganisms() != null && !res.getOrganisms().isEmpty())
-								queryTask.updatetOrganisms(res.getOrganisms());
-							else
-								throw new RuntimeException("Unable to retrieve available organisms from GeneMANIA.");
+					
+					@Override
+					public void taskFinished(ObservableTask task) {
+						if (task instanceof ObservableTask) {
+							if (((ObservableTask) task).getResultClasses().contains(JSONResult.class)) {
+								JSONResult json = ((ObservableTask) task).getResults(JSONResult.class);
+								
+								if (json != null && json.getJSON() != null) {
+									Gson gson = new Gson();
+									Type type = new TypeToken<GMOrganismsResult>(){}.getType();
+									GMOrganismsResult res = gson.fromJson(json.getJSON(), type);
+									
+									if (res != null && res.getOrganisms() != null && !res.getOrganisms().isEmpty())
+										queryTask.updatetOrganisms(res.getOrganisms());
+									else
+										throw new RuntimeException("Unable to retrieve available organisms from GeneMANIA.");
+								}
+							}
 						}
 					}
+					
+					@Override
+					public void allFinished(FinishStatus finishStatus) {
+						// Never called by Cytoscape...
+					}
+				});
+		ti.append(queryTask);
+		
+		taskManager.execute(ti, new TaskObserver() {
+			@Override
+			public void taskFinished(ObservableTask task) {
+				// Never called...
+			}
+			@Override
+			public void allFinished(FinishStatus finishStatus) {
+				if (finishStatus == FinishStatus.getSucceeded())
+					onGeneManiaQueryFinished(queryTask.getResult(), mainPanel);
+			}
+		});
+	}
+
+	private void onGeneManiaQueryFinished(GMSearchResult res, HeatMapMainPanel mainPanel) {
+		CyNetwork maniaNet = null;
+		
+		if (res != null && res.getNetwork() != null && res.getGenes() != null
+				&& !res.getGenes().isEmpty())
+			maniaNet = networkManager.getNetwork(res.getNetwork());
+		
+		if (maniaNet == null) {
+			SwingUtilities.invokeLater(() -> {
+				JOptionPane.showMessageDialog(
+						SwingUtilities.getWindowAncestor(mainPanel),
+						"The GeneMANIA search returned no results.",
+						"No Results",
+						JOptionPane.INFORMATION_MESSAGE
+				);
+			});
+		} else {
+			EnrichmentMap map = mainPanel.getEnrichmentMap();
+			
+			// Add EM Network SUID to genemania network's table.
+			CyTable tgtNetTable = maniaNet.getDefaultNetworkTable();
+			
+			if (tgtNetTable.getColumn(EM_NETWORK_SUID) == null)
+				tgtNetTable.createColumn(EM_NETWORK_SUID, Long.class, true);
+			
+			tgtNetTable.getRow(maniaNet.getSUID()).set(EM_NETWORK_SUID, map.getNetworkID());
+			
+			// Copy some EM columns to genemania's Node table
+			CyNetwork emNet = networkManager.getNetwork(map.getNetworkID());
+			CyTable srcNodeTable = emNet.getDefaultNodeTable();
+			CyTable tgtNodeTable = maniaNet.getDefaultNodeTable();
+			Collection<CyColumn> srcNodeColumns = new ArrayList<>(srcNodeTable.getColumns());
+			
+			for (String key : map.getExpressionMatrixKeys()) {
+				GeneExpressionMatrix matrix = map.getExpressionMatrix(key);
+				System.out.println("\n* " + key + ": ");
+				System.out.println("\t>> " + String.join(", ", matrix.getColumnNames()));
+				
+				for (GeneExpression ge : matrix.getExpressionMatrix().values()) {
+					System.out.println("\t. " + ge.getName() + ": ");
+					
+					for (Float exp : ge.getExpression())
+						System.out.println("\t\t.. " + exp);
 				}
 			}
 			
-			@Override
-			public void allFinished(FinishStatus finishStatus) {
-				// Never called by Cytoscape?! Why?
-			}
-		});
-		ti.append(queryTask);
-		taskManager.execute(ti);
+//			for (CyColumn col : srcNodeColumns) {
+//				String colName = col.getName();
+
+//					if (tgtNodeTable.getColumn(colName) == null) {
+//						if (col.getListElementType() == null)
+//							tgtNodeTable.createColumn(colName, col.getType(), col.isImmutable());
+//						else
+//							tgtNodeTable.createListColumn(colName, col.getListElementType(), col.isImmutable());
+//						
+//						for (CyRow tgtRow : tgtNodeTable.getAllRows()) {
+//							Object pk = tgtRow.get(tgtNodeTable.getPrimaryKey().getName(), tgtNodeTable.getPrimaryKey().getType());
+//							CyRow srcRow = srcNodeTable.getRow(pk);
+//							
+//							if (srcRow != null) {
+//								Object value = srcRow.getRaw(colName);
+//								tgtRow.set(colName, value);
+//							}
+//						}
+//					}
+//			}
+			
+			// TODO Update genemania's style, etc...
+		}
 	}
 
 	public void shutDown() {
