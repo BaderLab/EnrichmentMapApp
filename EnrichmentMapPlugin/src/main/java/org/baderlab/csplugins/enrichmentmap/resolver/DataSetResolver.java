@@ -40,6 +40,7 @@ public class DataSetResolver {
 		GSEA_FOLDER,
 		EXPRESSION,
 		RANKS,
+		CLASS,
 		GENE_SETS,
 		IGNORE;
 		
@@ -101,6 +102,7 @@ public class DataSetResolver {
 		// MKTODO add other enrichment types
 		List<Path> exprFiles = new ArrayList<>(types.get(Type.EXPRESSION));
 		List<Path> rankFiles = new ArrayList<>(types.get(Type.RANKS));
+		List<Path> clasFiles = new ArrayList<>(types.get(Type.CLASS));
 		List<Path> gmtFiles  = new ArrayList<>(types.get(Type.GENE_SETS));
 		
 		// MKTODO what about other enrichment types?
@@ -110,6 +112,7 @@ public class DataSetResolver {
 			
 			Optional<Path> closestExpr  = findClosestMatch(enrichment, exprFiles);
 			Optional<Path> closestRanks = findClosestMatch(enrichment, rankFiles);
+			Optional<Path> closestClass = findClosestMatch(enrichment, clasFiles);
 			Optional<Path> closestGmt   = findClosestMatch(enrichment, gmtFiles);
 			
 			closestExpr.ifPresent(path -> {
@@ -119,6 +122,10 @@ public class DataSetResolver {
 			closestRanks.ifPresent(path -> {
 				rankFiles.remove(path);
 				files.setRankedFile(path.toAbsolutePath().toString());
+			});
+			closestClass.ifPresent(path -> {
+				clasFiles.remove(path);
+				files.setClassFile(path.toAbsolutePath().toString());
 			});
 			closestGmt.ifPresent(path -> {
 				gmtFiles.remove(path);
@@ -169,64 +176,69 @@ public class DataSetResolver {
 			return Type.IGNORE;
 		}
 		if(Files.isDirectory(path)) {
-			if(GSEAResolver.isGSEAResultsFolder(path)) {
-				return Type.GSEA_FOLDER;
-			} else {
+//			if(GSEAResolver.isGSEAResultsFolder(path)) {
+//				return Type.GSEA_FOLDER;
+//			} else {
 				return Type.IGNORE;
-			}
+//			}
 		}
 		
-		Optional<String> firstLine = getFirstDataLine(path);
-		if(!(firstLine.isPresent() && isTabSeparated(firstLine.get()))) {
-			return Type.IGNORE;
-		}
-		
-		return guess(path, firstLine.get());
+		return guess(path);
 	}
 	
 	
-	private static Type guess(Path path, String firstLine) {
+	private static Type guess(Path path) {
 		Map<Type,Integer> scores = new EnumMap<>(Type.class);
 		
-		// Guess based on extension and/or first line of file
-		if(hasExtension(path, "gct")) {
-			addScore(scores, Type.RANKS, 1);
-		}
-		if(hasExtension(path, "gmt")) {
-			addScore(scores, Type.GENE_SETS, 1);
-		}
-		if(hasExtension(path, "rnk")) {
-			addScore(scores, Type.RANKS, 1);
-			addScore(scores, Type.EXPRESSION, 1);
-		}
-		if(hasExtension(path, "xls", "bgo", "tsv", "txt")) {
-			Type type = guessEnrichmentType(path);
-			if(type == Type.IGNORE) {
-				addScore(scores, Type.ENRICHMENT_GENERIC, 1);
+		String fileName = path.getFileName().toString();
+		Optional<String> firstLine = getFirstDataLine(path);
+		
+		if(firstLine.isPresent() && isTabSeparated(firstLine.get())) {
+			// Guess based on extension and/or first line of file
+			if(hasExtension(path, "gct")) {
+				addScore(scores, Type.RANKS, 1);
+			}
+			if(hasExtension(path, "gmt")) {
+				addScore(scores, Type.GENE_SETS, 1);
+			}
+			if(hasExtension(path, "rnk")) {
+				addScore(scores, Type.RANKS, 1);
 				addScore(scores, Type.EXPRESSION, 1);
-			} else {
-				addScore(scores, type, 2); // this is a lot of evidence
+			}
+			if(hasExtension(path, "xls", "bgo", "tsv", "txt")) {
+				Type type = guessEnrichmentType(path);
+				if(type == Type.IGNORE) {
+					addScore(scores, Type.ENRICHMENT_GENERIC, 1);
+					addScore(scores, Type.EXPRESSION, 1);
+				} else {
+					addScore(scores, type, 2); // this is a lot of evidence
+				}
+			}
+			
+			// Test first line
+			if(!isRankLine(firstLine.get())) {
+				addScore(scores, Type.RANKS, -1);
+			}
+			if(!isExpressionLine(firstLine.get())) {
+				addScore(scores, Type.EXPRESSION, -1);
+			}
+			
+			// Guess based on file name	
+			
+			if(matches(fileName, ".*expr(ession)?.*")) {
+				addScore(scores, Type.EXPRESSION, 3);
+			}
+			if(matches(fileName, ".*rank.*")) {
+				addScore(scores, Type.RANKS, 3);
 			}
 		}
 		
-		// Test first line
-		if(!isRankLine(firstLine)) {
-			addScore(scores, Type.RANKS, -1);
-		}
-		if(!isExpressionLine(firstLine)) {
-			addScore(scores, Type.EXPRESSION, -1);
+		// class files are not tab separated
+		if(matches(fileName, ".*class.*")) {
+			addScore(scores, Type.CLASS, 3);
 		}
 		
-		// Guess based on file name	
-		String fileName = path.getFileName().toString();
-		if(matches(fileName, ".*expr(ession)?.*")) {
-			addScore(scores, Type.EXPRESSION, 3);
-		}
-		if(matches(fileName, ".*rank.*")) {
-			addScore(scores, Type.RANKS, 3);
-		}
 		// Not adding score here for enrichment files because guessEnrichmentType should be enough evidence
-		
 		Set<Type> possibleTypes = typesWithHighestScore(scores);
 		
 		if(possibleTypes.isEmpty()) {

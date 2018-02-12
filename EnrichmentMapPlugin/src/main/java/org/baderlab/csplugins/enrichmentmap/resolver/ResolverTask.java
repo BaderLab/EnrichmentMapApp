@@ -33,6 +33,15 @@ public class ResolverTask extends AbstractTask implements ObservableTask, Cancel
 		taskMonitor.setTitle("EnrichmentMap");
 		taskMonitor.setStatusMessage("Scanning Folder for Data Sets");
 		
+		if(folders.size() == 1) {
+			Path path = folders.get(0);
+			if(Files.isDirectory(path)) {
+				for(File subdirectory : path.toFile().listFiles(File::isDirectory)) {
+					folders.add(subdirectory.toPath());
+				}
+			}
+		}
+		
 		for(Path path : folders) {
 			if(cancelled)
 				break;
