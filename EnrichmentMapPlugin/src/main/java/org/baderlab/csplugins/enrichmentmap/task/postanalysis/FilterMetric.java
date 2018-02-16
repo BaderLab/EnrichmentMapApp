@@ -158,6 +158,8 @@ public interface FilterMetric {
 
 		private final int u;
 		
+		private Set<Integer> universeGenes = null;
+		
 		public Hypergeom(double filter, int u) {
 			super(PostAnalysisFilterType.HYPERGEOM, filter);
 			this.u = u;
@@ -171,11 +173,20 @@ public interface FilterMetric {
 			return Math.min(x, y);
 		}
 		
+		public void setUniverseFilter(Set<Integer> universeGenes) {
+			this.universeGenes = universeGenes;
+		}
+		
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) throws ArithmeticException {
 			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
 			// Calculate Hypergeometric pValue for Overlap
 			// u: number of total genes (size of population / total number of balls)
-			int n = sigSet.size(); //size of signature geneset (sample size / number of extracted balls)
+			int n; //size of signature geneset (sample size / number of extracted balls)
+			if(universeGenes == null)
+				n = sigSet.size();
+			else
+				n = Sets.intersection(sigSet, universeGenes).size();
+			
 			int m = geneSet.size(); //size of enrichment geneset (success Items / number of white balls in population)
 			int k = intersection.size(); //size of intersection (successes /number of extracted white balls)
 

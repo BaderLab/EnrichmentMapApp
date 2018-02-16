@@ -8,6 +8,7 @@ import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
@@ -79,6 +80,8 @@ public class PAWeightPanel extends JPanel {
 	private JRadioButton userDefinedRadioButton;
 	private JFormattedTextField universeSelectionTextField;
 	
+	private JRadioButton hyperIntersectButton;
+	
 	private JLabel iconLabel;
 	private JLabel warnLabel;
 	
@@ -133,7 +136,7 @@ public class PAWeightPanel extends JPanel {
 			.addComponent(title)
 			.addGroup(layout.createSequentialGroup()
 				.addComponent(selectPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(cardPanel, 300, 300, 300)
+				.addComponent(cardPanel, 450, 450, 450)
 			)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
@@ -327,6 +330,50 @@ public class PAWeightPanel extends JPanel {
 	
 	
 	private JPanel createHypergeomCard() {
+		JPanel universePanel = createHypergeomUniversePanel();
+		JPanel samplePanel = createHypergeomSamplePanel();
+		
+		JPanel panel = new JPanel(new GridBagLayout());
+		panel.add(universePanel, GBCFactory.grid(0,0).weightx(.5).fill(GridBagConstraints.BOTH).get());
+		panel.add(samplePanel,   GBCFactory.grid(1,0).weightx(.5).fill(GridBagConstraints.BOTH).get());
+		panel.setOpaque(false);
+		return panel;
+	}
+	
+	private JPanel createHypergeomSamplePanel() {
+		hyperIntersectButton = new JRadioButton("Intersection");
+		JRadioButton hyperSigButton = new JRadioButton("Signature gene set");
+		makeSmall(hyperSigButton, hyperIntersectButton);
+		
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(hyperSigButton);
+		buttonGroup.add(hyperIntersectButton);
+		hyperIntersectButton.setSelected(true);
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Genes in sample (n)"));
+
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+			.addComponent(hyperIntersectButton)
+			.addComponent(hyperSigButton)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+			.addComponent(hyperIntersectButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addComponent(hyperSigButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+
+		return panel;
+	}
+	
+	private JPanel createHypergeomUniversePanel() {
 		ActionListener universeSelectActionListener = e -> {
 			boolean enable = e.getActionCommand().equals("User Defined");
 			universeSelectionTextField.setEnabled(enable);
@@ -382,7 +429,7 @@ public class PAWeightPanel extends JPanel {
 		makeSmall(gmtRadioButton, expressionSetRadioButton, intersectionRadioButton, userDefinedRadioButton, universeSelectionTextField);
 
 		JPanel panel = new JPanel();
-		panel.setBorder(LookAndFeelUtil.createTitledBorder("Advanced Hypergeometric Universe"));
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Hypergeometric Universe"));
 
 		final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -610,7 +657,12 @@ public class PAWeightPanel extends JPanel {
 			case HYPERGEOM:
 				UniverseType universeType = getUniverseType();
 				int universe = universeType.getGeneUniverse(map, dataset, getUserDefinedUniverseSize());
-				return new FilterMetric.Hypergeom(value, universe);
+				FilterMetric.Hypergeom hyperFilterMetric = new FilterMetric.Hypergeom(value, universe);
+				if(hyperIntersectButton.isSelected()) {
+					Set<Integer> universeGenes = map.getAllEnrichmentGenes();
+					hyperFilterMetric.setUniverseFilter(universeGenes);
+				}
+				return hyperFilterMetric;
 			case MANN_WHIT_TWO_SIDED:
 			case MANN_WHIT_GREATER:
 			case MANN_WHIT_LESS:
