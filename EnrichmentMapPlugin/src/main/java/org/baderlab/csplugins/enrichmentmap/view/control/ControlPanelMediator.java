@@ -792,7 +792,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			timer.stop();
 		}
 		
-		timer.setInitialDelay(250);
+		timer.setInitialDelay(350);
 		timer.start();
 	}
 	
@@ -899,7 +899,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		private FilterNodesEdgesTask task;
 		
 		private boolean cancelled;
-		private Object lock = new Object();
 		
 		public FilterActionListener(EMViewControlPanel viewPanel, EnrichmentMap map, CyNetworkView netView) {
 			this.viewPanel = viewPanel;
@@ -934,12 +933,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				
 				@Override
 				public void allFinished(FinishStatus finishStatus) {
-					synchronized (lock) {
-						task = null;
-						
-						if (!cancelled)
-							netView.updateView();
-					}
+					task = null;
+					if (!cancelled)
+						netView.updateView();
 				}
 			});
 		}
@@ -947,11 +943,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		public void cancel() {
 			cancelled = true;
 			
-			synchronized (lock) {
-				if (task != null) {
+			if (task != null) {
+				try {
 					task.cancel();
 					task = null;
-				}
+				} catch(NullPointerException e) {}
 			}
 		}
 
