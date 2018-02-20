@@ -46,6 +46,7 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetricSet;
 import org.baderlab.csplugins.enrichmentmap.view.EnablementComboBoxRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -341,28 +342,31 @@ public class PAWeightPanel extends JPanel {
 	}
 	
 	private JPanel createHypergeomSamplePanel() {
+		JLabel title = new JLabel("Genes in sample (n)");
 		hyperIntersectButton = new JRadioButton("Intersection");
 		JRadioButton hyperSigButton = new JRadioButton("Signature gene set");
-		makeSmall(hyperSigButton, hyperIntersectButton);
+		makeSmall(title, hyperSigButton, hyperIntersectButton);
 		
 		ButtonGroup buttonGroup = new ButtonGroup();
 		buttonGroup.add(hyperSigButton);
 		buttonGroup.add(hyperIntersectButton);
 		hyperIntersectButton.setSelected(true);
 		
-		JPanel panel = new JPanel();
-		panel.setBorder(LookAndFeelUtil.createTitledBorder("Genes in sample (n)"));
-
-		final GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
+		BasicCollapsiblePanel panel = new BasicCollapsiblePanel("Advanced");
+		panel.setCollapsed(true);
+		
+		final GroupLayout layout = new GroupLayout(panel.getContentPane());
+		panel.getContentPane().setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+			.addComponent(title)
 			.addComponent(hyperIntersectButton)
 			.addComponent(hyperSigButton)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
+			.addComponent(title)
 			.addComponent(hyperIntersectButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			.addComponent(hyperSigButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
