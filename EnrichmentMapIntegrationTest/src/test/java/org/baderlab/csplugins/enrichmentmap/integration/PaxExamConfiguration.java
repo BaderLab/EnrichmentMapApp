@@ -19,7 +19,7 @@ public abstract class PaxExamConfiguration {
 		
 		// These have to match what's in the pom.xml files.
 		final String cyVersion = "3.5.0"; 
-		final String emVersion = "3.1.0-RC2";
+		final String emVersion = "3.1.0-RC3";
 		final String groupId   = "org.baderlab.csplugins";
 		final String appBundle = "EnrichmentMap";
  
