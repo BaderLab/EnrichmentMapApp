@@ -43,12 +43,18 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import static org.baderlab.csplugins.enrichmentmap.util.NetworkUtil.EM_NETWORK_SUID_COLUMN;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 
 import com.google.inject.Inject;
@@ -60,11 +66,14 @@ import com.google.inject.Singleton;
 public class EnrichmentMapManager {
 	
 	private Map<Long, EnrichmentMap> enrichmentMaps = new LinkedHashMap<>();
+	private Map<Long, EnrichmentMap> gmEnrichmentMaps = new LinkedHashMap<>();
 	private Map<Long, HeatMapParams> heatMapParams = new HashMap<>();
 	private Map<Long, HeatMapParams> heatMapParamsEdges = new HashMap<>();
 	
 	@Inject private Provider<PADialogMediator> postAnalysisMediatorProvider;
 
+	private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+	
 	/**
 	 * Registers a newly created Network.
 	 */
@@ -77,14 +86,23 @@ public class EnrichmentMapManager {
 	}
 
 	public EnrichmentMap getEnrichmentMap(Long networkId) {
-		return enrichmentMaps.get(networkId);
+		EnrichmentMap map = enrichmentMaps.get(networkId);
+		
+		return map != null ? map : gmEnrichmentMaps.get(networkId);
 	}
 	
 	public EnrichmentMap removeEnrichmentMap(Long networkId) {
 		EnrichmentMap map = enrichmentMaps.remove(networkId);
-		if(map != null) {
+		
+		if (map != null)
 			postAnalysisMediatorProvider.get().removeEnrichmentMap(map);
-		}
+		
+		// Update our internal genemania map and fire an event if it changed
+		Map<Long, EnrichmentMap> oldValue = getGeneManiaEnrichmentMaps();
+		
+		if (gmEnrichmentMaps.remove(networkId) != null)
+			pcs.firePropertyChange("geneManiaEnrichmentMaps", oldValue, getGeneManiaEnrichmentMaps());
+		
 		return map;
 	}
 	
@@ -96,6 +114,36 @@ public class EnrichmentMapManager {
 		return isEnrichmentMap(networkView.getModel().getSUID());
 	}
 	
+	public void registerGeneManiaEnrichmentMap(CyNetwork network, EnrichmentMap map) {
+		// Add EM Network SUID to genemania network's table.
+		CyTable tgtNetTable = network.getDefaultNetworkTable();
+		
+		if (tgtNetTable.getColumn(EM_NETWORK_SUID_COLUMN) == null)
+			tgtNetTable.createColumn(EM_NETWORK_SUID_COLUMN, Long.class, true);
+		
+		tgtNetTable.getRow(network.getSUID()).set(EM_NETWORK_SUID_COLUMN, map.getNetworkID());
+		
+		// Update the EnrichmentMap
+		map.addGeneManiaNetworkID(network.getSUID());
+		
+		// Update our internal map and fire an event if it changed
+		Map<Long, EnrichmentMap> oldValue = getGeneManiaEnrichmentMaps();
+		
+		if (gmEnrichmentMaps.put(network.getSUID(), map) == null)
+			pcs.firePropertyChange("geneManiaEnrichmentMaps", oldValue, getGeneManiaEnrichmentMaps());
+	}
+	
+	public boolean isGeneManiaEnrichmentMap(Long networkId) {
+		return gmEnrichmentMaps.containsKey(networkId);
+	}
+	
+	public boolean isGeneManiaEnrichmentMap(CyNetworkView networkView) {
+		return isGeneManiaEnrichmentMap(networkView.getModel().getSUID());
+	}
+	
+	public Map<Long, EnrichmentMap> getGeneManiaEnrichmentMaps() {
+		return new HashMap<>(gmEnrichmentMaps);
+	}
 	
 	public void registerHeatMapParams(Long networkId, boolean edges, HeatMapParams params) {
 		if(edges)
@@ -111,10 +159,28 @@ public class EnrichmentMapManager {
 			return heatMapParams.get(networkId);
 	}
 	
-	
 	public void reset() {
+		for (PropertyChangeListener listener : pcs.getPropertyChangeListeners())
+			pcs.removePropertyChangeListener(listener);
+		
 		enrichmentMaps.clear();
+		gmEnrichmentMaps.clear();
 		heatMapParams.clear();
 	}
 	
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		pcs.addPropertyChangeListener(listener);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(listener);
+	}
+
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.addPropertyChangeListener(propertyName, listener);
+	}
+
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(propertyName, listener);
+	}
 }

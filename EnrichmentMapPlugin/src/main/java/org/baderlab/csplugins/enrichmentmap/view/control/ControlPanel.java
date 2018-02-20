@@ -13,6 +13,7 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,8 +60,11 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
+import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+import org.baderlab.csplugins.enrichmentmap.view.util.TextIcon;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyDisposable;
@@ -84,6 +88,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	private static final String BORDER_COLOR_KEY = "Separator.foreground";
 	
+	private Font gmFont;
+	
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyNetworkViewManager networkViewManager;
@@ -101,6 +107,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	private JButton closePanelButton;
 	
 	private Map<Long/*CynetworkView SUID*/, EMViewControlPanel> emViewCtrlPanels = new HashMap<>();
+	private Map<Long/*CynetworkView SUID*/, GMViewControlPanel> gmViewCtrlPanels = new HashMap<>();
 	
 	@Override
 	public void dispose() {
@@ -133,11 +140,18 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	}
 	
 	public boolean contains(CyNetworkView networkView) {
-		return emViewCtrlPanels.containsKey(networkView.getSUID());
+		return emViewCtrlPanels.containsKey(networkView.getSUID())
+				|| gmViewCtrlPanels.containsKey(networkView.getSUID());
 	}
 	
 	@AfterInjection
 	private void createContents() {
+		try {
+			gmFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/genemania.ttf"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		setMinimumSize(new Dimension(390, 400));
 		setPreferredSize(new Dimension(390, 600));
 		
@@ -189,6 +203,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		if (emViewCombo == null) {
 			emViewCombo = new JComboBox<>();
 			
+			Icon gmIcon = gmFont != null
+					? new TextIcon("d", gmFont.deriveFont(12.0f), UIManager.getColor("Label.foreground"), 16, 16)
+					: null;
+			
 			emViewCombo.setRenderer(new DefaultListCellRenderer() {
 				@Override
 				public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -197,10 +215,15 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					if (value instanceof CyNetworkView) {
 						String title = NetworkUtil.getTitle((CyNetworkView) value);
 						String abbreviated = SwingUtil.abbreviate(title, 35);
-						this.setText(abbreviated);
+						setText(abbreviated);
 						list.setToolTipText(title);
+						
+						if (emManager.isGeneManiaEnrichmentMap((CyNetworkView) value))
+							setIcon(gmIcon);
+						else
+							setIcon(null);
 					} else {
-						this.setText("-- Select EnrichmentMap View --");
+						setText("-- Select EnrichmentMap View --");
 					}
 					
 					return this;
@@ -273,6 +296,20 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		return null;
 	}
 	
+	GMViewControlPanel addGeneManiaView(CyNetworkView netView) {
+		updateEmViewCombo();
+		
+		if (getGMViewControlPanel(netView) == null) {
+			GMViewControlPanel p = new GMViewControlPanel(netView);
+			getCtrlPanelsContainer().add(p, p.getName());
+			gmViewCtrlPanels.put(netView.getSUID(), p);
+			
+			return p;
+		}
+		
+		return null;
+	}
+	
 	void removeEnrichmentMapView(CyNetworkView netView) {
 		removeViewControlPanel(netView);
 		updateEmViewCombo();
@@ -303,10 +340,23 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				CyNetwork network = networkManager.getNetwork(entry.getKey());
 				
 				if (network != null) {
+					// Add the primary EM network view
 					Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+					views.forEach(getEmViewCombo()::addItem);
 					
-					if (views != null)
-						views.forEach(getEmViewCombo()::addItem);
+					// Add GeneMANIA views associated with this EnrichmentMap
+					Set<Long> gmNetIds = entry.getValue().getGeneManiaNetworkIDs();
+					
+					if (gmNetIds != null) {
+						gmNetIds.forEach(id -> {
+							CyNetwork gmNet = networkManager.getNetwork(id);
+							
+							if (gmNet != null) {
+								Collection<CyNetworkView> gmViews = networkViewManager.getNetworkViews(gmNet);
+								gmViews.forEach(getEmViewCombo()::addItem);
+							}
+						});
+					}
 				}
 			});
 			
@@ -322,6 +372,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	private void removeViewControlPanel(CyNetworkView netView) {
 		EMViewControlPanel p = emViewCtrlPanels.remove(netView.getSUID());
 		
+		if (p == null)
+			gmViewCtrlPanels.remove(netView.getSUID());
+		
 		if (p != null) {
 			cardLayout.removeLayoutComponent(p);
 			getCtrlPanelsContainer().remove(p);
@@ -332,7 +385,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		if (netView == null) {
 			cardLayout.show(getCtrlPanelsContainer(), nullViewCtrlPanel.getName());
 		} else {
-			EMViewControlPanel p = getViewControlPanel(netView);
+			AbstractViewControlPanel p = getViewControlPanel(netView);
+			
+			if (p == null)
+				p = getGMViewControlPanel(netView);
 			
 			if (p != null)
 				cardLayout.show(getCtrlPanelsContainer(), p.getName());
@@ -351,7 +407,32 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		return new HashMap<>(emViewCtrlPanels);
 	}
 	
-	class EMViewControlPanel extends JPanel {
+	GMViewControlPanel getGMViewControlPanel(CyNetworkView netView) {
+		return netView != null ? getGMViewControlPanel(netView.getSUID()) : null;
+	}
+	
+	GMViewControlPanel getGMViewControlPanel(Long suid) {
+		return gmViewCtrlPanels.get(suid);
+	}
+	
+	public Map<Long, GMViewControlPanel> getAllGMControlPanels() {
+		return new HashMap<>(gmViewCtrlPanels);
+	}
+	
+	class AbstractViewControlPanel extends JPanel {
+		
+		protected final CyNetworkView networkView;
+		
+		protected AbstractViewControlPanel(CyNetworkView networkView, String name) {
+			this.networkView = networkView;
+			setName(name);
+		}
+	}
+	
+	/**
+	 * Used when the current network view is a primary EnrichmentMap network.
+	 */
+	class EMViewControlPanel extends AbstractViewControlPanel {
 		
 		private JRadioButton pValueRadio;
 		private JRadioButton qValueRadio;
@@ -374,11 +455,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JComboBox<ColorScheme> chartColorsCombo;
 		private JCheckBox showChartLabelsCheck;
 		
-		private final CyNetworkView networkView;
-		
-		private EMViewControlPanel(final CyNetworkView networkView) {
-			this.networkView = networkView;
-			setName("__EM_VIEW_CONTROL_PANEL_" + networkView.getSUID());
+		private EMViewControlPanel(CyNetworkView networkView) {
+			super(networkView, "__EM_VIEW_CONTROL_PANEL_" + networkView.getSUID());
 			setBorder(BorderFactory.createLineBorder(UIManager.getColor(BORDER_COLOR_KEY)));
 			
 			final JPanel filterPanel = createFilterPanel();
@@ -644,7 +722,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(chartTypeLabel)
 							.addComponent(getChartTypeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							)
+					)
 					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(chartColorsLabel)
 							.addComponent(getChartColorsCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -881,6 +959,136 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				getPValueSliderPanel().setVisible(!isQValue);
 				getQValueSliderPanel().setVisible(isQValue);
 			}
+		}
+	}
+	
+	/**
+	 * Used when the current network view is a GeneMANIA one from EnrichmentMap genes.
+	 */
+	class GMViewControlPanel extends AbstractViewControlPanel {
+		
+		private JComboBox<ComboItem<Compress>> compressCombo;
+		private JComboBox<String> compareCombo;
+		
+		private GMViewControlPanel(CyNetworkView networkView) {
+			super(networkView, "__EM_CHILD_VIEW_CONTROL_PANEL_" + networkView.getSUID());
+			setBorder(BorderFactory.createLineBorder(UIManager.getColor(BORDER_COLOR_KEY)));
+			
+			final JPanel stylePanel = createStylePanel();
+			
+			final GroupLayout layout = new GroupLayout(this);
+			setLayout(layout);
+			layout.setAutoCreateContainerGaps(LookAndFeelUtil.isWinLAF());
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+			
+	   		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+					.addComponent(stylePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+	   		);
+	   		layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(stylePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+	   		);
+			
+			if (LookAndFeelUtil.isAquaLAF())
+				setOpaque(false);
+			
+			update();
+		}
+		
+		private JPanel createStylePanel() {
+			final JLabel compressLabel = new JLabel("Compress:");
+			final JLabel compareLabel = new JLabel("Compare:");
+			
+			makeSmall(compressLabel, compareLabel, getCompressCombo(), getCompareCombo());
+			
+			final JPanel panel = new JPanel();
+			panel.setBorder(LookAndFeelUtil.createTitledBorder("Style"));
+			
+			final GroupLayout layout = new GroupLayout(panel);
+	       	panel.setLayout(layout);
+	   		layout.setAutoCreateContainerGaps(true);
+	   		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+	   		
+			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+					.addGroup(layout.createSequentialGroup()
+							.addGroup(layout.createParallelGroup(TRAILING, true)
+									.addComponent(compressLabel)
+									.addComponent(compareLabel)
+							)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(layout.createParallelGroup(LEADING, true)
+									.addComponent(getCompressCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+									.addComponent(getCompareCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							)
+					)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(compressLabel)
+							.addComponent(getCompressCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(compareLabel)
+							.addComponent(getCompareCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+			);
+			
+			if (LookAndFeelUtil.isAquaLAF())
+				panel.setOpaque(false);
+			
+			return panel;
+		}
+		
+		JComboBox<ComboItem<Compress>> getCompressCombo() {
+			if (compressCombo == null) {
+				compressCombo = new JComboBox<>();
+				compressCombo.addItem(new ComboItem<>(Compress.NONE, "-None-"));
+				compressCombo.setSelectedIndex(0);
+			}
+			
+			return compressCombo;
+		}
+		
+		public JComboBox<String> getCompareCombo() {
+			if (compareCombo == null) {
+				compareCombo = new JComboBox<>();
+				
+				// TODO add values
+			}
+			
+			return compareCombo;
+		}
+		
+		void update() {
+			EnrichmentMap em = networkView != null ? emManager.getEnrichmentMap(networkView.getModel().getSUID()) : null;
+			
+			compressCombo.removeAllItems();
+			compressCombo.addItem(new ComboItem<>(Compress.NONE, "-None-"));
+			
+			if (em != null) {
+				if (em.hasClassData()) {
+					compressCombo.addItem(new ComboItem<>(Compress.CLASS_MEDIAN, "Class: Median"));
+					compressCombo.addItem(new ComboItem<>(Compress.CLASS_MIN, "Class: Min"));
+					compressCombo.addItem(new ComboItem<>(Compress.CLASS_MAX, "Class: Max"));
+				}
+				
+				compressCombo.addItem(new ComboItem<>(Compress.DATASET_MEDIAN, "Data Set: Median"));
+				compressCombo.addItem(new ComboItem<>(Compress.DATASET_MIN, "Data Set: Min"));
+				compressCombo.addItem(new ComboItem<>(Compress.DATASET_MAX, "Data Set: Max"));
+			}
+			
+			if (em != null) {
+				if (em.hasClassData())
+					compressCombo.setSelectedItem(ComboItem.of(Compress.CLASS_MEDIAN));
+				else
+					compressCombo.setSelectedItem(ComboItem.of(Compress.DATASET_MEDIAN));
+			} else {
+				compressCombo.setSelectedItem(ComboItem.of(Compress.NONE));
+			}
+		}
+		
+		private Object updateGeneManiaStyle() {
+			// TODO Auto-generated method stub
+			return null;
 		}
 	}
 	

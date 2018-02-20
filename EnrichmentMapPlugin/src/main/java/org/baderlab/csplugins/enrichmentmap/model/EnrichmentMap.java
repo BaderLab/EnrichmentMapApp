@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,25 +35,26 @@ public class EnrichmentMap {
 	private transient CyServiceRegistrar serviceRegistrar;
 	
 	private long networkID;
+	private final Set<Long> geneManiaNetworkIDs = new LinkedHashSet<>();
 	
 	/** Parameters used to create this map */
 	private final EMCreationParameters params;
 
-	private Map<String, EMDataSet> dataSets = new HashMap<>();
+	private final Map<String, EMDataSet> dataSets = new HashMap<>();
 
 	/**
 	 * In order to minimize memory usage (and session file size) we will store expressions
 	 * here and have the EMDataSets keep a key to this map. That way datasets can share
 	 * expression matrices.
 	 */
-	private Map<String, GeneExpressionMatrix> expressions = new HashMap<>();
-	private Map<String, SetOfGeneSets> geneSets = new HashMap<>();
+	private final Map<String, GeneExpressionMatrix> expressions = new HashMap<>();
+	private final Map<String, SetOfGeneSets> geneSets = new HashMap<>();
 	
 	/** The set of genes defined in the Enrichment map. */
-	private BiMap<Integer, String> genes = HashBiMap.create();
+	private final BiMap<Integer, String> genes = HashBiMap.create();
 
 	/** Post analysis signature genesets associated with this map.*/
-	private Map<String, EMSignatureDataSet> signatureDataSets = new HashMap<>();
+	private final Map<String, EMSignatureDataSet> signatureDataSets = new HashMap<>();
 	
 	private int NumberOfGenes = 0;
 	private boolean isLegacy = false;
@@ -60,6 +62,14 @@ public class EnrichmentMap {
 	private boolean isCommonExpressionValues = false;
 
 	private final Object lock = new Object();
+	
+	/**
+	 * Used by the JSON deserializer only. Don't remove this constructor!
+	 */
+	@SuppressWarnings("unused")
+	private EnrichmentMap() {
+		this(null, null);
+	}
 	
 	/**
 	 * Class Constructor Given - EnrichmentnMapParameters create a new
@@ -330,7 +340,7 @@ public class EnrichmentMap {
 
 	
 	public Map<String, EMDataSet> getDataSets() {
-		return dataSets;
+		return new HashMap<>(dataSets);
 	}
 	
 	/**
@@ -344,7 +354,10 @@ public class EnrichmentMap {
 	}
 
 	public void setDataSets(Map<String, EMDataSet> dataSets) {
-		this.dataSets = dataSets;
+		this.dataSets.clear();
+		
+		if (dataSets != null && !dataSets.isEmpty())
+			this.dataSets.putAll(dataSets);
 	}
 
 	/**
@@ -379,6 +392,25 @@ public class EnrichmentMap {
 
 	public void setNetworkID(long networkID) {
 		this.networkID = networkID;
+	}
+	
+	public boolean addGeneManiaNetworkID(long networkID) {
+		return geneManiaNetworkIDs.add(networkID);
+	}
+	
+	public boolean removeGeneManiaNetworkID(long networkID) {
+		return geneManiaNetworkIDs.remove(networkID);
+	}
+	
+	public Set<Long> getGeneManiaNetworkIDs() {
+		return new LinkedHashSet<>(geneManiaNetworkIDs);
+	}
+	
+	public void setGeneManiaNetworkIDs(Set<Long> geneManiaNetworkIDs) {
+		this.geneManiaNetworkIDs.clear();
+		
+		if (geneManiaNetworkIDs != null && !geneManiaNetworkIDs.isEmpty())
+			this.geneManiaNetworkIDs.addAll(geneManiaNetworkIDs);
 	}
 
 	public static Set<Long> getNodesUnion(Collection<? extends AbstractDataSet> dataSets) {
@@ -593,5 +625,4 @@ public class EnrichmentMap {
 	public String toString() {
 		return getName();
 	}
-
 }

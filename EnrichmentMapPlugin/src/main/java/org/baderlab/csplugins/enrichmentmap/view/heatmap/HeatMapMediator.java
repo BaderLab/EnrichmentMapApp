@@ -24,8 +24,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
-import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
-import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GMOrganismsResult;
@@ -43,13 +41,11 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
@@ -75,7 +71,6 @@ import com.google.inject.Singleton;
 public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewListener {
 
 	private static final int COLLAPSE_THRESHOLD = 50;
-	private static final String EM_NETWORK_SUID = "EM_Network.SUID";
 	
 	@Inject private HeatMapParentPanel.Factory panelFactory;
 	@Inject private EnrichmentMapManager emManager;
@@ -145,7 +140,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		if(heatMapPanel == null)
 			return;
 		CyNetworkView networkView = e.getNetworkView();
-		if(networkView != null && emManager.isEnrichmentMap(networkView)) {
+		if(networkView != null
+				&& (emManager.isEnrichmentMap(networkView) || emManager.isGeneManiaEnrichmentMap(networkView))) {
 			updateHeatMap(networkView);
 		} else {
 			heatMapPanel.showEmptyView();
@@ -179,6 +175,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		CyNetwork network = networkView.getModel();
 		EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
+		
 		if(map == null)
 			return;
 		
@@ -188,12 +185,30 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		String prefix = map.getParams().getAttributePrefix();
 		this.onlyEdges = selectedNodes.isEmpty() && !selectedEdges.isEmpty();
 		
-		Set<String> union = unionGenesets(network, selectedNodes, selectedEdges, prefix);
-		Set<String> inter = intersectionGenesets(network, selectedNodes, selectedEdges, prefix);
+		final Set<String> union;
+		final Set<String> inter;
+		
+		if (emManager.isEnrichmentMap(networkView)) {
+			union = unionGenesets(network, selectedNodes, selectedEdges, prefix);
+			inter = intersectionGenesets(network, selectedNodes, selectedEdges, prefix);
+		} else if (emManager.isGeneManiaEnrichmentMap(networkView)) {
+			union = new HashSet<>();
+			
+			for (CyNode node : selectedNodes) {
+				CyRow row = network.getRow(node);
+				String geneName = EMStyleBuilder.Columns.GM_GENE_NAME.get(row, null, null);
+				
+				if (geneName != null)
+					union.add(geneName);
+			}
+			
+			inter = union;
+		} else {
+			inter = union = Collections.emptySet();
+		}
+		
 		List<RankingOption> rankOptions = getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
-		
 		HeatMapParams params = getHeatMapParams(map, network.getSUID(), onlyEdges);
-		
 		HeatMapMainPanel mainPanel = heatMapPanel.selectGenes(map, params, rankOptions, union, inter);
 		
 		if(mainPanel != null) {
@@ -207,7 +222,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			bringToFront();
 		}
 	}
-	
 	
 	private HeatMapParams getHeatMapParams(EnrichmentMap map, Long networkSUID, boolean onlyEdges) {
 		HeatMapParams params = emManager.getHeatMapParams(networkSUID, onlyEdges);
@@ -386,57 +400,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 				);
 			});
 		} else {
-			EnrichmentMap map = mainPanel.getEnrichmentMap();
-			
-			// Add EM Network SUID to genemania network's table.
-			CyTable tgtNetTable = maniaNet.getDefaultNetworkTable();
-			
-			if (tgtNetTable.getColumn(EM_NETWORK_SUID) == null)
-				tgtNetTable.createColumn(EM_NETWORK_SUID, Long.class, true);
-			
-			tgtNetTable.getRow(maniaNet.getSUID()).set(EM_NETWORK_SUID, map.getNetworkID());
-			
-			// Copy some EM columns to genemania's Node table
-			CyNetwork emNet = networkManager.getNetwork(map.getNetworkID());
-			CyTable srcNodeTable = emNet.getDefaultNodeTable();
-			CyTable tgtNodeTable = maniaNet.getDefaultNodeTable();
-			Collection<CyColumn> srcNodeColumns = new ArrayList<>(srcNodeTable.getColumns());
-			
-			for (String key : map.getExpressionMatrixKeys()) {
-				GeneExpressionMatrix matrix = map.getExpressionMatrix(key);
-				System.out.println("\n* " + key + ": ");
-				System.out.println("\t>> " + String.join(", ", matrix.getColumnNames()));
-				
-				for (GeneExpression ge : matrix.getExpressionMatrix().values()) {
-					System.out.println("\t. " + ge.getName() + ": ");
-					
-					for (Float exp : ge.getExpression())
-						System.out.println("\t\t.. " + exp);
-				}
-			}
-			
-//			for (CyColumn col : srcNodeColumns) {
-//				String colName = col.getName();
-
-//					if (tgtNodeTable.getColumn(colName) == null) {
-//						if (col.getListElementType() == null)
-//							tgtNodeTable.createColumn(colName, col.getType(), col.isImmutable());
-//						else
-//							tgtNodeTable.createListColumn(colName, col.getListElementType(), col.isImmutable());
-//						
-//						for (CyRow tgtRow : tgtNodeTable.getAllRows()) {
-//							Object pk = tgtRow.get(tgtNodeTable.getPrimaryKey().getName(), tgtNodeTable.getPrimaryKey().getType());
-//							CyRow srcRow = srcNodeTable.getRow(pk);
-//							
-//							if (srcRow != null) {
-//								Object value = srcRow.getRaw(colName);
-//								tgtRow.set(colName, value);
-//							}
-//						}
-//					}
-//			}
-			
-			// TODO Update genemania's style, etc...
+			// Update the model
+			emManager.registerGeneManiaEnrichmentMap(maniaNet, mainPanel.getEnrichmentMap());
 		}
 	}
 

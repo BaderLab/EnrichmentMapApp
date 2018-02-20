@@ -16,6 +16,8 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class NetworkUtil {
 
+	public static final String EM_NETWORK_SUID_COLUMN = "EM_Network.SUID";
+	
 	private NetworkUtil() { }
 	
 	public static String getName(final CyNetwork network) {
@@ -57,7 +59,6 @@ public class NetworkUtil {
 		return getObjectWithValue(table, colname, value, network::getEdge);
 	}
 	
-	
 	private static <T> T getObjectWithValue(CyTable table, String colname, String value, Function<Long, T> getter) {
 		T nodeOrEdge = null;
 		
@@ -90,4 +91,10 @@ public class NetworkUtil {
 		return keys;
 	}
 	
+	public static boolean isGeneManiaNetwork(CyNetwork network) {
+		CyTable table = network.getDefaultNetworkTable();
+		
+		return table.getColumn(EM_NETWORK_SUID_COLUMN) != null
+				&& network.getRow(network).get(EM_NETWORK_SUID_COLUMN, Long.class) != null;
+	}
 }

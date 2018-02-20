@@ -1,6 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.view.control;
 
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.*;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_DATASET_VALUE_COMPOUND;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_INTERACTION_VALUE_SIG;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE_ENRICHMENT;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
 import java.awt.BorderLayout;
@@ -60,15 +63,20 @@ import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask.FilterMode;
 import org.baderlab.csplugins.enrichmentmap.task.SelectNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDataSetsTask;
+import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
+import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.AbstractViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
+import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.GMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.legend.CreationParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
+import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -170,6 +178,24 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	public void reset() {
+		// Listen to events from EM Manager
+		emManager.addPropertyChangeListener("geneManiaEnrichmentMaps", evt -> {
+			// A GeneMANIA network (created from EM nodes) has been added...
+			invokeOnEDT(() -> {
+				updating = true;
+			
+				try {
+					getControlPanel().updateEmViewCombo();
+					CyNetworkView netView = applicationManager.getCurrentNetworkView();
+					
+					if (netView != null && emManager.isGeneManiaEnrichmentMap(netView))
+						setCurrentNetworkView(netView);
+				} finally {
+					updating = false;
+				}
+			});
+		});
+		
 		invokeOnEDT(() -> {
 			updating = true;
 			
@@ -177,10 +203,16 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				for (CyNetworkView view : networkViewManager.getNetworkViewSet())
 					getControlPanel().removeEnrichmentMapView(view);
 	
+				Set<Long> netIds = new HashSet<>();
 				Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 				
 				for (EnrichmentMap map : maps.values()) {
-					CyNetwork network = networkManager.getNetwork(map.getNetworkID());
+					netIds.add(map.getNetworkID());
+					netIds.addAll(map.getGeneManiaNetworkIDs());
+				}
+				
+				for (Long id : netIds) {
+					CyNetwork network = networkManager.getNetwork(id);
 					Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
 					
 					for (CyNetworkView netView : networkViews)
@@ -387,7 +419,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	private void setCurrentNetworkView(CyNetworkView netView) {
 		invokeOnEDT(() -> {
-			EMViewControlPanel viewPanel = null;
+			AbstractViewControlPanel viewPanel = null;
 			updating = true;
 			
 			try {
@@ -399,32 +431,34 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				updating = false;
 			}
 			
-			if (viewPanel != null)
-				setDefaults(viewPanel, emManager.getEnrichmentMap(netView.getModel().getSUID()));
+			if (viewPanel instanceof EMViewControlPanel)
+				setDefaults((EMViewControlPanel) viewPanel, emManager.getEnrichmentMap(netView.getModel().getSUID()));
 		});
 	}
 	
 	/**
 	 * Call this method on the EDT only!
 	 */
-	private EMViewControlPanel addNetworkView(CyNetworkView netView) {
-		EMViewControlPanel viewPanel = null;
+	private AbstractViewControlPanel addNetworkView(CyNetworkView netView) {
+		AbstractViewControlPanel viewPanel = null;
 		EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
 		
 		// Is the new view an EnrichmentMap one?
 		if (map != null) {
-			viewPanel = getControlPanel().addEnrichmentMapView(netView);
+			if (NetworkUtil.isGeneManiaNetwork(netView.getModel()))
+				viewPanel = getControlPanel().addGeneManiaView(netView);
+			else
+				viewPanel = getControlPanel().addEnrichmentMapView(netView);
 			
-			if (viewPanel != null)
-				addListeners(viewPanel, map);
+			if (viewPanel instanceof EMViewControlPanel)
+				addListeners((EMViewControlPanel) viewPanel, map);
+			else if (viewPanel instanceof GMViewControlPanel)
+				addListeners((GMViewControlPanel) viewPanel, map);
 		}
 		
 		return viewPanel;
 	}
 
-	/** 
-	 * Add listeners to the new panel's fields.
-	 */
 	@SuppressWarnings("unchecked")
 	private void addListeners(EMViewControlPanel viewPanel, EnrichmentMap map) {
 		CyNetworkView netView = viewPanel.getNetworkView();
@@ -585,6 +619,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		viewPanel.updateChartDataCombo();
 	}
 
+	private void addListeners(GMViewControlPanel viewPanel, EnrichmentMap map) {
+		viewPanel.getCompressCombo().addItemListener(evt -> {
+			if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
+				updateGeneManiaStyle(map, viewPanel);
+			}
+		});
+		
+	}
+	
 	/**
 	 * Call this method on the EDT only!
 	 */
@@ -753,6 +796,16 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		ChartOptions chartOptions = new ChartOptions(data, type, colorScheme, showLabels);
 
 		return new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, chartOptions, postAnalysis, publicationReady);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void updateGeneManiaStyle(EnrichmentMap map, GMViewControlPanel viewPanel) {
+		ComboItem<Compress> compressItem = (ComboItem<Compress>) viewPanel.getCompressCombo().getSelectedItem();
+		Compress compress = compressItem != null ? compressItem.getValue() : Compress.NONE;
+		
+		String compare = (String) viewPanel.getCompareCombo().getSelectedItem();
+		
+		// TODO
 	}
 	
 	/**
