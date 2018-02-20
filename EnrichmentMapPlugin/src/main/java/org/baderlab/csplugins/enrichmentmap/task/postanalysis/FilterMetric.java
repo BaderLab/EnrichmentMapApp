@@ -29,6 +29,8 @@ public interface FilterMetric {
 	
 	double moreSimilar(double x, double y);
 	
+	String getDisplayString();
+	
 	
 	abstract class BaseFilterMetric implements FilterMetric {
 		protected final double cutoff;
@@ -71,6 +73,10 @@ public interface FilterMetric {
 			return 0;
 		}
 		
+		public String getDisplayString() {
+			return "no filter";
+		}
+		
 	}
 	
 	
@@ -92,6 +98,10 @@ public interface FilterMetric {
 			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
 			return (double) intersection.size() / (double) geneSet.size();
 		}
+		
+		public String getDisplayString() {
+			return "(intersection size)/(gene set size) >= " + (cutoff / 100.0);
+		}
 	}
 	
 
@@ -111,6 +121,10 @@ public interface FilterMetric {
 		
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) {
 			return Sets.intersection(geneSet, sigSet).size();
+		}
+		
+		public String getDisplayString() {
+			return "intersection size >= " + cutoff;
 		}
 	}
 
@@ -133,12 +147,18 @@ public interface FilterMetric {
 			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
 			return (double) intersection.size() / (double) sigSet.size();
 		}
+		
+		public String getDisplayString() {
+			return "(intersection size)/(signature gene set size) >= " + (cutoff / 100.0);
+		}
 	}
 
 	
 	class Hypergeom extends BaseFilterMetric {
 
 		private final int u;
+		
+		private Set<Integer> universeGenes = null;
 		
 		public Hypergeom(double filter, int u) {
 			super(PostAnalysisFilterType.HYPERGEOM, filter);
@@ -153,11 +173,20 @@ public interface FilterMetric {
 			return Math.min(x, y);
 		}
 		
+		public void setUniverseFilter(Set<Integer> universeGenes) {
+			this.universeGenes = universeGenes;
+		}
+		
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) throws ArithmeticException {
 			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
 			// Calculate Hypergeometric pValue for Overlap
 			// u: number of total genes (size of population / total number of balls)
-			int n = sigSet.size(); //size of signature geneset (sample size / number of extracted balls)
+			int n; //size of signature geneset (sample size / number of extracted balls)
+			if(universeGenes == null)
+				n = sigSet.size();
+			else
+				n = Sets.intersection(sigSet, universeGenes).size();
+			
 			int m = geneSet.size(); //size of enrichment geneset (success Items / number of white balls in population)
 			int k = intersection.size(); //size of intersection (successes /number of extracted white balls)
 
@@ -177,20 +206,26 @@ public interface FilterMetric {
 			
 			return hyperPval;
 		}
+		
+		public String getDisplayString() {
+			return "universe size = " + u;
+		}
 	}
 
 	
 	class MannWhit extends BaseFilterMetric {
 
-		private final Ranking ranks;
+		private final String rankingName;
+		private final @Nullable Ranking ranks;
 		private final MannWhitneyMemoized mannWhitneyCache = new MannWhitneyMemoized();
+
 		
-		
-		public MannWhit(double filter, Ranking ranks, PostAnalysisFilterType type) {
+		public MannWhit(PostAnalysisFilterType type, double filter, String rankingName, Ranking ranks) {
 			super(type, filter);
 			if(!type.isMannWhitney())
 				throw new IllegalArgumentException("FilterType is not Mann Whitney: " + type);
 			this.ranks = ranks;
+			this.rankingName = rankingName;
 		}
 
 		public boolean passes(double value) {
@@ -204,7 +239,7 @@ public interface FilterMetric {
 		public double computeValue(Set<Integer> geneSet, Set<Integer> sigSet, @Nullable SignatureGenesetSimilarity similarity) {
 			Set<Integer> intersection = Sets.intersection(geneSet, sigSet);
 			int size = intersection.size();
-			if(ranks.isEmpty() || size == 0) {
+			if(ranks == null || ranks.isEmpty() || size == 0) {
 				if(similarity != null) {
 					similarity.setMannWhitPValueTwoSided(1.0); // avoid NoDataException
 					similarity.setMannWhitPValueGreater(1.0);
@@ -245,6 +280,10 @@ public interface FilterMetric {
 					case MANN_WHIT_LESS: return result.less;
 				}
 			}
+		}
+		
+		public String getDisplayString() {
+			return "ranks: " + rankingName;
 		}
 	}
 		

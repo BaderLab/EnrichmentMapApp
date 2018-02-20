@@ -33,8 +33,8 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PAMostSimilarTaskP
 import org.baderlab.csplugins.enrichmentmap.util.Baton;
 import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.creation.NamePanel;
+import org.baderlab.csplugins.enrichmentmap.view.postanalysis.web.DialogParameters;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.web.DownloadGMTFileTask;
-import org.baderlab.csplugins.enrichmentmap.view.postanalysis.web.WebLoadDialogParameters;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialog;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
@@ -78,6 +78,8 @@ public class PADialogPage implements CardDialogPage {
 	private JLabel statusLabel;
 	
 	private String autoDataSetName = null;
+	private String source = null;
+	private String gmtFile = null;
 	
 	
 	public interface Factory {
@@ -108,7 +110,9 @@ public class PADialogPage implements CardDialogPage {
 			.setDataSetName(weightPanel.getDataSet()) // null for all data sets
 			.setLoadedGMTGeneSets(loadedGeneSets)
 			.addSelectedGeneSetNames(tableModel.getSelectedGeneSetNames())
-			.setRankTestParameters(weightPanel.getResults());
+			.setRankTestParameters(weightPanel.getResults())
+			.setSource(source)
+			.setGmtFile(gmtFile);
 		
 		mediator.runPostAnalysis(map, netView, builder.build());
 	}
@@ -243,11 +247,25 @@ public class PADialogPage implements CardDialogPage {
 	}
 	
 	
-	private TaskObserver filterTaskObserver = new TaskObserver() {
+	private class FilterTaskObserver implements TaskObserver {
+		private final String source;
+		private final String gmtFile;
+		
+		public FilterTaskObserver() {
+			this(null, null);
+		}
+		
+		public FilterTaskObserver(String source, String gmtFile) {
+			this.source = source;
+			this.gmtFile = gmtFile;
+		}
+
 		@Override
 		@SuppressWarnings("unchecked")
 		public void taskFinished(ObservableTask task) {
 			if(task instanceof GMTFileReaderTask) {
+				PADialogPage.this.source = source;
+				PADialogPage.this.gmtFile = gmtFile;
 				loadedGeneSets = task.getResults(SetOfGeneSets.class);
 			}
 			if(task instanceof PAMostSimilarTaskParallel) {
@@ -282,7 +300,7 @@ public class PADialogPage implements CardDialogPage {
 	
 	private void openLoadFromWebDialog() {
 		JDialog parent = callback.getDialogFrame();
-		WebLoadDialogParameters params = new WebLoadDialogParameters(this);
+		DialogParameters params = new DialogParameters(this);
 		CardDialog dialog = new CardDialog(parent, params);
 		dialog.open();
 	}
@@ -290,20 +308,28 @@ public class PADialogPage implements CardDialogPage {
 	
 	private void runFilterTask() {
 		PAMostSimilarTaskParallel task = new PAMostSimilarTaskParallel(map, weightPanel.getResults(), () -> loadedGeneSets);
-		dialogTaskManager.execute(new TaskIterator(task), filterTaskObserver);
+		dialogTaskManager.execute(new TaskIterator(task), new FilterTaskObserver());
 	}
 	
 	public void runLoadFromFileTasks(String filePath) {
+		source = null;
+		gmtFile = null;
+		
 		Baton<SetOfGeneSets> geneSetBaton = new Baton<>();
 		
 		GMTFileReaderTask gmtTask = new GMTFileReaderTask(map, () -> filePath, geneSetBaton.consumer());
 		PAMostSimilarTaskParallel filterTask = new PAMostSimilarTaskParallel(map, weightPanel.getResults(), geneSetBaton.supplier());
+		
+		FilterTaskObserver filterTaskObserver = new FilterTaskObserver(PostAnalysisParameters.SOURCE_LOCAL_FILE, filePath);
 		
 		TaskIterator tasks = new TaskIterator(gmtTask, filterTask);
 		dialogTaskManager.execute(tasks, filterTaskObserver);
 	}
 	
 	public void runLoadFromUrlTasks(URL url, CardDialog webLoadDialog) {
+		source = null;
+		gmtFile = null;
+		
 		// I wish there was a better way to pass data between tasks.
 		Baton<String> filePathBaton = new Baton<>();
 		Baton<SetOfGeneSets> geneSetsBaton = new Baton<>();
@@ -313,6 +339,9 @@ public class PADialogPage implements CardDialogPage {
 		Task filterTask = new PAMostSimilarTaskParallel(map, weightPanel.getResults(), geneSetsBaton.supplier());
 		Task closeTask = webLoadDialog.getCallback().getCloseTask();
 		
+		String source = webLoadDialog.getCurrentPage().getPageComboText();
+		FilterTaskObserver filterTaskObserver = new FilterTaskObserver(source, url.toString());
+				
 		TaskIterator tasks = new TaskIterator(downloadTask, gmtTask, filterTask, closeTask);
 		dialogTaskManager.execute(tasks, filterTaskObserver);
 		
@@ -331,14 +360,11 @@ public class PADialogPage implements CardDialogPage {
 	private synchronized void updateTable(List<SigGeneSetDescriptor> filteredGenesets, PostAnalysisFilterType type, boolean preserveWidths) {
 		TableColumnModel columnModel = table.getColumnModel();
 		
-		int[] widths = {60, 510, 80, 230};
+		int[] widths = {60, 480, 80, 140, 230};
 		if(preserveWidths) {
-			widths = new int[] {
-				columnModel.getColumn(0).getWidth(),
-				columnModel.getColumn(1).getWidth(),
-				columnModel.getColumn(2).getWidth(),
-				columnModel.getColumn(3).getWidth()
-			};
+			for(int i = 0; i < 5; i++) {
+				widths[i] = columnModel.getColumn(i).getWidth();
+			}
 		} 
 		
 		tableModel = new SigGeneSetTableModel(filteredGenesets, type);
@@ -351,14 +377,13 @@ public class PADialogPage implements CardDialogPage {
 			}
 		});
 
-		columnModel.getColumn(0).setPreferredWidth(widths[0]);
-		columnModel.getColumn(1).setPreferredWidth(widths[1]);
-		columnModel.getColumn(2).setPreferredWidth(widths[2]);
-		columnModel.getColumn(3).setPreferredWidth(widths[3]);
+		for(int i = 0; i < 5; i++) {
+			columnModel.getColumn(i).setPreferredWidth(widths[i]);
+		}
 		
 		// Auto-sort
 		TableRowSorter<?> sorter = ((TableRowSorter<?>)table.getRowSorter());
-		RowSorter.SortKey sortKey = new RowSorter.SortKey(SigGeneSetTableModel.COL_OVERLAP, getSortOrder(type));
+		RowSorter.SortKey sortKey = new RowSorter.SortKey(SigGeneSetTableModel.COL_SIMILARITY, getSortOrder(type));
 		sorter.setSortKeys(Arrays.asList(sortKey));
 		sorter.sort();
 		

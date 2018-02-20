@@ -19,6 +19,9 @@ import org.baderlab.csplugins.enrichmentmap.view.postanalysis.SigGeneSetDescript
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
+import com.google.common.collect.Sets;
+
+
 /**
  * Post Analysis.
  * Computes similarities between the signature gene sets that are being added and the 
@@ -66,6 +69,7 @@ public class PAMostSimilarTaskParallel extends CancellableParallelTask<List<SigG
 				
 				boolean first = true;
 				double mostSimilar = Double.NaN;
+				int largestOverlap = 0;
 				boolean passes = false;
 				
 				loop:
@@ -77,6 +81,9 @@ public class PAMostSimilarTaskParallel extends CancellableParallelTask<List<SigG
 						EMDataSet dataSet = map.getDataSet(dataSetName);
 						GeneSet enrGeneSet = dataSet.getGeneSetsOfInterest().getGeneSetByName(geneSetName);
 						if(enrGeneSet != null) {
+							
+							int overlap = Sets.intersection(sigGeneSet.getGenes(), enrGeneSet.getGenes()).size();
+							largestOverlap = Math.max(largestOverlap, overlap);
 							
 							FilterMetric metric = metrics.get(dataSetName);
 							try {
@@ -98,7 +105,7 @@ public class PAMostSimilarTaskParallel extends CancellableParallelTask<List<SigG
 					}
 				}
 				
-				results.add(new SigGeneSetDescriptor(sigGeneSet, mostSimilar, passes));
+				results.add(new SigGeneSetDescriptor(sigGeneSet, largestOverlap, mostSimilar, passes));
 				taskMonitor.inc();
 			});
 		}

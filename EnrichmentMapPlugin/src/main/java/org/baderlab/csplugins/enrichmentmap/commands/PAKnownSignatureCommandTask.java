@@ -139,7 +139,9 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 			.setAttributePrefix(map.getParams().getAttributePrefix())
 			.setLoadedGMTGeneSets(signatureGenesets)
 			.addSelectedGeneSetNames(selectedGenesetNames)
-			.setName(Strings.isNullOrEmpty(name) ? autoName : name);
+			.setName(Strings.isNullOrEmpty(name) ? autoName : name)
+			.setSource(PostAnalysisParameters.SOURCE_LOCAL_FILE)
+			.setGmtFile(gmtFile.getPath());
 		
 		if(isBatch()) {
 			builder.setDataSetName(null); // run in batch mode
@@ -205,7 +207,7 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 		if(mannWhitRanks.isEmpty() && map.isSingleRanksPerDataset()) {
 			String ranksName = dataset.getAllRanksNames().iterator().next();
 			Ranking ranking = dataset.getRanksByName(ranksName);
-			return new FilterMetric.MannWhit(cutoff, ranking, type);
+			return new FilterMetric.MannWhit(type, cutoff, ranksName, ranking);
 		} else if(mannWhitRanks.isEmpty()) {
 			throw new IllegalArgumentException("At least one of the data sets you have specified has more than one ranks file. "
 					+ "You must use the 'mannWhitRanks' parameter to specify which ranking to use for each data set.");
@@ -224,10 +226,10 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 			if(rankFile == null && ranksNames.size() == 1) {
 				String ranksName = ranksNames.iterator().next();
 				Ranking ranking = dataset.getRanksByName(ranksName);
-				return new FilterMetric.MannWhit(cutoff, ranking, type);
+				return new FilterMetric.MannWhit(type, cutoff, ranksName, ranking);
 			} else {
 				Ranking ranking = dataset.getRanksByName(rankFile);
-				return new FilterMetric.MannWhit(cutoff, ranking, type);
+				return new FilterMetric.MannWhit(type, cutoff, rankFile, ranking);
 			}
 		}
 	}

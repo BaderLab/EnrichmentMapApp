@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.view.postanalysis.web;
 import javax.swing.table.DefaultTableCellRenderer;
 
 @SuppressWarnings("serial")
-public class FileSizeCellRenderer extends DefaultTableCellRenderer {
+public class FileSizeRenderer extends DefaultTableCellRenderer {
 
 	@Override
 	protected void setValue(Object value) {
@@ -16,7 +16,7 @@ public class FileSizeCellRenderer extends DefaultTableCellRenderer {
 		}
 	}
 	
-	private static String humanReadableByteCount(long bytes, boolean si) {
+	public static String humanReadableByteCount(long bytes, boolean si) {
 		int unit = si ? 1000 : 1024;
 		if (bytes < unit)
 			return bytes + " B";

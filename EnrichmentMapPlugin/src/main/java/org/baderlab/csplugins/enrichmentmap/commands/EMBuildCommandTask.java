@@ -154,6 +154,9 @@ public class EMBuildCommandTask extends AbstractTask {
 	@Tunable(description = "Similarity Coeffecient", groups = { "User Input", "Parameters" }, gravity = 20.0, tooltip = "coeffecient between 0 and 1.")
 	public ListSingleSelection<String> coefficients;
 
+	@Tunable(description = "Deprecated, use 'coefficients' instead.")
+	public ListSingleSelection<String> coeffecients; // misspelled, but must keep for backwards compatibility
+	
 	@Tunable
 	public double combinedConstant = LegacySupport.combinedConstant_default;
 	
@@ -185,13 +188,30 @@ public class EMBuildCommandTask extends AbstractTask {
 		coefficients = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP,
 				EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
 		
+		coeffecients = new ListSingleSelection<String>("null", EnrichmentMapParameters.SM_OVERLAP,
+				EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
+		
+		
 		edgeStrategy = ResolverCommandTask.enumNames(EdgeStrategy.values());
 		edgeStrategy.setSelectedValue(EdgeStrategy.AUTOMATIC.name());
 		
 		nesFilter = ResolverCommandTask.enumNames(NESFilter.values());
 		nesFilter.setSelectedValue(NESFilter.ALL.name());
 	}
+	
 
+	private SimilarityMetric getSimilarityMetric() {
+		String value;
+		if(!"null".equals(coeffecients.getSelectedValue())) {
+			// the old field overrides the new field
+			value = coeffecients.getSelectedValue(); 
+		} else {
+			value = coefficients.getSelectedValue();
+		}
+		
+		return EnrichmentMapParameters.stringToSimilarityMetric(value);
+	}
+	
 	
 	/**
 	 * buildEnrichmentMap - parses all GSEA input files and creates an enrichment map
@@ -199,7 +219,7 @@ public class EMBuildCommandTask extends AbstractTask {
 	public void buildEnrichmentMap() {
 		// Note we must continue to use the old constants from EnrichmentMapParameters for backwards compatibility
 		Method method = EnrichmentMapParameters.stringToMethod(analysisType.getSelectedValue());
-		SimilarityMetric metric = EnrichmentMapParameters.stringToSimilarityMetric(coefficients.getSelectedValue());
+		SimilarityMetric metric = getSimilarityMetric();
 		
 		//Set Dataset1 Files
 		DataSetFiles dataset1files = new DataSetFiles();

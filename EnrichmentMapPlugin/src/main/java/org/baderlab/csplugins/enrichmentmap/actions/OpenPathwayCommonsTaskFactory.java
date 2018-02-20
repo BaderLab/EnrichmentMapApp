@@ -21,6 +21,7 @@ public class OpenPathwayCommonsTaskFactory implements NodeViewTaskFactory {
 
 	@Override
 	public boolean isReady(View<CyNode> nodeView, CyNetworkView networkView) {
+		// TODO disable if network has no class data
 		return emManager.isEnrichmentMap(networkView);
 	}
 

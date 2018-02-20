@@ -10,11 +10,15 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.Path;
 import java.util.List;
 
 import javax.ws.rs.core.UriBuilder;
 
+import org.baderlab.csplugins.enrichmentmap.model.io.ModelSerializer;
+
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 public class BaderlabRequests {
@@ -46,9 +50,13 @@ public class BaderlabRequests {
 			throw new RuntimeException("Request error, status: " + code);
 		}
 		
+		Gson gson = new GsonBuilder()
+				.registerTypeHierarchyAdapter(Path.class, new ModelSerializer.PathAdapter())
+				.create();
+		
 		try(InputStream in = connection.getInputStream()) {
 			Reader reader = new BufferedReader(new InputStreamReader(in));
-			T results = new Gson().fromJson(reader, type);
+			T results = gson.fromJson(reader, type);
 			return results;
 		}
 	}

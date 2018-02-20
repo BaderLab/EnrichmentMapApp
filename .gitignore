@@ -12,3 +12,4 @@ target/**/*
 DataForVictor/
 Mockupinterfaces/
 /target
+_build

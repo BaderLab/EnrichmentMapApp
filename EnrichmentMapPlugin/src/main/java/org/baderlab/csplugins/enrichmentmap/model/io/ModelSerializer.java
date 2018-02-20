@@ -106,7 +106,7 @@ public class ModelSerializer {
 		}
 	}
 
-	private static class PathAdapter implements JsonDeserializer<Path>, JsonSerializer<Path> {
+	public static class PathAdapter implements JsonDeserializer<Path>, JsonSerializer<Path> {
 		@Override
 		public Path deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext context) {
 			return Paths.get(jsonElement.getAsString());

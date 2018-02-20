@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Comparator;
-import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
@@ -17,12 +17,8 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.LayoutStyle;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
-import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
@@ -39,7 +35,7 @@ public class BaderlabDialogPage implements CardDialogPage {
 	private CardDialogCallback callback;
 	private JComboBox<ComboItem<DateDir>> dateCombo;
 	private JLabel spinnerLabel;
-	private JTable table;
+	private FileChooserPanel fileChooserPanel;
 	private ActionListener dateActionListener;
 	private boolean openCalled = false;
 	
@@ -61,13 +57,13 @@ public class BaderlabDialogPage implements CardDialogPage {
 	@Override
 	public void finish() {
 		String dateFolder = getDateFolder();
-		String filePath = getGmtFilePath();
-		if(dateFolder == null || filePath == null) {
+		Optional<String> filePath = fileChooserPanel.getSelectedFilePath();
+		if(dateFolder == null || !filePath.isPresent()) {
 			return;
 		}
 		
 		try {
-			URL url = BaderlabRequests.buildUrl(dateFolder, filePath);
+			URL url = BaderlabRequests.buildUrl(dateFolder, filePath.get());
 			parent.runLoadFromUrlTasks(url, callback.getDialog());
 			
 		} catch (MalformedURLException e) {
@@ -88,14 +84,19 @@ public class BaderlabDialogPage implements CardDialogPage {
 		this.callback = callback;
 		callback.setFinishButtonEnabled(false);
 		
+		fileChooserPanel = new TreeFileChooserPanel();
+		fileChooserPanel.getPanel().setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 8));
+		fileChooserPanel.setSelectionListener(s -> callback.setFinishButtonEnabled(s.isPresent()));
+		
 		JPanel datePanel = createDatePanel();
-		JPanel listPanel = createTablePanel();
+		JPanel listPanel = fileChooserPanel.getPanel();
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(datePanel, BorderLayout.NORTH);
 		panel.add(listPanel, BorderLayout.CENTER);
 		return panel;
 	}
+	
 
 	private JPanel createDatePanel() {
 		JLabel title = new JLabel("Download gene set files from download.baderlab.org");
@@ -149,53 +150,17 @@ public class BaderlabDialogPage implements CardDialogPage {
 		return panel;
 	}
 
-	private JPanel createTablePanel() {
-		table = new JTable();
-		
-		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		table.setFillsViewportHeight(true);
-		table.setCellSelectionEnabled(false);
-		table.setRowSelectionAllowed(true);
-		table.setAutoCreateRowSorter(true);
-		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		
-		table.getSelectionModel().addListSelectionListener(e -> updateFinishButton());
-		
-		FileSizeCellRenderer fileSizeRenderer = new FileSizeCellRenderer();
-		fileSizeRenderer.setHorizontalAlignment(JLabel.RIGHT);
-		table.setDefaultRenderer(Integer.class, fileSizeRenderer);
-		
-		updateTable(null);
-		
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(scrollPane, BorderLayout.CENTER);
-		panel.setBorder(BorderFactory.createEmptyBorder(0, 8, 8, 8));
-		return panel;
-	}
+
 	
 	private void updateFinishButton() {
-		callback.setFinishButtonEnabled(table.getSelectionModel().getMinSelectionIndex() >= 0);
+		callback.setFinishButtonEnabled(fileChooserPanel.getSelectedFilePath().isPresent());
 	}
 	
-	private void updateTable(List<GmtFile> gmtFiles) {
-		GmtFileTableModel tableModel = new GmtFileTableModel(gmtFiles);
-		table.setModel(tableModel);
-		
-		TableColumnModel columnModel = table.getColumnModel();
-		columnModel.getColumn(1).setMaxWidth(150);
-	}
 
 	private String getDateFolder() {
 		return dateCombo.getItemAt(dateCombo.getSelectedIndex()).getValue().getFolder();
 	}
 	
-	private String getGmtFilePath() {
-		int row = table.getSelectionModel().getMinSelectionIndex();
-		String gmtFilePath = (String) table.getModel().getValueAt(row, 0);
-		return gmtFilePath;
-	}
 	
 	private <T> void doRequest(Callable<T> doInBackground, Consumer<T> done) {
 		SwingWorker<T,Void> worker = new SwingWorker<T, Void>() {
@@ -249,12 +214,12 @@ public class BaderlabDialogPage implements CardDialogPage {
 	}
 	
 	private void requestFiles() {
-		updateTable(null);
+		fileChooserPanel.setFiles(null);
 		String dateFolder = getDateFolder();
 		
 		doRequest(
 			() -> BaderlabRequests.requestFiles(dateFolder),
-			this::updateTable
+			fileChooserPanel::setFiles
 		);
 	}
 	

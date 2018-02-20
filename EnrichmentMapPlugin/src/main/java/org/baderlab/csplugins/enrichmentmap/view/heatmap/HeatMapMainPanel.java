@@ -480,7 +480,7 @@ public class HeatMapMainPanel extends JPanel {
 	
 	public void updateSetting_RankOption(RankingOption rankOption) {
 		selectedRankOption = rankOption;
-		List<String> genes = getGenes(getOperator());
+		List<String> genes = unionGenes; // always use all the genes, fixes #310
 		
 		HeatMapTableModel tableModel = (HeatMapTableModel) table.getModel();
 		EnrichmentMap map = tableModel.getEnrichmentMap();

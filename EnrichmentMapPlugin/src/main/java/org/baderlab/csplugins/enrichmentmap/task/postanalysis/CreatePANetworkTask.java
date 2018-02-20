@@ -144,7 +144,23 @@ public class CreatePANetworkTask extends AbstractTask implements ObservableTask 
 	 */
 	private EMSignatureDataSet createSignatureDataSet() {
 		String name = params.getName();
-		return new EMSignatureDataSet(map, name);
+		EMSignatureDataSet sigDataSet = new EMSignatureDataSet(map, name);
+		
+		// set fields that show up in the Creation Parameters dialog
+		sigDataSet.setSource(params.getSource());
+		sigDataSet.setGmtFile(params.getGmtFile());
+		
+		FilterMetricSet rankTestParams = params.getRankTestParameters();
+		sigDataSet.setType(rankTestParams.getType());
+		
+		Map<String,String> dataSetMessages = new HashMap<>();
+		for(String dataSetName : rankTestParams.getDataSetNames()) {
+			FilterMetric metric = rankTestParams.get(dataSetName);
+			dataSetMessages.put(dataSetName, metric.getDisplayString());
+		}
+		sigDataSet.setDataSetRankTestMessage(dataSetMessages);
+		
+		return sigDataSet;
 	}
 	
 	

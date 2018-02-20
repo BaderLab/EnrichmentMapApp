@@ -7,13 +7,15 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 public class SigGeneSetDescriptor {
 
 	private final GeneSet geneSet;
+	private final int largestOverlap;
 	private final double mostSimilar;
 	private final boolean passes;
 	
 	private boolean wanted = true;
 	
-	public SigGeneSetDescriptor(GeneSet geneSet, double mostSimilar, boolean passes) {
+	public SigGeneSetDescriptor(GeneSet geneSet, int largestOverlap, double mostSimilar, boolean passes) {
 		this.geneSet = Objects.requireNonNull(geneSet);
+		this.largestOverlap = largestOverlap;
 		this.mostSimilar = mostSimilar;
 		this.passes = passes;
 	}
@@ -30,6 +32,10 @@ public class SigGeneSetDescriptor {
 		return geneSet.getName();
 	}
 
+	public int getLargestOverlap() {
+		return largestOverlap;
+	}
+	
 	public int getGeneCount() {
 		return geneSet.getGenes().size();
 	}

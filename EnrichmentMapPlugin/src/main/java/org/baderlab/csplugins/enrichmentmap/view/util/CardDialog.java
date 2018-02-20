@@ -7,6 +7,8 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -59,8 +61,18 @@ public class CardDialog {
 		dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		dialog.pack();
 		dialog.setLocationRelativeTo(dialog.getParent());
+		dialog.setModal(true);
+		dialog.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				currentPage.opened();
+			}
+		});
 		dialog.setVisible(true);
-		currentPage.opened();
+	}
+	
+	public CardDialogPage getCurrentPage() {
+		return currentPage;
 	}
 
 	public void dispose() {
@@ -187,7 +199,7 @@ public class CardDialog {
 	private JPanel createButtonPanel() {
 		finishButton = new JButton(new AbstractAction(params.getFinishButtonText()) {
 			public void actionPerformed(ActionEvent e) {
-				finishButton.setEnabled(false);
+				finishButton.setEnabled(false); // prevent clicking the button twice quickly
 				currentPage.finish();
 			}
 		});
@@ -235,6 +247,7 @@ public class CardDialog {
 			return new AbstractTask() {
 				@Override
 				public void run(TaskMonitor taskMonitor) throws Exception {
+					finishButton.setEnabled(true); // because the finishButton listener disables the Finish button
 					close();
 				}
 			};

@@ -8,14 +8,14 @@ import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogParameters;
 
-public class WebLoadDialogParameters implements CardDialogParameters {
+public class DialogParameters implements CardDialogParameters {
 
 	public static final String TITLE = "Signature Gene Sets";
 	
 	private final PADialogPage parent;
 	
 	
-	public WebLoadDialogParameters(PADialogPage parent) {
+	public DialogParameters(PADialogPage parent) {
 		this.parent = parent;
 	}
 	
@@ -34,7 +34,7 @@ public class WebLoadDialogParameters implements CardDialogParameters {
 	
 	@Override
 	public Dimension getPreferredSize() {
-		return new Dimension(800, 500);
+		return new Dimension(600, 500);
 	}
 	
 	@Override

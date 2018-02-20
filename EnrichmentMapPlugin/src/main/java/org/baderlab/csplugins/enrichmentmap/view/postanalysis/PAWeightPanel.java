@@ -8,6 +8,7 @@ import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
@@ -17,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
@@ -44,6 +46,7 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetricSet;
 import org.baderlab.csplugins.enrichmentmap.view.EnablementComboBoxRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -77,6 +80,8 @@ public class PAWeightPanel extends JPanel {
 	private JRadioButton expressionSetRadioButton;
 	private JRadioButton userDefinedRadioButton;
 	private JFormattedTextField universeSelectionTextField;
+	
+	private JRadioButton hyperIntersectButton;
 	
 	private JLabel iconLabel;
 	private JLabel warnLabel;
@@ -132,7 +137,7 @@ public class PAWeightPanel extends JPanel {
 			.addComponent(title)
 			.addGroup(layout.createSequentialGroup()
 				.addComponent(selectPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(cardPanel, 300, 300, 300)
+				.addComponent(cardPanel, 450, 450, 450)
 			)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
@@ -326,6 +331,53 @@ public class PAWeightPanel extends JPanel {
 	
 	
 	private JPanel createHypergeomCard() {
+		JPanel universePanel = createHypergeomUniversePanel();
+		JPanel samplePanel = createHypergeomSamplePanel();
+		
+		JPanel panel = new JPanel(new GridBagLayout());
+		panel.add(universePanel, GBCFactory.grid(0,0).weightx(.5).fill(GridBagConstraints.BOTH).get());
+		panel.add(samplePanel,   GBCFactory.grid(1,0).weightx(.5).fill(GridBagConstraints.BOTH).get());
+		panel.setOpaque(false);
+		return panel;
+	}
+	
+	private JPanel createHypergeomSamplePanel() {
+		JLabel title = new JLabel("Genes in sample (n)");
+		hyperIntersectButton = new JRadioButton("Intersection");
+		JRadioButton hyperSigButton = new JRadioButton("Signature gene set");
+		makeSmall(title, hyperSigButton, hyperIntersectButton);
+		
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(hyperSigButton);
+		buttonGroup.add(hyperIntersectButton);
+		hyperIntersectButton.setSelected(true);
+		
+		BasicCollapsiblePanel panel = new BasicCollapsiblePanel("Advanced");
+		panel.setCollapsed(true);
+		
+		final GroupLayout layout = new GroupLayout(panel.getContentPane());
+		panel.getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+			.addComponent(title)
+			.addComponent(hyperIntersectButton)
+			.addComponent(hyperSigButton)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+			.addComponent(title)
+			.addComponent(hyperIntersectButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addComponent(hyperSigButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+
+		return panel;
+	}
+	
+	private JPanel createHypergeomUniversePanel() {
 		ActionListener universeSelectActionListener = e -> {
 			boolean enable = e.getActionCommand().equals("User Defined");
 			universeSelectionTextField.setEnabled(enable);
@@ -381,7 +433,7 @@ public class PAWeightPanel extends JPanel {
 		makeSmall(gmtRadioButton, expressionSetRadioButton, intersectionRadioButton, userDefinedRadioButton, universeSelectionTextField);
 
 		JPanel panel = new JPanel();
-		panel.setBorder(LookAndFeelUtil.createTitledBorder("Advanced Hypergeometric Universe"));
+		panel.setBorder(LookAndFeelUtil.createTitledBorder("Hypergeometric Universe"));
 
 		final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -425,32 +477,35 @@ public class PAWeightPanel extends JPanel {
 		JPanel body = new JPanel(new GridBagLayout());
 		int y = 0;
 		for(EMDataSet dataset : dataSets) {
-			final String dataSetName = dataset.getName();
-			JLabel label = new JLabel(dataSetName + ":");
-			JComboBox<String> combo = new JComboBox<>();
-			for(String ranksName : dataset.getAllRanksNames()) {
-				combo.addItem(ranksName);
+			Set<String> ranksNames = dataset.getAllRanksNames();
+			if(ranksNames != null && !ranksNames.isEmpty()) {
+				final String dataSetName = dataset.getName();
+				JLabel label = new JLabel(dataSetName + ":");
+				JComboBox<String> combo = new JComboBox<>();
+				for(String ranksName : ranksNames) {
+					combo.addItem(ranksName);
+				}
+				SwingUtil.makeSmall(label, combo);
+				if(combo.getItemCount() <= 1) {
+					combo.setEnabled(false);
+				}
+				
+				String ranksName = mannWhitRanks.get(dataSetName);
+				if(ranksName == null)
+					mannWhitRanks.put(dataSetName, combo.getSelectedItem().toString());
+				else
+					combo.setSelectedItem(ranksName);
+				
+				combo.addActionListener(e -> {
+					String ranks = combo.getSelectedItem().toString();
+					mannWhitRanks.put(dataSetName, ranks);
+					firePropertyChange(PROPERTY_PARAMETERS, false, true);
+				});
+				
+				body.add(label, GBCFactory.grid(0,y).weightx(.5).anchor(EAST).fill(NONE).get());
+				body.add(combo, GBCFactory.grid(1,y).weightx(.5).get());
+				y++;
 			}
-			SwingUtil.makeSmall(label, combo);
-			if(combo.getItemCount() <= 1) {
-				combo.setEnabled(false);
-			}
-			
-			String ranksName = mannWhitRanks.get(dataSetName);
-			if(ranksName == null)
-				mannWhitRanks.put(dataSetName, combo.getSelectedItem().toString());
-			else
-				combo.setSelectedItem(ranksName);
-			
-			combo.addActionListener(e -> {
-				String ranks = combo.getSelectedItem().toString();
-				mannWhitRanks.put(dataSetName, ranks);
-				firePropertyChange(PROPERTY_PARAMETERS, false, true);
-			});
-			
-			body.add(label, GBCFactory.grid(0,y).weightx(.5).anchor(EAST).fill(NONE).get());
-			body.add(combo, GBCFactory.grid(1,y).weightx(.5).get());
-			y++;
 		}
 		
 		JPanel container = new JPanel(new BorderLayout());
@@ -606,13 +661,18 @@ public class PAWeightPanel extends JPanel {
 			case HYPERGEOM:
 				UniverseType universeType = getUniverseType();
 				int universe = universeType.getGeneUniverse(map, dataset, getUserDefinedUniverseSize());
-				return new FilterMetric.Hypergeom(value, universe);
+				FilterMetric.Hypergeom hyperFilterMetric = new FilterMetric.Hypergeom(value, universe);
+				if(hyperIntersectButton.isSelected()) {
+					Set<Integer> universeGenes = map.getAllEnrichmentGenes();
+					hyperFilterMetric.setUniverseFilter(universeGenes);
+				}
+				return hyperFilterMetric;
 			case MANN_WHIT_TWO_SIDED:
 			case MANN_WHIT_GREATER:
 			case MANN_WHIT_LESS:
 				String rankingName = mannWhitRanks.get(dataset);
-				Ranking ranking = map.getDataSet(dataset).getRanks().get(rankingName);
-				return new FilterMetric.MannWhit(value, ranking, type);
+				Ranking ranking = rankingName == null ? null :  map.getDataSet(dataset).getRanks().get(rankingName);
+				return new FilterMetric.MannWhit(type, value, rankingName, ranking);
 			default:
 				return null;
 		}
