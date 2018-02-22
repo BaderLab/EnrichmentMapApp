@@ -5,6 +5,7 @@ import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JPanel;
@@ -89,10 +90,14 @@ public class CreationParametersPanel extends JPanel {
 						ol();
 							map.getDataSetList().forEach(this::addDataSet);
 						end();
-						addTitle("Signature Data Sets");
-						ol();
-							map.getSignatureSetList().forEach(this::addSignatureDataSet);
-						end();
+						
+						List<EMSignatureDataSet> sigSets = map.getSignatureSetList();
+						if(sigSets != null && !sigSets.isEmpty()) {
+							addTitle("Signature Data Sets");
+							ol();
+								sigSets.forEach(this::addSignatureDataSet);
+							end();
+						}
 					end();
 				endAll();
 				done();

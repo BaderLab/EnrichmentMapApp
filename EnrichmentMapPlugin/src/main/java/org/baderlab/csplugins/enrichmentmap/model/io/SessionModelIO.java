@@ -162,13 +162,21 @@ public class SessionModelIO {
 	private static Set<Long> mapSuids(Set<Long> oldSuids, CySession session, Class<? extends CyIdentifiable> type) {
 		Set<Long> newSuids = new HashSet<>();
 		
-		for (Long suid : oldSuids) {
+		for (Long oldSuid : oldSuids) {
 			if (session != null) {
-				// If we are loading from a session file then we need to re-map the ids
-				CyIdentifiable obj = session.getObject(suid, type);
-				suid = obj.getSUID();
+				// If we are loading from a session file then we need to re-map the IDs.
+				CyIdentifiable obj = session.getObject(oldSuid, type);
+				if(obj == null) {
+					// Case where nodes/edges might have been deleted.
+					// We have to do the check here because older session files might not be saved properly.
+					System.err.println("EnrichmentMap: SUID not found: " + oldSuid);
+				} else {
+					Long suid = obj.getSUID();
+					newSuids.add(suid);
+				}
+			} else {
+				newSuids.add(oldSuid);
 			}
-			newSuids.add(suid);
 		}
 		return newSuids;
 	}
