@@ -70,13 +70,11 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.GMViewCont
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.legend.CreationParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
-import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -297,10 +295,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					.collect(Collectors.toSet());
 			
 			EMStyleOptions options = createStyleOptions(panel.getNetworkView());
+			ChartOptions chartOptions = options != null ? options.getChartOptions() : null;
 			boolean pubReady = panel.getPublicationReadyCheck().isSelected();
-			
-			ViewParams params = new ViewParams(
-					suid, cuttofParam, pVal, qVal, sCoeff, filteredDataSets, options.getChartOptions(), pubReady);
+			ViewParams params = new ViewParams(suid, cuttofParam, pVal, qVal, sCoeff, filteredDataSets, chartOptions, pubReady);
 			
 			map.put(suid, params);
 		});
@@ -622,10 +619,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	private void addListeners(GMViewControlPanel viewPanel, EnrichmentMap map) {
 		viewPanel.getCompressCombo().addItemListener(evt -> {
 			if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
-				updateGeneManiaStyle(map, viewPanel);
+//				updateGeneManiaStyle(map, viewPanel);
 			}
 		});
-		
 	}
 	
 	/**
@@ -796,16 +792,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		ChartOptions chartOptions = new ChartOptions(data, type, colorScheme, showLabels);
 
 		return new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, chartOptions, postAnalysis, publicationReady);
-	}
-	
-	@SuppressWarnings("unchecked")
-	private void updateGeneManiaStyle(EnrichmentMap map, GMViewControlPanel viewPanel) {
-		ComboItem<Compress> compressItem = (ComboItem<Compress>) viewPanel.getCompressCombo().getSelectedItem();
-		Compress compress = compressItem != null ? compressItem.getValue() : Compress.NONE;
-		
-		String compare = (String) viewPanel.getCompareCombo().getSelectedItem();
-		
-		// TODO
 	}
 	
 	/**

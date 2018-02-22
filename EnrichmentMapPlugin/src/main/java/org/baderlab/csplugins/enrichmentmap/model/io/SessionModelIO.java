@@ -182,6 +182,7 @@ public class SessionModelIO {
  			ds.setNodeSuids(mapSuids(ds.getNodeSuids(), session, CyNode.class));
 			ds.setEdgeSuids(mapSuids(ds.getEdgeSuids(), session, CyEdge.class));
  		}
+ 		map.setGeneManiaNetworkIDs(mapSuids(map.getGeneManiaNetworkIDs(), session, CyNetwork.class));
 	}
 
 	private CyTable getPrivateTable() {

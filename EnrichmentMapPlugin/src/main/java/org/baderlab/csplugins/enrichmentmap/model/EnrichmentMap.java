@@ -35,7 +35,11 @@ public class EnrichmentMap {
 	private transient CyServiceRegistrar serviceRegistrar;
 	
 	private long networkID;
+	
+	/** GeneMANIA networks created from EM genes. */
 	private final Set<Long> geneManiaNetworkIDs = new LinkedHashSet<>();
+	/** Maps EM gene names to preferred GeneMANIA gene symbols (grouped by organism). */
+	private final Map<String/*organism*/, BiMap<String, String>> geneManiaSymbols = new HashMap<>();
 	
 	/** Parameters used to create this map */
 	private final EMCreationParameters params;
@@ -95,7 +99,6 @@ public class EnrichmentMap {
 		return ds;
 	}
 	
-	
 	public void putExpressionMatrix(String key, GeneExpressionMatrix matrix) {
 		expressions.put(key, matrix);
 	}
@@ -111,7 +114,6 @@ public class EnrichmentMap {
 	public Collection<String> getExpressionMatrixKeys() {
 		return Collections.unmodifiableCollection(expressions.keySet());
 	}
-	
 	
 	public void putGeneSets(String key, SetOfGeneSets matrix) {
 		geneSets.put(key, matrix);
@@ -215,7 +217,6 @@ public class EnrichmentMap {
 		NumberOfGenes = numberOfGenes;
 	}
 
-
 	/**
 	 * Filter all the genesets by the dataset genes If there are multiple sets
 	 * of genesets make sure to filter by the specific dataset genes
@@ -283,7 +284,6 @@ public class EnrichmentMap {
 		
 		return allGeneSets;
 	}
-
 	
 	// MKTODO write a JUnit
 	public Map<String, Set<Integer>> unionAllGeneSetsOfInterest() {
@@ -300,7 +300,6 @@ public class EnrichmentMap {
 		return allGeneSets;
 	}
 	
-	
 	/**
 	 * Returns a set of all genes in the map that are of interest and not from a signature data set.
 	 */
@@ -314,8 +313,6 @@ public class EnrichmentMap {
 		}
 		return genes;
 	}
-	
-	
 	
 	// MKTODO write a JUnit
 	public Set<String> getAllGeneSetOfInterestNames() {
@@ -406,11 +403,35 @@ public class EnrichmentMap {
 		return new LinkedHashSet<>(geneManiaNetworkIDs);
 	}
 	
-	public void setGeneManiaNetworkIDs(Set<Long> geneManiaNetworkIDs) {
-		this.geneManiaNetworkIDs.clear();
+	public void setGeneManiaNetworkIDs(Set<Long> set) {
+		geneManiaNetworkIDs.clear();
 		
-		if (geneManiaNetworkIDs != null && !geneManiaNetworkIDs.isEmpty())
-			this.geneManiaNetworkIDs.addAll(geneManiaNetworkIDs);
+		if (set != null && !set.isEmpty())
+			geneManiaNetworkIDs.addAll(set);
+	}
+	
+	public void addGeneManiaSymbols(String organism, Map<String, String> map) {
+		if (map == null || map.isEmpty())
+			return;
+		
+		BiMap<String, String> symbols = geneManiaSymbols.get(organism);
+		
+		if (symbols == null)
+			geneManiaSymbols.put(organism, symbols = HashBiMap.create());
+		
+		symbols.putAll(map);
+	}
+	
+	public String getGeneManiaQuerySymbol(String organism, String preferredSymbol) {
+		BiMap<String, String> symbols = geneManiaSymbols.get(organism);
+		
+		return symbols != null ? symbols.inverse().getOrDefault(preferredSymbol, preferredSymbol) : preferredSymbol;
+	}
+	
+	public String getGeneManiaPreferredSymbol(String organism, String querySymbol) {
+		BiMap<String, String> symbols = geneManiaSymbols.get(organism);
+		
+		return symbols != null ? symbols.getOrDefault(querySymbol, querySymbol) : querySymbol;
 	}
 
 	public static Set<Long> getNodesUnion(Collection<? extends AbstractDataSet> dataSets) {

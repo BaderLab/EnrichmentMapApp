@@ -21,8 +21,6 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 
-
-
 @SuppressWarnings("serial")
 public class HeatMapTableModel extends AbstractTableModel {
 
@@ -44,19 +42,22 @@ public class HeatMapTableModel extends AbstractTableModel {
 	private Map<Integer,RankValue> ranking;
 	private String ranksColName = "Ranks";
 	
-	
 	public HeatMapTableModel(EnrichmentMap map, Map<Integer,RankValue> ranking, List<String> genes, Transform transform, Compress compress) {
 		this.transform = transform;
 		this.compress = compress;
 		this.map = map;
 		this.ranking = ranking;
-		this.genes = genes;
+		this.genes = genes != null ? new ArrayList<>(genes) : Collections.emptyList();
 		
 		// if all the expression sets are the same then just show one of them
-		if(map.isCommonExpressionValues())
-			datasets = map.getDataSetList().subList(0, 1);
-		else
-			datasets = map.getDataSetList();
+		if (map != null) {
+			if (map.isCommonExpressionValues())
+				datasets = map.getDataSetList().subList(0, 1);
+			else
+				datasets = map.getDataSetList();
+		} else {
+			datasets = Collections.emptyList();
+		}
 		
 		ExpressionData uncompressed = new Uncompressed(datasets);
 		ExpressionData compressDataset = new CompressDataset(datasets);
@@ -72,7 +73,6 @@ public class HeatMapTableModel extends AbstractTableModel {
 		
 		expressionCache = new ExpressionCache(transform);
 	}
-	
 	
 	public List<EMDataSet> getDataSets() {
 		return Collections.unmodifiableList(datasets);
@@ -95,7 +95,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	public void setGenes(List<String> genes) {
-		this.genes = genes;
+		this.genes = genes != null ? new ArrayList<>(genes) : Collections.emptyList();
 		fireTableDataChanged();
 	}
 	
@@ -116,7 +116,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	public String getGene(int row) {
-		return genes.get(row);
+		return genes.size() > row ? genes.get(row) : null;
 	}
 	
 	@Override
@@ -126,7 +126,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 
 	@Override
 	public int getColumnCount() {
-		return data.get(compress).getSize() + DESC_COL_COUNT;
+		ExpressionData exp = data.get(compress);
+		return (exp != null ? exp.getSize() : 0) + DESC_COL_COUNT;
 	}
 	
 	@Override
@@ -137,7 +138,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 			return "Description";
 		if(col == RANK_COL)
 			return ranksColName;
-		return data.get(compress).getColumnName(col);
+		ExpressionData exp = data.get(compress);
+		return exp != null ? exp.getColumnName(col) : null;
 	}
 
 	@Override
@@ -146,22 +148,25 @@ public class HeatMapTableModel extends AbstractTableModel {
 			return null; // Why is it passing -1?
 		if(col == RANK_COL)
 			return getRankValue(row);
-		String gene = genes.get(row);
+		String gene = getGene(row);
 		if(col == GENE_COL)
 			return gene;
-		int geneID = map.getHashFromGene(gene);
+		Integer geneID = map != null && gene != null ? map.getHashFromGene(gene) : null;
 		if(col == DESC_COL)
-			return getDescription(geneID);
-		return data.get(compress).getValue(geneID, col);
+			return geneID != null ? getDescription(geneID) : null;
+		ExpressionData exp = data.get(compress);
+		return exp != null && geneID != null ? exp.getValue(geneID, col) : null;
 	}
 	
 	public RankValue getRankValue(int row) {
 		// Use empty RankValue objects for missing genes instead of nulls so that they sort last (see RankValue.compareTo()).
-		if(ranking == null)
+		if (ranking == null)
 			return RankValue.EMPTY;
-		String gene = genes.get(row);
-		int geneID = map.getHashFromGene(gene);
-		return ranking.getOrDefault(geneID, RankValue.EMPTY);
+		
+		String gene = getGene(row);
+		Integer geneID = map != null && gene != null ? map.getHashFromGene(gene) : null;
+		
+		return geneID != null ? ranking.getOrDefault(geneID, RankValue.EMPTY) : RankValue.EMPTY;
 	}
 	
 	@Override
@@ -182,12 +187,13 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	public Optional<String> getPhenotype(int col) {
-		return data.get(compress).getPhenotype(col);
+		ExpressionData exp = data.get(compress);
+		return exp != null ? exp.getPhenotype(col) : null;
 	}
 	
-	
 	public EMDataSet getDataSet(int col) {
-		return data.get(compress).getDataSet(col);
+		ExpressionData exp = data.get(compress);
+		return exp != null ? exp.getDataSet(col) : null;
 	}
 	
 	private String getDescription(int geneID) {
@@ -206,7 +212,6 @@ public class HeatMapTableModel extends AbstractTableModel {
 		return row;
 	}
 	
-	
 	/**
 	 * Common interface for different levels of compression.
 	 */
@@ -217,7 +222,6 @@ public class HeatMapTableModel extends AbstractTableModel {
 		public default Optional<String> getPhenotype(int col) { return Optional.empty(); };
 		int getSize();
 	}
-	
 	
 	private class Uncompressed implements ExpressionData {
 
@@ -275,8 +279,6 @@ public class HeatMapTableModel extends AbstractTableModel {
 		}
 	}
 	
-	
-	
 	private class CompressDataset implements ExpressionData {
 		private final List<EMDataSet> datasets;
 		
@@ -297,7 +299,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		@Override
 		public String getColumnName(int col) {
 			EMDataSet dataset = getDataSet(col);
-			return map.isDistinctExpressionSets() ? dataset.getName() : "Expressions";
+			return map != null && map.isDistinctExpressionSets() ? dataset.getName() : "Expressions";
 		}
 
 		@Override
@@ -318,8 +320,6 @@ public class HeatMapTableModel extends AbstractTableModel {
 			}
 		}
 	}
-	
-	
 	
 	private class CompressClass implements ExpressionData {
 
@@ -396,6 +396,5 @@ public class HeatMapTableModel extends AbstractTableModel {
 		public int getSize() {
 			return headers.size();
 		}
-		
 	}
 }

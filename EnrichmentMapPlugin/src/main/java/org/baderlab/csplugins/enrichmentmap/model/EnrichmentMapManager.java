@@ -123,9 +123,6 @@ public class EnrichmentMapManager {
 		
 		tgtNetTable.getRow(network.getSUID()).set(EM_NETWORK_SUID_COLUMN, map.getNetworkID());
 		
-		// Update the EnrichmentMap
-		map.addGeneManiaNetworkID(network.getSUID());
-		
 		// Update our internal map and fire an event if it changed
 		Map<Long, EnrichmentMap> oldValue = getGeneManiaEnrichmentMaps();
 		
@@ -138,7 +135,7 @@ public class EnrichmentMapManager {
 	}
 	
 	public boolean isGeneManiaEnrichmentMap(CyNetworkView networkView) {
-		return isGeneManiaEnrichmentMap(networkView.getModel().getSUID());
+		return networkView != null && isGeneManiaEnrichmentMap(networkView.getModel().getSUID());
 	}
 	
 	public Map<Long, EnrichmentMap> getGeneManiaEnrichmentMaps() {

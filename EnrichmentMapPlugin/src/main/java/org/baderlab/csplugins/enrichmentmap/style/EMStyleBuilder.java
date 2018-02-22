@@ -60,7 +60,10 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.jcolorbrewer.ColorBrewer;
 
 import com.google.inject.Inject;
- 
+
+/**
+ * Responsible for updating the EnrichmentMap styles.
+ */
 public class EMStyleBuilder {
 	
 	public final static String DEFAULT_NAME_SUFFIX = "Visual_Style"; // TEMPORARY probably won't be called 'MasterMap' in the final version
@@ -139,9 +142,6 @@ public class EMStyleBuilder {
 		public static final ColumnDescriptor<String> NET_REPORT2_DIR = new ColumnDescriptor<>("GSEA_Report_Dataset2_folder", String.class);
 		
 		public static final ColumnListDescriptor<Integer> DATASET_CHART = new ColumnListDescriptor<>("Dataset_Chart", Integer.class);
-		
-		// GeneMANIA Attributes
-		public static final ColumnDescriptor<String> GM_GENE_NAME = new ColumnDescriptor<>("gene name", String.class);
 	}
 
 	public static class Colors {
@@ -328,10 +328,6 @@ public class EMStyleBuilder {
 		
 		return dm;
 	}
-	
-	
-	
-	
 	
 	private void setEdgeWidth(VisualStyle vs, EMStyleOptions options) {
 		String prefix = options.getAttributePrefix();
