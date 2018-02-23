@@ -116,12 +116,12 @@ public class EnrichmentMapManager {
 	
 	public void registerGeneManiaEnrichmentMap(CyNetwork network, EnrichmentMap map) {
 		// Add EM Network SUID to genemania network's table.
-		CyTable tgtNetTable = network.getDefaultNetworkTable();
+		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
 		
-		if (tgtNetTable.getColumn(EM_NETWORK_SUID_COLUMN) == null)
-			tgtNetTable.createColumn(EM_NETWORK_SUID_COLUMN, Long.class, true);
+		if (table.getColumn(EM_NETWORK_SUID_COLUMN) == null)
+			table.createColumn(EM_NETWORK_SUID_COLUMN, Long.class, true);
 		
-		tgtNetTable.getRow(network.getSUID()).set(EM_NETWORK_SUID_COLUMN, map.getNetworkID());
+		table.getRow(network.getSUID()).set(EM_NETWORK_SUID_COLUMN, map.getNetworkID());
 		
 		// Update our internal map and fire an event if it changed
 		Map<Long, EnrichmentMap> oldValue = getGeneManiaEnrichmentMaps();

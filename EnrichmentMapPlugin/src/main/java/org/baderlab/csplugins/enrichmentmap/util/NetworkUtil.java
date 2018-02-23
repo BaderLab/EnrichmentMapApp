@@ -92,9 +92,9 @@ public class NetworkUtil {
 	}
 	
 	public static boolean isGeneManiaNetwork(CyNetwork network) {
-		CyTable table = network.getDefaultNetworkTable();
+		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
 		
 		return table.getColumn(EM_NETWORK_SUID_COLUMN) != null
-				&& network.getRow(network).get(EM_NETWORK_SUID_COLUMN, Long.class) != null;
+				&& network.getRow(network, CyNetwork.HIDDEN_ATTRS).get(EM_NETWORK_SUID_COLUMN, Long.class) != null;
 	}
 }
