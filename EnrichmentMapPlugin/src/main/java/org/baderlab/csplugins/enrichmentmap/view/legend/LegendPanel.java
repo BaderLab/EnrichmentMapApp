@@ -56,6 +56,7 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.text.Collator;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -122,6 +123,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 	
 	private final Border DEF_LEGEND_BORDER = BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"));
 	private final Color DEF_LEGEND_BG = Color.WHITE;
+	private final Dimension COLOR_ICON_SIZE = new Dimension(LEGEND_ICON_SIZE, LEGEND_ICON_SIZE / 2);
 	
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private VisualMappingManager visualMappingManager;
@@ -144,6 +146,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 	private final JPanel chartLegendPanel = new JPanel(new BorderLayout());
 	
 	private JPanel edgeColorPanel;
+	private JPanel dataSetColorPanel;
 	
 	private EMStyleOptions options;
 	
@@ -168,6 +171,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 		equalizeSize(nodeShapeDesc1, nodeShapeDesc2);
 	}
 	
+	@Override
 	public EMStyleOptions getOptions() {
 		return options;
 	}
@@ -232,6 +236,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 			nodeChartPanel = null;
 			edgeLegendPanel = null;
 			edgeColorPanel = null;
+			dataSetColorPanel = null;
 			
 			nodeColorLegend = null;
 			chartPosLegend = null;
@@ -244,6 +249,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 			updateNodeShapePanel();
 			updateNodeChartPanel(filteredDataSets);
 			updateNodeChartColorPanel(filteredDataSets);
+			updateNodeDataSetColorPanel();
 			updateEdgeColorPanel();
 			
 			JPanel panel = new JPanel();
@@ -272,7 +278,9 @@ public class LegendPanel extends JPanel implements LegendContent {
 		JPanel p = getNodeColorPanel();
 		p.removeAll();
 		
-		if (dataSets != null && dataSets.size() == 1) {
+		ChartData data = options.getChartOptions().getData();
+		
+		if (dataSets != null && dataSets.size() == 1 && data == ChartData.NONE) {
 			EMDataSet ds = dataSets.iterator().next();
 			
 			nodeColorLegend = new ColorLegendPanel(
@@ -306,7 +314,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 		ChartOptions chartOptions = options.getChartOptions();
 		ChartData data = chartOptions.getData();
 		
-		if(data != ChartData.NONE) {
+		if(data != ChartData.NONE && data != ChartData.DATA_SET) {
 			AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
 			List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
 					dataSets, columnDescriptor, columnIdFactory);
@@ -393,7 +401,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 		p.revalidate();
 	}
 	
-	private void updateNodeChartPanel(Collection<EMDataSet> dataSets) {
+	private void updateNodeChartPanel(Collection<EMDataSet> filteredDataSets) {
 		JPanel p = getNodeChartPanel();
 		chartLegendPanel.removeAll();
 		
@@ -409,8 +417,8 @@ public class LegendPanel extends JPanel implements LegendContent {
 		Object cg = vp != null ? style.getDefaultValue(vp) : null;
 		ChartType chartType = options.getChartOptions() != null ? options.getChartOptions().getType() : null;
 		
-		if (chartType != null && cg instanceof CyCustomGraphics2 && dataSets != null) {
-			ChartPanel chart = createChartPanel(dataSets);
+		if (chartType != null && cg instanceof CyCustomGraphics2 && filteredDataSets != null) {
+			ChartPanel chart = createChartPanel(filteredDataSets);
 			
 			if (chart != null) {
 				JLabel titleLabel = new JLabel(getChartLabel());
@@ -429,11 +437,14 @@ public class LegendPanel extends JPanel implements LegendContent {
 		p.revalidate();
 	}
 	
-	private ChartPanel createChartPanel(Collection<EMDataSet> dataSets) {
-		List<EMDataSet> sortedDataSets = ChartUtil.sortDataSets(dataSets);
+	private ChartPanel createChartPanel(Collection<EMDataSet> filteredDataSet) {
+		List<EMDataSet> sortedDataSets = ChartUtil.sortDataSets(filteredDataSet);
 		ChartType chartType = options.getChartOptions() != null ? options.getChartOptions().getType() : null;
 		
 		switch (chartType) {
+			case DATASET_PIE:
+				chart = ChartUtil.createRadialHeatMapLegend(options.getEnrichmentMap().getDataSetList(), options.getChartOptions());
+				break;
 			case RADIAL_HEAT_MAP:
 				chart = ChartUtil.createRadialHeatMapLegend(sortedDataSets, options.getChartOptions());
 				break;
@@ -460,28 +471,54 @@ public class LegendPanel extends JPanel implements LegendContent {
 	
 	private void updateEdgeColorPanel() {
 		JPanel p = getEdgeColorPanel();
-		Dimension iconSize = new Dimension(LEGEND_ICON_SIZE, LEGEND_ICON_SIZE / 2);
-		
 		Map<Object, Paint> dmMap = getEdgeColors();
 		
 		JComponent[][] entries = new JComponent[dmMap.size()][2];
 		
 		int i = 0;
 		for (Entry<?, Paint> e : dmMap.entrySet()) {
-			Color color = null;
-			if (e.getValue() instanceof Color)
-				color = (Color) e.getValue();
+			Color color = e.getValue() instanceof Color ? (Color)e.getValue(): null;
 				
-			JLabel iconLabel = createColorLabel(color, iconSize);
+			JLabel iconLabel = createColorLabel(color, COLOR_ICON_SIZE);
 			JLabel descLabel = new JLabel("" + e.getKey());
 			
 			if (Columns.EDGE_DATASET_VALUE_SIG.equals(e.getKey()))
 				descLabel.setFont(descLabel.getFont().deriveFont(Font.ITALIC));
 			
-			entries[i++] = new JComponent[]{ iconLabel, descLabel };
+			entries[i++] = new JComponent[] {iconLabel, descLabel};
 		}
 		
 		updateStyleLegendPanel(entries, p);
+	}
+	
+	
+	private void updateNodeDataSetColorPanel() {
+		JPanel p = getNodeDataSetColorPanel();
+		
+		ChartData data = options.getChartOptions().getData();
+		
+		if(data == ChartData.DATA_SET) {
+			Map<Object,Paint> colorMap = getDataSetColors();
+			
+			JComponent[][] entries = new JComponent[colorMap.size()][2];
+			
+			int i = 0;
+			for (Entry<?, Paint> e : colorMap.entrySet()) {
+				Color color = e.getValue() instanceof Color ? (Color)e.getValue(): null;
+					
+				JLabel iconLabel = createColorLabel(color, COLOR_ICON_SIZE);
+				JLabel descLabel = new JLabel("" + e.getKey());
+				
+				entries[i++] = new JComponent[] {iconLabel, descLabel};
+			}
+			
+			updateStyleLegendPanel(entries, p);
+			
+			p.setVisible(true);
+		} else {
+			p.setVisible(false);
+		}
+		p.revalidate();
 	}
 	
 	
@@ -540,6 +577,16 @@ public class LegendPanel extends JPanel implements LegendContent {
 	}
 
 	
+	@Override
+	public Map<Object,Paint> getDataSetColors() {
+		Map<Object,Paint> colorMap = new LinkedHashMap<>();
+		for(EMDataSet dataset : options.getEnrichmentMap().getDataSetList()) {
+			colorMap.put(dataset.getName(), dataset.getColor());
+		}
+		return colorMap;
+	}
+	
+	
 	BasicCollapsiblePanel getNodeLegendPanel() {
 		if (nodeLegendPanel == null) {
 			nodeLegendPanel = new BasicCollapsiblePanel("Nodes (Gene Sets)");
@@ -551,16 +598,18 @@ public class LegendPanel extends JPanel implements LegendContent {
 			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
-					.addComponent(getNodeColorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getNodeShapePanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getNodeChartPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getNodeChartColorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getNodeColorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getNodeShapePanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getNodeChartPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getNodeChartColorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getNodeDataSetColorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(getNodeColorPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getNodeShapePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getNodeChartPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getNodeChartColorPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getNodeColorPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getNodeShapePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getNodeChartPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getNodeChartColorPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getNodeDataSetColorPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
 			if (isAquaLAF())
@@ -581,10 +630,10 @@ public class LegendPanel extends JPanel implements LegendContent {
 			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
-					.addComponent(getEdgeColorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getEdgeColorPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(getEdgeColorPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getEdgeColorPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
 			if (isAquaLAF())
@@ -674,6 +723,15 @@ public class LegendPanel extends JPanel implements LegendContent {
 		
 		return edgeColorPanel;
 	}
+	
+	private JPanel getNodeDataSetColorPanel() {
+		if (dataSetColorPanel == null) {
+			dataSetColorPanel = createStyleLegendPanel(null);
+			dataSetColorPanel.setToolTipText(LegendContent.NODE_DATA_SET_COLOR_HEADER);
+		}
+		
+		return dataSetColorPanel;
+	}
 
 	private JPanel createStyleLegendPanel(JComponent[][] entries) {
 		JPanel p = new JPanel();
@@ -685,7 +743,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 		return p;
 	}
 
-	private void updateStyleLegendPanel(JComponent[][] entries, JPanel p) {
+	private static void updateStyleLegendPanel(JComponent[][] entries, JPanel p) {
 		p.removeAll();
 		
 		GroupLayout layout = new GroupLayout(p);
