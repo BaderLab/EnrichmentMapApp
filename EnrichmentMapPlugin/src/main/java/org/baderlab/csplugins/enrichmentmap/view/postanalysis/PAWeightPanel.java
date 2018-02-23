@@ -342,9 +342,11 @@ public class PAWeightPanel extends JPanel {
 	}
 	
 	private JPanel createHypergeomSamplePanel() {
-		JLabel title = new JLabel("Genes in sample (n)");
-		hyperIntersectButton = new JRadioButton("Intersection");
-		JRadioButton hyperSigButton = new JRadioButton("Signature gene set");
+		JLabel title = new JLabel("Signature Genes to Use");
+		hyperIntersectButton = new JRadioButton("Filtered Signature Gene Sets");
+		hyperIntersectButton.setToolTipText("Signature genes are restricted to just genes that are also found in the current dataset.");
+		JRadioButton hyperSigButton = new JRadioButton("Signature Gene Sets");
+		hyperSigButton.setToolTipText("Signature gene set contains all loaded genes.");
 		makeSmall(title, hyperSigButton, hyperIntersectButton);
 		
 		ButtonGroup buttonGroup = new ButtonGroup();
@@ -644,7 +646,7 @@ public class PAWeightPanel extends JPanel {
 		return results;
 	}
 	
-	public FilterMetric createFilterMetric(String dataset) {
+	public FilterMetric createFilterMetric(String datasetName) {
 		String text = rankTestTextField.getText();
 		double value = Double.parseDouble(text);
 		PostAnalysisFilterType type = getFilterType();
@@ -660,18 +662,20 @@ public class PAWeightPanel extends JPanel {
 				return new FilterMetric.Specific(value);
 			case HYPERGEOM:
 				UniverseType universeType = getUniverseType();
-				int universe = universeType.getGeneUniverse(map, dataset, getUserDefinedUniverseSize());
+				int userDefined = getUserDefinedUniverseSize();
+				int universe = universeType.getGeneUniverse(map, datasetName, userDefined);
 				FilterMetric.Hypergeom hyperFilterMetric = new FilterMetric.Hypergeom(value, universe);
 				if(hyperIntersectButton.isSelected()) {
-					Set<Integer> universeGenes = map.getAllEnrichmentGenes();
+					EMDataSet dataset = map.getDataSet(datasetName);
+					Set<Integer> universeGenes = dataset.getGeneSetGenes();
 					hyperFilterMetric.setUniverseFilter(universeGenes);
 				}
 				return hyperFilterMetric;
 			case MANN_WHIT_TWO_SIDED:
 			case MANN_WHIT_GREATER:
 			case MANN_WHIT_LESS:
-				String rankingName = mannWhitRanks.get(dataset);
-				Ranking ranking = rankingName == null ? null :  map.getDataSet(dataset).getRanks().get(rankingName);
+				String rankingName = mannWhitRanks.get(datasetName);
+				Ranking ranking = rankingName == null ? null :  map.getDataSet(datasetName).getRanks().get(rankingName);
 				return new FilterMetric.MannWhit(type, value, rankingName, ranking);
 			default:
 				return null;

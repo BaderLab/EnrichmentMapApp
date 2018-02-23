@@ -12,16 +12,16 @@ public enum UniverseType {
 	USER_DEFINED;
 	
 	
-	public int getGeneUniverse(EnrichmentMap map, String dataset, int userDefinedUniverseSize) {
-		GeneExpressionMatrix expressionSets = map.getDataSet(dataset).getExpressionSets();
+	public int getGeneUniverse(EnrichmentMap map, String datasetName, int userDefinedUniverseSize) {
+		EMDataSet dataset = map.getDataSet(datasetName);
 		switch(this) {
 			default:
 			case GMT:
-				return map.getNumberOfGenes();
+				return dataset.getGeneSetGenes().size(); // number of un-filtered genes from the original GMT file (GMT)
 			case EXPRESSION_SET:
-				return expressionSets.getExpressionUniverse();
+				return dataset.getExpressionSets().getExpressionUniverse();
 			case INTERSECTION:
-				return expressionSets.getExpressionMatrix().size();
+				return dataset.getExpressionSets().getExpressionMatrix().size();
 			case USER_DEFINED:
 				return userDefinedUniverseSize;
 		}

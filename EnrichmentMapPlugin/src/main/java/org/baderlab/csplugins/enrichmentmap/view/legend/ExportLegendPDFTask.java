@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 
 import javax.swing.Icon;
 
+import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.jfree.chart.JFreeChart;
@@ -61,6 +62,7 @@ public class ExportLegendPDFTask extends AbstractTask {
 		addTo(document, createNodeShapeSection(writer));
 		addTo(document, createChartSection(writer));
 		addTo(document, createChartColorSection(writer));
+		addTo(document, createNodeDataSetColorSection(writer));
 		addTo(document, createEdgeColorSection(writer));
 	
 		document.close();
@@ -173,15 +175,28 @@ public class ExportLegendPDFTask extends AbstractTask {
 	}
 	
 	
-	
 	private List<Element> createEdgeColorSection(PdfWriter writer) throws DocumentException {
 		Map<Object,Paint> edgeColors = content.getEdgeColors();
 		if(edgeColors == null || edgeColors.isEmpty())
 			return null;
-		Paragraph title = new Paragraph(new Chunk(LegendContent.EDGE_COLOR_HEADER));
-		PdfPTable table = new PdfPTable(new float[] {1,1.2f});
+		return createColorsSection(writer, edgeColors, LegendContent.EDGE_COLOR_HEADER);
+	}
+	
+	private List<Element> createNodeDataSetColorSection(PdfWriter writer) throws DocumentException {
+		ChartData data = content.getOptions().getChartOptions().getData();
+		if(data != ChartData.DATA_SET	)
+			return null;
+		Map<Object,Paint> dataSetColors = content.getDataSetColors();
+		if(dataSetColors == null || dataSetColors.isEmpty())
+			return null;
+		return createColorsSection(writer, dataSetColors, LegendContent.NODE_DATA_SET_COLOR_HEADER);
+	}
+	
+	private List<Element> createColorsSection(PdfWriter writer, Map<Object,Paint> colors, String titleText) throws DocumentException {
+		Paragraph title = new Paragraph(new Chunk(titleText));
+		PdfPTable table = new PdfPTable(new float[] {1f,10f});
 		final int width = 40, height = 20;
-		for(Map.Entry<Object,Paint> entry : edgeColors.entrySet()) {
+		for(Map.Entry<Object,Paint> entry : colors.entrySet()) {
 			Image colorRect = drawImage(writer, width, height, graphics -> {
 				graphics.setPaint(entry.getValue());
 				graphics.fillRect(0, 0, width, height);
@@ -190,8 +205,6 @@ public class ExportLegendPDFTask extends AbstractTask {
 		}
 		return Arrays.asList(title, table);
 	}
-	
-	
 	
 	private static Image drawImage(PdfWriter writer, int width, int height, Consumer<PdfGraphics2D> draw) throws DocumentException {
 		PdfContentByte contentByte = writer.getDirectContent();
