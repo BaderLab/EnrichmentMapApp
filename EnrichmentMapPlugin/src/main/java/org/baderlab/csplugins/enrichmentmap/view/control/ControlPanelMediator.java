@@ -308,6 +308,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					props.put("cy_dataColumns", columns);
 					props.put("cy_colors", colors);
 					props.put("cy_showItemLabels", chartOptions.isShowLabels());
+					props.put("cy_rotation", "CLOCKWISE");
 					
 				} else {
 					List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
