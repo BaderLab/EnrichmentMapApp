@@ -79,6 +79,9 @@ public class EnrichmentMapManager {
 	 */
 	public void registerEnrichmentMap(EnrichmentMap map) {
 		enrichmentMaps.put(map.getNetworkID(), map);
+		
+		for (Long id : map.getGeneManiaNetworkIDs())
+			gmEnrichmentMaps.put(id, map);
 	}
 
 	public Map<Long, EnrichmentMap> getAllEnrichmentMaps() {

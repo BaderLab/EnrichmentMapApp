@@ -676,8 +676,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 						symbols.put(gene.getQuerySymbol(), gene.getSymbol());
 				}
 				
-				System.out.println(org);
-				System.out.println(""+symbols);
 				map.addGeneManiaSymbols(org, symbols);
 			}
 			

@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -201,7 +202,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				for (CyNetworkView view : networkViewManager.getNetworkViewSet())
 					getControlPanel().removeEnrichmentMapView(view);
 	
-				Set<Long> netIds = new HashSet<>();
+				Set<Long> netIds = new LinkedHashSet<>();
 				Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 				
 				for (EnrichmentMap map : maps.values()) {
@@ -211,10 +212,13 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				
 				for (Long id : netIds) {
 					CyNetwork network = networkManager.getNetwork(id);
-					Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
 					
-					for (CyNetworkView netView : networkViews)
-						addNetworkView(netView);
+					if (network != null) {
+						Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
+						
+						for (CyNetworkView netView : networkViews)
+							addNetworkView(netView);
+					}
 				}
 			} finally {
 				updating = false;	
