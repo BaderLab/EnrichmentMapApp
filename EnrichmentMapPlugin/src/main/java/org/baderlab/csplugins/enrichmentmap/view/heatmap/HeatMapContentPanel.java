@@ -347,7 +347,7 @@ public class HeatMapContentPanel extends JPanel {
 			Collection<String> union, Collection<String> intersection, ClusterRankingOption clusterRankingOption) {
 		this.clusterRankingOption = clusterRankingOption;
 		this.moreRankOptions = moreRankOptions.isEmpty() ? Arrays.asList(RankingOption.none()) : moreRankOptions;
-		
+
 		unionGenes = new ArrayList<>(union);
 		unionGenes.sort(Comparator.naturalOrder());
 		interGenes = new ArrayList<>(intersection);
@@ -358,18 +358,20 @@ public class HeatMapContentPanel extends JPanel {
 		getOperatorCombo().addItem(new ComboItem<>(Operator.UNION, "All (" + union.size() + ")"));
 		getOperatorCombo().addItem(new ComboItem<>(Operator.INTERSECTION, "Common (" + intersection.size() + ")"));
 		getOperatorCombo().setSelectedItem(ComboItem.of(params.getOperator()));
-		
+
 		getCompressCombo().removeAllItems();
 		getCompressCombo().addItem(new ComboItem<>(Compress.NONE, "-None-"));
-		if(map.hasClassData()) {
+
+		if (map.hasClassData()) {
 			getCompressCombo().addItem(new ComboItem<>(Compress.CLASS_MEDIAN, "Class: Median"));
 			getCompressCombo().addItem(new ComboItem<>(Compress.CLASS_MIN, "Class: Min"));
 			getCompressCombo().addItem(new ComboItem<>(Compress.CLASS_MAX, "Class: Max"));
 		}
+
 		getCompressCombo().addItem(new ComboItem<>(Compress.DATASET_MEDIAN, "Data Set: Median"));
 		getCompressCombo().addItem(new ComboItem<>(Compress.DATASET_MIN, "Data Set: Min"));
 		getCompressCombo().addItem(new ComboItem<>(Compress.DATASET_MAX, "Data Set: Max"));
-		
+
 		getNormCombo().setSelectedItem(ComboItem.of(params.getTransform()));
 		
 		// MKTODO this wont work if selected item is Class but doesn't exist anymore
@@ -387,13 +389,15 @@ public class HeatMapContentPanel extends JPanel {
 		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, genesToUse, params.getTransform(), params.getCompress());
 		getTable().setModel(tableModel);
 		
-		List<? extends SortKey> sortKeys = params.getSortKeys();
-		if(sortKeys == null)
-			sortKeys = getTable().getRowSorter().getSortKeys();
-		if(sortKeys.isEmpty())
-			sortKeys = Collections.singletonList(new SortKey(HeatMapTableModel.RANK_COL, SortOrder.ASCENDING));
+		updateTableHeader(isShowValues());
+		getTable().revalidate();
 		
-		getShowValuesCheck().setSelected(params.isShowValues());
+		List<? extends SortKey> sortKeys = params.getSortKeys();
+		
+		if (sortKeys == null)
+			sortKeys = getTable().getRowSorter().getSortKeys();
+		if (sortKeys.isEmpty())
+			sortKeys = Collections.singletonList(new SortKey(HeatMapTableModel.RANK_COL, SortOrder.ASCENDING));
 		
 		try {
 			getTable().getRowSorter().setSortKeys(sortKeys);
