@@ -4,7 +4,7 @@
 	
 	<groupId>org.baderlab.csplugins</groupId>
 	<artifactId>enrichmentmap-parent</artifactId>
-	<version>3.1.0-RC3</version>
+	<version>3.1.0-RC4</version>
 	<packaging>pom</packaging>
 
 	<properties>
