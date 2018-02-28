@@ -44,6 +44,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankOptionRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderVerticalRenderer;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.GradientLegendPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapCellRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel;
@@ -167,6 +168,10 @@ public class HeatMapContentPanel extends JPanel {
 		}
 	}
 	
+	ExpressionData getExpressionData(Compress compress) {
+		return ((HeatMapTableModel) getTable().getModel()).getExpressionData(compress);
+	}
+	
 	private JPanel createToolbarPanel() {
 		gradientLegendPanel = new GradientLegendPanel(getTable());
 		
@@ -269,9 +274,7 @@ public class HeatMapContentPanel extends JPanel {
 	
 	JTable getTable() {
 		if (table == null) {
-			HeatMapTableModel model =
-					new HeatMapTableModel(null, null, Collections.emptyList(), Transform.AS_IS, Compress.NONE);
-			
+			HeatMapTableModel model = new HeatMapTableModel();
 			table = new JTable(model);
 			table.setFillsViewportHeight(true);
 			table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -386,8 +389,8 @@ public class HeatMapContentPanel extends JPanel {
 		// Update the Table
 		clearTableHeader();
 		List<String> genesToUse = params.getOperator() == Operator.UNION ? unionGenes : interGenes;
-		HeatMapTableModel tableModel = new HeatMapTableModel(map, null, genesToUse, params.getTransform(), params.getCompress());
-		getTable().setModel(tableModel);
+		HeatMapTableModel tableModel = (HeatMapTableModel) getTable().getModel();
+		tableModel.update(map, null, genesToUse, params.getTransform(), params.getCompress());
 		
 		updateTableHeader(isShowValues());
 		getTable().revalidate();

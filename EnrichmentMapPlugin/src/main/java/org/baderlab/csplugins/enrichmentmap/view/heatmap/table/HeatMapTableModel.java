@@ -30,25 +30,33 @@ public class HeatMapTableModel extends AbstractTableModel {
 	public static final int DESC_COL = 1;
 	public static final int RANK_COL = 2;
 
-	private final EnrichmentMap map;
+	private EnrichmentMap map;
 	
-	private final List<EMDataSet> datasets;
-	private Map<Compress,ExpressionData> data = new EnumMap<>(Compress.class);
+	private List<EMDataSet> datasets;
+	private Map<Compress, ExpressionData> data = new EnumMap<>(Compress.class);
 	private ExpressionCache expressionCache;
-	
+
 	private List<String> genes;
 	private Transform transform;
 	private Compress compress;
-	private Map<Integer,RankValue> ranking;
+	private Map<Integer, RankValue> ranking;
 	private String ranksColName = "Ranks";
 	
-	public HeatMapTableModel(EnrichmentMap map, Map<Integer,RankValue> ranking, List<String> genes, Transform transform, Compress compress) {
+	/** Usually set when visualizing a GeneMANIA network, and null if it's a regular EM network. */
+	private String organism;
+
+	public HeatMapTableModel() {
+		update(null, null, Collections.emptyList(), Transform.AS_IS, Compress.NONE);
+	}
+	
+	public void update(EnrichmentMap map, Map<Integer, RankValue> ranking, List<String> genes,
+			Transform transform, Compress compress) {
 		this.transform = transform;
 		this.compress = compress;
 		this.map = map;
 		this.ranking = ranking;
 		this.genes = genes != null ? new ArrayList<>(genes) : Collections.emptyList();
-		
+
 		// if all the expression sets are the same then just show one of them
 		if (map != null) {
 			if (map.isCommonExpressionValues())
@@ -72,10 +80,17 @@ public class HeatMapTableModel extends AbstractTableModel {
 		data.put(Compress.CLASS_MIN, compressClass);
 		
 		expressionCache = new ExpressionCache(transform);
+		
+		fireTableStructureChanged();	
+		fireTableDataChanged();
 	}
 	
 	public List<EMDataSet> getDataSets() {
 		return Collections.unmodifiableList(datasets);
+	}
+	
+	public ExpressionData getExpressionData(Compress compress) {
+		return data.get(compress);
 	}
 	
 	public void setTransform(Transform transform, Compress compress) {
@@ -88,14 +103,15 @@ public class HeatMapTableModel extends AbstractTableModel {
 		fireTableDataChanged();
 	}
 
-	public void setRanking(String ranksColName, Map<Integer,RankValue> ranking) {
+	public void setRanking(String ranksColName, Map<Integer, RankValue> ranking) {
 		this.ranksColName = Objects.requireNonNull(ranksColName);
 		this.ranking = ranking;
 		fireTableDataChanged();
 	}
 	
-	public void setGenes(List<String> genes) {
+	public void setGenes(List<String> genes, String organism) {
 		this.genes = genes != null ? new ArrayList<>(genes) : Collections.emptyList();
+		this.organism = organism;
 		fireTableDataChanged();
 	}
 	
@@ -139,23 +155,41 @@ public class HeatMapTableModel extends AbstractTableModel {
 		if(col == RANK_COL)
 			return ranksColName;
 		ExpressionData exp = data.get(compress);
-		return exp != null ? exp.getColumnName(col) : null;
+		return exp != null ? exp.getName(col - DESC_COL_COUNT) : null;
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		if(row < 0)
+		if (row < 0)
 			return null; // Why is it passing -1?
-		if(col == RANK_COL)
+		if (col == RANK_COL)
 			return getRankValue(row);
+		
 		String gene = getGene(row);
-		if(col == GENE_COL)
+		
+		if (col == GENE_COL)
 			return gene;
-		Integer geneID = map != null && gene != null ? map.getHashFromGene(gene) : null;
-		if(col == DESC_COL)
+		
+		Integer geneID = null;
+		
+		if (map != null && gene != null) {
+			geneID = map.getHashFromGene(gene);
+			
+			if (geneID == null && organism != null) {
+				// It's a GeneMANIA preferred symbol, so we need to get the original gene name
+				gene = map.getGeneManiaQuerySymbol(organism, gene);
+				
+				if (gene != null)
+					geneID = map.getHashFromGene(gene);
+			}
+		}
+		
+		if (col == DESC_COL)
 			return geneID != null ? getDescription(geneID) : null;
+		
 		ExpressionData exp = data.get(compress);
-		return exp != null && geneID != null ? exp.getValue(geneID, col) : null;
+		
+		return exp != null && geneID != null ? exp.getValue(geneID, col - DESC_COL_COUNT) : null;
 	}
 	
 	public RankValue getRankValue(int row) {
@@ -188,12 +222,12 @@ public class HeatMapTableModel extends AbstractTableModel {
 	
 	public Optional<String> getPhenotype(int col) {
 		ExpressionData exp = data.get(compress);
-		return exp != null ? exp.getPhenotype(col) : null;
+		return exp != null ? exp.getPhenotype(col - DESC_COL_COUNT) : null;
 	}
 	
 	public EMDataSet getDataSet(int col) {
 		ExpressionData exp = data.get(compress);
-		return exp != null ? exp.getDataSet(col) : null;
+		return exp != null ? exp.getDataSet(col - DESC_COL_COUNT) : null;
 	}
 	
 	private String getDescription(int geneID) {
@@ -212,53 +246,43 @@ public class HeatMapTableModel extends AbstractTableModel {
 		return row;
 	}
 	
-	/**
-	 * Common interface for different levels of compression.
-	 */
-	private interface ExpressionData {
-		EMDataSet getDataSet(int col);
-		double getValue(int geneID, int col);
-		String getColumnName(int col);
-		public default Optional<String> getPhenotype(int col) { return Optional.empty(); };
-		int getSize();
-	}
-	
 	private class Uncompressed implements ExpressionData {
 
-		private final NavigableMap<Integer,EMDataSet> colToDataSet = new TreeMap<>();
+		private final NavigableMap<Integer, EMDataSet> colToDataSet = new TreeMap<>();
 		private final int expressionCount;
 		
 		public Uncompressed(List<EMDataSet> datasets) {
-			int rangeFloor = DESC_COL_COUNT;
+			int rangeFloor = 0;
 			colToDataSet.put(0, null);
 			for(EMDataSet dataset : datasets) {
 				GeneExpressionMatrix matrix = dataset.getExpressionSets();
 				colToDataSet.put(rangeFloor, dataset);
 				rangeFloor += matrix.getNumConditions() - 2;
 			}
-			expressionCount = rangeFloor - DESC_COL_COUNT;
-		}
-		
-		public EMDataSet getDataSet(int col) {
-			return colToDataSet.floorEntry(col).getValue();
-		}
-		
-		private int getIndexInDataSet(int col) {
-			int start = colToDataSet.floorKey(col);
-			return col - start;
+			expressionCount = rangeFloor;
 		}
 		
 		@Override
-		public double getValue(int geneID, int col) { // col value 
-			EMDataSet dataset = getDataSet(col);
-			return expressionCache.getExpression(dataset, geneID, getIndexInDataSet(col));
+		public EMDataSet getDataSet(int idx) {
+			return colToDataSet.floorEntry(idx).getValue();
+		}
+		
+		private int getIndexInDataSet(int idx) {
+			int start = colToDataSet.floorKey(idx);
+			return idx - start;
+		}
+		
+		@Override
+		public double getValue(int geneID, int idx) {
+			EMDataSet dataset = getDataSet(idx);
+			return expressionCache.getExpression(dataset, geneID, getIndexInDataSet(idx));
 		}
 
 		@Override
-		public String getColumnName(int col) {
-			EMDataSet dataset = getDataSet(col);
+		public String getName(int idx) {
+			EMDataSet dataset = getDataSet(idx);
 			String[] columns = dataset.getExpressionSets().getColumnNames();
-			int index = getIndexInDataSet(col) + 2;
+			int index = getIndexInDataSet(idx) + 2;
 			return columns[index];
 		}
 
@@ -268,9 +292,9 @@ public class HeatMapTableModel extends AbstractTableModel {
 		}
 
 		@Override
-		public Optional<String> getPhenotype(int col) {
-			EMDataSet dataset = getDataSet(col);
-			int index = getIndexInDataSet(col);
+		public Optional<String> getPhenotype(int idx) {
+			EMDataSet dataset = getDataSet(idx);
+			int index = getIndexInDataSet(idx);
 			String[] classes = dataset.getEnrichments().getPhenotypes();
 			if(classes != null && index < classes.length) {
 				return Optional.ofNullable(classes[index]);
@@ -286,19 +310,20 @@ public class HeatMapTableModel extends AbstractTableModel {
 			this.datasets = datasets;
 		}
 		
-		public EMDataSet getDataSet(int col) {
-			return datasets.get(col-DESC_COL_COUNT);
+		@Override
+		public EMDataSet getDataSet(int idx) {
+			return datasets.get(idx);
 		}
 		
 		@Override
-		public double getValue(int geneID, int col) {
-			EMDataSet dataset = getDataSet(col);
+		public double getValue(int geneID, int idx) {
+			EMDataSet dataset = getDataSet(idx);
 			return (double) getCompressedExpression(dataset, geneID);
 		}
 
 		@Override
-		public String getColumnName(int col) {
-			EMDataSet dataset = getDataSet(col);
+		public String getName(int idx) {
+			EMDataSet dataset = getDataSet(idx);
 			return map != null && map.isDistinctExpressionSets() ? dataset.getName() : "Expressions";
 		}
 
@@ -309,10 +334,11 @@ public class HeatMapTableModel extends AbstractTableModel {
 		
 		private float getCompressedExpression(EMDataSet dataset, int geneID) {
 			Optional<float[]> expression = expressionCache.getExpressions(dataset, geneID);
-			if(!expression.isPresent())
+			
+			if (compress == null || !expression.isPresent())
 				return Float.NaN;
 			
-			switch(compress) {
+			switch (compress) {
 				case DATASET_MEDIAN:	return GeneExpression.median(expression.get());
 				case DATASET_MAX:	return GeneExpression.max(expression.get());
 				case DATASET_MIN:	return GeneExpression.min(expression.get());
@@ -323,7 +349,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	
 	private class CompressClass implements ExpressionData {
 
-		private List<Pair<EMDataSet,String>> headers = new ArrayList<>();
+		private List<Pair<EMDataSet, String>> headers = new ArrayList<>();
 		
 		public CompressClass(List<EMDataSet> datasets) {
 			for(EMDataSet dataset : datasets) {
@@ -338,24 +364,24 @@ public class HeatMapTableModel extends AbstractTableModel {
 		}
 		
 		@Override
-		public EMDataSet getDataSet(int col) {
-			return headers.get(col-DESC_COL_COUNT).getLeft();
+		public EMDataSet getDataSet(int idx) {
+			return headers.get(idx).getLeft();
 		}
 
 		@Override
-		public String getColumnName(int col) {
-			return headers.get(col-DESC_COL_COUNT).getRight();
+		public String getName(int idx) {
+			return headers.get(idx).getRight();
 		}
 		
 		@Override
-		public Optional<String> getPhenotype(int col) {
-			return Optional.of(getColumnName(col));
+		public Optional<String> getPhenotype(int idx) {
+			return Optional.of(getName(idx));
 		}
 		
 		@Override
-		public double getValue(int geneID, int col) {
-			EMDataSet dataset = getDataSet(col);
-			String pheno = getColumnName(col);
+		public double getValue(int geneID, int idx) {
+			EMDataSet dataset = getDataSet(idx);
+			String pheno = getName(idx);
 			
 			String[] phenotypes = dataset.getEnrichments().getPhenotypes();
 			if(phenotypes == null || phenotypes.length == 0)

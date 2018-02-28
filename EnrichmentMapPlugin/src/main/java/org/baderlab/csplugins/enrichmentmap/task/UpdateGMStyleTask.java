@@ -15,6 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.GMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.GMStyleOptions;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -28,6 +29,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -61,6 +63,9 @@ public class UpdateGMStyleTask extends AbstractTask {
 		
 		if (chartOptions != null && chartOptions.getData() != null) {
 			switch (chartOptions.getData()) {
+				case EXPRESSION_DATA:
+					updateExpressionDataColumn();
+					break;
 				case DATA_SET:
 				default:
 					createDataSetColumn();
@@ -69,6 +74,60 @@ public class UpdateGMStyleTask extends AbstractTask {
 		}
 		
 		updateVisualStyle();
+	}
+
+	private void updateExpressionDataColumn() {
+		CyNetwork network = options.getNetworkView().getModel();
+		CyTable nodeTable = network.getDefaultNodeTable();
+		
+		if (!Columns.EXPRESSION_DATA_CHART.hasColumn(nodeTable)) {
+			try {
+				Columns.EXPRESSION_DATA_CHART.createColumn(nodeTable);
+			} catch (Exception e) {
+				logger.error("Cannot create column " + Columns.EXPRESSION_DATA_CHART.getBaseName(), e);
+			}
+		}
+		
+		String org = null;
+		
+		try {
+			org = GMStyleBuilder.Columns.GM_ORGANISM.get(network.getRow(network));
+		} catch (Exception e) {
+			logger.error("Cannot get '" + GMStyleBuilder.Columns.GM_ORGANISM.getBaseName() + "' from GeneMANIA's Network table.", e);
+		}
+		
+		Map<Long, double[]> columnData = new HashMap<>();
+		EnrichmentMap map = options.getEnrichmentMap();
+		ExpressionData exp = options.getExpressionData();
+		int n = exp.getSize();
+
+		for (CyNode node : network.getNodeList()) {
+			double[] data = new double[n];
+			columnData.put(node.getSUID(), data);
+			
+			CyRow row = network.getRow(node);
+			String name = GMStyleBuilder.Columns.GM_GENE_NAME.get(row, null, null);
+			
+			if (name == null)
+				continue;
+			
+			if (org != null)
+				name = map.getGeneManiaQuerySymbol(org, name);
+			
+			Integer id = map.getHashFromGene(name);
+			
+			if (id == null)
+				continue;
+			
+			for (int i = 0; i < n; i++) {
+				double value = exp.getValue(id, i);
+				data[i] = value;
+			}
+		}
+
+		columnData.forEach((suid, data) -> {
+			Columns.EXPRESSION_DATA_CHART.set(nodeTable.getRow(suid), Doubles.asList(data));
+		});
 	}
 
 	private void createDataSetColumn() {

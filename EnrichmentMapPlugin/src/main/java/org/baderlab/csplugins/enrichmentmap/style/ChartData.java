@@ -8,7 +8,8 @@ public enum ChartData {
 	P_VALUE("P-value Columns", Columns.NODE_PVALUE),
 	FDR_VALUE("Q-value (FDR) Columns", Columns.NODE_FDR_QVALUE),
 	PHENOTYPES("Phenotypes", Columns.NODE_COLOURING),
-	DATA_SET("Color by Data Set", Columns.DATASET_CHART);
+	DATA_SET("Color by Data Set", Columns.DATASET_CHART),
+	EXPRESSION_DATA("Color by Expression Data", Columns.EXPRESSION_DATA_CHART);
 	
 	private final String label;
 	private final AbstractColumnDescriptor columnDescriptor;

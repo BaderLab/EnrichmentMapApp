@@ -142,6 +142,7 @@ public class EMStyleBuilder {
 		public static final ColumnDescriptor<String> NET_REPORT2_DIR = new ColumnDescriptor<>("GSEA_Report_Dataset2_folder", String.class);
 		
 		public static final ColumnListDescriptor<Integer> DATASET_CHART = new ColumnListDescriptor<>("Dataset_Chart", Integer.class);
+		public static final ColumnListDescriptor<Double> EXPRESSION_DATA_CHART = new ColumnListDescriptor<>("Expression_Data_Chart", Double.class);
 	}
 
 	public static class Colors {

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import org.baderlab.csplugins.enrichmentmap.style.GMStyleBuilder.Columns;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -96,5 +97,12 @@ public class NetworkUtil {
 		
 		return table.getColumn(EM_NETWORK_SUID_COLUMN) != null
 				&& network.getRow(network, CyNetwork.HIDDEN_ATTRS).get(EM_NETWORK_SUID_COLUMN, Long.class) != null;
+	}
+	
+	public static String getGeneManiaOrganism(CyNetwork network) {
+		if (isGeneManiaNetwork(network))
+			return Columns.GM_ORGANISM.get(network.getRow(network));
+		
+		return null;
 	}
 }

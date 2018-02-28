@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
 import org.cytoscape.view.model.CyNetworkView;
 
 public class GMStyleOptions {
@@ -13,14 +14,16 @@ public class GMStyleOptions {
 	private final CyNetworkView networkView;
 	private final EnrichmentMap map;
 	private final HeatMapParams params;
+	private final ExpressionData expressionData;
 	private final ChartOptions chartOptions;
 	
 	public GMStyleOptions(CyNetworkView networkView, EnrichmentMap map, HeatMapParams params,
-			ChartOptions chartOptions) {
+			ExpressionData expressionData, ChartOptions chartOptions) {
 		super();
 		this.networkView = networkView;
 		this.map = map;
 		this.params = params;
+		this.expressionData = expressionData;
 		this.chartOptions = chartOptions;
 	}
 
@@ -38,6 +41,10 @@ public class GMStyleOptions {
 	
 	public HeatMapParams getHeatMapParams() {
 		return params;
+	}
+	
+	public ExpressionData getExpressionData() {
+		return expressionData;
 	}
 	
 	public ChartOptions getChartOptions() {
