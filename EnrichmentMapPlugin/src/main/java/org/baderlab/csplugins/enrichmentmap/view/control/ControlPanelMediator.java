@@ -187,7 +187,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					getControlPanel().updateEmViewCombo();
 					CyNetworkView netView = applicationManager.getCurrentNetworkView();
 					
-					if (netView != null && emManager.isGeneManiaEnrichmentMap(netView))
+					if (netView != null && emManager.isAssociatedEnrichmentMap(netView))
 						setCurrentNetworkView(netView);
 				} finally {
 					updating = false;
@@ -207,7 +207,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				
 				for (EnrichmentMap map : maps.values()) {
 					netIds.add(map.getNetworkID());
-					netIds.addAll(map.getGeneManiaNetworkIDs());
+					netIds.addAll(map.getAssociatedNetworkIDs());
 				}
 				
 				for (Long id : netIds) {

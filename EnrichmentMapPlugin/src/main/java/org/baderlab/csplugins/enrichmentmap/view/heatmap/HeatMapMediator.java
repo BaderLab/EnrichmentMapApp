@@ -3,6 +3,8 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 import static org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GENEMANIA_NAMESPACE;
 import static org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GENEMANIA_ORGANISMS_COMMAND;
 import static org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GENEMANIA_SEARCH_COMMAND;
+import static org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask.STRING_NAMESPACE;
+import static org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask.STRING_SEARCH_COMMAND;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
 import java.awt.Color;
@@ -48,6 +50,7 @@ import org.baderlab.csplugins.enrichmentmap.task.genemania.GMGene;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GMOrganismsResult;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GMSearchResult;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask;
+import org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask;
 import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
@@ -115,6 +118,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@Inject private ExportTXTAction.Factory txtActionFactory;
 	@Inject private ExportPDFAction.Factory pdfActionFactory;
 	@Inject private QueryGeneManiaTask.Factory queryGeneManiaTaskFactory;
+	@Inject private QueryStringTask.Factory queryStringTaskFactory;
 	@Inject private UpdateGMStyleTask.Factory updateGMStyleTaskFactory;
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private ChartFactoryManager chartFactoryManager;
@@ -161,6 +165,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		// Options Popup
 		contentPanel.getOptionsPopup().setDistanceConsumer(this::updateSetting_Distance);
 		contentPanel.getOptionsPopup().getGeneManiaButton().addActionListener(e -> runGeneMANIA());
+		contentPanel.getOptionsPopup().getStringButton().addActionListener(e -> runString());
 		contentPanel.getOptionsPopup().getAddRanksButton().addActionListener(e -> addRankings());
 		contentPanel.getOptionsPopup().getExportTxtButton().addActionListener(txtActionFactory.create(contentPanel.getTable()));
 		contentPanel.getOptionsPopup().getExportPdfButton().addActionListener(pdfActionFactory.create(contentPanel.getTable(), contentPanel::getRankingOption));
@@ -212,7 +217,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			return;
 		CyNetworkView networkView = e.getNetworkView();
 		if(networkView != null
-				&& (emManager.isEnrichmentMap(networkView) || emManager.isGeneManiaEnrichmentMap(networkView))) {
+				&& (emManager.isEnrichmentMap(networkView) || emManager.isAssociatedEnrichmentMap(networkView))) {
 			updateHeatMap(networkView);
 		} else {
 			heatMapPanel.showEmptyView();
@@ -260,7 +265,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		if (emManager.isEnrichmentMap(networkView)) {
 			union = unionGenesets(network, selectedNodes, selectedEdges, prefix);
 			inter = intersectionGenesets(network, selectedNodes, selectedEdges, prefix);
-		} else if (emManager.isGeneManiaEnrichmentMap(networkView)) {
+		} else if (emManager.isAssociatedEnrichmentMap(networkView)) {
 			union = new HashSet<>();
 			
 			for (CyNode node : selectedNodes) {
@@ -390,7 +395,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	
 	private boolean isCurrentViewGeneMania() {
 		CyNetworkView netView = applicationManager.getCurrentNetworkView();
-		return netView != null && emManager.isGeneManiaEnrichmentMap(netView);
+		return netView != null && emManager.isAssociatedEnrichmentMap(netView);
 	}
 
 	private void updateGeneManiaStyle(CyNetworkView netView) {
@@ -650,13 +655,13 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	}
 
 	private void onGeneManiaQueryFinished(GMSearchResult res, HeatMapContentPanel contentPanel) {
-		CyNetwork maniaNet = null;
+		CyNetwork net = null;
 		
 		if (res != null && res.getNetwork() != null && res.getGenes() != null
 				&& !res.getGenes().isEmpty())
-			maniaNet = networkManager.getNetwork(res.getNetwork());
+			net = networkManager.getNetwork(res.getNetwork());
 		
-		if (maniaNet == null) {
+		if (net == null) {
 			invokeOnEDT(() -> {
 				JOptionPane.showMessageDialog(
 						SwingUtilities.getWindowAncestor(contentPanel),
@@ -668,7 +673,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		} else {
 			// Update the model
 			EnrichmentMap map = contentPanel.getEnrichmentMap();
-			map.addGeneManiaNetworkID(maniaNet.getSUID());
+			map.addAssociatedNetworkID(net.getSUID());
 			
 			String org = res.getOrganism().getAbbreviatedName();
 			Map<String, String> symbols = new HashMap<>();
@@ -682,13 +687,119 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 				map.addGeneManiaSymbols(org, symbols);
 			}
 			
-			emManager.registerGeneManiaEnrichmentMap(maniaNet, map);
+			emManager.addAssociatedEnrichmentMap(net, map);
 			
 			// Modify GeneMANIA's style
-			Collection<CyNetworkView> netViewList = netViewManager.getNetworkViews(maniaNet);
+			Collection<CyNetworkView> netViewList = netViewManager.getNetworkViews(net);
 			
 			for (CyNetworkView netView : netViewList)
 				updateGeneManiaStyle(netView);
+		}
+	}
+	
+	private void runString() {
+		// Show message to user if STRING App not installed
+		List<String> commands = availableCommands.getCommands(STRING_NAMESPACE);
+		
+		if (commands == null || !commands.contains(STRING_SEARCH_COMMAND)) {
+			if (JOptionPane.showConfirmDialog(
+					SwingUtilities.getWindowAncestor(contentPanel),
+					"This action requires a version of the STRING app that is not installed?\n" +
+					"Would you like to install or update the STRING app now?",
+					"Cannot Find STRING App",
+					JOptionPane.YES_NO_OPTION
+				) == JOptionPane.YES_OPTION) {
+				openBrowser.openURL("http://apps.cytoscape.org/apps/stringapp");
+			}
+			
+			return;
+		}
+		
+		QueryStringTask queryTask = queryStringTaskFactory.create(contentPanel.getGenes());
+		
+		// TODO Get list of organisms from STRING App
+		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
+				GENEMANIA_NAMESPACE, GENEMANIA_ORGANISMS_COMMAND, Collections.emptyMap(), new TaskObserver() {
+					
+					@Override
+					@SuppressWarnings("serial")
+					public void taskFinished(ObservableTask task) {
+						if (task instanceof ObservableTask) {
+							if (((ObservableTask) task).getResultClasses().contains(JSONResult.class)) {
+								JSONResult json = ((ObservableTask) task).getResults(JSONResult.class);
+								
+								if (json != null && json.getJSON() != null) {
+									Gson gson = new Gson();
+									Type type = new TypeToken<GMOrganismsResult>(){}.getType();
+									GMOrganismsResult res = gson.fromJson(json.getJSON(), type);
+									
+									if (res != null && res.getOrganisms() != null && !res.getOrganisms().isEmpty())
+										queryTask.updatetOrganisms(res.getOrganisms());
+									else
+										throw new RuntimeException("Unable to retrieve available organisms from STRING App.");
+								}
+							}
+						}
+					}
+					
+					@Override
+					public void allFinished(FinishStatus finishStatus) {
+						// Never called by Cytoscape...
+					}
+				});
+		ti.append(queryTask);
+		
+		taskManager.execute(ti, new TaskObserver() {
+			@Override
+			public void taskFinished(ObservableTask task) {
+				// Never called...
+			}
+			@Override
+			public void allFinished(FinishStatus finishStatus) {
+				if (finishStatus == FinishStatus.getSucceeded())
+					onStringQueryFinished(queryTask.getResult(), contentPanel);
+			}
+		});
+	}
+	
+	private void onStringQueryFinished(Long netId, HeatMapContentPanel contentPanel) {
+		CyNetwork net = netId != null ? networkManager.getNetwork(netId) : null;
+		
+		if (net == null) {
+			invokeOnEDT(() -> {
+				JOptionPane.showMessageDialog(
+						SwingUtilities.getWindowAncestor(contentPanel),
+						"The STRING protein query returned no results.",
+						"No Results",
+						JOptionPane.INFORMATION_MESSAGE
+				);
+			});
+		} else {
+			// Update the model
+			EnrichmentMap map = contentPanel.getEnrichmentMap();
+			map.addAssociatedNetworkID(net.getSUID());
+
+// TODO
+//			String org = res.getOrganism().getAbbreviatedName();
+//			Map<String, String> symbols = new HashMap<>();
+//			
+//			if (org != null) {
+//				for (GMGene gene : res.getGenes()) {
+//					if (gene.getQuerySymbol() != null && !gene.getQuerySymbol().equals(gene.getSymbol()))
+//						symbols.put(gene.getQuerySymbol(), gene.getSymbol());
+//				}
+//				
+//				map.addGeneManiaSymbols(org, symbols);
+//			}
+//			
+			emManager.addAssociatedEnrichmentMap(net, map);
+			
+// TODO		
+//			// Modify GeneMANIA's style
+//			Collection<CyNetworkView> netViewList = netViewManager.getNetworkViews(strNet);
+//			
+//			for (CyNetworkView netView : netViewList)
+//				updateGeneManiaStyle(netView);
 		}
 	}
 

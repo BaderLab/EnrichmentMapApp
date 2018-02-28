@@ -66,7 +66,7 @@ import com.google.inject.Singleton;
 public class EnrichmentMapManager {
 	
 	private Map<Long, EnrichmentMap> enrichmentMaps = new LinkedHashMap<>();
-	private Map<Long, EnrichmentMap> gmEnrichmentMaps = new LinkedHashMap<>();
+	private Map<Long, EnrichmentMap> associatedEnrichmentMaps = new LinkedHashMap<>();
 	private Map<Long, HeatMapParams> heatMapParams = new HashMap<>();
 	private Map<Long, HeatMapParams> heatMapParamsEdges = new HashMap<>();
 	
@@ -80,8 +80,8 @@ public class EnrichmentMapManager {
 	public void registerEnrichmentMap(EnrichmentMap map) {
 		enrichmentMaps.put(map.getNetworkID(), map);
 		
-		for (Long id : map.getGeneManiaNetworkIDs())
-			gmEnrichmentMaps.put(id, map);
+		for (Long id : map.getAssociatedNetworkIDs())
+			associatedEnrichmentMaps.put(id, map);
 	}
 
 	public Map<Long, EnrichmentMap> getAllEnrichmentMaps() {
@@ -91,7 +91,7 @@ public class EnrichmentMapManager {
 	public EnrichmentMap getEnrichmentMap(Long networkId) {
 		EnrichmentMap map = enrichmentMaps.get(networkId);
 		
-		return map != null ? map : gmEnrichmentMaps.get(networkId);
+		return map != null ? map : associatedEnrichmentMaps.get(networkId);
 	}
 	
 	public EnrichmentMap removeEnrichmentMap(Long networkId) {
@@ -101,10 +101,10 @@ public class EnrichmentMapManager {
 			postAnalysisMediatorProvider.get().removeEnrichmentMap(map);
 		
 		// Update our internal genemania map and fire an event if it changed
-		Map<Long, EnrichmentMap> oldValue = getGeneManiaEnrichmentMaps();
+		Map<Long, EnrichmentMap> oldValue = getAssociatedEnrichmentMaps();
 		
-		if (gmEnrichmentMaps.remove(networkId) != null)
-			pcs.firePropertyChange("geneManiaEnrichmentMaps", oldValue, getGeneManiaEnrichmentMaps());
+		if (associatedEnrichmentMaps.remove(networkId) != null)
+			pcs.firePropertyChange("associatedEnrichmentMaps", oldValue, getAssociatedEnrichmentMaps());
 		
 		return map;
 	}
@@ -117,7 +117,7 @@ public class EnrichmentMapManager {
 		return isEnrichmentMap(networkView.getModel().getSUID());
 	}
 	
-	public void registerGeneManiaEnrichmentMap(CyNetwork network, EnrichmentMap map) {
+	public void addAssociatedEnrichmentMap(CyNetwork network, EnrichmentMap map) {
 		// Add EM Network SUID to genemania network's table.
 		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
 		
@@ -127,22 +127,22 @@ public class EnrichmentMapManager {
 		table.getRow(network.getSUID()).set(EM_NETWORK_SUID_COLUMN, map.getNetworkID());
 		
 		// Update our internal map and fire an event if it changed
-		Map<Long, EnrichmentMap> oldValue = getGeneManiaEnrichmentMaps();
+		Map<Long, EnrichmentMap> oldValue = getAssociatedEnrichmentMaps();
 		
-		if (gmEnrichmentMaps.put(network.getSUID(), map) == null)
-			pcs.firePropertyChange("geneManiaEnrichmentMaps", oldValue, getGeneManiaEnrichmentMaps());
+		if (associatedEnrichmentMaps.put(network.getSUID(), map) == null)
+			pcs.firePropertyChange("associatedEnrichmentMaps", oldValue, getAssociatedEnrichmentMaps());
 	}
 	
-	public boolean isGeneManiaEnrichmentMap(Long networkId) {
-		return gmEnrichmentMaps.containsKey(networkId);
+	public boolean isAssociatedEnrichmentMap(Long networkId) {
+		return associatedEnrichmentMaps.containsKey(networkId);
 	}
 	
-	public boolean isGeneManiaEnrichmentMap(CyNetworkView networkView) {
-		return networkView != null && isGeneManiaEnrichmentMap(networkView.getModel().getSUID());
+	public boolean isAssociatedEnrichmentMap(CyNetworkView networkView) {
+		return networkView != null && isAssociatedEnrichmentMap(networkView.getModel().getSUID());
 	}
 	
-	public Map<Long, EnrichmentMap> getGeneManiaEnrichmentMaps() {
-		return new HashMap<>(gmEnrichmentMaps);
+	public Map<Long, EnrichmentMap> getAssociatedEnrichmentMaps() {
+		return new HashMap<>(associatedEnrichmentMaps);
 	}
 	
 	public void registerHeatMapParams(Long networkId, boolean edges, HeatMapParams params) {
@@ -164,7 +164,7 @@ public class EnrichmentMapManager {
 			pcs.removePropertyChangeListener(listener);
 		
 		enrichmentMaps.clear();
-		gmEnrichmentMaps.clear();
+		associatedEnrichmentMaps.clear();
 		heatMapParams.clear();
 	}
 	

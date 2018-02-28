@@ -218,7 +218,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 						setText(abbreviated);
 						list.setToolTipText(title);
 						
-						if (emManager.isGeneManiaEnrichmentMap((CyNetworkView) value))
+						if (emManager.isAssociatedEnrichmentMap((CyNetworkView) value))
 							setIcon(gmIcon);
 						else
 							setIcon(null);
@@ -345,15 +345,15 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					views.forEach(getEmViewCombo()::addItem);
 					
 					// Add GeneMANIA views associated with this EnrichmentMap
-					Set<Long> gmNetIds = entry.getValue().getGeneManiaNetworkIDs();
+					Set<Long> associatedNetIds = entry.getValue().getAssociatedNetworkIDs();
 					
-					if (gmNetIds != null) {
-						gmNetIds.forEach(id -> {
-							CyNetwork gmNet = networkManager.getNetwork(id);
+					if (associatedNetIds != null) {
+						associatedNetIds.forEach(id -> {
+							CyNetwork associatedNet = networkManager.getNetwork(id);
 							
-							if (gmNet != null) {
-								Collection<CyNetworkView> gmViews = networkViewManager.getNetworkViews(gmNet);
-								gmViews.forEach(getEmViewCombo()::addItem);
+							if (associatedNet != null) {
+								Collection<CyNetworkView> associatedViews = networkViewManager.getNetworkViews(associatedNet);
+								associatedViews.forEach(getEmViewCombo()::addItem);
 							}
 						});
 					}

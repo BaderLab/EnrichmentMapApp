@@ -31,6 +31,7 @@ public class OptionsPopup extends JPopupMenu {
 	private JMenuItem exportPdfButton;
 	
 	private JMenuItem geneManiaButton;
+	private JMenuItem stringButton;
 	
 	private JCheckBoxMenuItem cosineRadio;
 	private JCheckBoxMenuItem euclideanRadio;
@@ -64,6 +65,7 @@ public class OptionsPopup extends JPopupMenu {
 		exportPdfButton.setIcon(new TextIcon(IconManager.ICON_EXTERNAL_LINK, iconFont, iconColor, iconSize, iconSize));
 		
 		geneManiaButton = new JMenuItem("Show in GeneMANIA...");
+		stringButton = new JMenuItem("Show in STRING...");
 		
 		JMenu distanceMenu = new JMenu("Hierarchical Cluster - Distance Metric");
 		
@@ -86,6 +88,7 @@ public class OptionsPopup extends JPopupMenu {
 		});
 		
 		add(geneManiaButton);
+		add(stringButton);
 		addSeparator();
 		add(addRanksButton);
 		add(exportTxtButton);
@@ -118,6 +121,10 @@ public class OptionsPopup extends JPopupMenu {
 	
 	public JMenuItem getGeneManiaButton() {
 		return geneManiaButton;
+	}
+	
+	public JMenuItem getStringButton() {
+		return stringButton;
 	}
 	
 	public void update(HeatMapParams params) {

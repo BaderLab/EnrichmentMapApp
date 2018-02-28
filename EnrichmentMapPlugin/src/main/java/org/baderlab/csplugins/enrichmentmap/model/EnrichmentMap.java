@@ -36,8 +36,8 @@ public class EnrichmentMap {
 	
 	private long networkID;
 	
-	/** GeneMANIA networks created from EM genes. */
-	private final Set<Long> geneManiaNetworkIDs = new LinkedHashSet<>();
+	/** SUIDs of networks created by other apps (e.g. GeneMANIA, STRING) from EM genes. */
+	private final Set<Long> associatedNetworkIDs = new LinkedHashSet<>();
 	/** Maps EM gene names to preferred GeneMANIA gene symbols (grouped by organism). */
 	private final Map<String/*organism*/, BiMap<String, String>> geneManiaSymbols = new HashMap<>();
 	
@@ -391,25 +391,26 @@ public class EnrichmentMap {
 		this.networkID = networkID;
 	}
 	
-	public boolean addGeneManiaNetworkID(long networkID) {
-		return geneManiaNetworkIDs.add(networkID);
+	public boolean addAssociatedNetworkID(long networkID) {
+		return associatedNetworkIDs.add(networkID);
 	}
 	
-	public boolean removeGeneManiaNetworkID(long networkID) {
-		return geneManiaNetworkIDs.remove(networkID);
+	public boolean removeAssociatedNetworkID(long networkID) {
+		return associatedNetworkIDs.remove(networkID);
 	}
 	
-	public Set<Long> getGeneManiaNetworkIDs() {
-		return new LinkedHashSet<>(geneManiaNetworkIDs);
+	public Set<Long> getAssociatedNetworkIDs() {
+		return new LinkedHashSet<>(associatedNetworkIDs);
 	}
 	
-	public void setGeneManiaNetworkIDs(Set<Long> set) {
-		geneManiaNetworkIDs.clear();
+	public void setAssociatedNetworkIDs(Set<Long> set) {
+		associatedNetworkIDs.clear();
 		
 		if (set != null && !set.isEmpty())
-			geneManiaNetworkIDs.addAll(set);
+			associatedNetworkIDs.addAll(set);
 	}
 	
+	// TODO remove and add "query term" column to node table
 	public void addGeneManiaSymbols(String organism, Map<String, String> map) {
 		if (map == null || map.isEmpty())
 			return;

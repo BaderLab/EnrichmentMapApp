@@ -20,6 +20,7 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreatePANetworkTas
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PASimilarityTaskParallel;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDataSetsTask;
+import org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask;
 import org.baderlab.csplugins.enrichmentmap.view.creation.DetailDataSetPanel;
 import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog;
 import org.baderlab.csplugins.enrichmentmap.view.creation.PathTextField;
@@ -106,6 +107,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(PADialogPage.Factory.class);
 		installFactory(PAWeightPanel.Factory.class);
 		installFactory(QueryGeneManiaTask.Factory.class);
+		installFactory(QueryStringTask.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

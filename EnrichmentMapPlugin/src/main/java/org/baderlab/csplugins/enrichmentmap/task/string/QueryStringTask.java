@@ -1,11 +1,12 @@
-package org.baderlab.csplugins.enrichmentmap.task.genemania;
+package org.baderlab.csplugins.enrichmentmap.task.string;
 
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.task.genemania.GMOrganism;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
@@ -15,18 +16,15 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.work.util.BoundedDouble;
+import org.cytoscape.work.util.BoundedInteger;
 import org.cytoscape.work.util.ListSingleSelection;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
-public class QueryGeneManiaTask extends AbstractTask {
-	
-	public static final String GENEMANIA_NAMESPACE = "genemania";
-	public static final String GENEMANIA_ORGANISMS_COMMAND = "organisms";
-	public static final String GENEMANIA_SEARCH_COMMAND = "search";
+public class QueryStringTask extends AbstractTask {
 	
 	public static final String STRING_NAMESPACE = "string";
 	public static final String STRING_SEARCH_COMMAND = "protein query";
@@ -34,19 +32,37 @@ public class QueryGeneManiaTask extends AbstractTask {
 	@Tunable(description = "Organism:")
 	public ListSingleSelection<GMOrganism> organisms;
 	
-	private final String genes;
+	@Tunable(
+			description = "Confidence Cutoff:",
+			longDescription =
+					"The confidence score reflects the cumulated evidence that this "
+					+ "interaction exists.  Only interactions with scores greater than "
+					+ "this cutoff will be returned.",
+			params = "slider=true",
+			format = "0.00"
+	)
+	public BoundedDouble cutoff = new BoundedDouble(0.0, 0.4, 1.0, false, false);
 	
-	private GMSearchResult result;
+	@Tunable(
+			description = "Max Additional Interactors:",
+			longDescription = "The maximum number of proteins to return in addition to the query set.",
+			params = "slider=true"
+	)
+	public BoundedInteger limit = new BoundedInteger(0, 0, 100, false, false);
+	
+	private final String query;
+	
+	private Long result;
 
 	@Inject private CommandExecutorTaskFactory commandExecutorTaskFactory;
 	
 	public static interface Factory {
-		QueryGeneManiaTask create(List<String> geneList);
+		QueryStringTask create(List<String> geneList);
 	}
 	
 	@Inject
-	public QueryGeneManiaTask(@Assisted List<String> geneList) {
-		genes = String.join("|", geneList);
+	public QueryStringTask(@Assisted List<String> geneList) {
+		query = String.join(",", geneList);
 		organisms = new ListSingleSelection<>();
 	}
 	
@@ -58,26 +74,32 @@ public class QueryGeneManiaTask extends AbstractTask {
 	public void updatetOrganisms(List<GMOrganism> orgValues) {
 		organisms.setPossibleValues(orgValues);
 		
-		if (!orgValues.isEmpty())
-			organisms.setSelectedValue(orgValues.get(0));
+		if (!orgValues.isEmpty()) {
+			for (GMOrganism org : orgValues) {
+				if (org.getTaxonomyId() == 9606) { // H.sapiens
+					organisms.setSelectedValue(org);
+					break;
+				}
+			}
+		}
 	}
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		if (organisms.getSelectedValue() != null) {
 			tm.setTitle("EnrichmentMap");
-			tm.setStatusMessage("Querying GeneMANIA...");
+			tm.setStatusMessage("Querying STRING...");
 			
 			Map<String, Object> args = new HashMap<>();
-			args.put("organism", "" + organisms.getSelectedValue().getTaxonomyId());
-			args.put("genes", genes);
-			args.put("geneLimit", 0); // Do not find more genes
+			args.put("taxonID", "" + organisms.getSelectedValue().getTaxonomyId());
+			args.put("query", query);
+			args.put("cutoff", "" + cutoff.getValue());
+			args.put("limit", "" + limit.getValue());
 			
 			TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
-					GENEMANIA_NAMESPACE, GENEMANIA_SEARCH_COMMAND, args, new TaskObserver() {
+					STRING_NAMESPACE, STRING_SEARCH_COMMAND, args, new TaskObserver() {
 				
 				@Override
-				@SuppressWarnings("serial")
 				public void taskFinished(ObservableTask task) {
 					if (task instanceof ObservableTask) {
 						if (((ObservableTask) task).getResultClasses().contains(JSONResult.class)) {
@@ -85,10 +107,11 @@ public class QueryGeneManiaTask extends AbstractTask {
 							
 							if (json != null && json.getJSON() != null) {
 								Gson gson = new Gson();
-								Type type = new TypeToken<GMSearchResult>(){}.getType();
-								result = gson.fromJson(json.getJSON(), type);
+								Map<?, ?> map = gson.fromJson(json.getJSON(), Map.class);
+								Number suid = (Number) map.get("SUID");
+								result = suid != null ? suid.longValue() : null;
 							} else {
-								throw new RuntimeException("Unexpected error when getting search results from GeneMANIA.");
+								throw new RuntimeException("Unexpected error when getting search results from STRING.");
 							}
 						}
 					}
@@ -103,7 +126,10 @@ public class QueryGeneManiaTask extends AbstractTask {
 		}
 	}
 
-	public GMSearchResult getResult() {
+	/**
+	 * @return The SUID of the created {@link CyNetwork}
+	 */
+	public Long getResult() {
 		return result;
 	}
 }
