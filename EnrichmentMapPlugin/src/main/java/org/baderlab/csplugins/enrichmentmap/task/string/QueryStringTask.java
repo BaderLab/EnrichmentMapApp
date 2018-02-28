@@ -51,8 +51,9 @@ public class QueryStringTask extends AbstractTask {
 	public BoundedInteger limit = new BoundedInteger(0, 0, 100, false, false);
 	
 	private final String query;
-	
 	private Long result;
+	
+	private static long lastTaxonomyId = 9606; // H.sapiens
 
 	@Inject private CommandExecutorTaskFactory commandExecutorTaskFactory;
 	
@@ -75,8 +76,10 @@ public class QueryStringTask extends AbstractTask {
 		organisms.setPossibleValues(orgValues);
 		
 		if (!orgValues.isEmpty()) {
+			organisms.setSelectedValue(orgValues.get(0));
+			
 			for (STRSpecies org : orgValues) {
-				if (org.getTaxonomyId() == 9606) { // H.sapiens
+				if (org.getTaxonomyId() == lastTaxonomyId) {
 					organisms.setSelectedValue(org);
 					break;
 				}
@@ -123,6 +126,9 @@ public class QueryStringTask extends AbstractTask {
 				}
 			});
 			getTaskIterator().append(ti);
+			
+			// Save this as the default organism for next time
+			lastTaxonomyId = organisms.getSelectedValue().getTaxonomyId();
 		}
 	}
 

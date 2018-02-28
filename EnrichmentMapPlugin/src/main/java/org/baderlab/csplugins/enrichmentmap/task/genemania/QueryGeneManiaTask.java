@@ -31,9 +31,10 @@ public class QueryGeneManiaTask extends AbstractTask {
 	@Tunable(description = "Organism:")
 	public ListSingleSelection<GMOrganism> organisms;
 	
-	private final String genes;
-	
+	private final String query;
 	private GMSearchResult result;
+	
+	private static long lastTaxonomyId = 9606; // H.sapiens
 
 	@Inject private CommandExecutorTaskFactory commandExecutorTaskFactory;
 	
@@ -43,7 +44,7 @@ public class QueryGeneManiaTask extends AbstractTask {
 	
 	@Inject
 	public QueryGeneManiaTask(@Assisted List<String> geneList) {
-		genes = String.join("|", geneList);
+		query = String.join("|", geneList);
 		organisms = new ListSingleSelection<>();
 	}
 	
@@ -55,8 +56,16 @@ public class QueryGeneManiaTask extends AbstractTask {
 	public void updatetOrganisms(List<GMOrganism> orgValues) {
 		organisms.setPossibleValues(orgValues);
 		
-		if (!orgValues.isEmpty())
+		if (!orgValues.isEmpty()) {
 			organisms.setSelectedValue(orgValues.get(0));
+			
+			for (GMOrganism org : orgValues) {
+				if (org.getTaxonomyId() == lastTaxonomyId) {
+					organisms.setSelectedValue(org);
+					break;
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -67,7 +76,7 @@ public class QueryGeneManiaTask extends AbstractTask {
 			
 			Map<String, Object> args = new HashMap<>();
 			args.put("organism", "" + organisms.getSelectedValue().getTaxonomyId());
-			args.put("genes", genes);
+			args.put("genes", query);
 			args.put("geneLimit", 0); // Do not find more genes
 			
 			TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
@@ -97,6 +106,9 @@ public class QueryGeneManiaTask extends AbstractTask {
 				}
 			});
 			getTaskIterator().append(ti);
+			
+			// Save this as the default organism for next time
+			lastTaxonomyId = organisms.getSelectedValue().getTaxonomyId();
 		}
 	}
 
