@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.task.genemania.GMOrganism;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.AbstractTask;
@@ -27,10 +26,11 @@ import com.google.inject.assistedinject.Assisted;
 public class QueryStringTask extends AbstractTask {
 	
 	public static final String STRING_NAMESPACE = "string";
+	public static final String STRING_SPECIES_COMMAND = "list species";
 	public static final String STRING_SEARCH_COMMAND = "protein query";
 	
-	@Tunable(description = "Organism:")
-	public ListSingleSelection<GMOrganism> organisms;
+	@Tunable(description = "Species:")
+	public ListSingleSelection<STRSpecies> organisms;
 	
 	@Tunable(
 			description = "Confidence Cutoff:",
@@ -71,11 +71,11 @@ public class QueryStringTask extends AbstractTask {
 		return "Select an Organism";
 	}
 	
-	public void updatetOrganisms(List<GMOrganism> orgValues) {
+	public void updatetOrganisms(List<STRSpecies> orgValues) {
 		organisms.setPossibleValues(orgValues);
 		
 		if (!orgValues.isEmpty()) {
-			for (GMOrganism org : orgValues) {
+			for (STRSpecies org : orgValues) {
 				if (org.getTaxonomyId() == 9606) { // H.sapiens
 					organisms.setSelectedValue(org);
 					break;

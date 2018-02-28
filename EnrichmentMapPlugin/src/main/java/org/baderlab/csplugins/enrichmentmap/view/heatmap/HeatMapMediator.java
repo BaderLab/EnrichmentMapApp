@@ -4,7 +4,7 @@ import static org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneMania
 import static org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GENEMANIA_ORGANISMS_COMMAND;
 import static org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GENEMANIA_SEARCH_COMMAND;
 import static org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask.STRING_NAMESPACE;
-import static org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask.STRING_SEARCH_COMMAND;
+import static org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask.STRING_SPECIES_COMMAND;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
 import java.awt.Color;
@@ -51,6 +51,7 @@ import org.baderlab.csplugins.enrichmentmap.task.genemania.GMOrganismsResult;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GMSearchResult;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask;
 import org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask;
+import org.baderlab.csplugins.enrichmentmap.task.string.STRSpecies;
 import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
@@ -701,7 +702,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		// Show message to user if STRING App not installed
 		List<String> commands = availableCommands.getCommands(STRING_NAMESPACE);
 		
-		if (commands == null || !commands.contains(STRING_SEARCH_COMMAND)) {
+		if (commands == null || !commands.contains(STRING_SPECIES_COMMAND)) {
 			if (JOptionPane.showConfirmDialog(
 					SwingUtilities.getWindowAncestor(contentPanel),
 					"This action requires a version of the STRING app that is not installed?\n" +
@@ -717,9 +718,9 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		QueryStringTask queryTask = queryStringTaskFactory.create(contentPanel.getGenes());
 		
-		// TODO Get list of organisms from STRING App
+		// Get list of organisms from STRING App
 		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
-				GENEMANIA_NAMESPACE, GENEMANIA_ORGANISMS_COMMAND, Collections.emptyMap(), new TaskObserver() {
+				STRING_NAMESPACE, STRING_SPECIES_COMMAND, Collections.emptyMap(), new TaskObserver() {
 					
 					@Override
 					@SuppressWarnings("serial")
@@ -730,13 +731,13 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 								
 								if (json != null && json.getJSON() != null) {
 									Gson gson = new Gson();
-									Type type = new TypeToken<GMOrganismsResult>(){}.getType();
-									GMOrganismsResult res = gson.fromJson(json.getJSON(), type);
+									Type type = new TypeToken<ArrayList<STRSpecies>>(){}.getType();
+									List<STRSpecies> organisms = gson.fromJson(json.getJSON(), type);
 									
-									if (res != null && res.getOrganisms() != null && !res.getOrganisms().isEmpty())
-										queryTask.updatetOrganisms(res.getOrganisms());
+									if (organisms != null && !organisms.isEmpty())
+										queryTask.updatetOrganisms(organisms);
 									else
-										throw new RuntimeException("Unable to retrieve available organisms from STRING App.");
+										throw new RuntimeException("Unable to retrieve available species from STRING App.");
 								}
 							}
 						}
