@@ -15,6 +15,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.work.util.BoundedInteger;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import com.google.common.reflect.TypeToken;
@@ -31,6 +32,12 @@ public class QueryGeneManiaTask extends AbstractTask {
 	@Tunable(description = "Organism:")
 	public ListSingleSelection<GMOrganism> organisms;
 	
+	@Tunable(description = "Max Resultant Genes:", params = "slider=true")
+	public BoundedInteger limit = new BoundedInteger(0, 0, 100, false, false);
+	
+	@Tunable(description = "Network Weighting:")
+	public ListSingleSelection<GMWeightingMethod> weightingMethods;
+	
 	private final String query;
 	private GMSearchResult result;
 	
@@ -46,6 +53,8 @@ public class QueryGeneManiaTask extends AbstractTask {
 	public QueryGeneManiaTask(@Assisted List<String> geneList) {
 		query = String.join("|", geneList);
 		organisms = new ListSingleSelection<>();
+		weightingMethods = new ListSingleSelection<>(GMWeightingMethod.values());
+		weightingMethods.setSelectedValue(weightingMethods.getPossibleValues().get(0));
 	}
 	
 	@ProvidesTitle
@@ -77,7 +86,8 @@ public class QueryGeneManiaTask extends AbstractTask {
 			Map<String, Object> args = new HashMap<>();
 			args.put("organism", "" + organisms.getSelectedValue().getTaxonomyId());
 			args.put("genes", query);
-			args.put("geneLimit", 0); // Do not find more genes
+			args.put("geneLimit", limit.getValue());
+			args.put("combiningMethod", weightingMethods.getSelectedValue().name());
 			
 			TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
 					GENEMANIA_NAMESPACE, GENEMANIA_SEARCH_COMMAND, args, new TaskObserver() {

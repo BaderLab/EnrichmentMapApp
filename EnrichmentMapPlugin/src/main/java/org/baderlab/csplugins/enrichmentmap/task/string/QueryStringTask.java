@@ -32,22 +32,10 @@ public class QueryStringTask extends AbstractTask {
 	@Tunable(description = "Species:")
 	public ListSingleSelection<STRSpecies> organisms;
 	
-	@Tunable(
-			description = "Confidence Cutoff:",
-			longDescription =
-					"The confidence score reflects the cumulated evidence that this "
-					+ "interaction exists.  Only interactions with scores greater than "
-					+ "this cutoff will be returned.",
-			params = "slider=true",
-			format = "0.00"
-	)
+	@Tunable(description = "Confidence Cutoff:", params = "slider=true", format = "0.00")
 	public BoundedDouble cutoff = new BoundedDouble(0.0, 0.4, 1.0, false, false);
 	
-	@Tunable(
-			description = "Max Additional Interactors:",
-			longDescription = "The maximum number of proteins to return in addition to the query set.",
-			params = "slider=true"
-	)
+	@Tunable(description = "Max Additional Interactors:", params = "slider=true")
 	public BoundedInteger limit = new BoundedInteger(0, 0, 100, false, false);
 	
 	private final String query;
