@@ -28,9 +28,6 @@ public class QueryGeneManiaTask extends AbstractTask {
 	public static final String GENEMANIA_ORGANISMS_COMMAND = "organisms";
 	public static final String GENEMANIA_SEARCH_COMMAND = "search";
 	
-	public static final String STRING_NAMESPACE = "string";
-	public static final String STRING_SEARCH_COMMAND = "protein query";
-	
 	@Tunable(description = "Organism:")
 	public ListSingleSelection<GMOrganism> organisms;
 	
