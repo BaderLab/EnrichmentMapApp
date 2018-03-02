@@ -19,7 +19,7 @@ public class EnrichmentMapBuildProperties {
 	
 	static {
 		APP_URL = "http://www.baderlab.org/Software/EnrichmentMap";
-		USER_MANUAL_URL = APP_URL + "/UserManual";
+		USER_MANUAL_URL = "http://enrichmentmap.readthedocs.io/en/latest";
 		
 		Properties plugin_props;
 		try {
