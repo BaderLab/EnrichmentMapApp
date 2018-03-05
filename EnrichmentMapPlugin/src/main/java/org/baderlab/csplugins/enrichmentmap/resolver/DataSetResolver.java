@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 
 import com.google.common.collect.ImmutableList;

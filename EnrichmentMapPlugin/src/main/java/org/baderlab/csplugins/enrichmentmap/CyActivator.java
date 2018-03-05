@@ -9,6 +9,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.BuildCommand;
+import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.BuildTableCommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.GSEACommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.JsonCommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.PACommand;
@@ -66,6 +67,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerCommand(bc, "mastermap",    injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
 		registerCommand(bc, "pa",           injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
 		registerCommand(bc, "export-model", injector.getInstance(Key.get(TaskFactory.class, JsonCommand.class)));
+		registerCommand(bc, "build-table",  injector.getInstance(Key.get(TaskFactory.class, BuildTableCommand.class)));
 		registerService(bc, new MannWhitRanksTunableHandlerFactory(), StringTunableHandlerFactory.class);
 		
 		// jax-rs resources

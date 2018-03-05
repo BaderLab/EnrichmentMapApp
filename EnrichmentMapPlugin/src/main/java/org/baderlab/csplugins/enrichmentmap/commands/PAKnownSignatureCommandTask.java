@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.commands;
 
-import static org.baderlab.csplugins.enrichmentmap.commands.ResolverCommandTask.enumNames;
 
 import java.io.File;
 import java.util.Arrays;
@@ -84,8 +83,8 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	private String autoName = null;
 	
 	public PAKnownSignatureCommandTask() {
-		filterType = enumNames(PostAnalysisFilterType.values());
-		hypergeomUniverseType = enumNames(UniverseType.values());
+		filterType = FilterTunables.enumNames(PostAnalysisFilterType.values());
+		hypergeomUniverseType = FilterTunables.enumNames(UniverseType.values());
 	}
 	
 	

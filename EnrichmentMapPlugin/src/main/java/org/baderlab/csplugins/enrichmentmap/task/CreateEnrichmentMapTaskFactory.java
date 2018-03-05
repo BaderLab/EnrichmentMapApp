@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
@@ -17,7 +18,6 @@ import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFil
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
-import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.util.Baton;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -60,6 +60,7 @@ public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 		for(DataSetParameters dataSetParameters : dataSets) {
 			String datasetName = dataSetParameters.getName();
 			Method method = dataSetParameters.getMethod();
+			
 			DataSetFiles files = dataSetParameters.getFiles();
 			
 			EMDataSet dataset = map.createDataSet(datasetName, method, files);

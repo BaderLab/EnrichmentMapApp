@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.parsers.LineReader;
 

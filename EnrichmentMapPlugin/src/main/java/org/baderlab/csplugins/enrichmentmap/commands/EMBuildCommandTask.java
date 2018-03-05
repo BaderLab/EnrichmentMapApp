@@ -43,22 +43,23 @@
 
 package org.baderlab.csplugins.enrichmentmap.commands;
 
+import static org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters.method_GSEA;
+import static org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters.method_Specialized;
+import static org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters.method_generic;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
@@ -81,9 +82,9 @@ import com.google.inject.Inject;
 public class EMBuildCommandTask extends AbstractTask {
 
 	@Tunable(description = "Analysis Type", groups = { "Analysis Type" }, gravity = 1.0)
-	public ListSingleSelection<String> analysisType;
+	public ListSingleSelection<String> analysisType = new ListSingleSelection<String>(method_GSEA, method_generic, method_Specialized);;
 
-	@Tunable(description = "GMT", groups = { "User Input", "Gene Sets" }, gravity = 2.0, dependsOn = "analysisType=" + EnrichmentMapParameters.method_generic, 
+	@Tunable(description = "GMT", groups = { "User Input", "Gene Sets" }, gravity = 2.0, dependsOn = "analysisType=" + method_generic, 
 			params = "fileCategory=table;input=true", tooltip = "File specifying gene sets.\nFormat: geneset name <tab> description <tab> gene ...")
 	public File gmtFile;
 
@@ -93,11 +94,11 @@ public class EMBuildCommandTask extends AbstractTask {
 	public File expressionDataset1;
 
 	@Tunable(description = "Enrichments", groups = { "User Input", "Datasets", "Dataset 1" }, gravity = 4.0, 
-			dependsOn = "analysisType=" + EnrichmentMapParameters.method_generic, params = "fileCategory=table;input=true", tooltip = "File specifying enrichment results.\n")
+			dependsOn = "analysisType=" + method_generic, params = "fileCategory=table;input=true", tooltip = "File specifying enrichment results.\n")
 	public File enrichmentsDataset1;
 
 	@Tunable(description = "Enrichments 2", groups = { "User Input", "Datasets", "Dataset 1" }, gravity = 5.0, 
-			dependsOn = "analysisType=" + EnrichmentMapParameters.method_GSEA, params = "fileCategory=table;input=true", tooltip = "File specifying enrichment results.\n")
+			dependsOn = "analysisType=" + method_GSEA, params = "fileCategory=table;input=true", tooltip = "File specifying enrichment results.\n")
 	public File enrichments2Dataset1;
 
 	@Tunable(description = "Ranks", groups = { "User Input", "Datasets", "Dataset 1", "Advanced" }, gravity = 6.0, params = "fileCategory=table;input=true", 
@@ -120,11 +121,11 @@ public class EMBuildCommandTask extends AbstractTask {
 	public File expressionDataset2;
 
 	@Tunable(description = "Enrichments", groups = { "User Input", "Datasets", "Dataset 2" }, gravity = 11.0, 
-			dependsOn = "analysisType=" + EnrichmentMapParameters.method_generic, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying enrichment results.\n")
+			dependsOn = "analysisType=" + method_generic, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying enrichment results.\n")
 	public File enrichmentsDataset2;
 
 	@Tunable(description = "Enrichments 2", groups = { "User Input", "Datasets", "Dataset 2" }, gravity = 12.0, 
-			dependsOn = "analysisType=" + EnrichmentMapParameters.method_GSEA, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying enrichment results.\n")
+			dependsOn = "analysisType=" + method_GSEA, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying enrichment results.\n")
 	public File enrichments2Dataset2;
 
 	@Tunable(description = "Ranks", groups = { "User Input", "Datasets", "Dataset 2", "Advanced" }, gravity = 13.0, 
@@ -141,87 +142,16 @@ public class EMBuildCommandTask extends AbstractTask {
 	@Tunable(description = "Phenotype2", groups = { "User Input", "Datasets", "Dataset 2", "Advanced" }, gravity = 16.0, params = "displayState=callapsed", tooltip = "Dataset2 phenotype/class")
 	public String phenotype2Dataset2;
 
-	//Parameter Tuneables
-	@Tunable(description = "P-value Cutoff", groups = { "User Input", "Parameters" }, gravity = 17.0, tooltip = "P-value between 0 and 1.")
-	public Double pvalue = 0.005;
-
-	@Tunable(description = "FDR Q-value Cutoff", groups = { "User Input", "Parameters" }, gravity = 18.0, tooltip = "FDR Q-value between 0 and 1.")
-	public Double qvalue = 0.1;
-
-	@Tunable(description = "Similarity Cutoff", groups = { "User Input", "Parameters" }, gravity = 19.0, tooltip = "coeffecient between 0 and 1.")
-	public Double similaritycutoff = 0.25;
-
-	@Tunable(description = "Similarity Coeffecient", groups = { "User Input", "Parameters" }, gravity = 20.0, tooltip = "coeffecient between 0 and 1.")
-	public ListSingleSelection<String> coefficients;
-
-	@Tunable(description = "Deprecated, use 'coefficients' instead.")
-	public ListSingleSelection<String> coeffecients; // misspelled, but must keep for backwards compatibility
 	
-	@Tunable
-	public double combinedConstant = LegacySupport.combinedConstant_default;
-	
-	@Tunable
-	public ListSingleSelection<String> edgeStrategy;
-	
-	@Tunable
-	public Integer minExperiments = null;
-	
-	@Tunable
-	public ListSingleSelection<String> nesFilter;
-	
-	@Tunable
-	public boolean filterByExpressions = true;
-	
-	@Tunable
-	public String networkName = null;
-	
+	@ContainsTunables
+	@Inject
+	public FilterTunablesLegacy filterArgs;
 	
 
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
-	@Inject private LegacySupport legacySupport;
-	
-
-	public EMBuildCommandTask() {
-		analysisType = new ListSingleSelection<String>(EnrichmentMapParameters.method_GSEA,
-				EnrichmentMapParameters.method_generic, EnrichmentMapParameters.method_Specialized);
-
-		coefficients = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP,
-				EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
-		
-		coeffecients = new ListSingleSelection<String>("null", EnrichmentMapParameters.SM_OVERLAP,
-				EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
-		
-		
-		edgeStrategy = ResolverCommandTask.enumNames(EdgeStrategy.values());
-		edgeStrategy.setSelectedValue(EdgeStrategy.AUTOMATIC.name());
-		
-		nesFilter = ResolverCommandTask.enumNames(NESFilter.values());
-		nesFilter.setSelectedValue(NESFilter.ALL.name());
-	}
-	
-
-	private SimilarityMetric getSimilarityMetric() {
-		String value;
-		if(!"null".equals(coeffecients.getSelectedValue())) {
-			// the old field overrides the new field
-			value = coeffecients.getSelectedValue(); 
-		} else {
-			value = coefficients.getSelectedValue();
-		}
-		
-		return EnrichmentMapParameters.stringToSimilarityMetric(value);
-	}
 	
 	
-	/**
-	 * buildEnrichmentMap - parses all GSEA input files and creates an enrichment map
-	 */
-	public void buildEnrichmentMap() {
-		// Note we must continue to use the old constants from EnrichmentMapParameters for backwards compatibility
-		Method method = EnrichmentMapParameters.stringToMethod(analysisType.getSelectedValue());
-		SimilarityMetric metric = getSimilarityMetric();
-		
-		//Set Dataset1 Files
+	private DataSetFiles getDataSet1Files() {
 		DataSetFiles dataset1files = new DataSetFiles();
 		if(gmtFile != null)
 			dataset1files.setGMTFileName(gmtFile.getAbsolutePath());
@@ -239,8 +169,10 @@ public class EMBuildCommandTask extends AbstractTask {
 			dataset1files.setPhenotype1(phenotype1Dataset1);
 		if(phenotype2Dataset1 != null)
 			dataset1files.setPhenotype2(phenotype2Dataset1);
+		return dataset1files;
+	}
 
-		//Set Dataset2 Files
+	private DataSetFiles getDataSet2Files() {
 		DataSetFiles dataset2files = new DataSetFiles();
 		if(expressionDataset2!=null)
 			dataset2files.setExpressionFileName(expressionDataset2.getAbsolutePath());
@@ -256,52 +188,30 @@ public class EMBuildCommandTask extends AbstractTask {
 			dataset2files.setPhenotype1(phenotype1Dataset2);
 		if(phenotype2Dataset2 != null)
 			dataset2files.setPhenotype2(phenotype2Dataset2);
+		return dataset2files;
+	}
+	
 
-		NESFilter nesf;
-		try {
-			nesf = NESFilter.valueOf(nesFilter.getSelectedValue().toUpperCase());
-		} catch(IllegalArgumentException e) {
-			throw new IllegalArgumentException("nesFilter is invalid: '" + nesFilter.getSelectedValue() + "'");
-		}
-		
+	@Override
+	public void run(TaskMonitor tm) {
 		List<DataSetParameters> dataSets = new ArrayList<>(2);
+		Method method = EnrichmentMapParameters.stringToMethod(analysisType.getSelectedValue());
+		
+		DataSetFiles dataset1files = getDataSet1Files();
 		dataSets.add(new DataSetParameters(LegacySupport.DATASET1, method, dataset1files));
+		
+		DataSetFiles dataset2files = getDataSet2Files();
 		if(!dataset2files.isEmpty()) {
 			dataSets.add(new DataSetParameters(LegacySupport.DATASET2, method, dataset2files));
 		}
 		
-		EdgeStrategy strategy;
-		try {
-			strategy = EdgeStrategy.valueOf(edgeStrategy.getSelectedValue().toUpperCase());
-		} catch(IllegalArgumentException e) {
-			throw new IllegalArgumentException("edgeStrategy is invalid: '" + edgeStrategy.getSelectedValue() + "'");
-		}
+		EMCreationParameters creationParams = filterArgs.getCreationParameters();
 		
-		String prefix = legacySupport.getNextAttributePrefix();
-		EMCreationParameters creationParams = 
-				new EMCreationParameters(prefix, pvalue, qvalue, nesf, Optional.ofNullable(minExperiments), filterByExpressions,
-						metric, similaritycutoff, combinedConstant, strategy);
-		
-		if(networkName != null && !networkName.trim().isEmpty())
-			creationParams.setNetworkName(networkName);
-		//System.out.println(creationParams);
-		//System.out.println(dataSets);
+		if(filterArgs.networkName != null && !filterArgs.networkName.trim().isEmpty())
+			creationParams.setNetworkName(filterArgs.networkName);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);
 		insertTasksAfterCurrentTask(taskFactory.createTaskIterator());
 	}
 
-
-	public String getTitle() {
-		return "Enrichment Map Tuneable build";
-	}
-
-	public boolean isReady() {
-		return true;
-	}
-
-	@Override
-	public void run(TaskMonitor arg0) {
-		buildEnrichmentMap();
-	}
 }

@@ -48,13 +48,13 @@ import javax.swing.border.Border;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
@@ -148,17 +148,17 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		// Overwrite all the expression files if the common file has been provided
 		if(commonPanel.hasExpressionFile()) {
 			String exprPath = commonPanel.getExpressionFile();
-			dataSets.forEach(dsp -> dsp.getFiles().setExpressionFileName(exprPath));
+			dataSets.forEach(dsp -> dsp.getFiles().get().setExpressionFileName(exprPath));
 		}
 		// Overwrite all the gmt files if a common file has been provided
 		if(commonPanel.hasGmtFile()) {
 			String gmtPath = commonPanel.getGmtFile();
-			dataSets.forEach(dsp -> dsp.getFiles().setGMTFileName(gmtPath));
+			dataSets.forEach(dsp -> dsp.getFiles().get().setGMTFileName(gmtPath));
 		}
 		// Overwrite all the class files if a common file has been provided
 		if(commonPanel.hasClassFile()) {
 			String classPath = commonPanel.getClassFile();
-			dataSets.forEach(dsp -> dsp.getFiles().setClassFile(classPath));
+			dataSets.forEach(dsp -> dsp.getFiles().get().setClassFile(classPath));
 		}
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);

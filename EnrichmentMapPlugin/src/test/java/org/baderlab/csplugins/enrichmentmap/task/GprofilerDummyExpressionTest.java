@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
@@ -18,7 +19,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
-import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.jukito.JukitoRunner;
 import org.junit.After;
 import org.junit.Before;

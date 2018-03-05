@@ -22,6 +22,7 @@ public class CommandModule extends AbstractModule {
 	@BindingAnnotation @Retention(RUNTIME) public @interface ResolveCommand { }
 	@BindingAnnotation @Retention(RUNTIME) public @interface PACommand { }
 	@BindingAnnotation @Retention(RUNTIME) public @interface JsonCommand { }
+	@BindingAnnotation @Retention(RUNTIME) public @interface BuildTableCommand { }
 	
 	
 	@Override
@@ -50,6 +51,11 @@ public class CommandModule extends AbstractModule {
 	
 	@Provides @JsonCommand
 	public TaskFactory provideJson(Provider<ExportModelJsonCommandTask> taskProvider) {
+		return createTaskFactory(taskProvider, null);
+	}
+	
+	@Provides @BuildTableCommand
+	public TaskFactory provideBuildTable(Provider<TableCommandTask> taskProvider) {
 		return createTaskFactory(taskProvider, null);
 	}
 

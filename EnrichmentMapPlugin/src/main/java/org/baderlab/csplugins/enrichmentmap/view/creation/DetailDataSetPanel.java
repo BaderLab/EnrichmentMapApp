@@ -22,9 +22,9 @@ import javax.swing.JTextField;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
+import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.parsers.ClassFileReaderTask;
-import org.baderlab.csplugins.enrichmentmap.resolver.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
@@ -292,7 +292,7 @@ public class DetailDataSetPanel extends JPanel implements DetailPanel {
 	
 	private void initialize(DataSetParameters initDataSet) {
 		nameText.setText(initDataSet.getName());
-		DataSetFiles files = initDataSet.getFiles();
+		DataSetFiles files = initDataSet.getFiles().get();
 		enrichments1Text.setText(files.getEnrichmentFileName1());
 		enrichments2Text.setText(files.getEnrichmentFileName2());
 		gmtText.setText(files.getGMTFileName());
