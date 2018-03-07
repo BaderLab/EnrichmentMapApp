@@ -138,7 +138,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private CyNetworkViewManager networkViewManager;
 	@Inject private CyNetworkManager networkManager;
 	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
-	@Inject private UpdateAssociatedStyleTask.Factory UpdateAssociatedStyleTaskFactory;
+	@Inject private UpdateAssociatedStyleTask.Factory updateAssociatedStyleTaskFactory;
 	@Inject private RemoveSignatureDataSetsTask.Factory removeDataSetsTaskFactory;
 	@Inject private FilterNodesEdgesTask.Factory filterNodesEdgesTaskFactory;
 	@Inject private SelectNodesEdgesTask.Factory selectNodesEdgesTaskFactory;
@@ -819,7 +819,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			AssociatedStyleOptions options = createAssociatedStyleOptions(map, netView);
 			CyCustomGraphics2<?> chart = createChart(options);
 			
-			UpdateAssociatedStyleTask task = UpdateAssociatedStyleTaskFactory.create(options, chart);
+			UpdateAssociatedStyleTask task = updateAssociatedStyleTaskFactory.create(options, chart);
 			dialogTaskManager.execute(new TaskIterator(task));
 		}
 	}
@@ -829,7 +829,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		
 		if (netView != null && map != null) {
 			// TODO
-//			UpdateAssociatedStyleTask task = UpdateAssociatedStyleTaskFactory.create(options, chart);
+//			UpdateAssociatedStyleTask task = updateAssociatedStyleTaskFactory.create(options, chart);
 //			dialogTaskManager.execute(new TaskIterator(task));
 		}
 	}

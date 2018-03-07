@@ -18,8 +18,10 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
+import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
+import org.cytoscape.model.CyNetwork;
 
 @SuppressWarnings("serial")
 public class HeatMapTableModel extends AbstractTableModel {
@@ -30,6 +32,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	public static final int DESC_COL = 1;
 	public static final int RANK_COL = 2;
 
+	private CyNetwork network;
 	private EnrichmentMap map;
 	
 	private List<EMDataSet> datasets;
@@ -42,15 +45,19 @@ public class HeatMapTableModel extends AbstractTableModel {
 	private Map<Integer, RankValue> ranking;
 	private String ranksColName = "Ranks";
 	
-	/** Usually set when visualizing a GeneMANIA network, and null if it's a regular EM network. */
-	private String organism;
-
 	public HeatMapTableModel() {
-		update(null, null, Collections.emptyList(), Transform.AS_IS, Compress.NONE);
+		update(null, null, null, Collections.emptyList(), Transform.AS_IS, Compress.NONE);
 	}
 	
-	public void update(EnrichmentMap map, Map<Integer, RankValue> ranking, List<String> genes,
-			Transform transform, Compress compress) {
+	public void update(
+			CyNetwork network,
+			EnrichmentMap map,
+			Map<Integer, RankValue> ranking,
+			List<String> genes,
+			Transform transform,
+			Compress compress
+	) {
+		this.network = network;
 		this.transform = transform;
 		this.compress = compress;
 		this.map = map;
@@ -109,9 +116,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 		fireTableDataChanged();
 	}
 	
-	public void setGenes(List<String> genes, String organism) {
+	public void setGenes(List<String> genes) {
 		this.genes = genes != null ? new ArrayList<>(genes) : Collections.emptyList();
-		this.organism = organism;
 		fireTableDataChanged();
 	}
 	
@@ -175,9 +181,10 @@ public class HeatMapTableModel extends AbstractTableModel {
 		if (map != null && gene != null) {
 			geneID = map.getHashFromGene(gene);
 			
-			if (geneID == null && organism != null) {
-				// It's a GeneMANIA preferred symbol, so we need to get the original gene name
-				gene = map.getGeneManiaQuerySymbol(organism, gene);
+			if (geneID == null) {
+				// It may be another gene symbol (given by another app), other than the original query term,
+				// so we need to get the original query term
+				gene = NetworkUtil.getQueryTerm(network, gene);
 				
 				if (gene != null)
 					geneID = map.getHashFromGene(gene);

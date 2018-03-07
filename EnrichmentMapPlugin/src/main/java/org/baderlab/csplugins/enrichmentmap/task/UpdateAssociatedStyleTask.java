@@ -11,14 +11,14 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
-import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
@@ -89,14 +89,6 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 			}
 		}
 		
-		String org = null;
-		
-		try {
-			org = AssociatedStyleBuilder.Columns.GM_ORGANISM.get(network.getRow(network));
-		} catch (Exception e) {
-			logger.error("Cannot get '" + AssociatedStyleBuilder.Columns.GM_ORGANISM.getBaseName() + "' from GeneMANIA's Network table.", e);
-		}
-		
 		Map<Long, double[]> columnData = new HashMap<>();
 		EnrichmentMap map = options.getEnrichmentMap();
 		ExpressionData exp = options.getExpressionData();
@@ -106,16 +98,13 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 			double[] data = new double[n];
 			columnData.put(node.getSUID(), data);
 			
-			CyRow row = network.getRow(node);
-			String name = AssociatedStyleBuilder.Columns.GM_GENE_NAME.get(row, null, null);
+			String name = NetworkUtil.getGeneName(network, node);
 			
 			if (name == null)
 				continue;
 			
-			if (org != null)
-				name = map.getGeneManiaQuerySymbol(org, name);
-			
-			Integer id = map.getHashFromGene(name);
+			String queryTerm = NetworkUtil.getQueryTerm(network, name);
+			Integer id = map.getHashFromGene(queryTerm != null ? queryTerm : name);
 			
 			if (id == null)
 				continue;
@@ -142,14 +131,6 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 				logger.error("Cannot create column " + Columns.DATASET_CHART.getBaseName(), e);
 			}
 
-			String org = null;
-			
-			try {
-				org = AssociatedStyleBuilder.Columns.GM_ORGANISM.get(network.getRow(network));
-			} catch (Exception e) {
-				logger.error("Cannot get '" + AssociatedStyleBuilder.Columns.GM_ORGANISM.getBaseName() + "' from GeneMANIA's Network table.", e);
-			}
-			
 			Map<Long, int[]> columnData = new HashMap<>();
 			EnrichmentMap map = options.getEnrichmentMap();
 			List<EMDataSet> dataSets = map.getDataSetList();
@@ -159,16 +140,13 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 				int[] data = new int[n];
 				columnData.put(node.getSUID(), data);
 				
-				CyRow row = network.getRow(node);
-				String name = AssociatedStyleBuilder.Columns.GM_GENE_NAME.get(row, null, null);
+				String name = NetworkUtil.getGeneName(network, node);
 				
 				if (name == null)
 					continue;
 				
-				if (org != null)
-					name = map.getGeneManiaQuerySymbol(org, name);
-				
-				Integer id = map.getHashFromGene(name);
+				String queryTerm = NetworkUtil.getQueryTerm(network, name);
+				Integer id = map.getHashFromGene(queryTerm != null ? queryTerm : name);
 				
 				if (id == null)
 					continue;

@@ -55,6 +55,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValueRenderer
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.Labels;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -348,8 +349,15 @@ public class HeatMapContentPanel extends JPanel {
 		return new ArrayList<>(interGenes);
 	}
 	
-	void update(EnrichmentMap map, HeatMapParams params, List<RankingOption> moreRankOptions,
-			Collection<String> union, Collection<String> intersection, ClusterRankingOption clusterRankingOption) {
+	void update(
+			CyNetwork network,
+			EnrichmentMap map,
+			HeatMapParams params,
+			List<RankingOption> moreRankOptions,
+			Collection<String> union,
+			Collection<String> intersection,
+			ClusterRankingOption clusterRankingOption
+	) {
 		this.clusterRankingOption = clusterRankingOption;
 		this.moreRankOptions = moreRankOptions.isEmpty() ? Arrays.asList(RankingOption.none()) : moreRankOptions;
 
@@ -390,9 +398,10 @@ public class HeatMapContentPanel extends JPanel {
 		
 		// Update the Table
 		clearTableHeader();
+		
 		List<String> genesToUse = params.getOperator() == Operator.UNION ? unionGenes : interGenes;
 		HeatMapTableModel tableModel = (HeatMapTableModel) getTable().getModel();
-		tableModel.update(map, null, genesToUse, params.getTransform(), params.getCompress());
+		tableModel.update(network, map, null, genesToUse, params.getTransform(), params.getCompress());
 		
 		updateTableHeader(isShowValues());
 		getTable().revalidate();

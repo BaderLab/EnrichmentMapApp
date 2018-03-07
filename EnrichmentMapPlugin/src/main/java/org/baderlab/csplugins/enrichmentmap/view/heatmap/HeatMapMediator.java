@@ -12,7 +12,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +32,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
-import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
-import org.baderlab.csplugins.enrichmentmap.task.genemania.GMGene;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GMOrganismsResult;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GMSearchResult;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask;
@@ -69,7 +66,6 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
@@ -106,7 +102,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@Inject private QueryStringTask.Factory queryStringTaskFactory;
 	
 	@Inject private CyNetworkManager networkManager;
-	@Inject private CyNetworkViewManager netViewManager;
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private Provider<CySwingApplication> swingApplicationProvider;
 	@Inject private CyApplicationManager applicationManager;
@@ -253,15 +248,17 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		final Set<String> union;
 		final Set<String> inter;
 		
+		AssociatedApp app = NetworkUtil.getAssociatedApp(network);
+		
 		if (emManager.isEnrichmentMap(networkView)) {
 			union = unionGenesets(network, selectedNodes, selectedEdges, prefix);
 			inter = intersectionGenesets(network, selectedNodes, selectedEdges, prefix);
-		} else if (emManager.isAssociatedEnrichmentMap(networkView)) {
+		} else if (app != null) {
 			union = new HashSet<>();
 			
 			for (CyNode node : selectedNodes) {
 				CyRow row = network.getRow(node);
-				String geneName = AssociatedStyleBuilder.Columns.GM_GENE_NAME.get(row, null, null);
+				String geneName = app.getGeneNameColumn().get(row, null, null);
 				
 				if (geneName != null)
 					union.add(geneName);
@@ -278,7 +275,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		invokeOnEDT(() -> {
 			heatMapPanel.showContentPanel();
-			contentPanel.update(map, params, rankOptions, union, inter, clusterRankingOption);
+			contentPanel.update(network, map, params, rankOptions, union, inter, clusterRankingOption);
 			
 			if (propertyManager.getValue(PropertyManager.HEATMAP_AUTOFOCUS))
 				bringToFront();
@@ -311,12 +308,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		Operator oper = contentPanel.getOperator();
 		
 		if (oper != null) {
-			CyNetwork net = applicationManager.getCurrentNetwork();
-			String org = net != null && isCurrentViewGeneMania() ? NetworkUtil.getGeneManiaOrganism(net) : null;
-			
 			HeatMapTableModel tableModel = (HeatMapTableModel) contentPanel.getTable().getModel();
-			tableModel.setGenes(contentPanel.getGenes(oper), org);
-			
+			tableModel.setGenes(contentPanel.getGenes(oper));
 			settingChanged();
 		}
 	}
@@ -340,6 +333,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		HeatMapParams params = contentPanel.buildParams();
 		HeatMapTableModel tableModel = (HeatMapTableModel) contentPanel.getTable().getModel();
 		EnrichmentMap map = tableModel.getEnrichmentMap();
+		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		List<RankingOption> rankOptions = getDataSetRankOptions(map);
 		ClusterRankingOption clusterRankingOption = getClusterRankingOption(map);
 
@@ -351,7 +345,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		contentPanel.getShowValuesCheck().removeActionListener(showValueActionListener);
 
 		try {
-			contentPanel.update(map, params, rankOptions, contentPanel.getUnionGenes(), contentPanel.getInterGenes(), clusterRankingOption);
+			contentPanel.update(network, map, params, rankOptions, contentPanel.getUnionGenes(), contentPanel.getInterGenes(), clusterRankingOption);
 		} finally {
 			contentPanel.getOperatorCombo().addActionListener(operatorActionListener);
 			contentPanel.getNormCombo().addActionListener(normActionListener);
@@ -384,30 +378,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		if (!isResetting) {
 			HeatMapParams params = contentPanel.buildParams();
 			heatMapParamsChanged(params);
-			
-			if (isCurrentViewGeneMania())
-				updateGeneManiaStyle(applicationManager.getCurrentNetworkView());
 		}
-	}
-	
-	private boolean isCurrentViewGeneMania() {
-		CyNetworkView netView = applicationManager.getCurrentNetworkView();
-		return netView != null && emManager.isAssociatedEnrichmentMap(netView);
-	}
-
-	@Deprecated
-	private void updateGeneManiaStyle(CyNetworkView netView) {
-//		if (netView != null) {
-//			EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
-//			
-//			if (map != null) {
-//				AssociatedStyleOptions options = createStyleOptions(map, netView);
-//				CyCustomGraphics2<?> chart = createChart(options);
-//				
-//				UpdateAssociatedStyleTask task = updateGMStyleTaskFactory.create(options, chart);
-//				taskManager.execute(new TaskIterator(task));
-//			}
-//		}
 	}
 	
 	public ClusterRankingOption getClusterRankingOption(EnrichmentMap map) {
@@ -588,25 +559,13 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			EnrichmentMap map = contentPanel.getEnrichmentMap();
 			map.addAssociatedNetworkID(net.getSUID());
 			
-			String org = res.getOrganism().getAbbreviatedName();
-			Map<String, String> symbols = new HashMap<>();
-			
-			if (org != null) {
-				for (GMGene gene : res.getGenes()) {
-					if (gene.getQuerySymbol() != null && !gene.getQuerySymbol().equals(gene.getSymbol()))
-						symbols.put(gene.getQuerySymbol(), gene.getSymbol());
-				}
-				
-				map.addGeneManiaSymbols(org, symbols);
-			}
-			
 			emManager.addAssociatedAppAttributes(net, map, AssociatedApp.GENEMANIA);
-			
-			// Modify GeneMANIA's style
-			Collection<CyNetworkView> netViewList = netViewManager.getNetworkViews(net);
-			
-			for (CyNetworkView netView : netViewList)
-				updateGeneManiaStyle(netView);
+//	TODO	
+//			// Modify GeneMANIA's style
+//			Collection<CyNetworkView> netViewList = netViewManager.getNetworkViews(net);
+//			
+//			for (CyNetworkView netView : netViewList)
+//				updateGeneManiaStyle(netView);
 		}
 	}
 	
@@ -691,22 +650,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			// Update the model
 			EnrichmentMap map = contentPanel.getEnrichmentMap();
 			map.addAssociatedNetworkID(net.getSUID());
-
-// TODO
-//			String org = res.getOrganism().getAbbreviatedName();
-//			Map<String, String> symbols = new HashMap<>();
-//			
-//			if (org != null) {
-//				for (GMGene gene : res.getGenes()) {
-//					if (gene.getQuerySymbol() != null && !gene.getQuerySymbol().equals(gene.getSymbol()))
-//						symbols.put(gene.getQuerySymbol(), gene.getSymbol());
-//				}
-//				
-//				map.addGeneManiaSymbols(org, symbols);
-//			}
-//			
-			emManager.addAssociatedAppAttributes(net, map, AssociatedApp.STRING);
 			
+			emManager.addAssociatedAppAttributes(net, map, AssociatedApp.STRING);
 // TODO		
 //			// Modify GeneMANIA's style
 //			Collection<CyNetworkView> netViewList = netViewManager.getNetworkViews(strNet);

@@ -118,7 +118,7 @@ public class EnrichmentMapManager {
 		return isEnrichmentMap(networkView.getModel().getSUID());
 	}
 	
-	public void addAssociatedAppAttributes(CyNetwork network, EnrichmentMap map, AssociatedApp associatedApp) {
+	public void addAssociatedAppAttributes(CyNetwork network, EnrichmentMap map, AssociatedApp app) {
 		// Add EM Network SUID to associated network's table.
 		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
 		
@@ -131,7 +131,7 @@ public class EnrichmentMapManager {
 		if (table.getColumn(EM_ASSOCIATED_APP_COLUMN) == null)
 			table.createColumn(EM_ASSOCIATED_APP_COLUMN, String.class, true);
 		
-		table.getRow(network.getSUID()).set(EM_ASSOCIATED_APP_COLUMN, associatedApp.name());
+		table.getRow(network.getSUID()).set(EM_ASSOCIATED_APP_COLUMN, app.name());
 		
 		// Update our internal map and fire an event if it changed
 		Map<Long, EnrichmentMap> oldValue = getAssociatedEnrichmentMaps();

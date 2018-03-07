@@ -29,14 +29,6 @@ public class AssociatedStyleBuilder {
 	@Inject private RenderingEngineManager renderingEngineManager;
 	@Inject private CyEventHelper eventHelper;
 	
-	public static class Columns {
-		// GeneMANIA Attributes
-		// NODE
-		public static final ColumnDescriptor<String> GM_GENE_NAME = new ColumnDescriptor<>("gene name", String.class);
-		// NETWORK
-		public static final ColumnDescriptor<String> GM_ORGANISM = new ColumnDescriptor<>("organism", String.class);
-	}
-	
 	public void updateProperties(VisualStyle vs, AssociatedStyleOptions options, CyCustomGraphics2<?> chart) {
 		eventHelper.silenceEventSource(vs);
 		
@@ -79,9 +71,10 @@ public class AssociatedStyleBuilder {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void setNodeChart(VisualStyle vs, CyCustomGraphics2<?> chart) {
 		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
-		VisualProperty customPaint1 = lexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
+		// Use Custom Graphics #9 to avoid interfering with other charts from the original app style
+		VisualProperty customPaint = lexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_9");
 		
-		if (customPaint1 != null)
-			vs.setDefaultValue(customPaint1, chart);
+		if (customPaint != null)
+			vs.setDefaultValue(customPaint, chart);
 	}
 }

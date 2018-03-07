@@ -38,8 +38,6 @@ public class EnrichmentMap {
 	
 	/** SUIDs of networks created by other apps (e.g. GeneMANIA, STRING) from EM genes. */
 	private final Set<Long> associatedNetworkIDs = new LinkedHashSet<>();
-	/** Maps EM gene names to preferred GeneMANIA gene symbols (grouped by organism). */
-	private final Map<String/*organism*/, BiMap<String, String>> geneManiaSymbols = new HashMap<>();
 	
 	/** Parameters used to create this map */
 	private final EMCreationParameters params;
@@ -410,31 +408,6 @@ public class EnrichmentMap {
 			associatedNetworkIDs.addAll(set);
 	}
 	
-	// TODO remove and add "query term" column to node table
-	public void addGeneManiaSymbols(String organism, Map<String, String> map) {
-		if (map == null || map.isEmpty())
-			return;
-		
-		BiMap<String, String> symbols = geneManiaSymbols.get(organism);
-		
-		if (symbols == null)
-			geneManiaSymbols.put(organism, symbols = HashBiMap.create());
-		
-		symbols.putAll(map);
-	}
-	
-	public String getGeneManiaQuerySymbol(String organism, String preferredSymbol) {
-		BiMap<String, String> symbols = geneManiaSymbols.get(organism);
-		
-		return symbols != null ? symbols.inverse().getOrDefault(preferredSymbol, preferredSymbol) : preferredSymbol;
-	}
-	
-	public String getGeneManiaPreferredSymbol(String organism, String querySymbol) {
-		BiMap<String, String> symbols = geneManiaSymbols.get(organism);
-		
-		return symbols != null ? symbols.getOrDefault(querySymbol, querySymbol) : querySymbol;
-	}
-
 	public static Set<Long> getNodesUnion(Collection<? extends AbstractDataSet> dataSets) {
 		return getUnion(dataSets, AbstractDataSet::getNodeSuids);
 	}
