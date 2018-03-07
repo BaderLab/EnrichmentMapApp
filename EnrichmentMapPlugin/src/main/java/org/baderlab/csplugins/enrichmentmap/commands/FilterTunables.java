@@ -62,7 +62,6 @@ public class FilterTunables {
 	
 	public FilterTunables() {
 		coefficients = new ListSingleSelection<String>(OVERLAP.name(), JACCARD.name(), COMBINED.name());
-		coefficients.setSelectedValue(LegacySupport.similarityMetric_default.name());
 		
 		edgeStrategy = enumNames(EdgeStrategy.values());
 		edgeStrategy.setSelectedValue(EdgeStrategy.AUTOMATIC.name());

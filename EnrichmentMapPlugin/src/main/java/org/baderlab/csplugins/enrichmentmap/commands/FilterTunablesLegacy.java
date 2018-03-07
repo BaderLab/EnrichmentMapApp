@@ -5,7 +5,6 @@ import static org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.Si
 import static org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric.OVERLAP;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
-import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
@@ -16,13 +15,13 @@ import org.cytoscape.work.util.ListSingleSelection;
  */
 public class FilterTunablesLegacy extends FilterTunables {
 
+	@Deprecated
 	@Tunable(description = "Deprecated, use 'coefficients' instead.")
 	public ListSingleSelection<String> coeffecients; // misspelled, but must keep for backwards compatibility
 	
 	
 	public FilterTunablesLegacy() {
 		coeffecients = new ListSingleSelection<String>("null", OVERLAP.name(), JACCARD.name(), COMBINED.name());
-		coeffecients.setSelectedValue(LegacySupport.similarityMetric_default.name());
 	}
 
 	@Override

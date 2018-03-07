@@ -12,6 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.integration.BaseIntegrationTest;
 import org.baderlab.csplugins.enrichmentmap.integration.SerialTestTaskManager;
 import org.baderlab.csplugins.enrichmentmap.integration.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskIterator;
@@ -35,7 +36,8 @@ public class Protocol1Test extends BaseIntegrationTest {
 		assertTrue(enrichmentFile.exists());
 		
 		task.analysisType.setSelectedValue(EnrichmentMapParameters.method_generic);
-		task.filterArgs.coefficients.setSelectedValue(EnrichmentMapParameters.SM_JACCARD);
+		task.filterArgs.coefficients.setSelectedValue(SimilarityMetric.JACCARD.name());
+//		task.filterArgs.coeffecients.setSelectedValue(SimilarityMetric.JACCARD.name());
 		task.enrichmentsDataset1 = enrichmentFile;
 		task.filterArgs.pvalue = 1.0;
 		task.filterArgs.qvalue = 0.00001;
