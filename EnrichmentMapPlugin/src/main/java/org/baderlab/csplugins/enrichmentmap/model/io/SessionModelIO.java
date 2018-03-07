@@ -113,6 +113,7 @@ public class SessionModelIO {
 			ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
 			HeatMapMediator heatMapMediator = heatMapMediatorProvider.get();
 			controlPanelMediator.reset();
+			heatMapMediator.reset();
 			if(sessionHasEM) {
 				controlPanelMediator.showControlPanel();
 				heatMapMediator.showHeatMapPanel();

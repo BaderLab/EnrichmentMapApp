@@ -33,8 +33,8 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
-import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GMGene;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GMOrganismsResult;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GMSearchResult;
@@ -195,15 +195,24 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		if(!isHeatMapPanelRegistered())
+		if (!isHeatMapPanelRegistered())
 			return;
-		CyNetworkView networkView = e.getNetworkView();
-		if(networkView != null
-				&& (emManager.isEnrichmentMap(networkView) || emManager.isAssociatedEnrichmentMap(networkView))) {
-			updateHeatMap(networkView);
-		} else {
+		
+		CyNetworkView netView = e.getNetworkView();
+		
+		if (netView != null && (emManager.isEnrichmentMap(netView) || emManager.isAssociatedEnrichmentMap(netView)))
+			updateHeatMap(netView);
+		else
 			heatMapPanel.showEmptyView();
-		}
+	}
+	
+	public void reset() {
+		CyNetworkView netView = applicationManager.getCurrentNetworkView();
+		
+		if (netView != null && (emManager.isEnrichmentMap(netView) || emManager.isAssociatedEnrichmentMap(netView)))
+			updateHeatMap(netView);
+		else
+			heatMapPanel.showEmptyView();
 	}
 	
 	private void heatMapParamsChanged(HeatMapParams params) {
