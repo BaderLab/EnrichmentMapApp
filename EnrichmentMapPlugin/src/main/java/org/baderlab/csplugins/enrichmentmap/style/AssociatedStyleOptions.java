@@ -9,7 +9,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
 import org.cytoscape.view.model.CyNetworkView;
 
-public class GMStyleOptions {
+public class AssociatedStyleOptions {
 
 	private final CyNetworkView networkView;
 	private final EnrichmentMap map;
@@ -17,9 +17,13 @@ public class GMStyleOptions {
 	private final ExpressionData expressionData;
 	private final ChartOptions chartOptions;
 	
-	public GMStyleOptions(CyNetworkView networkView, EnrichmentMap map, HeatMapParams params,
-			ExpressionData expressionData, ChartOptions chartOptions) {
-		super();
+	public AssociatedStyleOptions(
+			CyNetworkView networkView,
+			EnrichmentMap map,
+			HeatMapParams params,
+			ExpressionData expressionData,
+			ChartOptions chartOptions
+	) {
 		this.networkView = networkView;
 		this.map = map;
 		this.params = params;

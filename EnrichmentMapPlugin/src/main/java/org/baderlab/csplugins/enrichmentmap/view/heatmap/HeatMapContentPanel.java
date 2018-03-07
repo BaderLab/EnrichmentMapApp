@@ -44,6 +44,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankOptionRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderVerticalRenderer;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.GradientLegendPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapCellRenderer;
@@ -52,6 +53,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankOptionErrorHe
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValueRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
+import org.baderlab.csplugins.enrichmentmap.view.util.Labels;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -363,7 +365,7 @@ public class HeatMapContentPanel extends JPanel {
 		getOperatorCombo().setSelectedItem(ComboItem.of(params.getOperator()));
 
 		getCompressCombo().removeAllItems();
-		getCompressCombo().addItem(new ComboItem<>(Compress.NONE, "-None-"));
+		getCompressCombo().addItem(new ComboItem<>(Compress.NONE, Labels.NONE));
 
 		if (map.hasClassData()) {
 			getCompressCombo().addItem(new ComboItem<>(Compress.CLASS_MEDIAN, "Class: Median"));
@@ -496,5 +498,13 @@ public class HeatMapContentPanel extends JPanel {
 			case UNION: default: return unionGenes;
 			case INTERSECTION:   return interGenes;
 		}
+	}
+	
+	public DataSetColorRange getDataSetColorRange(EMDataSet dataSet) {
+		HeatMapTableModel tableModel = (HeatMapTableModel) getTable().getModel();
+		HeatMapCellRenderer renderer = (HeatMapCellRenderer) getTable().getDefaultRenderer(Double.class);
+		Optional<DataSetColorRange> colorRange = renderer.getRange(dataSet, tableModel.getTransform());
+		
+		return colorRange.isPresent() ? colorRange.get() : null;
 	}
 }

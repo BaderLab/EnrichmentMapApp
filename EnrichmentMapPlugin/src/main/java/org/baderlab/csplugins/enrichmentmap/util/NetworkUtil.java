@@ -5,7 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import org.baderlab.csplugins.enrichmentmap.style.GMStyleBuilder.Columns;
+import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
+import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleBuilder.Columns;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -18,6 +19,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 public class NetworkUtil {
 
 	public static final String EM_NETWORK_SUID_COLUMN = "EM_Network.SUID";
+	public static final String EM_ASSOCIATED_APP_COLUMN = "EM_Associated_App";
 	
 	private NetworkUtil() { }
 	
@@ -92,7 +94,23 @@ public class NetworkUtil {
 		return keys;
 	}
 	
-	public static boolean isGeneManiaNetwork(CyNetwork network) {
+	public static AssociatedApp getAssociatedApp(CyNetwork network) {
+		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		
+		if (table.getColumn(EM_ASSOCIATED_APP_COLUMN) == null)
+			return null;
+			
+		String app = network.getRow(network, CyNetwork.HIDDEN_ATTRS).get(EM_ASSOCIATED_APP_COLUMN, String.class);
+		
+		if (AssociatedApp.GENEMANIA.name().equalsIgnoreCase(app))
+			return AssociatedApp.GENEMANIA;
+		if (AssociatedApp.STRING.name().equalsIgnoreCase(app))
+			return AssociatedApp.STRING;
+		
+		return null;
+	}
+	
+	public static boolean isAssociatedNetwork(CyNetwork network) {
 		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
 		
 		return table.getColumn(EM_NETWORK_SUID_COLUMN) != null
@@ -100,7 +118,7 @@ public class NetworkUtil {
 	}
 	
 	public static String getGeneManiaOrganism(CyNetwork network) {
-		if (isGeneManiaNetwork(network))
+		if (AssociatedApp.GENEMANIA == getAssociatedApp(network))
 			return Columns.GM_ORGANISM.get(network.getRow(network));
 		
 		return null;

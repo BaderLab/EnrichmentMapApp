@@ -22,9 +22,9 @@ import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
 import com.google.inject.Inject;
 
 /**
- * Responsible for updating the GeneMANIA styles.
+ * Responsible for updating the styles of associated networks (e.g. GeneMANIA, STRING).
  */
-public class GMStyleBuilder {
+public class AssociatedStyleBuilder {
 
 	@Inject private RenderingEngineManager renderingEngineManager;
 	@Inject private CyEventHelper eventHelper;
@@ -37,7 +37,7 @@ public class GMStyleBuilder {
 		public static final ColumnDescriptor<String> GM_ORGANISM = new ColumnDescriptor<>("organism", String.class);
 	}
 	
-	public void updateProperties(VisualStyle vs, GMStyleOptions options, CyCustomGraphics2<?> chart) {
+	public void updateProperties(VisualStyle vs, AssociatedStyleOptions options, CyCustomGraphics2<?> chart) {
 		eventHelper.silenceEventSource(vs);
 		
 		try {
@@ -58,7 +58,7 @@ public class GMStyleBuilder {
 		}
 	}
 	
-	private void setNodeDefaults(VisualStyle vs, GMStyleOptions options, ChartType chartType) {
+	private void setNodeDefaults(VisualStyle vs, AssociatedStyleOptions options, ChartType chartType) {
 		// Set the default node appearance
 		vs.setDefaultValue(NODE_FILL_COLOR, Colors.DEF_NODE_COLOR);
 		vs.setDefaultValue(NODE_BORDER_PAINT, Colors.DEF_NODE_BORDER_COLOR);

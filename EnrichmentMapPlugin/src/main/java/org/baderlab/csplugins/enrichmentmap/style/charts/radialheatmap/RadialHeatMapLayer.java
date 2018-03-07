@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 	private final Map<String, String> labels;
 	private final double startAngle;
 	private final Rotation rotation;
+	private final boolean useColorsDirectly;
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -49,23 +51,45 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 		this.startAngle = startAngle;
 		this.rotation = rotation;
 		this.labels = new HashMap<>();
-        
-        // Range cannot be null
-        if (this.range == null)
-        	this.range = calculateRange(data.values(), false);
+		useColorsDirectly = false;
+
+		// Range cannot be null
+		if (this.range == null)
+			this.range = calculateRange(data.values(), false);
+	}
+	
+	/**
+	 * Use this constructor to create a radial heat map not from numeric data, but from predetermined colors.
+	 */
+	public RadialHeatMapLayer(
+			final List<String> itemLabels,
+			final boolean showLabels,
+			final float itemFontSize,
+			final List<Color> colors,
+			final float borderWidth,
+			final Color borderColor,
+			final double startAngle,
+			final Rotation rotation,
+			final Rectangle2D bounds
+	) {
+		super(Collections.emptyMap(), itemLabels, null, null, showLabels, false, false, itemFontSize,
+				LabelPosition.STANDARD, colors, Collections.emptyList(), 0.0f, TRANSPARENT_COLOR, 0.0f, borderWidth,
+				borderColor, Collections.emptyList(), bounds);
+		this.startAngle = startAngle;
+		this.rotation = rotation;
+		this.labels = new HashMap<>();
+		useColorsDirectly = true;
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@Override
 	protected PieDataset createDataset() {
-		List<Double> values = data.isEmpty() ? null : data.values().iterator().next();
+		List<Double> values = data.isEmpty() ? Collections.emptyList() : data.values().iterator().next();
 		
 		// All the slices must have the same size
-		Double[] equalValues = values.isEmpty() ? null : new Double[values.size()];
-		
-		if (equalValues != null)
-			Arrays.fill(equalValues, new Double(1));
+		Double[] equalValues = values.isEmpty() || useColorsDirectly ? new Double[colors.size()] : new Double[values.size()];
+		Arrays.fill(equalValues, new Double(1));
 		
 		final PieDataset dataset = createPieDataset(equalValues != null ? Arrays.asList(equalValues) : null);
 		
@@ -145,13 +169,15 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 		
 		for (int i = 0; i < keys.size(); i++) {
 			String k = (String) keys.get(i);
-			Double v =  values.size() > i ? values.get(i) : null;
+			Double v =  !useColorsDirectly && values.size() > i ? values.get(i) : null;
 			final Color c;
 			
 			if (v == null || !Double.isFinite(v)) {
 				c = nanColor;
 			} else {
-				if (colorPoints.isEmpty() || colorPoints.size() != colors.size())
+				if (useColorsDirectly)
+					c = colors.size() > i ? colors.get(i) : nanColor;
+				else if (colorPoints.isEmpty() || colorPoints.size() != colors.size())
 					c = ColorUtil.getColor(v, range.get(0), range.get(1), lowerColor, zeroColor, upperColor);
 				else
 					c = ColorUtil.getColor(v, colors, colorPoints);

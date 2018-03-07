@@ -11,10 +11,10 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
-import org.baderlab.csplugins.enrichmentmap.style.GMStyleBuilder;
-import org.baderlab.csplugins.enrichmentmap.style.GMStyleOptions;
+import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -35,23 +35,24 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
-public class UpdateGMStyleTask extends AbstractTask {
+public class UpdateAssociatedStyleTask extends AbstractTask {
 
 	@Inject private VisualMappingManager visualMappingManager;
 	
-	@Inject private Provider<GMStyleBuilder> styleBuilderProvider;
+	@Inject private Provider<AssociatedStyleBuilder> styleBuilderProvider;
 
-	private final GMStyleOptions options;
+	private final AssociatedStyleOptions options;
 	private final CyCustomGraphics2<?> chart;
 	
-	private static final Logger logger = LoggerFactory.getLogger(UpdateGMStyleTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(UpdateAssociatedStyleTask.class);
 
 	public interface Factory {
-		UpdateGMStyleTask create(GMStyleOptions options, CyCustomGraphics2<?> chart);
+		UpdateAssociatedStyleTask create(AssociatedStyleOptions options, CyCustomGraphics2<?> chart);
 	}
 
 	@Inject
-	public UpdateGMStyleTask(@Assisted GMStyleOptions options, @Assisted @Nullable CyCustomGraphics2<?> chart) {
+	public UpdateAssociatedStyleTask(@Assisted AssociatedStyleOptions options,
+			@Assisted @Nullable CyCustomGraphics2<?> chart) {
 		this.options = options;
 		this.chart = chart;
 	}
@@ -91,9 +92,9 @@ public class UpdateGMStyleTask extends AbstractTask {
 		String org = null;
 		
 		try {
-			org = GMStyleBuilder.Columns.GM_ORGANISM.get(network.getRow(network));
+			org = AssociatedStyleBuilder.Columns.GM_ORGANISM.get(network.getRow(network));
 		} catch (Exception e) {
-			logger.error("Cannot get '" + GMStyleBuilder.Columns.GM_ORGANISM.getBaseName() + "' from GeneMANIA's Network table.", e);
+			logger.error("Cannot get '" + AssociatedStyleBuilder.Columns.GM_ORGANISM.getBaseName() + "' from GeneMANIA's Network table.", e);
 		}
 		
 		Map<Long, double[]> columnData = new HashMap<>();
@@ -106,7 +107,7 @@ public class UpdateGMStyleTask extends AbstractTask {
 			columnData.put(node.getSUID(), data);
 			
 			CyRow row = network.getRow(node);
-			String name = GMStyleBuilder.Columns.GM_GENE_NAME.get(row, null, null);
+			String name = AssociatedStyleBuilder.Columns.GM_GENE_NAME.get(row, null, null);
 			
 			if (name == null)
 				continue;
@@ -144,9 +145,9 @@ public class UpdateGMStyleTask extends AbstractTask {
 			String org = null;
 			
 			try {
-				org = GMStyleBuilder.Columns.GM_ORGANISM.get(network.getRow(network));
+				org = AssociatedStyleBuilder.Columns.GM_ORGANISM.get(network.getRow(network));
 			} catch (Exception e) {
-				logger.error("Cannot get '" + GMStyleBuilder.Columns.GM_ORGANISM.getBaseName() + "' from GeneMANIA's Network table.", e);
+				logger.error("Cannot get '" + AssociatedStyleBuilder.Columns.GM_ORGANISM.getBaseName() + "' from GeneMANIA's Network table.", e);
 			}
 			
 			Map<Long, int[]> columnData = new HashMap<>();
@@ -159,7 +160,7 @@ public class UpdateGMStyleTask extends AbstractTask {
 				columnData.put(node.getSUID(), data);
 				
 				CyRow row = network.getRow(node);
-				String name = GMStyleBuilder.Columns.GM_GENE_NAME.get(row, null, null);
+				String name = AssociatedStyleBuilder.Columns.GM_GENE_NAME.get(row, null, null);
 				
 				if (name == null)
 					continue;

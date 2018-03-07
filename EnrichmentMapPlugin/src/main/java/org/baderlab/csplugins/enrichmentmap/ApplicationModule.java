@@ -14,7 +14,7 @@ import org.baderlab.csplugins.enrichmentmap.task.CreateEMViewTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.SelectNodesEdgesTask;
-import org.baderlab.csplugins.enrichmentmap.task.UpdateGMStyleTask;
+import org.baderlab.csplugins.enrichmentmap.task.UpdateAssociatedStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreatePANetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PASimilarityTaskParallel;
@@ -90,7 +90,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(CreateEMNetworkTask.Factory.class);
 		installFactory(CreateEMViewTask.Factory.class);
 		installFactory(ApplyEMStyleTask.Factory.class);
-		installFactory(UpdateGMStyleTask.Factory.class);
+		installFactory(UpdateAssociatedStyleTask.Factory.class);
 		installFactory(FilterNodesEdgesTask.Factory.class);
 		installFactory(SelectNodesEdgesTask.Factory.class);
 		installFactory(ClusterRankingOption.Factory.class);

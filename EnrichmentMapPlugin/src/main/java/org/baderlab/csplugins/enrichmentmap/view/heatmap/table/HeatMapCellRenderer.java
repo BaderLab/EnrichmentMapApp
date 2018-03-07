@@ -85,14 +85,12 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 		}
 	}
 	
-	
 	public Optional<DataSetColorRange> getRange(EMDataSet dataset, Transform transform) {
 		// creating the color range for Transform.ROW_NORMALIZED consumes memory, so cache the value
 		return colorRanges.computeIfAbsent(Pair.of(dataset, transform), 
 			pair -> DataSetColorRange.create(pair.getLeft().getExpressionSets(), pair.getRight())
 		);
 	}
-	
 	
 	public static Color getColor(Double measurement, DataSetColorRange range) {
 		return getColor(measurement, range.getTheme(), range.getRange());

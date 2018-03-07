@@ -43,6 +43,7 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import static org.baderlab.csplugins.enrichmentmap.util.NetworkUtil.EM_ASSOCIATED_APP_COLUMN;
 import static org.baderlab.csplugins.enrichmentmap.util.NetworkUtil.EM_NETWORK_SUID_COLUMN;
 
 import java.beans.PropertyChangeListener;
@@ -117,14 +118,20 @@ public class EnrichmentMapManager {
 		return isEnrichmentMap(networkView.getModel().getSUID());
 	}
 	
-	public void addAssociatedEnrichmentMap(CyNetwork network, EnrichmentMap map) {
-		// Add EM Network SUID to genemania network's table.
+	public void addAssociatedAppAttributes(CyNetwork network, EnrichmentMap map, AssociatedApp associatedApp) {
+		// Add EM Network SUID to associated network's table.
 		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
 		
 		if (table.getColumn(EM_NETWORK_SUID_COLUMN) == null)
 			table.createColumn(EM_NETWORK_SUID_COLUMN, Long.class, true);
 		
 		table.getRow(network.getSUID()).set(EM_NETWORK_SUID_COLUMN, map.getNetworkID());
+		
+		// Add App name to associated network's hidden table, to make it easier and more consistent later
+		if (table.getColumn(EM_ASSOCIATED_APP_COLUMN) == null)
+			table.createColumn(EM_ASSOCIATED_APP_COLUMN, String.class, true);
+		
+		table.getRow(network.getSUID()).set(EM_ASSOCIATED_APP_COLUMN, associatedApp.name());
 		
 		// Update our internal map and fire an event if it changed
 		Map<Long, EnrichmentMap> oldValue = getAssociatedEnrichmentMaps();

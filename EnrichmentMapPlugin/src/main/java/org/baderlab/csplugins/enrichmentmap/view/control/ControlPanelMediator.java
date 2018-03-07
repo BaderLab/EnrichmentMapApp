@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +51,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
+import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
@@ -63,14 +65,19 @@ import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask.FilterMode;
 import org.baderlab.csplugins.enrichmentmap.task.SelectNodesEdgesTask;
+import org.baderlab.csplugins.enrichmentmap.task.UpdateAssociatedStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.AbstractViewControlPanel;
+import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.AssociatedViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
-import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.GMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
 import org.baderlab.csplugins.enrichmentmap.view.legend.CreationParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
@@ -131,12 +138,14 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private CyNetworkViewManager networkViewManager;
 	@Inject private CyNetworkManager networkManager;
 	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
+	@Inject private UpdateAssociatedStyleTask.Factory UpdateAssociatedStyleTaskFactory;
 	@Inject private RemoveSignatureDataSetsTask.Factory removeDataSetsTaskFactory;
 	@Inject private FilterNodesEdgesTask.Factory filterNodesEdgesTaskFactory;
 	@Inject private SelectNodesEdgesTask.Factory selectNodesEdgesTaskFactory;
 	@Inject private DialogTaskManager dialogTaskManager;
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private ChartFactoryManager chartFactoryManager;
+	@Inject private HeatMapMediator heatMapMediator;
 	
 	private FilterMode filterMode = FilterMode.HIDE;
 	
@@ -178,7 +187,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	public void reset() {
 		// Listen to events from EM Manager
-		emManager.addPropertyChangeListener("geneManiaEnrichmentMaps", evt -> {
+		emManager.addPropertyChangeListener("associatedEnrichmentMaps", evt -> {
 			// A GeneMANIA network (created from EM nodes) has been added...
 			invokeOnEDT(() -> {
 				updating = true;
@@ -447,15 +456,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		
 		// Is the new view an EnrichmentMap one?
 		if (map != null) {
-			if (NetworkUtil.isGeneManiaNetwork(netView.getModel()))
-				viewPanel = getControlPanel().addGeneManiaView(netView);
+			if (NetworkUtil.isAssociatedNetwork(netView.getModel()))
+				viewPanel = getControlPanel().addAssociatedView(netView);
 			else
 				viewPanel = getControlPanel().addEnrichmentMapView(netView);
 			
 			if (viewPanel instanceof EMViewControlPanel)
 				addListeners((EMViewControlPanel) viewPanel, map);
-			else if (viewPanel instanceof GMViewControlPanel)
-				addListeners((GMViewControlPanel) viewPanel, map);
+			else if (viewPanel instanceof AssociatedViewControlPanel)
+				addListeners((AssociatedViewControlPanel) viewPanel, map);
 		}
 		
 		return viewPanel;
@@ -621,11 +630,40 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		viewPanel.updateChartDataCombo();
 	}
 
-	private void addListeners(GMViewControlPanel viewPanel, EnrichmentMap map) {
+	private void addListeners(AssociatedViewControlPanel viewPanel, EnrichmentMap map) {
+		viewPanel.getChartDataCombo().addItemListener(evt -> {
+			if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
+				updating = true;
+				
+				try {
+					viewPanel.updateStyleCombos();
+					updateAssociatedStyle(map, viewPanel);
+				} finally {
+					updating = false;
+				}
+			}
+		});
 		viewPanel.getCompressCombo().addItemListener(evt -> {
 			if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
-//				updateGeneManiaStyle(map, viewPanel);
+				updating = true;
+				
+				try {
+					viewPanel.updateStyleCombos();
+					updateAssociatedStyle(map, viewPanel);
+				} finally {
+					updating = false;
+				}
 			}
+		});
+		viewPanel.getDataSetCombo().addItemListener(evt -> {
+			if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
+				updateAssociatedStyle(map, viewPanel);
+		});
+		viewPanel.getRemoveStyleButton().addActionListener(evt -> {
+			removeAssociatedStyle(map, viewPanel);
+		});
+		viewPanel.getResetStyleButton().addActionListener(evt -> {
+			updateAssociatedStyle(map, viewPanel);
 		});
 	}
 	
@@ -774,6 +812,28 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		});
 	}
 	
+	private void updateAssociatedStyle(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {
+		CyNetworkView netView = viewPanel.getNetworkView();
+		
+		if (netView != null && map != null) {
+			AssociatedStyleOptions options = createAssociatedStyleOptions(map, netView);
+			CyCustomGraphics2<?> chart = createChart(options);
+			
+			UpdateAssociatedStyleTask task = UpdateAssociatedStyleTaskFactory.create(options, chart);
+			dialogTaskManager.execute(new TaskIterator(task));
+		}
+	}
+	
+	private void removeAssociatedStyle(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {
+		CyNetworkView netView = viewPanel.getNetworkView();
+		
+		if (netView != null && map != null) {
+			// TODO
+//			UpdateAssociatedStyleTask task = UpdateAssociatedStyleTaskFactory.create(options, chart);
+//			dialogTaskManager.execute(new TaskIterator(task));
+		}
+	}
+	
 	private EMStyleOptions createStyleOptions(EnrichmentMap map, EMViewControlPanel viewPanel) {
 		if (map == null || viewPanel == null)
 			return null;
@@ -785,7 +845,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
 		ChartType type;
 		ColorScheme colorScheme;
-		if(data == ChartData.DATA_SET) {
+		
+		if (data == ChartData.DATA_SET) {
 			type = ChartType.DATASET_PIE;
 			colorScheme = null;
 		} else {
@@ -797,6 +858,92 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		ChartOptions chartOptions = new ChartOptions(data, type, colorScheme, showLabels);
 
 		return new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, chartOptions, postAnalysis, publicationReady);
+	}
+	
+	private AssociatedStyleOptions createAssociatedStyleOptions(EnrichmentMap map, CyNetworkView netView) {
+		HeatMapParams params = heatMapMediator.getHeatMapParams(map, netView.getModel().getSUID(), false);
+		Compress compress = params.getCompress();
+		
+		ChartData data = null;
+		ChartType type = null;
+		ExpressionData exp = null;
+		
+		// TODO
+		if (compress == null || compress == Compress.NONE) {
+			// No compression: Color nodes by Data Set (simple Pie Chart)
+			data = ChartData.DATA_SET;
+			type = ChartType.DATASET_PIE;
+		} else {
+			// Compression by Data Set or Class
+			exp = heatMapMediator.getExpressionData(compress);
+			
+			if (exp != null) {
+				data = ChartData.EXPRESSION_DATA;
+				type = ChartType.RADIAL_HEAT_MAP;
+			}
+		}
+		
+		ChartOptions chartOptions = data != null ? new ChartOptions(data, type, null, false) : null;
+
+		return new AssociatedStyleOptions(netView, map, params, exp, chartOptions);
+	}
+	
+	private CyCustomGraphics2<?> createChart(AssociatedStyleOptions options) {
+		CyCustomGraphics2<?> chart = null;
+		ChartOptions chartOptions = options.getChartOptions();
+		ChartData data = chartOptions != null ? chartOptions.getData() : null;
+		
+		if (data != null && data != ChartData.NONE) {
+			// Ignore Signature Data Sets in charts
+			Collection<AbstractDataSet> dataSets = options.getDataSets();
+			
+			if (!dataSets.isEmpty()) {
+				ChartType type = chartOptions.getType();
+				Map<String, Object> props = new HashMap<>(type.getProperties());
+				AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
+				
+				if (data == ChartData.DATA_SET) {
+					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
+					List<Color> colors = options.getEnrichmentMap().getDataSetColors();
+					
+					props.put("cy_dataColumns", columns);
+					props.put("cy_colors", colors);
+					props.put("cy_showItemLabels", chartOptions.isShowLabels());
+				} else if (data == ChartData.EXPRESSION_DATA) {
+					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
+					List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
+					chartOptions.setColorScheme(ColorScheme.RD_BU_9); // TODO remove and get same colors as in heatmap cells
+					List<Color> colors = new ArrayList<>();
+					
+					props.put("cy_dataColumns", columns);
+					props.put("cy_range", range);
+					props.put("cy_autoRange", false);
+					props.put("cy_globalRange", true);
+					props.put("cy_showItemLabels", chartOptions.isShowLabels());
+					props.put("cy_colors", colors);
+					
+					ColorScheme colorScheme = chartOptions != null ? chartOptions.getColorScheme() : null;
+					
+					if (colorScheme != null && colorScheme.getPoints() != null) {
+						List<Double> points = colorScheme.getPoints();
+						
+						if (!points.isEmpty())
+							props.put(AbstractChart.COLOR_POINTS, points);
+					}
+				}
+				
+				try {
+					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
+					
+					if (factory != null)
+						chart = factory.getInstance(props);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return chart;
 	}
 	
 	/**
