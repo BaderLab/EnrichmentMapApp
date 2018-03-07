@@ -134,14 +134,9 @@ public class GMTFileReaderTask extends AbstractTask implements ObservableTask {
 			String description = tokens[1].trim();
 			
 			for(int i = 2; i < tokens.length; i++) {
-				String gene = tokens[i].toUpperCase();
-				if(map.containsGene(gene)) {
-					builder.add(map.getHashFromGene(gene));
-				}
-				else if(!gene.isEmpty()) {
-					Integer hash = map.addGene(gene).get();
+				Integer hash = map.addGene(tokens[i]);
+				if(hash != null)
 					builder.add(hash);
-				}
 			}
 			return new GeneSet(name, description, builder.build());
 		}

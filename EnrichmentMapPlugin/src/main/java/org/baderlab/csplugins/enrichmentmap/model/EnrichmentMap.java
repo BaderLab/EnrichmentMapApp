@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -73,10 +72,6 @@ public class EnrichmentMap {
 	public EMDataSet createDataSet(String name, Method method, DataSetFiles files) {
 		if (dataSets.containsKey(name))
 			throw new IllegalArgumentException("DataSet with name " + name + " already exists in this enrichment map");
-
-		if (isNullOrEmpty(files.getEnrichmentFileName1()) && isNullOrEmpty(files.getGMTFileName())
-				&& isNullOrEmpty(files.getExpressionFileName()))
-			throw new IllegalArgumentException("At least one of the required files must be given");
 
 		EMDataSet ds = new EMDataSet(this, name, method, files);
 		dataSets.put(name, ds);
@@ -176,18 +171,21 @@ public class EnrichmentMap {
 		return Collections.unmodifiableSet(genes.values());
 	}
 	
-	public Optional<Integer> addGene(String gene) {
+	public Integer addGene(String gene) {
+		if(gene == null || gene.isEmpty())
+			return null;
+		
 		gene = gene.toUpperCase();
 		
 		Map<String,Integer> geneToHash = genes.inverse();
 		
 		Integer hash = geneToHash.get(gene);
 		if(hash != null)
-			return Optional.of(hash);
+			return hash;
 
 		Integer newHash = ++NumberOfGenes;
 		genes.put(newHash, gene);
-		return Optional.of(newHash);
+		return newHash;
 	}
 	
 	@Deprecated // this is here to support legacy session loading

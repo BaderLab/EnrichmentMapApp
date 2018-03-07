@@ -29,7 +29,7 @@ public class DataSetParameters {
 	public DataSetParameters(String name, Method method, TableParameters tableParameters) {
 		this.name = Objects.requireNonNull(name);
 		this.method = Objects.requireNonNull(method);
-		this.files = null;
+		this.files = new DataSetFiles();
 		this.tableParameters = Objects.requireNonNull(tableParameters);
 	}
 
@@ -37,8 +37,8 @@ public class DataSetParameters {
 		return name;
 	}
 
-	public Optional<DataSetFiles> getFiles() {
-		return Optional.ofNullable(files);
+	public DataSetFiles getFiles() {
+		return files;
 	}
 	
 	public Optional<TableParameters> getTableParams() {

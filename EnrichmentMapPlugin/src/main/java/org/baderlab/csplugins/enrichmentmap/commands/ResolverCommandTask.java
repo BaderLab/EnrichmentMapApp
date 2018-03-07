@@ -65,7 +65,7 @@ public class ResolverCommandTask extends AbstractTask {
 				throw new IllegalArgumentException("Cannot read commonExpressionFile: " + commonExpressionFile);
 			}
 			for(DataSetParameters dsp : dataSets) {
-				dsp.getFiles().ifPresent(d -> d.setExpressionFileName(commonExpressionFile.getAbsolutePath()));
+				dsp.getFiles().setExpressionFileName(commonExpressionFile.getAbsolutePath());
 			}
 		}
 		
@@ -75,7 +75,7 @@ public class ResolverCommandTask extends AbstractTask {
 				throw new IllegalArgumentException("Cannot read commonGMTFile: " + commonGMTFile);
 			}
 			for(DataSetParameters dsp : dataSets) {
-				dsp.getFiles().ifPresent(d -> d.setGMTFileName(commonGMTFile.getAbsolutePath()));
+				dsp.getFiles().setGMTFileName(commonGMTFile.getAbsolutePath());
 			}
 		}
 		

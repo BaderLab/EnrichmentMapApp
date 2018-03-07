@@ -148,17 +148,17 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		// Overwrite all the expression files if the common file has been provided
 		if(commonPanel.hasExpressionFile()) {
 			String exprPath = commonPanel.getExpressionFile();
-			dataSets.forEach(dsp -> dsp.getFiles().get().setExpressionFileName(exprPath));
+			dataSets.forEach(dsp -> dsp.getFiles().setExpressionFileName(exprPath));
 		}
 		// Overwrite all the gmt files if a common file has been provided
 		if(commonPanel.hasGmtFile()) {
 			String gmtPath = commonPanel.getGmtFile();
-			dataSets.forEach(dsp -> dsp.getFiles().get().setGMTFileName(gmtPath));
+			dataSets.forEach(dsp -> dsp.getFiles().setGMTFileName(gmtPath));
 		}
 		// Overwrite all the class files if a common file has been provided
 		if(commonPanel.hasClassFile()) {
 			String classPath = commonPanel.getClassFile();
-			dataSets.forEach(dsp -> dsp.getFiles().get().setClassFile(classPath));
+			dataSets.forEach(dsp -> dsp.getFiles().setClassFile(classPath));
 		}
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);

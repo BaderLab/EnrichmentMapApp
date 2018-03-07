@@ -292,7 +292,7 @@ public class DetailDataSetPanel extends JPanel implements DetailPanel {
 	
 	private void initialize(DataSetParameters initDataSet) {
 		nameText.setText(initDataSet.getName());
-		DataSetFiles files = initDataSet.getFiles().get();
+		DataSetFiles files = initDataSet.getFiles();
 		enrichments1Text.setText(files.getEnrichmentFileName1());
 		enrichments2Text.setText(files.getEnrichmentFileName2());
 		gmtText.setText(files.getGMTFileName());

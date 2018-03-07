@@ -127,14 +127,9 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 						
 						//All subsequent fields in the list are the genes associated with this geneset.
 						for(String token : gene_tokens) {
-							String gene = token.trim().toUpperCase();
-
-							if(map.containsGene(gene)) {
-								builder.add(map.getHashFromGene(gene));
-							} else if(!gene.isEmpty()) {
-								Integer hash = map.addGene(gene).get();
+							Integer hash = map.addGene(token);
+							if(hash != null)
 								builder.add(hash);
-							}
 						}
 
 						GeneSet gs = new GeneSet(name, description, builder.build());

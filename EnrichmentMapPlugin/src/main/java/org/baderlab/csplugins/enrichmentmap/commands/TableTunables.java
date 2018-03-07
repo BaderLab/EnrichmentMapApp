@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.commands;
 
 import org.baderlab.csplugins.enrichmentmap.model.TableParameters;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.Tunable;
@@ -16,24 +17,21 @@ public class TableTunables {
 	@Tunable(required=true)
 	public String nameColumn;
 	
-	@Tunable
-	public String descriptionColumn;
-	
 	@Tunable(required=true)
 	public String genesColumn;
 	
 	@Tunable(required=true)
 	public String pvalueColumn;
+	
+	@Tunable
+	public String descriptionColumn;
 
 	
 	@Inject private CyTableManager tableManager;
 	
 	
-	public String getTableString() {
-		return table;
-	}
 
-	public CyTable getTable() { 
+	private CyTable getTable() { 
 		if(table == null)
 			return null;
 
@@ -51,7 +49,36 @@ public class TableTunables {
 	}
 	
 	public TableParameters getTableParameters() throws IllegalArgumentException {
-		return null;
+		CyTable table = getTable();
+		if(table == null)
+			throw new IllegalArgumentException("Table '" + table + "' is invalid.");
+		
+		validateColumn(table, nameColumn, false, String.class, true);
+		validateColumn(table, genesColumn, true, String.class, true);
+		validateColumn(table, pvalueColumn, false, Double.class, true);
+		validateColumn(table, descriptionColumn, false, String.class, false);
+		
+		return new TableParameters(table, nameColumn, genesColumn, pvalueColumn, descriptionColumn);
 	}
+	
+	
+	private static void validateColumn(CyTable table, String name, boolean isList, Class<?> type, boolean required) throws IllegalArgumentException {
+		if(name == null && required)
+			throw new IllegalArgumentException("Column '" + name + "' is required.");
+		if(name == null)
+			return;
+		
+		CyColumn column = table.getColumn(name);
+		if(column == null && required)
+			throw new IllegalArgumentException("Column '" + name + "' is invalid.");
+		if(column == null)
+			return;
+		
+		// if the column exists it must still be of the required type
+		if((isList && !column.getListElementType().equals(type)) || (!isList && !column.getType().equals(type)))
+			throw new IllegalArgumentException("Column '" + name + "' must be of type '" + (isList ? "list of " + type : type) + "'");
+	}
+	
+	
 }
 

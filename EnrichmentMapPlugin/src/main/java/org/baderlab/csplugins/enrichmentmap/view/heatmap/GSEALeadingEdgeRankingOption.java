@@ -14,7 +14,6 @@ import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
-import org.baderlab.csplugins.enrichmentmap.parsers.DetermineEnrichmentResultFileReader;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 
@@ -22,6 +21,9 @@ import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
  * The leading edge can only be computed if a single gene-set is selected.
  */
 public class GSEALeadingEdgeRankingOption implements RankingOption {
+	
+	public static final Double DefaultScoreAtMax = -1000000.0;
+	
 	
 	private final String rankingName;
 	private final EMDataSet dataset;
@@ -134,7 +136,7 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 	 */
 	private void initializeLeadingEdge() {
 		scoreAtMax = result.getScoreAtMax();
-		if(scoreAtMax == DetermineEnrichmentResultFileReader.DefaultScoreAtMax) {
+		if(scoreAtMax == DefaultScoreAtMax) {
 			scoreAtMax = result.getNES();
 		}
 		rankAtMax = result.getRankAtMax();

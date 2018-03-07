@@ -119,16 +119,9 @@ public class ParseGREATEnrichmentResults extends AbstractTask {
 
 			//All subsequent fields in the list are the geneset associated with this geneset.
 			for(int j = 0; j < gene_tokens.length; j++) {
-				String gene = gene_tokens[j].toUpperCase();
-				//Check to see if the gene is already in the hashmap of genes
-				//if it is already in the hash then get its associated key and put it into the set of genes
-				if(map.containsGene(gene)) {
-					builder.add(map.getHashFromGene(gene));
-				}
-				else if(!gene.isEmpty()) {
-					Integer hash = map.addGene(gene).get();
+				Integer hash = map.addGene(gene_tokens[j]);
+				if(hash != null)
 					builder.add(hash);
-				}
 			}
 
 			//finished parsing that geneset

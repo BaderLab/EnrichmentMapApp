@@ -35,12 +35,12 @@ public class Protocol1Test extends BaseIntegrationTest {
 		assertTrue(enrichmentFile.exists());
 		
 		task.analysisType.setSelectedValue(EnrichmentMapParameters.method_generic);
-		task.coefficients.setSelectedValue(EnrichmentMapParameters.SM_JACCARD);
+		task.filterArgs.coefficients.setSelectedValue(EnrichmentMapParameters.SM_JACCARD);
 		task.enrichmentsDataset1 = enrichmentFile;
-		task.pvalue = 1.0;
-		task.qvalue = 0.00001;
-		task.similaritycutoff = 0.25;
-		task.edgeStrategy.setSelectedValue(EdgeStrategy.COMPOUND.name());
+		task.filterArgs.pvalue = 1.0;
+		task.filterArgs.qvalue = 0.00001;
+		task.filterArgs.similaritycutoff = 0.25;
+		task.filterArgs.edgeStrategy.setSelectedValue(EdgeStrategy.COMPOUND.name());
 		
 		SerialTestTaskManager taskManager = new SerialTestTaskManager();
 		taskManager.execute(new TaskIterator(task));

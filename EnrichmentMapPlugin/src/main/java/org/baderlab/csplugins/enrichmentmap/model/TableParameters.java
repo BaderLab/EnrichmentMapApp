@@ -1,19 +1,44 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 import org.cytoscape.model.CyTable;
 
 public class TableParameters {
 
-	public CyTable table;
+	private final CyTable table;
+	private final String nameColumn;
+	private final String genesColumn;
+	private final String pvalueColumn;
+	private final Optional<String> descriptionColumn;
 	
-	public String nameColumn;
-	public String genesColumn;
-	public String pvalueColumn;
-	public @Nullable String descriptionColumn;
-	
-	public TableParameters() {
+	public TableParameters(CyTable table, String nameColumn, String genesColumn, String pvalueColumn, String descriptionColumn) {
+		this.table = Objects.requireNonNull(table);
+		this.nameColumn = Objects.requireNonNull(nameColumn);
+		this.genesColumn = Objects.requireNonNull(genesColumn);
+		this.pvalueColumn = Objects.requireNonNull(pvalueColumn);
+		this.descriptionColumn = Optional.ofNullable(descriptionColumn);
+	}
+
+	public CyTable getTable() {
+		return table;
+	}
+
+	public String getNameColumn() {
+		return nameColumn;
+	}
+
+	public String getGenesColumn() {
+		return genesColumn;
+	}
+
+	public String getPvalueColumn() {
+		return pvalueColumn;
+	}
+
+	public Optional<String> getDescriptionColumn() {
+		return descriptionColumn;
 	}
 
 }
