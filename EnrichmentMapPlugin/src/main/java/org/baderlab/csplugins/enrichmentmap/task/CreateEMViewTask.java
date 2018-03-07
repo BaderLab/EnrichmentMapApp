@@ -50,17 +50,14 @@ public class CreateEMViewTask extends AbstractTask {
 		
 		//apply force directed layout
 		CyLayoutAlgorithm layout = layoutManager.getLayout("force-directed");
-		
 		if (layout == null)
 			layout = layoutManager.getDefaultLayout();
 		
 		Task styleTask = applyStyleTaskFactory.create(new EMStyleOptions(view, map), null, false);
-		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(),
-				CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
+		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
 		
-		TaskIterator moreTasks = new TaskIterator();
-		moreTasks.append(styleTask);
-		moreTasks.append(layoutTasks);
-		insertTasksAfterCurrentTask(moreTasks);
+		TaskIterator tasks = new TaskIterator(styleTask);
+		tasks.append(layoutTasks);
+		insertTasksAfterCurrentTask(tasks);
 	}
 }

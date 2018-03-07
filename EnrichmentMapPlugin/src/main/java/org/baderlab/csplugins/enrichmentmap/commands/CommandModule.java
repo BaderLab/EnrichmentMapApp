@@ -55,8 +55,8 @@ public class CommandModule extends AbstractModule {
 	}
 	
 	@Provides @BuildTableCommand
-	public TaskFactory provideBuildTable(Provider<TableCommandTask> taskProvider) {
-		return createTaskFactory(taskProvider, null);
+	public TaskFactory provideBuildTable(Provider<TableCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+		return createTaskFactory(taskProvider, showTask);
 	}
 
 	

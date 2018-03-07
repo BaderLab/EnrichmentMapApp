@@ -333,7 +333,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				}
 				try {
 					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
-					
 					if (factory != null)
 						chart = factory.getInstance(props);
 				} catch (Exception e) {
@@ -594,12 +593,16 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			EMCreationParameters params = map.getParams();
 			
 			ChartData chartData;
-			if(map.isTwoPhenotypeGeneric())
+			if(map.isTwoPhenotypeGeneric()) {
 				chartData = ChartData.PHENOTYPES;
-			else if(params != null && params.isFDR() && map.hasNonGSEADataSet())
-				chartData = ChartData.FDR_VALUE; // Default for other data sets
-			else
+			} else if(params != null && map.hasNonGSEADataSet()) {
+				if(params.isFDR()) 
+					chartData = ChartData.FDR_VALUE;
+				else
+					chartData = ChartData.P_VALUE;
+			} else {
 				chartData = ChartData.NES_VALUE; // Default for GSEA data sets
+			}
 			
 			viewPanel.getChartDataCombo().setSelectedItem(chartData);
 		}

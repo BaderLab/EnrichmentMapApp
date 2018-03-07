@@ -33,7 +33,7 @@ public class TableCommandTask extends AbstractTask {
 		EMCreationParameters creationParams = filterArgs.getCreationParameters();
 		TableParameters tableParams = tableArgs.getTableParameters();
 		
-		String dataSetName = filterArgs.networkName == null ? "Data Set" : filterArgs.networkName;
+		String dataSetName = filterArgs.networkName == null ? "Data Set 1" : filterArgs.networkName;
 		DataSetParameters dsParams = new DataSetParameters(dataSetName, Method.Generic, tableParams);
 		List<DataSetParameters> dataSets = Collections.singletonList(dsParams);
 		

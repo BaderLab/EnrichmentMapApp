@@ -47,8 +47,7 @@ public class ApplyEMStyleTask extends AbstractTask {
 	}
 
 	@Inject
-	public ApplyEMStyleTask(@Assisted EMStyleOptions options, @Assisted @Nullable CyCustomGraphics2<?> chart,
-			@Assisted boolean updateChartOnly) {
+	public ApplyEMStyleTask(@Assisted EMStyleOptions options, @Assisted @Nullable CyCustomGraphics2<?> chart, @Assisted boolean updateChartOnly) {
 		this.options = options;
 		this.chart = chart;
 		this.updateChartOnly = updateChartOnly;

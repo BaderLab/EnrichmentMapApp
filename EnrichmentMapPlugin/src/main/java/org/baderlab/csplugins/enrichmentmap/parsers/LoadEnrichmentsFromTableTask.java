@@ -45,6 +45,11 @@ public class LoadEnrichmentsFromTableTask extends AbstractTask {
 			List<String> genes = row.getList(tableParams.getGenesColumn(), String.class);
 			String name = row.get(tableParams.getNameColumn(), String.class);
 			Double pvalue = row.get(tableParams.getPvalueColumn(), Double.class);
+			
+			// Skip row if data is invalid in any way
+			if(genes == null || genes.isEmpty() || name == null || name.isEmpty() || pvalue == null)
+				continue;
+			
 			String description = null;
 			if(tableParams.getDescriptionColumn().isPresent()) {
 				description = row.get(tableParams.getDescriptionColumn().get(), String.class);
@@ -68,6 +73,9 @@ public class LoadEnrichmentsFromTableTask extends AbstractTask {
 			
 			tm.inc();
 		}
+		
+		// TODO if we add support for fdr q-value column then make sure to set the following...
+		// dataset.getMap().getParams().setFDR(FDR);
 	}
 
 	
