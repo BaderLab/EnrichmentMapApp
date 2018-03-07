@@ -982,7 +982,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JComboBox<ChartData> chartDataCombo;
 		private JComboBox<ComboItem<Compress>> compressCombo;
 		private JComboBox<EMDataSet> dataSetCombo;
-		private JButton removeStyleButton;
 		
 		private AssociatedViewControlPanel(CyNetworkView networkView) {
 			super(networkView, "__EM_CHILD_VIEW_CONTROL_PANEL_" + networkView.getSUID());
@@ -1015,7 +1014,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			
 			makeSmall(chartDataLabel, compressLabel, dataSetLabel);
 			makeSmall(getChartDataCombo(), getCompressCombo(), getDataSetCombo());
-			makeSmall(getRemoveStyleButton(), getResetStyleButton());
 			
 			final JPanel panel = new JPanel();
 			panel.setBorder(LookAndFeelUtil.createTitledBorder("Style"));
@@ -1040,8 +1038,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							)
 					)
 					.addGroup(layout.createSequentialGroup()
-							.addComponent(getRemoveStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addGap(0, 0, Short.MAX_VALUE)
 							.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 			);
@@ -1059,10 +1056,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							.addComponent(getDataSetCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(layout.createParallelGroup(CENTER, false)
-							.addComponent(getRemoveStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					)
+					.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 			
 			if (LookAndFeelUtil.isAquaLAF())
@@ -1129,15 +1123,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return dataSetCombo;
 		}
 		
-		JButton getRemoveStyleButton() {
-			if (removeStyleButton == null) {
-				removeStyleButton = new JButton("Remove EnrichmentMap Modifications");
-				
-				if (isAquaLAF())
-					removeStyleButton.putClientProperty("JButton.buttonType", "gradient");
-			}
-			
-			return removeStyleButton;
+		ChartData getChartData() {
+			return (ChartData) getChartDataCombo().getSelectedItem();
+		}
+		
+		@SuppressWarnings("unchecked")
+		Compress getCompress() {
+			ComboItem<Compress> compressItem = (ComboItem<Compress>) getCompressCombo().getSelectedItem();
+			return compressItem != null ? compressItem.getValue() : null;
 		}
 		
 		@Override
@@ -1168,12 +1161,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			updateStyleCombos();
 		}
 		
-		@SuppressWarnings("unchecked")
 		void updateStyleCombos() {
-			ChartData chartData = (ChartData) getChartDataCombo().getSelectedItem();
-			
-			ComboItem<Compress> compressItem = (ComboItem<Compress>) getCompressCombo().getSelectedItem();
-			Compress compress = compressItem != null ? compressItem.getValue() : null;
+			ChartData chartData = getChartData();
+			Compress compress = getCompress();
 			
 			getCompressCombo().setEnabled(chartData == ChartData.EXPRESSION_DATA);
 			getDataSetCombo().setEnabled(chartData == ChartData.EXPRESSION_DATA && compress == Compress.NONE);

@@ -68,8 +68,9 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 					updateExpressionDataColumn();
 					break;
 				case DATA_SET:
-				default:
 					createDataSetColumn();
+					break;
+				default:
 					break;
 			}
 		}

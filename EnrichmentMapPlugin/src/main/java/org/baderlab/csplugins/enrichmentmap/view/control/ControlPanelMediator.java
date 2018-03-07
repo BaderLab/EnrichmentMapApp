@@ -659,9 +659,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
 				updateAssociatedStyle(map, viewPanel);
 		});
-		viewPanel.getRemoveStyleButton().addActionListener(evt -> {
-			removeAssociatedStyle(map, viewPanel);
-		});
 		viewPanel.getResetStyleButton().addActionListener(evt -> {
 			updateAssociatedStyle(map, viewPanel);
 		});
@@ -816,21 +813,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		CyNetworkView netView = viewPanel.getNetworkView();
 		
 		if (netView != null && map != null) {
-			AssociatedStyleOptions options = createAssociatedStyleOptions(map, netView);
+			AssociatedStyleOptions options = createAssociatedStyleOptions(map, viewPanel);
 			CyCustomGraphics2<?> chart = createChart(options);
 			
 			UpdateAssociatedStyleTask task = updateAssociatedStyleTaskFactory.create(options, chart);
 			dialogTaskManager.execute(new TaskIterator(task));
-		}
-	}
-	
-	private void removeAssociatedStyle(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {
-		CyNetworkView netView = viewPanel.getNetworkView();
-		
-		if (netView != null && map != null) {
-			// TODO
-//			UpdateAssociatedStyleTask task = updateAssociatedStyleTaskFactory.create(options, chart);
-//			dialogTaskManager.execute(new TaskIterator(task));
 		}
 	}
 	
@@ -860,27 +847,24 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		return new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, chartOptions, postAnalysis, publicationReady);
 	}
 	
-	private AssociatedStyleOptions createAssociatedStyleOptions(EnrichmentMap map, CyNetworkView netView) {
+	private AssociatedStyleOptions createAssociatedStyleOptions(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {
+		CyNetworkView netView = viewPanel.getNetworkView();
 		HeatMapParams params = heatMapMediator.getHeatMapParams(map, netView.getModel().getSUID(), false);
-		Compress compress = params.getCompress();
-		
-		ChartData data = null;
+		final ChartData data = viewPanel.getChartData();
+		final Compress compress = viewPanel.getCompress();
 		ChartType type = null;
 		ExpressionData exp = null;
 		
-		// TODO
-		if (compress == null || compress == Compress.NONE) {
-			// No compression: Color nodes by Data Set (simple Pie Chart)
-			data = ChartData.DATA_SET;
+		if (data == ChartData.DATA_SET) {
+			// Color nodes by Data Set (simple Pie Chart)
 			type = ChartType.DATASET_PIE;
-		} else {
-			// Compression by Data Set or Class
+		} else if (data == ChartData.EXPRESSION_DATA) {
+			// TODO
+			// Compression
 			exp = heatMapMediator.getExpressionData(compress);
 			
-			if (exp != null) {
-				data = ChartData.EXPRESSION_DATA;
+			if (exp != null)
 				type = ChartType.RADIAL_HEAT_MAP;
-			}
 		}
 		
 		ChartOptions chartOptions = data != null ? new ChartOptions(data, type, null, false) : null;
