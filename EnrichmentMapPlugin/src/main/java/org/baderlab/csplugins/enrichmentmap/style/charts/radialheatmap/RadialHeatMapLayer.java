@@ -170,7 +170,7 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 		for (int i = 0; i < keys.size(); i++) {
 			String k = (String) keys.get(i);
 			Double v =  !useColorsDirectly && values.size() > i ? values.get(i) : null;
-			final Color c;
+			Color c = null;
 			
 			if (v == null || !Double.isFinite(v)) {
 				c = nanColor;
@@ -178,10 +178,15 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 				if (useColorsDirectly)
 					c = colors.size() > i ? colors.get(i) : nanColor;
 				else if (colorPoints.isEmpty() || colorPoints.size() != colors.size())
-					c = ColorUtil.getColor(v, range.get(0), range.get(1), lowerColor, zeroColor, upperColor);
+					c = range.size() > 1
+							? ColorUtil.getColor(v, range.get(0), range.get(1), lowerColor, zeroColor, upperColor)
+							: null;
 				else
 					c = ColorUtil.getColor(v, colors, colorPoints);
 			}
+			
+			if (c == null)
+				c = nanColor;
 			
 			plot.setSectionPaint(k, c);
 			plot.setSectionOutlinePaint(k, borderWidth > 0 ? borderColor : TRANSPARENT_COLOR);
