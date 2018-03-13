@@ -636,7 +636,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				updating = true;
 				
 				try {
-					viewPanel.updateStyleCombos();
+					viewPanel.update();
 					updateAssociatedStyle(map, viewPanel);
 				} finally {
 					updating = false;
@@ -648,7 +648,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				updating = true;
 				
 				try {
-					viewPanel.updateStyleCombos();
+					viewPanel.updateChartTypeCombo();
+					viewPanel.updateDataSetCombo();
 					updateAssociatedStyle(map, viewPanel);
 				} finally {
 					updating = false;
@@ -656,6 +657,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			}
 		});
 		viewPanel.getDataSetCombo().addItemListener(evt -> {
+			if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
+				updateAssociatedStyle(map, viewPanel);
+		});
+		viewPanel.getChartTypeCombo().addItemListener(evt -> {
 			if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
 				updateAssociatedStyle(map, viewPanel);
 		});
@@ -852,15 +857,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		HeatMapParams params = heatMapMediator.getHeatMapParams(map, netView.getModel().getSUID(), false);
 		final ChartData data = viewPanel.getChartData();
 		final Compress compress = viewPanel.getCompress();
-		ChartType type = null;
+		ChartType type = viewPanel.getChartType();
 		ExpressionData exp = null;
 		
-		if (data == ChartData.DATA_SET) {
-			// Color nodes by Data Set (simple Pie Chart)
-			type = ChartType.DATASET_PIE;
-		} else if (data == ChartData.EXPRESSION_DATA) {
-			// TODO
-			// Compression
+		if (data == ChartData.EXPRESSION_DATA) {
+			type = viewPanel.getChartType();
 			exp = heatMapMediator.getExpressionData(compress);
 			
 			if (exp != null)
@@ -878,11 +879,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		ChartData data = chartOptions != null ? chartOptions.getData() : null;
 		
 		if (data != null && data != ChartData.NONE) {
-			// Ignore Signature Data Sets in charts
-			Collection<AbstractDataSet> dataSets = options.getDataSets();
+			ChartType type = chartOptions.getType();
+			Collection<AbstractDataSet> dataSets = options.getDataSets(); // Ignore Signature Data Sets in charts
 			
-			if (!dataSets.isEmpty()) {
-				ChartType type = chartOptions.getType();
+			if (type != null && !dataSets.isEmpty()) {
 				Map<String, Object> props = new HashMap<>(type.getProperties());
 				AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
 				

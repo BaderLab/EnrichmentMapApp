@@ -57,7 +57,7 @@ public class QueryStringTask extends AbstractTask {
 	
 	@ProvidesTitle
 	public String getTitle() {
-		return "Select an Organism";
+		return "STRING Protein Query";
 	}
 	
 	public void updatetOrganisms(List<STRSpecies> orgValues) {

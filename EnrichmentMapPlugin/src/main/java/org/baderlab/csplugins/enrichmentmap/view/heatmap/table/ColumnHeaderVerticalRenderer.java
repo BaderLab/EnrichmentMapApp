@@ -131,10 +131,8 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		}
 		
 		@Override
-		protected void drawText(Graphics g, Component c, int x, int y) {
+		protected void drawText(String text, Font font, Graphics g, Component c, int x, int y) {
 			Graphics2D g2d = (Graphics2D) g.create();
-			g2d.setColor(getColor());
-			g2d.setFont(getFont());
 			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			
 			if (clockwise) {
@@ -144,7 +142,7 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 				g2d.translate(-c.getHeight(), c.getWidth());
 			}
 			
-			g2d.drawString(getText(), 4, -4);
+			g2d.drawString(text, 4, -4);
 			g2d.dispose();
 		}
 	}

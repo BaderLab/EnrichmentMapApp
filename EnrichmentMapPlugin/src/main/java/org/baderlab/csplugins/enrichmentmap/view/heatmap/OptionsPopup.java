@@ -15,6 +15,7 @@ import javax.swing.UIManager;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
+import org.baderlab.csplugins.enrichmentmap.view.util.IconUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.TextIcon;
 import org.cytoscape.util.swing.IconManager;
 
@@ -65,7 +66,12 @@ public class OptionsPopup extends JPopupMenu {
 		exportPdfButton.setIcon(new TextIcon(IconManager.ICON_EXTERNAL_LINK, iconFont, iconColor, iconSize, iconSize));
 		
 		geneManiaButton = new JMenuItem("Show in GeneMANIA...");
+		geneManiaButton.setIcon(new TextIcon(IconUtil.GENEMANIA_ICON, IconUtil.getIconFont(14.0f), iconColor,
+				iconSize, iconSize));
+
 		stringButton = new JMenuItem("Show in STRING...");
+		stringButton.setIcon(new TextIcon(IconUtil.STRING_ICON, IconUtil.getIconFont(16.0f), iconColor,
+				iconSize, iconSize));
 		
 		JMenu distanceMenu = new JMenu("Hierarchical Cluster - Distance Metric");
 		

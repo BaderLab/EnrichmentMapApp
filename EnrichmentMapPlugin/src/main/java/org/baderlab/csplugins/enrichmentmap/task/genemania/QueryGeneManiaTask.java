@@ -59,7 +59,7 @@ public class QueryGeneManiaTask extends AbstractTask {
 	
 	@ProvidesTitle
 	public String getTitle() {
-		return "Select an Organism";
+		return "GeneMANIA Query";
 	}
 	
 	public void updatetOrganisms(List<GMOrganism> orgValues) {

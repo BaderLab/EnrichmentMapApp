@@ -5,6 +5,13 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.EM_ICON_COLORS;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.EM_STRING_COLORS;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.GENEMANIA_ICON;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.GENEMANIA_ICON_COLOR;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.LAYERED_EM_ICON;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.LAYERED_STRING_ICON;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.getIconFont;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 import static org.cytoscape.util.swing.IconManager.ICON_BARS;
 import static org.cytoscape.util.swing.IconManager.ICON_FILE;
@@ -18,7 +25,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,7 +44,6 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -50,11 +55,13 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
@@ -94,8 +101,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	private static final String BORDER_COLOR_KEY = "Separator.foreground";
 	
-	private Font gmFont;
-	
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyNetworkViewManager networkViewManager;
@@ -131,8 +136,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 
 	@Override
 	public Icon getIcon() {
-		URL url = getClass().getClassLoader().getResource("images/enrichmentmap_logo_16.png");
-		return url == null ? null : new ImageIcon(url);
+		return new TextIcon(LAYERED_EM_ICON, getIconFont(16.0f), EM_ICON_COLORS, 16, 16);
 	}
 
 	@Override
@@ -152,12 +156,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	@AfterInjection
 	private void createContents() {
-		try {
-			gmFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/genemania.ttf"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
 		setMinimumSize(new Dimension(390, 400));
 		setPreferredSize(new Dimension(390, 600));
 		
@@ -209,10 +207,12 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		if (emViewCombo == null) {
 			emViewCombo = new JComboBox<>();
 			
-			Icon gmIcon = gmFont != null
-					? new TextIcon("d", gmFont.deriveFont(12.0f), UIManager.getColor("Label.foreground"), 16, 16)
-					: null;
+			Icon emIcon = new TextIcon(LAYERED_EM_ICON, getIconFont(16.0f), EM_ICON_COLORS, 16, 16);
+			Icon gmIcon = new TextIcon(GENEMANIA_ICON, getIconFont(16.0f), GENEMANIA_ICON_COLOR, 16, 16);
+			Icon strIcon = new TextIcon(LAYERED_STRING_ICON, getIconFont(16.0f), EM_STRING_COLORS, 16, 16);
 			
+			Border appBorder = BorderFactory.createEmptyBorder(0, 20, 0, 0);
+
 			emViewCombo.setRenderer(new DefaultListCellRenderer() {
 				@Override
 				public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -224,12 +224,22 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 						setText(abbreviated);
 						list.setToolTipText(title);
 						
-						if (emManager.isAssociatedEnrichmentMap((CyNetworkView) value))
+						AssociatedApp app = NetworkUtil.getAssociatedApp(((CyNetworkView) value).getModel());
+						
+						if (app == AssociatedApp.GENEMANIA) {
 							setIcon(gmIcon);
-						else
-							setIcon(null);
+							setBorder(appBorder);
+						} else if (app == AssociatedApp.STRING) {
+							setIcon(strIcon);
+							setBorder(appBorder);
+						} else {
+							setIcon(emIcon);
+							setBorder(null);
+						}
 					} else {
 						setText("-- Select EnrichmentMap View --");
+						setIcon(null);
+						setBorder(null);
 					}
 					
 					return this;
@@ -982,6 +992,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JComboBox<ChartData> chartDataCombo;
 		private JComboBox<ComboItem<Compress>> compressCombo;
 		private JComboBox<EMDataSet> dataSetCombo;
+		private JComboBox<ChartType> chartTypeCombo;
 		
 		private AssociatedViewControlPanel(CyNetworkView networkView) {
 			super(networkView, "__EM_CHILD_VIEW_CONTROL_PANEL_" + networkView.getSUID());
@@ -1011,9 +1022,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			final JLabel chartDataLabel = new JLabel("Chart Data:");
 			final JLabel compressLabel = new JLabel("Compress:");
 			final JLabel dataSetLabel = new JLabel("Data Set:");
+			final JLabel chartTypeLabel = new JLabel("Chart Type:");
 			
-			makeSmall(chartDataLabel, compressLabel, dataSetLabel);
-			makeSmall(getChartDataCombo(), getCompressCombo(), getDataSetCombo());
+			makeSmall(chartDataLabel, compressLabel, dataSetLabel, chartTypeLabel);
+			makeSmall(getChartDataCombo(), getCompressCombo(), getDataSetCombo(), getChartTypeCombo());
 			
 			final JPanel panel = new JPanel();
 			panel.setBorder(LookAndFeelUtil.createTitledBorder("Style"));
@@ -1028,12 +1040,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							.addGroup(layout.createParallelGroup(TRAILING, true)
 									.addComponent(chartDataLabel)
 									.addComponent(compressLabel)
+									.addComponent(chartTypeLabel)
 									.addComponent(dataSetLabel)
 							)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addGroup(layout.createParallelGroup(LEADING, true)
 									.addComponent(getChartDataCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getCompressCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+									.addComponent(getChartTypeCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getDataSetCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 							)
 					)
@@ -1050,6 +1064,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(compressLabel)
 							.addComponent(getCompressCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(chartTypeLabel)
+							.addComponent(getChartTypeCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(dataSetLabel)
@@ -1093,6 +1111,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				
 				final Font iconFont = iconManager.getIconFont(12.0f);
 				final int iconSize = 16;
+				Icon sigIcon = new TextIcon(ICON_STAR, iconFont, EMStyleBuilder.Colors.SIG_EDGE_COLOR, iconSize, iconSize);
 				
 				dataSetCombo.setRenderer(new DefaultListCellRenderer() {
 					@Override
@@ -1101,10 +1120,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 						super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 						
 						Icon icon = null;
-						String text = Labels.NONE;
+						String text = Labels.ALL;
 						
 						if (value instanceof EMSignatureDataSet) {
-							icon = new TextIcon(ICON_STAR, iconFont, EMStyleBuilder.Colors.SIG_EDGE_COLOR, iconSize, iconSize);
+							icon = sigIcon;
 							text = ((EMSignatureDataSet) value).getName();
 						} else if (value instanceof EMDataSet) {
 							EMDataSet ds = (EMDataSet) value;
@@ -1123,6 +1142,26 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return dataSetCombo;
 		}
 		
+		JComboBox<ChartType> getChartTypeCombo() {
+			if (chartTypeCombo == null) {
+				chartTypeCombo = new JComboBox<>();
+				chartTypeCombo.setRenderer(new DefaultListCellRenderer() {
+					@Override
+					public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+							boolean isSelected, boolean cellHasFocus) {
+						super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+						
+						if (value == null)
+							setText(Labels.NONE);
+						
+						return this;
+					}
+				});
+			}
+			
+			return chartTypeCombo;
+		}
+		
 		ChartData getChartData() {
 			return (ChartData) getChartDataCombo().getSelectedItem();
 		}
@@ -1133,13 +1172,22 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return compressItem != null ? compressItem.getValue() : null;
 		}
 		
+		ChartType getChartType() {
+			return (ChartType) getChartTypeCombo().getSelectedItem();
+		}
+		
 		@Override
 		void update() {
+			updateCompressCombo();
+			updateDataSetCombo();
+			updateChartTypeCombo();
+		}
+		
+		void updateCompressCombo() {
 			EnrichmentMap em = networkView != null ? emManager.getEnrichmentMap(networkView.getModel().getSUID()) : null;
+			ChartData chartData = getChartData();
 			
 			getCompressCombo().removeAllItems();
-			getDataSetCombo().removeAllItems();
-			
 			getCompressCombo().addItem(new ComboItem<>(Compress.NONE, Labels.NONE));
 			
 			if (em != null) {
@@ -1152,21 +1200,42 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				getCompressCombo().addItem(new ComboItem<>(Compress.DATASET_MEDIAN, "Data Set: Median"));
 				getCompressCombo().addItem(new ComboItem<>(Compress.DATASET_MIN, "Data Set: Min"));
 				getCompressCombo().addItem(new ComboItem<>(Compress.DATASET_MAX, "Data Set: Max"));
-				
-				em.getDataSetList().forEach(getDataSetCombo()::addItem);
 			}
 			
 			getCompressCombo().setSelectedIndex(0);
-			
-			updateStyleCombos();
+			getCompressCombo().setEnabled(chartData == ChartData.EXPRESSION_DATA);
 		}
 		
-		void updateStyleCombos() {
+		void updateDataSetCombo() {
+			EnrichmentMap em = networkView != null ? emManager.getEnrichmentMap(networkView.getModel().getSUID()) : null;
 			ChartData chartData = getChartData();
 			Compress compress = getCompress();
 			
-			getCompressCombo().setEnabled(chartData == ChartData.EXPRESSION_DATA);
+			getDataSetCombo().removeAllItems();
+			
+			if (em != null)
+				em.getDataSetList().forEach(getDataSetCombo()::addItem);
+			
+			if (chartData != ChartData.EXPRESSION_DATA || compress != Compress.NONE)
+				getDataSetCombo().setSelectedItem(null);
+			
 			getDataSetCombo().setEnabled(chartData == ChartData.EXPRESSION_DATA && compress == Compress.NONE);
+		}
+		
+		void updateChartTypeCombo() {
+			ChartData chartData = getChartData();
+			getChartTypeCombo().removeAllItems();
+			
+			if (chartData == ChartData.DATA_SET) {
+				getChartTypeCombo().addItem(ChartType.DATASET_PIE);
+				getChartTypeCombo().setSelectedIndex(0);
+			} else if (chartData == ChartData.EXPRESSION_DATA) {
+				getChartTypeCombo().addItem(ChartType.RADIAL_HEAT_MAP);
+				getChartTypeCombo().addItem(ChartType.HEAT_STRIPS);
+				getChartTypeCombo().setSelectedIndex(0);
+			}
+			
+			getChartTypeCombo().setEnabled(chartData == ChartData.EXPRESSION_DATA);
 		}
 	}
 	
