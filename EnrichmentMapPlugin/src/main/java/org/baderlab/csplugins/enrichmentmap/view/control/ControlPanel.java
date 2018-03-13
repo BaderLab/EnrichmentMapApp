@@ -208,8 +208,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			emViewCombo = new JComboBox<>();
 			
 			Icon emIcon = new TextIcon(LAYERED_EM_ICON, getIconFont(16.0f), EM_ICON_COLORS, 16, 16);
-			Icon gmIcon = new TextIcon(GENEMANIA_ICON, getIconFont(16.0f), GENEMANIA_ICON_COLOR, 16, 16);
-			Icon strIcon = new TextIcon(LAYERED_STRING_ICON, getIconFont(16.0f), EM_STRING_COLORS, 16, 16);
+			Icon gmIcon = new TextIcon(GENEMANIA_ICON, getIconFont(15.0f), GENEMANIA_ICON_COLOR, 16, 16);
+			Icon strIcon = new TextIcon(LAYERED_STRING_ICON, getIconFont(15.0f), EM_STRING_COLORS, 16, 16);
 			
 			Border appBorder = BorderFactory.createEmptyBorder(0, 20, 0, 0);
 

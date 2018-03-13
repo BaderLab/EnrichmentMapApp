@@ -11,6 +11,8 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.AbstractButton;
 import javax.swing.Icon;
+import javax.swing.JTabbedPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 
 public class TextIcon implements Icon {
@@ -106,9 +108,11 @@ public class TextIcon implements Icon {
 		int textHeight = (int) rect.getHeight();
 		int textWidth = (int) rect.getWidth();
 
+		int hpad = (c instanceof JTabbedPane || c instanceof ListCellRenderer) ? -1 : 0;
+		
 		// Center text horizontally and vertically
-		int xx = x + (getIconWidth() - textWidth) / 2;
-		int yy = y + (getIconHeight() - textHeight) / 2 + fm.getAscent();
+		int xx = x + Math.round((getIconWidth() - textWidth) / 2.0f);
+		int yy = y + Math.round((getIconHeight() - textHeight) / 2.0f) + fm.getAscent() + hpad;
 
 		g.drawString(text, xx, yy);
 	}

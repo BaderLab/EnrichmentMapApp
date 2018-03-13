@@ -2,19 +2,21 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.EM_ICON_COLORS;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.LAYERED_EM_ICON;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.getIconFont;
 
 import java.awt.CardLayout;
 import java.awt.Component;
-import java.net.URL;
 
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.view.util.TextIcon;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -64,8 +66,7 @@ public class HeatMapParentPanel extends JPanel implements CytoPanelComponent2 {
 
 	@Override
 	public Icon getIcon() {
-		URL url = getClass().getClassLoader().getResource("images/enrichmentmap_logo_16.png");
-		return url == null ? null : new ImageIcon(url);
+		return new TextIcon(LAYERED_EM_ICON, getIconFont(16.0f), EM_ICON_COLORS, 16, 16);
 	}
 
 	@Override
