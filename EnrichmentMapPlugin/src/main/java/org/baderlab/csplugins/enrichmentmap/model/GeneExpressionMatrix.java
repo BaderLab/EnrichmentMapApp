@@ -48,8 +48,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
-
 /**
  * Class representing a set of genes/proteins expresion profile
  */
@@ -158,7 +156,7 @@ public class GeneExpressionMatrix {
 	}
 
 	public Map<Integer, GeneExpression> getExpressionMatrix() {
-		return expressionMatrix;
+		return new HashMap<>(expressionMatrix);
 	}
 
 	public void setExpressionMatrix(Map<Integer, GeneExpression> expressionMatrix) {
@@ -183,6 +181,4 @@ public class GeneExpressionMatrix {
 	public Set<Integer> getGeneIds() {
 		return expressionMatrix.keySet();
 	}
-
-	
 }

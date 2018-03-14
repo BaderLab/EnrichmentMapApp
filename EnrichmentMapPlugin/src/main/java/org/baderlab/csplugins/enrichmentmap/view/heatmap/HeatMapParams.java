@@ -5,35 +5,13 @@ import java.util.List;
 import javax.swing.RowSorter.SortKey;
 
 import org.baderlab.csplugins.brainlib.DistanceMetric;
+import org.baderlab.csplugins.enrichmentmap.model.Compress;
+import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.task.cluster.CosineDistance;
 import org.baderlab.csplugins.enrichmentmap.task.cluster.EuclideanDistance;
 import org.baderlab.csplugins.enrichmentmap.task.cluster.PearsonCorrelation;
 
 public class HeatMapParams {
-	
-	public static enum Transform {
-		AS_IS, 
-		ROW_NORMALIZE, 
-		LOG_TRANSFORM;
-	}
-	
-	public static enum Compress {
-		NONE,
-		CLASS_MEDIAN,
-		CLASS_MIN,
-		CLASS_MAX,
-		DATASET_MEDIAN,
-		DATASET_MIN,
-		DATASET_MAX;
-		public boolean isNone() { return this == NONE; }
-		public boolean isClass() { return this == CLASS_MEDIAN || this == CLASS_MIN || this == CLASS_MAX; }
-		public boolean isDataSet() { return this == DATASET_MEDIAN || this == DATASET_MIN || this == DATASET_MAX; }
-		public boolean sameStructure(Compress other) {
-			return (this.isNone() && other.isNone()) 
-				|| (this.isClass() && other.isClass()) 
-				|| (this.isDataSet() && other.isDataSet());
-		}
-	}
 	
 	public static enum Operator {
 		UNION,
@@ -63,7 +41,6 @@ public class HeatMapParams {
 	private final String rankingOptionName; // combo index 
 	private final List<? extends SortKey> sortKeys;
 	
-	
 	private HeatMapParams(Builder builder) {
 		this.transform = builder.transform;
 		this.compress = builder.compress;
@@ -73,7 +50,6 @@ public class HeatMapParams {
 		this.rankingOptionName = builder.rankingOptionName;
 		this.sortKeys = builder.sortKeys;
 	}
-	
 	
 	public static class Builder {
 		private Transform transform = Transform.AS_IS;

@@ -15,7 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
+import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.jukito.JukitoRunner;

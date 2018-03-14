@@ -40,7 +40,6 @@
 // $LastChangedRevision$
 // $LastChangedBy$
 // $HeadURL$
-
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
 import java.awt.BorderLayout;
@@ -49,14 +48,11 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
 import java.util.Optional;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -65,7 +61,7 @@ import javax.swing.table.TableCellRenderer;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
-
+import org.baderlab.csplugins.enrichmentmap.view.util.TextIcon;
 
 /**
  * Flips column headers to vertical position
@@ -82,7 +78,6 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		this.labelBackgroundColor = Optional.empty();
 	}
 	
-	
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
@@ -93,66 +88,62 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(verticalLabel, BorderLayout.CENTER);
-		
 		Color barColor = dataset.getColor();
-		if(barColor != null) {
+		
+		if (barColor != null) {
 			JPanel barPanel = new JPanel();
 			barPanel.setPreferredSize(new Dimension(verticalLabel.getWidth(), 5));
 			barPanel.setBackground(barColor);
 			panel.add(barPanel, BorderLayout.NORTH);
 		}
 		
-		if(labelBackgroundColor.isPresent()) {
-	        panel.setBackground(labelBackgroundColor.get()); 
-        }
-		
+		panel.setBackground(labelBackgroundColor.isPresent() ? labelBackgroundColor.get()
+				: UIManager.getColor("TableHeader.background"));
 		panel.setToolTipText(value.toString() + " - " + dataset.getName());
+		
 		return panel;
 	}
-
 	
 	private JLabel createVerticalLabel(String value) {
 		JLabel label = new JLabel();
-
 		label.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-		label.setForeground(UIManager.getColor("TableHeader.foreground"));
-		label.setFont(UIManager.getFont("TableHeader.font"));
 		label.setToolTipText(value);
 		
 		// Create vertical text label
 		String s = SwingUtil.abbreviate(value, 14);
-		Icon verticalText = getVerticalText(label, s, false);
-		label.setIcon(verticalText);
+		Font font = UIManager.getFont("TableHeader.font");
+		Color foreground = UIManager.getColor("TableHeader.foreground");
+		
+		label.setIcon(new VerticalTextIcon(s, label.getFontMetrics(font), foreground, false));
 		label.setVerticalAlignment(JLabel.BOTTOM);
 		label.setHorizontalAlignment(JLabel.CENTER);
+		
 		return label;
 	}
 	
-	
-    private Icon getVerticalText(JComponent component, String caption, boolean clockwise) {
-		Font f = component.getFont();
-		FontMetrics fm = component.getFontMetrics(f);
-		int height = fm.getHeight() + 4 ;
-		int width  = fm.stringWidth(caption) + 4;
-		BufferedImage bi = new BufferedImage(height, width, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = (Graphics2D) bi.getGraphics();
-		
-		
-		g.setColor(component.getForeground());
-		g.setFont(f);
-		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+	private class VerticalTextIcon extends TextIcon {
 
-		if (clockwise) {
-			g.rotate(Math.PI / 2);
-		} else {
-			g.rotate(-Math.PI / 2);
-			g.translate(-bi.getHeight(), bi.getWidth());
+		private final boolean clockwise;
+		
+		public VerticalTextIcon(String text, FontMetrics fm, Color color, boolean clockwise) {
+			super(text, fm.getFont(), color, fm.getHeight() + 4, fm.stringWidth(text) + 4);
+			this.clockwise = clockwise;
 		}
-
-		g.drawString(caption, 2, -6);
-		Icon icon = new ImageIcon(bi);
-
-		return icon;
+		
+		@Override
+		protected void drawText(String text, Font font, Graphics g, Component c, int x, int y) {
+			Graphics2D g2d = (Graphics2D) g.create();
+			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			
+			if (clockwise) {
+				g2d.rotate(Math.PI / 2);
+			} else {
+				g2d.rotate(-Math.PI / 2);
+				g2d.translate(-c.getHeight(), c.getWidth());
+			}
+			
+			g2d.drawString(text, 4, -4);
+			g2d.dispose();
+		}
 	}
-    
 }

@@ -41,13 +41,11 @@ import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -95,7 +93,6 @@ public class ColorGradientWidget extends JPanel {
 
 
 	// other required refs
-	private Image img;
 	private String title;
 	private String cookedTitle;
 	private Dimension cookedTitleDimension;
@@ -128,12 +125,9 @@ public class ColorGradientWidget extends JPanel {
 	 * Our implementation of Component setBounds().  If we don't do this, the
 	 * individual canvas do not get rendered.
 	 */
+	@Override
 	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
-
-		if ((width > 0) && (height > 0)) {
-			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		}
 	}
 
 	/**
@@ -205,15 +199,6 @@ public class ColorGradientWidget extends JPanel {
 	}
 
 	/**
-	 * Gets the title string (cooked to fit to ui)
-	 *
-	 * @return String
-	 */
-	public String getTitle() {
-		return cookedTitle;
-	}
-
-	/**
 	 * Gets condition value strings as list, size 3:
 	 *
 	 * List(0): minimum
@@ -271,7 +256,7 @@ public class ColorGradientWidget extends JPanel {
 
             @Override
             public void mouseExited(MouseEvent e) {
-				borderColor = Color.BLACK;
+				borderColor = UIManager.getColor("Label.foreground");
 				repaint();
             }
         });
@@ -304,36 +289,42 @@ public class ColorGradientWidget extends JPanel {
 	 * @param g2d Graphics2D
 	 */
 	private void setCookedTitleString(Graphics2D g2d) {
-		// setup some vars used below
-		int width = getSize().width;
-		width -=  positionLegendWidth;
-		FontMetrics fontMetrics = g2d.getFontMetrics();
-
-		String tmpStr = "";
-		for (int lc = 0; lc <= title.length(); lc++) {
-			tmpStr = title.substring(0, lc);
-			if (fontMetrics.stringWidth(tmpStr) <= width) {
-				cookedTitle = tmpStr;
+		if (title != null) {
+			// setup some vars used below
+			int width = getSize().width;
+			width -=  positionLegendWidth;
+			FontMetrics fontMetrics = g2d.getFontMetrics();
+	
+			String tmpStr = "";
+			for (int lc = 0; lc <= title.length(); lc++) {
+				tmpStr = title.substring(0, lc);
+				
+				if (fontMetrics.stringWidth(tmpStr) <= width) {
+					cookedTitle = tmpStr;
+				} else {
+					// we've gone over, replace last 3 chars with "."
+					cookedTitle = tmpStr.substring(0, lc - 4);
+					cookedTitle += "...";
+					break;
+				}
 			}
-			else {
-				// we've gone over, replace last 3 chars with "."
-				cookedTitle = tmpStr.substring(0,lc-4);
-				cookedTitle += "...";
-				break;
-			}
+		} else {
+			cookedTitle = null;
 		}
 	}
 
 	private void setCookedTitleStringDimension(Graphics2D g2d) {
 		// Rectangle reference
-		Rectangle2D rect;
-
-		// get graphics context font metrics
-		FontMetrics fontMetrics = g2d.getFontMetrics();
-		
-		// min value string dimensions
-		rect = fontMetrics.getStringBounds(cookedTitle, g2d);
-		cookedTitleDimension = new Dimension((int) rect.getWidth(), (int) rect.getHeight());
+		if (cookedTitle != null) {
+			// get graphics context font metrics
+			FontMetrics fontMetrics = g2d.getFontMetrics();
+			
+			// min value string dimensions
+			Rectangle2D rect = fontMetrics.getStringBounds(cookedTitle, g2d);
+			cookedTitleDimension = new Dimension((int) rect.getWidth(), (int) rect.getHeight());
+		} else {
+			cookedTitleDimension = new Dimension();
+		}
 	}
 
 	private void setConditionValueStrings() {
@@ -394,15 +385,15 @@ public class ColorGradientWidget extends JPanel {
 		// set gradient height
 		gradientWidth = widgetWidth - positionLegendWidth;
 		gradientHeight = widgetHeight - maxStringHeight - VSPACER;
-		if (cookedTitle != null && cookedTitle.length() > 0) {
+		
+		if (cookedTitle != null && cookedTitle.length() > 0)
 			gradientHeight -= maxStringHeight + VSPACER;
-		}
 
 		// set rectangle y
 		int rectYPos = VSPACER;
-		if (cookedTitle != null && cookedTitle.length() > 0) {
+		
+		if (cookedTitle != null && cookedTitle.length() > 0)
 			rectYPos += maxStringHeight + VSPACER;
-		}
 
 		// compute normals
 		double centerLowNormal = (colorGradientRange.getCenterLowValue() - colorGradientRange.getMinValue()) / (colorGradientRange.getMaxValue() - colorGradientRange.getMinValue());
@@ -436,49 +427,45 @@ public class ColorGradientWidget extends JPanel {
 	 * This is where we render the gradient.
 	 */
     private void renderComponent(Graphics g, boolean renderStrings) {
-		if (img != null) {
-			// set our graphics context
-			Graphics2D g2d = ((BufferedImage)img).createGraphics();
-			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		// set our graphics context
+		Graphics2D g2d = (Graphics2D) g.create();
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-			// clear background
-			clearImage(g2d);
+		// clear background
+		clearImage(g2d);
 
-			// save font
-			Font savedFont = g2d.getFont();
+		// save font
+		Font savedFont = g2d.getFont();
 
-			// set new font
-			g2d.setFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
+		// set new font
+		g2d.setFont(UIManager.getFont("Label.font").deriveFont(LookAndFeelUtil.getSmallFontSize()));
 
-			if (isLegend) {
-				setPositionLegendDimensions(); // should come first
-				setCookedTitleString(g2d);
-				setCookedTitleStringDimension(g2d);
-				setConditionValueStringDimensions(g2d);
-				setMaxStringHeight();
-				computeLegendGradientRectangles();
-				if (renderPositionLegend) {
-					renderPositionLegend(g2d);
-				}
-				renderLegendGradient(g2d);
-				if (renderStrings) {
-					renderCookedTitleString(g2d);
-					renderConditionValueStrings(g2d);
-				}
-			}
-			else {
-				computeGradientRectangles();
-				renderGradient(g2d);
-			}
-
-			// restore font
-			g2d.setFont(savedFont);
-
-			// render image
-			g.drawImage(img, 0, 0, null);
+		if (isLegend) {
+			setPositionLegendDimensions(); // should come first
+			setCookedTitleString(g2d);
+			setCookedTitleStringDimension(g2d);
+			setConditionValueStringDimensions(g2d);
+			setMaxStringHeight();
+			computeLegendGradientRectangles();
 			
-			g2d.dispose();
+			if (renderPositionLegend)
+				renderPositionLegend(g2d);
+			
+			renderLegendGradient(g2d);
+			
+			if (renderStrings) {
+				renderCookedTitleString(g2d);
+				renderConditionValueStrings(g2d);
+			}
+		} else {
+			computeGradientRectangles();
+			renderGradient(g2d);
 		}
+
+		// restore font
+		g2d.setFont(savedFont);
+		g2d.dispose();
     }
 
 	private void renderPositionLegend(Graphics2D g2d) {
@@ -487,9 +474,10 @@ public class ColorGradientWidget extends JPanel {
 
 		final int xPos = 0;
 		int gradientCenter = VSPACER;
-		if (cookedTitle != null && cookedTitle.length() > 0) {
+		
+		if (cookedTitle != null && cookedTitle.length() > 0)
 			gradientCenter += maxStringHeight + VSPACER;
-		}
+		
 		gradientCenter += gradientHeight / 2;
 		final int yPos = gradientCenter - renderHeight / 2;
 
@@ -519,7 +507,7 @@ public class ColorGradientWidget extends JPanel {
 
 	private void renderGradient(Graphics2D g2d) {
 		// create the gradient from min to center
-		final GradientPaint gradientLow =
+		GradientPaint gradientLow =
 			new GradientPaint((float) minimumConditionGradientRectangle.getX(),
 							  (float) minimumConditionGradientRectangle.getY(),
 							  colorGradientTheme.getMinColor(),
@@ -549,7 +537,7 @@ public class ColorGradientWidget extends JPanel {
 
 
 		// draw outline around gradient
-		final Rectangle rect = new Rectangle(0, 0, gradientWidth - 1, gradientHeight - 1);
+		Rectangle rect = new Rectangle(0, 0, gradientWidth - 1, gradientHeight - 1);
 		g2d.setPaint(borderColor);
 		g2d.draw(rect);
 	}
@@ -600,6 +588,9 @@ public class ColorGradientWidget extends JPanel {
 	}
 
 	private void renderCookedTitleString(Graphics2D g2d) {
+		if (cookedTitle == null)
+			return;
+		
 		// set the paint
 		g2d.setPaint(UIManager.getColor("Label.foreground"));
 
@@ -622,9 +613,9 @@ public class ColorGradientWidget extends JPanel {
 
 		// compute drawstring y pos - we can use the height of any gradient rectangle
 		int yPos = VSPACER + gradientHeight + maxStringHeight;
-		if (cookedTitle != null && cookedTitle.length() > 0) {
+		
+		if (cookedTitle != null && cookedTitle.length() > 0)
 			yPos += VSPACER + maxStringHeight;
-		}
 
 		// render min string - above gradient
 		g2d.drawString(minimumConditionValueString, positionLegendWidth, yPos);

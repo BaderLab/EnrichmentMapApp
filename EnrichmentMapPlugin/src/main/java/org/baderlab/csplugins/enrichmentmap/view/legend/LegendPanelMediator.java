@@ -92,6 +92,7 @@ public class LegendPanelMediator {
 				}
 			});
 			
+			// TODO
 			Font iconFont = iconManager.getIconFont(13.0f);
 			exportPdfButton = new JButton("Export to PDF");
 			exportPdfButton.setIcon(SwingUtil.iconFromString(IconManager.ICON_EXTERNAL_LINK, iconFont));

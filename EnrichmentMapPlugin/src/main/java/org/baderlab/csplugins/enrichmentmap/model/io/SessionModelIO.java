@@ -113,6 +113,7 @@ public class SessionModelIO {
 			ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
 			HeatMapMediator heatMapMediator = heatMapMediatorProvider.get();
 			controlPanelMediator.reset();
+			heatMapMediator.reset();
 			if(sessionHasEM) {
 				controlPanelMediator.showControlPanel();
 				heatMapMediator.showHeatMapPanel();
@@ -190,6 +191,7 @@ public class SessionModelIO {
  			ds.setNodeSuids(mapSuids(ds.getNodeSuids(), session, CyNode.class));
 			ds.setEdgeSuids(mapSuids(ds.getEdgeSuids(), session, CyEdge.class));
  		}
+ 		map.setAssociatedNetworkIDs(mapSuids(map.getAssociatedNetworkIDs(), session, CyNetwork.class));
 	}
 
 	private CyTable getPrivateTable() {

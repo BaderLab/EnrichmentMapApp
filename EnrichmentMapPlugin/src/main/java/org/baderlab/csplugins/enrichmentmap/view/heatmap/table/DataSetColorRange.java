@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
+import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientRange;
 import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientTheme;
 

@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,24 +36,27 @@ public class EnrichmentMap {
 	
 	private long networkID;
 	
+	/** SUIDs of networks created by other apps (e.g. GeneMANIA, STRING) from EM genes. */
+	private final Set<Long> associatedNetworkIDs = new LinkedHashSet<>();
+	
 	/** Parameters used to create this map */
 	private final EMCreationParameters params;
 
-	private Map<String, EMDataSet> dataSets = new HashMap<>();
+	private final Map<String, EMDataSet> dataSets = new HashMap<>();
 
 	/**
 	 * In order to minimize memory usage (and session file size) we will store expressions
 	 * here and have the EMDataSets keep a key to this map. That way datasets can share
 	 * expression matrices.
 	 */
-	private Map<String, GeneExpressionMatrix> expressions = new HashMap<>();
-	private Map<String, SetOfGeneSets> geneSets = new HashMap<>();
+	private final Map<String, GeneExpressionMatrix> expressions = new HashMap<>();
+	private final Map<String, SetOfGeneSets> geneSets = new HashMap<>();
 	
 	/** The set of genes defined in the Enrichment map. */
-	private BiMap<Integer, String> genes = HashBiMap.create();
+	private final BiMap<Integer, String> genes = HashBiMap.create();
 
 	/** Post analysis signature genesets associated with this map.*/
-	private Map<String, EMSignatureDataSet> signatureDataSets = new HashMap<>();
+	private final Map<String, EMSignatureDataSet> signatureDataSets = new HashMap<>();
 	
 	private int NumberOfGenes = 0;
 	private boolean isLegacy = false;
@@ -60,6 +64,14 @@ public class EnrichmentMap {
 	private boolean isCommonExpressionValues = false;
 
 	private final Object lock = new Object();
+	
+	/**
+	 * Used by the JSON deserializer only. Don't remove this constructor!
+	 */
+	@SuppressWarnings("unused")
+	private EnrichmentMap() {
+		this(null, null);
+	}
 	
 	/**
 	 * Class Constructor Given - EnrichmentnMapParameters create a new
@@ -85,7 +97,6 @@ public class EnrichmentMap {
 		return ds;
 	}
 	
-	
 	public void putExpressionMatrix(String key, GeneExpressionMatrix matrix) {
 		expressions.put(key, matrix);
 	}
@@ -101,7 +112,6 @@ public class EnrichmentMap {
 	public Collection<String> getExpressionMatrixKeys() {
 		return Collections.unmodifiableCollection(expressions.keySet());
 	}
-	
 	
 	public void putGeneSets(String key, SetOfGeneSets matrix) {
 		geneSets.put(key, matrix);
@@ -205,7 +215,6 @@ public class EnrichmentMap {
 		NumberOfGenes = numberOfGenes;
 	}
 
-
 	/**
 	 * Filter all the genesets by the dataset genes If there are multiple sets
 	 * of genesets make sure to filter by the specific dataset genes
@@ -273,7 +282,6 @@ public class EnrichmentMap {
 		
 		return allGeneSets;
 	}
-
 	
 	// MKTODO write a JUnit
 	public Map<String, Set<Integer>> unionAllGeneSetsOfInterest() {
@@ -290,7 +298,6 @@ public class EnrichmentMap {
 		return allGeneSets;
 	}
 	
-	
 	/**
 	 * Returns a set of all genes in the map that are of interest and not from a signature data set.
 	 */
@@ -304,8 +311,6 @@ public class EnrichmentMap {
 		}
 		return genes;
 	}
-	
-	
 	
 	// MKTODO write a JUnit
 	public Set<String> getAllGeneSetOfInterestNames() {
@@ -330,7 +335,7 @@ public class EnrichmentMap {
 
 	
 	public Map<String, EMDataSet> getDataSets() {
-		return dataSets;
+		return new HashMap<>(dataSets);
 	}
 	
 	/**
@@ -344,7 +349,10 @@ public class EnrichmentMap {
 	}
 
 	public void setDataSets(Map<String, EMDataSet> dataSets) {
-		this.dataSets = dataSets;
+		this.dataSets.clear();
+		
+		if (dataSets != null && !dataSets.isEmpty())
+			this.dataSets.putAll(dataSets);
 	}
 
 	/**
@@ -380,7 +388,26 @@ public class EnrichmentMap {
 	public void setNetworkID(long networkID) {
 		this.networkID = networkID;
 	}
-
+	
+	public boolean addAssociatedNetworkID(long networkID) {
+		return associatedNetworkIDs.add(networkID);
+	}
+	
+	public boolean removeAssociatedNetworkID(long networkID) {
+		return associatedNetworkIDs.remove(networkID);
+	}
+	
+	public Set<Long> getAssociatedNetworkIDs() {
+		return new LinkedHashSet<>(associatedNetworkIDs);
+	}
+	
+	public void setAssociatedNetworkIDs(Set<Long> set) {
+		associatedNetworkIDs.clear();
+		
+		if (set != null && !set.isEmpty())
+			associatedNetworkIDs.addAll(set);
+	}
+	
 	public static Set<Long> getNodesUnion(Collection<? extends AbstractDataSet> dataSets) {
 		return getUnion(dataSets, AbstractDataSet::getNodeSuids);
 	}
@@ -593,5 +620,4 @@ public class EnrichmentMap {
 	public String toString() {
 		return getName();
 	}
-
 }

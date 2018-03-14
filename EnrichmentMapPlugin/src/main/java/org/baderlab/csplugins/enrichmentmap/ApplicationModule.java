@@ -14,10 +14,13 @@ import org.baderlab.csplugins.enrichmentmap.task.CreateEMViewTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.SelectNodesEdgesTask;
+import org.baderlab.csplugins.enrichmentmap.task.UpdateAssociatedStyleTask;
+import org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreatePANetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PASimilarityTaskParallel;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDataSetsTask;
+import org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask;
 import org.baderlab.csplugins.enrichmentmap.view.creation.DetailDataSetPanel;
 import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog;
 import org.baderlab.csplugins.enrichmentmap.view.creation.PathTextField;
@@ -25,8 +28,6 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.AddRanksDialog;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.ClusterRankingOption;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.ExportPDFAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.ExportTXTAction;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMainPanel;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParentPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankOptionRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogParameters;
@@ -89,11 +90,10 @@ class FactoryModule extends AbstractModule {
 		installFactory(CreateEMNetworkTask.Factory.class);
 		installFactory(CreateEMViewTask.Factory.class);
 		installFactory(ApplyEMStyleTask.Factory.class);
+		installFactory(UpdateAssociatedStyleTask.Factory.class);
 		installFactory(FilterNodesEdgesTask.Factory.class);
 		installFactory(SelectNodesEdgesTask.Factory.class);
 		installFactory(ClusterRankingOption.Factory.class);
-		installFactory(HeatMapParentPanel.Factory.class);
-		installFactory(HeatMapMainPanel.Factory.class);
 		installFactory(ExportPDFAction.Factory.class);
 		installFactory(ExportTXTAction.Factory.class);
 		installFactory(AddRanksDialog.Factory.class);
@@ -106,6 +106,8 @@ class FactoryModule extends AbstractModule {
 		installFactory(PADialogParameters.Factory.class);
 		installFactory(PADialogPage.Factory.class);
 		installFactory(PAWeightPanel.Factory.class);
+		installFactory(QueryGeneManiaTask.Factory.class);
+		installFactory(QueryStringTask.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

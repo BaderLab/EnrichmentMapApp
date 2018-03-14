@@ -17,7 +17,7 @@ import javax.swing.table.TableCellRenderer;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
+import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientRange;
 import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientTheme;
 
@@ -85,14 +85,12 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 		}
 	}
 	
-	
 	public Optional<DataSetColorRange> getRange(EMDataSet dataset, Transform transform) {
 		// creating the color range for Transform.ROW_NORMALIZED consumes memory, so cache the value
 		return colorRanges.computeIfAbsent(Pair.of(dataset, transform), 
 			pair -> DataSetColorRange.create(pair.getLeft().getExpressionSets(), pair.getRight())
 		);
 	}
-	
 	
 	public static Color getColor(Double measurement, DataSetColorRange range) {
 		return getColor(measurement, range.getTheme(), range.getRange());

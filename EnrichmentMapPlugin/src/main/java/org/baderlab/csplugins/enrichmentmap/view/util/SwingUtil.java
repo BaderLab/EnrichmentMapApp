@@ -19,10 +19,12 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 
 import javax.annotation.Nullable;
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -31,6 +33,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -249,7 +252,6 @@ public class SwingUtil {
 		return new ImageIcon(bi);
 	}
 
-	
 	public static ImageIcon iconFromString(String s, Font font) {
 		FontRenderContext frc = new FontRenderContext(null, true, true);
         Rectangle2D bounds = font.getStringBounds(s, frc);
@@ -258,7 +260,7 @@ public class SwingUtil {
 		final Graphics2D g = bi.createGraphics();
 		
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g.setColor(Color.BLACK);
+		g.setColor(UIManager.getColor("Label.foreground"));
 		g.setFont(font);
 		g.drawString(s, (float)bounds.getX(), -(float)bounds.getY());
 		g.dispose();
@@ -266,4 +268,14 @@ public class SwingUtil {
 		return new ImageIcon(bi);
 	}
 	
+	public static void styleHeaderButton(AbstractButton btn, Font font) {
+		btn.setFont(font);
+		btn.setBorder(null);
+		btn.setContentAreaFilled(false);
+		btn.setBorderPainted(false);
+		
+		int h = new JComboBox<>().getPreferredSize().height;
+		btn.setMinimumSize(new Dimension(h, h));
+		btn.setPreferredSize(new Dimension(h, h));
+	}
 }
