@@ -44,6 +44,7 @@ import javax.swing.Timer;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.Compress;
 import org.baderlab.csplugins.enrichmentmap.model.CompressedClass;
 import org.baderlab.csplugins.enrichmentmap.model.CompressedDataSet;
@@ -862,12 +863,13 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		final Compress compress = viewPanel.getCompress() != null ? viewPanel.getCompress() : Compress.NONE;
 		final ChartType type = viewPanel.getChartType();
 		final EMDataSet ds = viewPanel.getDataSet();
+		final AssociatedApp app = NetworkUtil.getAssociatedApp(netView.getModel());
 		List<EMDataSet> datasets = ds != null ? Collections.singletonList(ds) : map.getDataSetList();
 		
 		ExpressionData exp = data == ChartData.EXPRESSION_DATA ? createExpressionData(map, datasets, compress) : null;
 		ChartOptions chartOptions = data != null ? new ChartOptions(data, type, null, false) : null;
 
-		return new AssociatedStyleOptions(netView, map, compress, exp, chartOptions);
+		return new AssociatedStyleOptions(netView, map, compress, exp, chartOptions, app);
 	}
 	
 	private ExpressionData createExpressionData(EnrichmentMap map, List<EMDataSet> datasets, Compress compress) {
