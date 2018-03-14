@@ -119,6 +119,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	private Map<Long/*CynetworkView SUID*/, EMViewControlPanel> emViewCtrlPanels = new HashMap<>();
 	private Map<Long/*CynetworkView SUID*/, AssociatedViewControlPanel> gmViewCtrlPanels = new HashMap<>();
+
+	private final Icon compIcon = new TextIcon(LAYERED_EM_ICON, getIconFont(18.0f), EM_ICON_COLORS, 16, 16);
 	
 	@Override
 	public void dispose() {
@@ -136,7 +138,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 
 	@Override
 	public Icon getIcon() {
-		return new TextIcon(LAYERED_EM_ICON, getIconFont(18.0f), EM_ICON_COLORS, 16, 16);
+		return compIcon;
 	}
 
 	@Override

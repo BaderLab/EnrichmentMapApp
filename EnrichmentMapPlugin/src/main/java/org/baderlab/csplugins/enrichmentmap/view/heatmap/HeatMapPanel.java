@@ -26,7 +26,7 @@ import com.google.inject.Singleton;
 
 @Singleton
 @SuppressWarnings("serial")
-public class HeatMapParentPanel extends JPanel implements CytoPanelComponent2 {
+public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 
 	public static final String ID = "enrichmentmap.view.ExpressionViewerPanel";
 	
@@ -34,6 +34,8 @@ public class HeatMapParentPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private final NullContentPanel nullContentPanel = new NullContentPanel();
 	private final CardLayout cardLayout = new CardLayout();
+	
+	private final Icon compIcon = new TextIcon(LAYERED_EM_ICON, getIconFont(18.0f), EM_ICON_COLORS, 16, 16);
 
 	@AfterInjection
 	public void CreateContents() {
@@ -66,7 +68,7 @@ public class HeatMapParentPanel extends JPanel implements CytoPanelComponent2 {
 
 	@Override
 	public Icon getIcon() {
-		return new TextIcon(LAYERED_EM_ICON, getIconFont(18.0f), EM_ICON_COLORS, 16, 16);
+		return compIcon;
 	}
 
 	@Override

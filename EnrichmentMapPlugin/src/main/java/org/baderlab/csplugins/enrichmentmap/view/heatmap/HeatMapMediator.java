@@ -109,7 +109,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@Inject private DialogTaskManager taskManager;
 	@Inject private OpenBrowser openBrowser;
 	
-	@Inject private HeatMapParentPanel heatMapPanel;
+	@Inject private HeatMapPanel heatMapPanel;
 	@Inject private HeatMapContentPanel contentPanel;
 	
 	private final CoalesceTimer selectionEventTimer = new CoalesceTimer(200, 1);
@@ -153,7 +153,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	public void showHeatMapPanel() {
 		if (!isHeatMapPanelRegistered()) {
 			Properties props = new Properties();
-			props.setProperty("id", HeatMapParentPanel.ID);
+			props.setProperty("id", HeatMapPanel.ID);
 			serviceRegistrar.registerService(heatMapPanel, CytoPanelComponent.class, props);
 		}
 		
@@ -164,7 +164,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		CySwingApplication swingApplication = swingApplicationProvider.get();
 		CytoPanel cytoPanel = swingApplication.getCytoPanel(heatMapPanel.getCytoPanelName());
 		if(cytoPanel != null) {
-			int index = cytoPanel.indexOfComponent(HeatMapParentPanel.ID);
+			int index = cytoPanel.indexOfComponent(HeatMapPanel.ID);
 			if(index >= 0) {
 				cytoPanel.setSelectedIndex(index);
 			}
@@ -658,7 +658,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 
 	private boolean isHeatMapPanelRegistered() {
 		try {
-			heatMapPanel = (HeatMapParentPanel) serviceRegistrar.getService(CytoPanelComponent.class, "(id=" + HeatMapParentPanel.ID + ")");
+			heatMapPanel = (HeatMapPanel) serviceRegistrar.getService(CytoPanelComponent.class, "(id=" + HeatMapPanel.ID + ")");
 			return heatMapPanel != null;
 		} catch (Exception ex) { }
 		
