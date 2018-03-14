@@ -1,8 +1,6 @@
-package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
+package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.Optional;
-
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 
 /**
  * Common interface for different levels of compression.
@@ -11,7 +9,7 @@ public interface ExpressionData {
 	
 	EMDataSet getDataSet(int col);
 
-	double getValue(int geneID, int col);
+	double getValue(int geneID, int col, Compress compress);
 
 	String getName(int col);
 

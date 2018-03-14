@@ -62,6 +62,7 @@ import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
+import org.baderlab.csplugins.enrichmentmap.model.Compress;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
@@ -72,7 +73,6 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.Labels;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
@@ -136,7 +136,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 
 	@Override
 	public Icon getIcon() {
-		return new TextIcon(LAYERED_EM_ICON, getIconFont(16.0f), EM_ICON_COLORS, 16, 16);
+		return new TextIcon(LAYERED_EM_ICON, getIconFont(18.0f), EM_ICON_COLORS, 16, 16);
 	}
 
 	@Override
@@ -1174,6 +1174,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		ChartType getChartType() {
 			return (ChartType) getChartTypeCombo().getSelectedItem();
+		}
+		
+		EMDataSet getDataSet() {
+			return (EMDataSet) getDataSetCombo().getSelectedItem();
 		}
 		
 		@Override

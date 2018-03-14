@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.ExpressionData;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleBuilder;
@@ -16,7 +17,6 @@ import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -111,7 +111,7 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 				continue;
 			
 			for (int i = 0; i < n; i++) {
-				double value = exp.getValue(id, i);
+				double value = exp.getValue(id, i, options.getCompress());
 				data[i] = value;
 			}
 		}

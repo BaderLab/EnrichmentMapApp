@@ -25,6 +25,7 @@ import javax.swing.SwingUtilities;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
+import org.baderlab.csplugins.enrichmentmap.model.Compress;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -32,6 +33,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GMOrganismsResult;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GMSearchResult;
@@ -40,11 +42,8 @@ import org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask;
 import org.baderlab.csplugins.enrichmentmap.task.string.STRSpecies;
 import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapCellRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel;
 import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
@@ -282,7 +281,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		});
 	}
 	
-	public HeatMapParams getHeatMapParams(EnrichmentMap map, Long networkSUID, boolean onlyEdges) {
+	private HeatMapParams getHeatMapParams(EnrichmentMap map, Long networkSUID, boolean onlyEdges) {
 		HeatMapParams params = emManager.getHeatMapParams(networkSUID, onlyEdges);
 		
 		if (params == null) {
@@ -298,10 +297,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		}
 		
 		return params;
-	}
-	
-	public ExpressionData getExpressionData(Compress compress) {
-		return contentPanel.getExpressionData(compress);
 	}
 	
 	private void updateSetting_Operator() {

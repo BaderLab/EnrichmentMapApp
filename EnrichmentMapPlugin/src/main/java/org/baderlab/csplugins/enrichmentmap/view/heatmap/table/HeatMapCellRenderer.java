@@ -17,7 +17,7 @@ import javax.swing.table.TableCellRenderer;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
+import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientRange;
 import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientTheme;
 

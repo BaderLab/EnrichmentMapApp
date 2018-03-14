@@ -44,12 +44,19 @@ import javax.swing.Timer;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.Compress;
+import org.baderlab.csplugins.enrichmentmap.model.CompressedClass;
+import org.baderlab.csplugins.enrichmentmap.model.CompressedDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.ExpressionCache;
+import org.baderlab.csplugins.enrichmentmap.model.ExpressionData;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.model.Transform;
+import org.baderlab.csplugins.enrichmentmap.model.Uncompressed;
 import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
@@ -75,9 +82,6 @@ import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
 import org.baderlab.csplugins.enrichmentmap.view.legend.CreationParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
@@ -854,23 +858,40 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	private AssociatedStyleOptions createAssociatedStyleOptions(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {
 		CyNetworkView netView = viewPanel.getNetworkView();
-		HeatMapParams params = heatMapMediator.getHeatMapParams(map, netView.getModel().getSUID(), false);
 		final ChartData data = viewPanel.getChartData();
-		final Compress compress = viewPanel.getCompress();
-		ChartType type = viewPanel.getChartType();
-		ExpressionData exp = null;
+		final Compress compress = viewPanel.getCompress() != null ? viewPanel.getCompress() : Compress.NONE;
+		final ChartType type = viewPanel.getChartType();
+		final EMDataSet ds = viewPanel.getDataSet();
+		List<EMDataSet> datasets = ds != null ? Collections.singletonList(ds) : map.getDataSetList();
 		
-		if (data == ChartData.EXPRESSION_DATA) {
-			type = viewPanel.getChartType();
-			exp = heatMapMediator.getExpressionData(compress);
-			
-			if (exp != null)
-				type = ChartType.RADIAL_HEAT_MAP;
-		}
-		
+		ExpressionData exp = data == ChartData.EXPRESSION_DATA ? createExpressionData(map, datasets, compress) : null;
 		ChartOptions chartOptions = data != null ? new ChartOptions(data, type, null, false) : null;
 
-		return new AssociatedStyleOptions(netView, map, params, exp, chartOptions);
+		return new AssociatedStyleOptions(netView, map, compress, exp, chartOptions);
+	}
+	
+	private ExpressionData createExpressionData(EnrichmentMap map, List<EMDataSet> datasets, Compress compress) {
+		ExpressionData exp = null;
+		ExpressionCache cache = new ExpressionCache(Transform.AS_IS);
+		
+		switch (compress) {
+			case DATASET_MEDIAN:
+			case DATASET_MAX:
+			case DATASET_MIN:
+				boolean isDistinctExpressionSets = map != null && map.isDistinctExpressionSets();
+				exp = new CompressedDataSet(datasets, cache, isDistinctExpressionSets);
+				break;
+			case CLASS_MEDIAN:
+			case CLASS_MAX:
+			case CLASS_MIN:
+				exp = new CompressedClass(datasets, cache);
+				break;
+			default:
+				exp = new Uncompressed(datasets, cache);
+				break;
+		}
+		
+		return exp;
 	}
 	
 	private CyCustomGraphics2<?> createChart(AssociatedStyleOptions options) {

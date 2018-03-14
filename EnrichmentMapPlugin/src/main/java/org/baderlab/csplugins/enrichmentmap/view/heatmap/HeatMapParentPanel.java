@@ -66,7 +66,7 @@ public class HeatMapParentPanel extends JPanel implements CytoPanelComponent2 {
 
 	@Override
 	public Icon getIcon() {
-		return new TextIcon(LAYERED_EM_ICON, getIconFont(16.0f), EM_ICON_COLORS, 16, 16);
+		return new TextIcon(LAYERED_EM_ICON, getIconFont(18.0f), EM_ICON_COLORS, 16, 16);
 	}
 
 	@Override

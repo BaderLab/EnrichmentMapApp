@@ -51,10 +51,8 @@ public class TextIcon implements Icon {
         g2d.setRenderingHints(new RenderingHints(RenderingHints.KEY_TEXT_ANTIALIASING,
 				RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
         
-        int xx = c.getWidth();
-        int yy = c.getHeight();
         g2d.setPaint(TRANSPARENT_COLOR);
-        g2d.fillRect(0, 0, xx, yy);
+        g2d.fillRect(x, y, width, height);
         
         if (texts != null && fonts != null) {
         		Font f = null;
@@ -73,7 +71,7 @@ public class TextIcon implements Icon {
         				fg =  colors[i];
 		        
 		        if (fg == null)
-	        			fg = c.getForeground();
+	        			fg = c != null ? c.getForeground() : UIManager.getColor("Label.foreground");
 		        
 		        if (c instanceof AbstractButton) {
 			        	if (!c.isEnabled())

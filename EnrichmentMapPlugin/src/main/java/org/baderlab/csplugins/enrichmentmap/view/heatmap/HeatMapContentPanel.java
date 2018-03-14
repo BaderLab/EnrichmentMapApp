@@ -35,17 +35,16 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.model.Compress;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Compress;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankOptionRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderVerticalRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.GradientLegendPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapCellRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel;
@@ -169,10 +168,6 @@ public class HeatMapContentPanel extends JPanel {
 			column.setHeaderRenderer(renderer);
 			column.setPreferredWidth(expressionColumnWidth);
 		}
-	}
-	
-	ExpressionData getExpressionData(Compress compress) {
-		return ((HeatMapTableModel) getTable().getModel()).getExpressionData(compress);
 	}
 	
 	private JPanel createToolbarPanel() {

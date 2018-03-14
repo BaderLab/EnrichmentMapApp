@@ -4,29 +4,29 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.Compress;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ExpressionData;
+import org.baderlab.csplugins.enrichmentmap.model.ExpressionData;
 import org.cytoscape.view.model.CyNetworkView;
 
 public class AssociatedStyleOptions {
 
 	private final CyNetworkView networkView;
 	private final EnrichmentMap map;
-	private final HeatMapParams params;
+	private final Compress compress;
 	private final ExpressionData expressionData;
 	private final ChartOptions chartOptions;
 	
 	public AssociatedStyleOptions(
 			CyNetworkView networkView,
 			EnrichmentMap map,
-			HeatMapParams params,
+			Compress compress,
 			ExpressionData expressionData,
 			ChartOptions chartOptions
 	) {
 		this.networkView = networkView;
 		this.map = map;
-		this.params = params;
+		this.compress = compress;
 		this.expressionData = expressionData;
 		this.chartOptions = chartOptions;
 	}
@@ -43,8 +43,8 @@ public class AssociatedStyleOptions {
 		return map;
 	}
 	
-	public HeatMapParams getHeatMapParams() {
-		return params;
+	public Compress getCompress() {
+		return compress;
 	}
 	
 	public ExpressionData getExpressionData() {
