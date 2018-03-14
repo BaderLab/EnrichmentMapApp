@@ -649,6 +649,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				}
 			}
 		});
+		viewPanel.getNormCombo().addItemListener(evt -> {
+			if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
+				updateAssociatedStyle(map, viewPanel);
+		});
 		viewPanel.getCompressCombo().addItemListener(evt -> {
 			if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
 				updating = true;
@@ -861,7 +865,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	private AssociatedStyleOptions createAssociatedStyleOptions(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {
 		CyNetworkView netView = viewPanel.getNetworkView();
 		final ChartData data = viewPanel.getChartData();
-		final Transform transform = Transform.AS_IS; // TODO: Create a combobox?
+		final Transform transform = viewPanel.getTransform();
 		final Compress compress = viewPanel.getCompress() != null ? viewPanel.getCompress() : Compress.NONE;
 		final ChartType type = viewPanel.getChartType();
 		final EMDataSet ds = viewPanel.getDataSet();

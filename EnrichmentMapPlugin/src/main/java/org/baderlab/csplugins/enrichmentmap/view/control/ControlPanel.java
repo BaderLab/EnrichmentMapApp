@@ -68,6 +68,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
@@ -992,6 +993,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	class AssociatedViewControlPanel extends AbstractViewControlPanel {
 		
 		private JComboBox<ChartData> chartDataCombo;
+		private JComboBox<ComboItem<Transform>> normCombo;
 		private JComboBox<ComboItem<Compress>> compressCombo;
 		private JComboBox<EMDataSet> dataSetCombo;
 		private JComboBox<ChartType> chartTypeCombo;
@@ -1022,12 +1024,13 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		private JPanel createStylePanel() {
 			final JLabel chartDataLabel = new JLabel("Chart Data:");
+			final JLabel normLabel = new JLabel("Expressions:");
 			final JLabel compressLabel = new JLabel("Compress:");
 			final JLabel dataSetLabel = new JLabel("Data Set:");
 			final JLabel chartTypeLabel = new JLabel("Chart Type:");
 			
-			makeSmall(chartDataLabel, compressLabel, dataSetLabel, chartTypeLabel);
-			makeSmall(getChartDataCombo(), getCompressCombo(), getDataSetCombo(), getChartTypeCombo());
+			makeSmall(chartDataLabel, normLabel, compressLabel, dataSetLabel, chartTypeLabel);
+			makeSmall(getChartDataCombo(), getNormCombo(), getCompressCombo(), getDataSetCombo(), getChartTypeCombo());
 			
 			final JPanel panel = new JPanel();
 			panel.setBorder(LookAndFeelUtil.createTitledBorder("Style"));
@@ -1041,6 +1044,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					.addGroup(layout.createSequentialGroup()
 							.addGroup(layout.createParallelGroup(TRAILING, true)
 									.addComponent(chartDataLabel)
+									.addComponent(normLabel)
 									.addComponent(compressLabel)
 									.addComponent(chartTypeLabel)
 									.addComponent(dataSetLabel)
@@ -1048,6 +1052,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addGroup(layout.createParallelGroup(LEADING, true)
 									.addComponent(getChartDataCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+									.addComponent(getNormCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getCompressCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartTypeCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getDataSetCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1062,6 +1067,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(chartDataLabel)
 							.addComponent(getChartDataCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(normLabel)
+							.addComponent(getNormCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(compressLabel)
@@ -1095,6 +1104,17 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			}
 			
 			return chartDataCombo;
+		}
+		
+		JComboBox<ComboItem<Transform>> getNormCombo() {
+			if (normCombo == null) {
+				normCombo = new JComboBox<>();
+				normCombo.addItem(new ComboItem<>(Transform.AS_IS,         "Values"));
+				normCombo.addItem(new ComboItem<>(Transform.ROW_NORMALIZE, "Row Norm"));
+				normCombo.addItem(new ComboItem<>(Transform.LOG_TRANSFORM, "Log"));
+			}
+			
+			return normCombo;
 		}
 		
 		JComboBox<ComboItem<Compress>> getCompressCombo() {
@@ -1169,9 +1189,15 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		}
 		
 		@SuppressWarnings("unchecked")
+		Transform getTransform() {
+			ComboItem<Transform> item = (ComboItem<Transform>) getNormCombo().getSelectedItem();
+			return item != null ? item.getValue() : null;
+		}
+		
+		@SuppressWarnings("unchecked")
 		Compress getCompress() {
-			ComboItem<Compress> compressItem = (ComboItem<Compress>) getCompressCombo().getSelectedItem();
-			return compressItem != null ? compressItem.getValue() : null;
+			ComboItem<Compress> item = (ComboItem<Compress>) getCompressCombo().getSelectedItem();
+			return item != null ? item.getValue() : null;
 		}
 		
 		ChartType getChartType() {
@@ -1184,11 +1210,19 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		@Override
 		void update() {
+			updateNormCombo();
 			updateCompressCombo();
 			updateDataSetCombo();
 			updateChartTypeCombo();
 		}
 		
+		private void updateNormCombo() {
+			ChartData chartData = getChartData();
+			
+			getNormCombo().setSelectedIndex(0);
+			getNormCombo().setEnabled(chartData == ChartData.EXPRESSION_DATA);
+		}
+
 		void updateCompressCombo() {
 			EnrichmentMap em = networkView != null ? emManager.getEnrichmentMap(networkView.getModel().getSUID()) : null;
 			ChartData chartData = getChartData();
