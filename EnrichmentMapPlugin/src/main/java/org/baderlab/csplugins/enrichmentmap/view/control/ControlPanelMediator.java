@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
@@ -55,6 +56,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.ExpressionCache;
 import org.baderlab.csplugins.enrichmentmap.model.ExpressionData;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.model.Uncompressed;
@@ -83,6 +85,7 @@ import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
 import org.baderlab.csplugins.enrichmentmap.view.legend.CreationParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
@@ -860,21 +863,24 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	private AssociatedStyleOptions createAssociatedStyleOptions(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {
 		CyNetworkView netView = viewPanel.getNetworkView();
 		final ChartData data = viewPanel.getChartData();
+		final Transform transform = Transform.AS_IS; // TODO: Create a combobox?
 		final Compress compress = viewPanel.getCompress() != null ? viewPanel.getCompress() : Compress.NONE;
 		final ChartType type = viewPanel.getChartType();
 		final EMDataSet ds = viewPanel.getDataSet();
 		final AssociatedApp app = NetworkUtil.getAssociatedApp(netView.getModel());
 		List<EMDataSet> datasets = ds != null ? Collections.singletonList(ds) : map.getDataSetList();
 		
-		ExpressionData exp = data == ChartData.EXPRESSION_DATA ? createExpressionData(map, datasets, compress) : null;
+		ExpressionData exp = data == ChartData.EXPRESSION_DATA ?
+				createExpressionData(map, datasets, transform, compress) : null;
 		ChartOptions chartOptions = data != null ? new ChartOptions(data, type, null, false) : null;
 
-		return new AssociatedStyleOptions(netView, map, compress, exp, chartOptions, app);
+		return new AssociatedStyleOptions(netView, map, transform, compress, exp, chartOptions, app);
 	}
 	
-	private ExpressionData createExpressionData(EnrichmentMap map, List<EMDataSet> datasets, Compress compress) {
+	private ExpressionData createExpressionData(EnrichmentMap map, List<EMDataSet> datasets, Transform transform,
+			Compress compress) {
 		ExpressionData exp = null;
-		ExpressionCache cache = new ExpressionCache(Transform.AS_IS);
+		ExpressionCache cache = new ExpressionCache(transform);
 		
 		switch (compress) {
 			case DATASET_MEDIAN:
@@ -903,7 +909,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		
 		if (data != null && data != ChartData.NONE) {
 			ChartType type = chartOptions.getType();
-			Collection<AbstractDataSet> dataSets = options.getDataSets(); // Ignore Signature Data Sets in charts
+			List<AbstractDataSet> dataSets = options.getDataSets(); // Ignore Signature Data Sets in charts
 			
 			if (type != null && !dataSets.isEmpty()) {
 				Map<String, Object> props = new HashMap<>(type.getProperties());
@@ -918,9 +924,33 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					props.put("cy_showItemLabels", chartOptions.isShowLabels());
 				} else if (data == ChartData.EXPRESSION_DATA) {
 					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
-					List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
-					chartOptions.setColorScheme(ColorScheme.RD_BU_9); // TODO remove and get same colors as in heatmap cells
-					List<Color> colors = new ArrayList<>();
+					List<Double> range = null;
+					List<Color> colors = null;
+					
+					AbstractDataSet ds = dataSets.get(0);
+					
+					if (ds instanceof EMDataSet) {
+						GeneExpressionMatrix matrix = ((EMDataSet) ds).getExpressionSets();
+						Optional<DataSetColorRange> dsColorRange = DataSetColorRange.create(matrix, options.getTransform());
+						
+						if (dsColorRange.isPresent()) {
+							// TODO ???
+//							double min = dsColorRange.get().getRange().getMinValue();
+//							double max = dsColorRange.get().getRange().getMaxValue();
+//							range = Arrays.asList(new Double[] { min, max });
+//							System.out.println(min +", " + max);
+							
+							Color c1 = dsColorRange.get().getTheme().getMinColor();
+							Color c2 = dsColorRange.get().getTheme().getCenterColor();
+							Color c3 = dsColorRange.get().getTheme().getMaxColor();
+							colors = Arrays.asList(new Color[] { c1, c2, c3 });
+						}
+					}
+					
+					if (range == null || range.isEmpty())
+						range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
+					if (colors == null || colors.isEmpty())
+						colors = new ArrayList<>(ColorScheme.RD_YL_BU_3.getColors());
 					
 					props.put("cy_dataColumns", columns);
 					props.put("cy_range", range);

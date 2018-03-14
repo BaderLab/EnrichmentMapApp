@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
@@ -8,12 +8,14 @@ import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.Compress;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.ExpressionData;
+import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.cytoscape.view.model.CyNetworkView;
 
 public class AssociatedStyleOptions {
 
 	private final CyNetworkView networkView;
 	private final EnrichmentMap map;
+	private final Transform transform;
 	private final Compress compress;
 	private final ExpressionData expressionData;
 	private final ChartOptions chartOptions;
@@ -22,6 +24,7 @@ public class AssociatedStyleOptions {
 	public AssociatedStyleOptions(
 			CyNetworkView networkView,
 			EnrichmentMap map,
+			Transform transform,
 			Compress compress,
 			ExpressionData expressionData,
 			ChartOptions chartOptions,
@@ -29,6 +32,7 @@ public class AssociatedStyleOptions {
 	) {
 		this.networkView = networkView;
 		this.map = map;
+		this.transform = transform;
 		this.compress = compress;
 		this.expressionData = expressionData;
 		this.chartOptions = chartOptions;
@@ -39,12 +43,16 @@ public class AssociatedStyleOptions {
 		return networkView;
 	}
 	
-	public Collection<AbstractDataSet> getDataSets() {
+	public List<AbstractDataSet> getDataSets() {
 		return map.getDataSetList().stream().collect(Collectors.toList());
 	}
 	
 	public EnrichmentMap getEnrichmentMap() {
 		return map;
+	}
+	
+	public Transform getTransform() {
+		return transform;
 	}
 	
 	public Compress getCompress() {
