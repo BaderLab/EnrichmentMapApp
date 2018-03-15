@@ -156,7 +156,7 @@ public class GeneExpressionMatrix {
 	}
 
 	public Map<Integer, GeneExpression> getExpressionMatrix() {
-		return new HashMap<>(expressionMatrix);
+		return expressionMatrix;
 	}
 
 	public void setExpressionMatrix(Map<Integer, GeneExpression> expressionMatrix) {
