@@ -43,12 +43,19 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import static org.baderlab.csplugins.enrichmentmap.util.NetworkUtil.EM_ASSOCIATED_APP_COLUMN;
+import static org.baderlab.csplugins.enrichmentmap.util.NetworkUtil.EM_NETWORK_SUID_COLUMN;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 
 import com.google.inject.Inject;
@@ -60,16 +67,22 @@ import com.google.inject.Singleton;
 public class EnrichmentMapManager {
 	
 	private Map<Long, EnrichmentMap> enrichmentMaps = new LinkedHashMap<>();
+	private Map<Long, EnrichmentMap> associatedEnrichmentMaps = new LinkedHashMap<>();
 	private Map<Long, HeatMapParams> heatMapParams = new HashMap<>();
 	private Map<Long, HeatMapParams> heatMapParamsEdges = new HashMap<>();
 	
 	@Inject private Provider<PADialogMediator> postAnalysisMediatorProvider;
 
+	private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+	
 	/**
 	 * Registers a newly created Network.
 	 */
 	public void registerEnrichmentMap(EnrichmentMap map) {
 		enrichmentMaps.put(map.getNetworkID(), map);
+		
+		for (Long id : map.getAssociatedNetworkIDs())
+			associatedEnrichmentMaps.put(id, map);
 	}
 
 	public Map<Long, EnrichmentMap> getAllEnrichmentMaps() {
@@ -77,14 +90,23 @@ public class EnrichmentMapManager {
 	}
 
 	public EnrichmentMap getEnrichmentMap(Long networkId) {
-		return enrichmentMaps.get(networkId);
+		EnrichmentMap map = enrichmentMaps.get(networkId);
+		
+		return map != null ? map : associatedEnrichmentMaps.get(networkId);
 	}
 	
 	public EnrichmentMap removeEnrichmentMap(Long networkId) {
 		EnrichmentMap map = enrichmentMaps.remove(networkId);
-		if(map != null) {
+		
+		if (map != null)
 			postAnalysisMediatorProvider.get().removeEnrichmentMap(map);
-		}
+		
+		// Update our internal genemania map and fire an event if it changed
+		Map<Long, EnrichmentMap> oldValue = getAssociatedEnrichmentMaps();
+		
+		if (associatedEnrichmentMaps.remove(networkId) != null)
+			pcs.firePropertyChange("associatedEnrichmentMaps", oldValue, getAssociatedEnrichmentMaps());
+		
 		return map;
 	}
 	
@@ -96,6 +118,39 @@ public class EnrichmentMapManager {
 		return isEnrichmentMap(networkView.getModel().getSUID());
 	}
 	
+	public void addAssociatedAppAttributes(CyNetwork network, EnrichmentMap map, AssociatedApp app) {
+		// Add EM Network SUID to associated network's table.
+		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		
+		if (table.getColumn(EM_NETWORK_SUID_COLUMN) == null)
+			table.createColumn(EM_NETWORK_SUID_COLUMN, Long.class, true);
+		
+		table.getRow(network.getSUID()).set(EM_NETWORK_SUID_COLUMN, map.getNetworkID());
+		
+		// Add App name to associated network's hidden table, to make it easier and more consistent later
+		if (table.getColumn(EM_ASSOCIATED_APP_COLUMN) == null)
+			table.createColumn(EM_ASSOCIATED_APP_COLUMN, String.class, true);
+		
+		table.getRow(network.getSUID()).set(EM_ASSOCIATED_APP_COLUMN, app.name());
+		
+		// Update our internal map and fire an event if it changed
+		Map<Long, EnrichmentMap> oldValue = getAssociatedEnrichmentMaps();
+		
+		if (associatedEnrichmentMaps.put(network.getSUID(), map) == null)
+			pcs.firePropertyChange("associatedEnrichmentMaps", oldValue, getAssociatedEnrichmentMaps());
+	}
+	
+	public boolean isAssociatedEnrichmentMap(Long networkId) {
+		return associatedEnrichmentMaps.containsKey(networkId);
+	}
+	
+	public boolean isAssociatedEnrichmentMap(CyNetworkView networkView) {
+		return networkView != null && isAssociatedEnrichmentMap(networkView.getModel().getSUID());
+	}
+	
+	public Map<Long, EnrichmentMap> getAssociatedEnrichmentMaps() {
+		return new HashMap<>(associatedEnrichmentMaps);
+	}
 	
 	public void registerHeatMapParams(Long networkId, boolean edges, HeatMapParams params) {
 		if(edges)
@@ -111,10 +166,28 @@ public class EnrichmentMapManager {
 			return heatMapParams.get(networkId);
 	}
 	
-	
 	public void reset() {
+		for (PropertyChangeListener listener : pcs.getPropertyChangeListeners())
+			pcs.removePropertyChangeListener(listener);
+		
 		enrichmentMaps.clear();
+		associatedEnrichmentMaps.clear();
 		heatMapParams.clear();
 	}
 	
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		pcs.addPropertyChangeListener(listener);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(listener);
+	}
+
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.addPropertyChangeListener(propertyName, listener);
+	}
+
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(propertyName, listener);
+	}
 }

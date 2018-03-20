@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Transform;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
 import org.junit.Test;
 

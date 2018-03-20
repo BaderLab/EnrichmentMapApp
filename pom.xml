@@ -4,13 +4,13 @@
 	
 	<groupId>org.baderlab.csplugins</groupId>
 	<artifactId>enrichmentmap-parent</artifactId>
-	<version>3.1.0</version>
+	<version>3.2.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
 		<bundle.namespace>org.baderlab.csplugins</bundle.namespace>
 	    <project.name>EnrichmentMap</project.name>
-	    <cy3.version>3.5.0</cy3.version>
+	    <cy3.version>3.6.0</cy3.version>
 		<osgi.api.version>4.2.0</osgi.api.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>

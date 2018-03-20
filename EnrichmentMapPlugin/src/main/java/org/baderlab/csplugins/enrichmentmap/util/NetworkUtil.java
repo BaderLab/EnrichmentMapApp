@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -16,6 +17,9 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class NetworkUtil {
 
+	public static final String EM_NETWORK_SUID_COLUMN = "EM_Network.SUID";
+	public static final String EM_ASSOCIATED_APP_COLUMN = "EM_Associated_App";
+	
 	private NetworkUtil() { }
 	
 	public static String getName(final CyNetwork network) {
@@ -57,7 +61,6 @@ public class NetworkUtil {
 		return getObjectWithValue(table, colname, value, network::getEdge);
 	}
 	
-	
 	private static <T> T getObjectWithValue(CyTable table, String colname, String value, Function<Long, T> getter) {
 		T nodeOrEdge = null;
 		
@@ -90,4 +93,69 @@ public class NetworkUtil {
 		return keys;
 	}
 	
+	public static AssociatedApp getAssociatedApp(CyNetwork network) {
+		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		
+		if (table.getColumn(EM_ASSOCIATED_APP_COLUMN) == null)
+			return null;
+			
+		String app = network.getRow(network, CyNetwork.HIDDEN_ATTRS).get(EM_ASSOCIATED_APP_COLUMN, String.class);
+		
+		if (AssociatedApp.GENEMANIA.name().equalsIgnoreCase(app))
+			return AssociatedApp.GENEMANIA;
+		if (AssociatedApp.STRING.name().equalsIgnoreCase(app))
+			return AssociatedApp.STRING;
+		
+		return null;
+	}
+	
+	public static boolean isAssociatedNetwork(CyNetwork network) {
+		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		
+		return table.getColumn(EM_NETWORK_SUID_COLUMN) != null
+				&& network.getRow(network, CyNetwork.HIDDEN_ATTRS).get(EM_NETWORK_SUID_COLUMN, Long.class) != null;
+	}
+	
+	/**
+	 * Returns the gene name of a node that belongs to an associated network (i.e. network created by another app).
+	 */
+	public static String getGeneName(CyNetwork network, CyNode node) {
+		if (network != null && node != null) {
+			AssociatedApp app = getAssociatedApp(network);
+			
+			if (app != null)
+				return app.getGeneNameColumn().get(network.getRow(node));
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Returns the query term for a gene name from an associated network (i.e. network created by another app).
+	 */
+	public static String getQueryTerm(CyNetwork network, String gene) {
+		String queryTerm = null;
+		
+		if (network != null && gene != null) {
+			AssociatedApp app = getAssociatedApp(network);
+			
+			if (app != null) {
+				String colName = app.getGeneNameColumn().getBaseName();
+				CyTable table = network.getDefaultNodeTable();
+				
+				Collection<CyRow> matchingRows = table.getMatchingRows(colName, gene);
+				
+				if (matchingRows != null && !matchingRows.isEmpty()) {
+					for (CyRow row : matchingRows) {
+						queryTerm = app.getQueryTermColumn().get(row);
+						
+						if (queryTerm != null)
+							break;
+					}
+				}
+			}
+		}
+		
+		return queryTerm;
+	}
 }

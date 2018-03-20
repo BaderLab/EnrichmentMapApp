@@ -27,7 +27,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMainPanel;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapContentPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.RankingOption;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
@@ -40,22 +40,20 @@ public class ColumnHeaderRankOptionRenderer implements TableCellRenderer {
 	@Inject private IconManager iconManager;
 	
 	private final int colIndex;
-	private final HeatMapMainPanel mainPanel;
+	private final HeatMapContentPanel heatMapPanel;
 	
-	private SortOrder sortOrder = null;
-	private MouseListener mouseListener = null;
-	
+	private SortOrder sortOrder;
+	private MouseListener mouseListener;
 	
 	public interface Factory {
-		ColumnHeaderRankOptionRenderer create(HeatMapMainPanel mainPanel, int colIndex);
+		ColumnHeaderRankOptionRenderer create(HeatMapContentPanel heatMapPanel, int colIndex);
 	}
 	
 	@Inject
-	public ColumnHeaderRankOptionRenderer(@Assisted HeatMapMainPanel mainPanel, @Assisted int colIndex) {
+	public ColumnHeaderRankOptionRenderer(@Assisted HeatMapContentPanel heatMapPanel, @Assisted int colIndex) {
 		this.colIndex = colIndex;
-		this.mainPanel = mainPanel;
+		this.heatMapPanel = heatMapPanel;
 	}
-
 	
 	@Override
 	public Component getTableCellRendererComponent(JTable table, final Object value, boolean isSelected, boolean hasFocus, int row, int col) {
@@ -124,14 +122,12 @@ public class ColumnHeaderRankOptionRenderer implements TableCellRenderer {
 		return panel;
 	}
 	
-	
 	private SortOrder nextSortOrder() {
 		if(sortOrder == null || sortOrder == SortOrder.DESCENDING)
 			return sortOrder = SortOrder.ASCENDING;
 		else
 			return sortOrder = SortOrder.DESCENDING;
 	}
-	
 	
 	private void sortColumn(JTable table) {
 		TableRowSorter<?> sorter = ((TableRowSorter<?>)table.getRowSorter());
@@ -140,20 +136,19 @@ public class ColumnHeaderRankOptionRenderer implements TableCellRenderer {
 		sorter.sort();
 	}
 	
-	
 	private void menuButtonClicked(JTable table, JButton button) {
 		JTableHeader header = table.getTableHeader();
 		
-		List<RankingOption> rankOptions = mainPanel.getAllRankingOptions();
+		List<RankingOption> rankOptions = heatMapPanel.getAllRankingOptions();
 		
 		JPopupMenu menu = new JPopupMenu();
 		for(RankingOption rankOption : rankOptions) {
 			JMenuItem item = new JCheckBoxMenuItem(rankOption.getName());
-			item.setSelected(rankOption == mainPanel.getSelectedRankOption());
+			item.setSelected(rankOption == heatMapPanel.getSelectedRankingOption());
 			SwingUtil.makeSmall(item);
 			menu.add(item);
 			item.addActionListener(e ->
-				mainPanel.updateSetting_RankOption(rankOption)
+				heatMapPanel.setSelectedRankingOption(rankOption)
 			);
 		}
 		
@@ -170,5 +165,4 @@ public class ColumnHeaderRankOptionRenderer implements TableCellRenderer {
 		if(mouseListener != null)
 			header.removeMouseListener(mouseListener);
 	}
-	
 }

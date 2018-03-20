@@ -55,7 +55,7 @@ public class ApplyEMStyleTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("Apply Visual Style");
+		taskMonitor.setTitle("Apply EnrichmentMap Style");
 		ChartOptions chartOptions = options.getChartOptions();
 		if(chartOptions != null && chartOptions.getData() == ChartData.DATA_SET) {
 			createDataSetColumn();

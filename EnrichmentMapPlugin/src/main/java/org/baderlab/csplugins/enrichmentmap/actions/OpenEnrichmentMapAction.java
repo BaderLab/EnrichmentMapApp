@@ -39,8 +39,8 @@ public class OpenEnrichmentMapAction extends AbstractCyAction implements Task {
 	@Override
 	public void run(TaskMonitor taskMonitor) {
 		showPanels();
-		
 	}
+	
 	@Override
 	public void cancel() {
 	}

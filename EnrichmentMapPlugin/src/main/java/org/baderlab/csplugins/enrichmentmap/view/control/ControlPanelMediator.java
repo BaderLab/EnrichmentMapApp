@@ -1,6 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.view.control;
 
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.*;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_DATASET_VALUE_COMPOUND;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_INTERACTION_VALUE_SIG;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE_ENRICHMENT;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
 import java.awt.BorderLayout;
@@ -13,13 +16,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
@@ -39,13 +45,23 @@ import javax.swing.Timer;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
+import org.baderlab.csplugins.enrichmentmap.model.Compress;
+import org.baderlab.csplugins.enrichmentmap.model.CompressedClass;
+import org.baderlab.csplugins.enrichmentmap.model.CompressedDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.model.ExpressionCache;
+import org.baderlab.csplugins.enrichmentmap.model.ExpressionData;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.model.Transform;
+import org.baderlab.csplugins.enrichmentmap.model.Uncompressed;
 import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
+import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
@@ -59,11 +75,16 @@ import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask.FilterMode;
 import org.baderlab.csplugins.enrichmentmap.task.SelectNodesEdgesTask;
+import org.baderlab.csplugins.enrichmentmap.task.UpdateAssociatedStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDataSetsTask;
+import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
+import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.AbstractViewControlPanel;
+import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.AssociatedViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
 import org.baderlab.csplugins.enrichmentmap.view.legend.CreationParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
@@ -124,6 +145,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private CyNetworkViewManager networkViewManager;
 	@Inject private CyNetworkManager networkManager;
 	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
+	@Inject private UpdateAssociatedStyleTask.Factory updateAssociatedStyleTaskFactory;
 	@Inject private RemoveSignatureDataSetsTask.Factory removeDataSetsTaskFactory;
 	@Inject private FilterNodesEdgesTask.Factory filterNodesEdgesTaskFactory;
 	@Inject private SelectNodesEdgesTask.Factory selectNodesEdgesTaskFactory;
@@ -170,6 +192,24 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	public void reset() {
+		// Listen to events from EM Manager
+		emManager.addPropertyChangeListener("associatedEnrichmentMaps", evt -> {
+			// A GeneMANIA network (created from EM nodes) has been added...
+			invokeOnEDT(() -> {
+				updating = true;
+			
+				try {
+					getControlPanel().updateEmViewCombo();
+					CyNetworkView netView = applicationManager.getCurrentNetworkView();
+					
+					if (netView != null && emManager.isAssociatedEnrichmentMap(netView))
+						setCurrentNetworkView(netView);
+				} finally {
+					updating = false;
+				}
+			});
+		});
+		
 		invokeOnEDT(() -> {
 			updating = true;
 			
@@ -177,14 +217,23 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				for (CyNetworkView view : networkViewManager.getNetworkViewSet())
 					getControlPanel().removeEnrichmentMapView(view);
 	
+				Set<Long> netIds = new LinkedHashSet<>();
 				Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 				
 				for (EnrichmentMap map : maps.values()) {
-					CyNetwork network = networkManager.getNetwork(map.getNetworkID());
-					Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
+					netIds.add(map.getNetworkID());
+					netIds.addAll(map.getAssociatedNetworkIDs());
+				}
+				
+				for (Long id : netIds) {
+					CyNetwork network = networkManager.getNetwork(id);
 					
-					for (CyNetworkView netView : networkViews)
-						addNetworkView(netView);
+					if (network != null) {
+						Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
+						
+						for (CyNetworkView netView : networkViews)
+							addNetworkView(netView);
+					}
 				}
 			} finally {
 				updating = false;	
@@ -265,10 +314,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					.collect(Collectors.toSet());
 			
 			EMStyleOptions options = createStyleOptions(panel.getNetworkView());
+			ChartOptions chartOptions = options != null ? options.getChartOptions() : null;
 			boolean pubReady = panel.getPublicationReadyCheck().isSelected();
-			
-			ViewParams params = new ViewParams(
-					suid, cuttofParam, pVal, qVal, sCoeff, filteredDataSets, options.getChartOptions(), pubReady);
+			ViewParams params = new ViewParams(suid, cuttofParam, pVal, qVal, sCoeff, filteredDataSets, chartOptions, pubReady);
 			
 			map.put(suid, params);
 		});
@@ -387,7 +435,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	private void setCurrentNetworkView(CyNetworkView netView) {
 		invokeOnEDT(() -> {
-			EMViewControlPanel viewPanel = null;
+			AbstractViewControlPanel viewPanel = null;
 			updating = true;
 			
 			try {
@@ -399,32 +447,34 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				updating = false;
 			}
 			
-			if (viewPanel != null)
-				setDefaults(viewPanel, emManager.getEnrichmentMap(netView.getModel().getSUID()));
+			if (viewPanel instanceof EMViewControlPanel)
+				setDefaults((EMViewControlPanel) viewPanel, emManager.getEnrichmentMap(netView.getModel().getSUID()));
 		});
 	}
 	
 	/**
 	 * Call this method on the EDT only!
 	 */
-	private EMViewControlPanel addNetworkView(CyNetworkView netView) {
-		EMViewControlPanel viewPanel = null;
+	private AbstractViewControlPanel addNetworkView(CyNetworkView netView) {
+		AbstractViewControlPanel viewPanel = null;
 		EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
 		
 		// Is the new view an EnrichmentMap one?
 		if (map != null) {
-			viewPanel = getControlPanel().addEnrichmentMapView(netView);
+			if (NetworkUtil.isAssociatedNetwork(netView.getModel()))
+				viewPanel = getControlPanel().addAssociatedView(netView);
+			else
+				viewPanel = getControlPanel().addEnrichmentMapView(netView);
 			
-			if (viewPanel != null)
-				addListeners(viewPanel, map);
+			if (viewPanel instanceof EMViewControlPanel)
+				addListeners((EMViewControlPanel) viewPanel, map);
+			else if (viewPanel instanceof AssociatedViewControlPanel)
+				addListeners((AssociatedViewControlPanel) viewPanel, map);
 		}
 		
 		return viewPanel;
 	}
 
-	/** 
-	 * Add listeners to the new panel's fields.
-	 */
 	@SuppressWarnings("unchecked")
 	private void addListeners(EMViewControlPanel viewPanel, EnrichmentMap map) {
 		CyNetworkView netView = viewPanel.getNetworkView();
@@ -585,6 +635,49 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		viewPanel.updateChartDataCombo();
 	}
 
+	private void addListeners(AssociatedViewControlPanel viewPanel, EnrichmentMap map) {
+		viewPanel.getChartDataCombo().addItemListener(evt -> {
+			if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
+				updating = true;
+				
+				try {
+					viewPanel.update();
+					updateAssociatedStyle(map, viewPanel);
+				} finally {
+					updating = false;
+				}
+			}
+		});
+		viewPanel.getNormCombo().addItemListener(evt -> {
+			if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
+				updateAssociatedStyle(map, viewPanel);
+		});
+		viewPanel.getCompressCombo().addItemListener(evt -> {
+			if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
+				updating = true;
+				
+				try {
+					viewPanel.updateChartTypeCombo();
+					viewPanel.updateDataSetCombo();
+					updateAssociatedStyle(map, viewPanel);
+				} finally {
+					updating = false;
+				}
+			}
+		});
+		viewPanel.getDataSetCombo().addItemListener(evt -> {
+			if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
+				updateAssociatedStyle(map, viewPanel);
+		});
+		viewPanel.getChartTypeCombo().addItemListener(evt -> {
+			if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
+				updateAssociatedStyle(map, viewPanel);
+		});
+		viewPanel.getResetStyleButton().addActionListener(evt -> {
+			updateAssociatedStyle(map, viewPanel);
+		});
+	}
+	
 	/**
 	 * Call this method on the EDT only!
 	 */
@@ -734,6 +827,18 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		});
 	}
 	
+	private void updateAssociatedStyle(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {
+		CyNetworkView netView = viewPanel.getNetworkView();
+		
+		if (netView != null && map != null) {
+			AssociatedStyleOptions options = createAssociatedStyleOptions(map, viewPanel);
+			CyCustomGraphics2<?> chart = createChart(options);
+			
+			UpdateAssociatedStyleTask task = updateAssociatedStyleTaskFactory.create(options, chart);
+			dialogTaskManager.execute(new TaskIterator(task));
+		}
+	}
+	
 	private EMStyleOptions createStyleOptions(EnrichmentMap map, EMViewControlPanel viewPanel) {
 		if (map == null || viewPanel == null)
 			return null;
@@ -745,7 +850,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
 		ChartType type;
 		ColorScheme colorScheme;
-		if(data == ChartData.DATA_SET) {
+		
+		if (data == ChartData.DATA_SET) {
 			type = ChartType.DATASET_PIE;
 			colorScheme = null;
 		} else {
@@ -757,6 +863,129 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		ChartOptions chartOptions = new ChartOptions(data, type, colorScheme, showLabels);
 
 		return new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, chartOptions, postAnalysis, publicationReady);
+	}
+	
+	private AssociatedStyleOptions createAssociatedStyleOptions(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {
+		CyNetworkView netView = viewPanel.getNetworkView();
+		final ChartData data = viewPanel.getChartData();
+		final Transform transform = viewPanel.getTransform();
+		final Compress compress = viewPanel.getCompress() != null ? viewPanel.getCompress() : Compress.NONE;
+		final ChartType type = viewPanel.getChartType();
+		final EMDataSet ds = viewPanel.getDataSet();
+		final AssociatedApp app = NetworkUtil.getAssociatedApp(netView.getModel());
+		List<EMDataSet> datasets = ds != null ? Collections.singletonList(ds) : map.getDataSetList();
+		
+		ExpressionData exp = data == ChartData.EXPRESSION_DATA ?
+				createExpressionData(map, datasets, transform, compress) : null;
+		ChartOptions chartOptions = data != null ? new ChartOptions(data, type, null, false) : null;
+
+		return new AssociatedStyleOptions(netView, map, transform, compress, exp, chartOptions, app);
+	}
+	
+	private ExpressionData createExpressionData(EnrichmentMap map, List<EMDataSet> datasets, Transform transform,
+			Compress compress) {
+		ExpressionData exp = null;
+		ExpressionCache cache = new ExpressionCache(transform);
+		
+		switch (compress) {
+			case DATASET_MEDIAN:
+			case DATASET_MAX:
+			case DATASET_MIN:
+				boolean isDistinctExpressionSets = map != null && map.isDistinctExpressionSets();
+				exp = new CompressedDataSet(datasets, cache, isDistinctExpressionSets);
+				break;
+			case CLASS_MEDIAN:
+			case CLASS_MAX:
+			case CLASS_MIN:
+				exp = new CompressedClass(datasets, cache);
+				break;
+			default:
+				exp = new Uncompressed(datasets, cache);
+				break;
+		}
+		
+		return exp;
+	}
+	
+	private CyCustomGraphics2<?> createChart(AssociatedStyleOptions options) {
+		CyCustomGraphics2<?> chart = null;
+		ChartOptions chartOptions = options.getChartOptions();
+		ChartData data = chartOptions != null ? chartOptions.getData() : null;
+		
+		if (data != null && data != ChartData.NONE) {
+			ChartType type = chartOptions.getType();
+			List<AbstractDataSet> dataSets = options.getDataSets(); // Ignore Signature Data Sets in charts
+			
+			if (type != null && !dataSets.isEmpty()) {
+				Map<String, Object> props = new HashMap<>(type.getProperties());
+				AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
+				
+				if (data == ChartData.DATA_SET) {
+					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
+					List<Color> colors = options.getEnrichmentMap().getDataSetColors();
+					
+					props.put("cy_dataColumns", columns);
+					props.put("cy_colors", colors);
+					props.put("cy_showItemLabels", chartOptions.isShowLabels());
+				} else if (data == ChartData.EXPRESSION_DATA) {
+					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
+					List<Double> range = null;
+					List<Color> colors = null;
+					
+					AbstractDataSet ds = dataSets.get(0);
+					
+					if (ds instanceof EMDataSet) {
+						GeneExpressionMatrix matrix = ((EMDataSet) ds).getExpressionSets();
+						Optional<DataSetColorRange> dsColorRange = DataSetColorRange.create(matrix, options.getTransform());
+						
+						if (dsColorRange.isPresent()) {
+							// TODO ???
+//							double min = dsColorRange.get().getRange().getMinValue();
+//							double max = dsColorRange.get().getRange().getMaxValue();
+//							range = Arrays.asList(new Double[] { min, max });
+//							System.out.println(min +", " + max);
+							
+							Color c1 = dsColorRange.get().getTheme().getMinColor();
+							Color c2 = dsColorRange.get().getTheme().getCenterColor();
+							Color c3 = dsColorRange.get().getTheme().getMaxColor();
+							colors = Arrays.asList(new Color[] { c1, c2, c3 });
+						}
+					}
+					
+					if (range == null || range.isEmpty())
+						range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
+					if (colors == null || colors.isEmpty())
+						colors = new ArrayList<>(ColorScheme.RD_YL_BU_3.getColors());
+					
+					props.put("cy_dataColumns", columns);
+					props.put("cy_range", range);
+					props.put("cy_autoRange", false);
+					props.put("cy_globalRange", true);
+					props.put("cy_showItemLabels", chartOptions.isShowLabels());
+					props.put("cy_colors", colors);
+					
+					ColorScheme colorScheme = chartOptions != null ? chartOptions.getColorScheme() : null;
+					
+					if (colorScheme != null && colorScheme.getPoints() != null) {
+						List<Double> points = colorScheme.getPoints();
+						
+						if (!points.isEmpty())
+							props.put(AbstractChart.COLOR_POINTS, points);
+					}
+				}
+				
+				try {
+					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
+					
+					if (factory != null)
+						chart = factory.getInstance(props);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return chart;
 	}
 	
 	/**
