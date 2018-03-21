@@ -37,10 +37,10 @@ public class CreateEMViewTask extends AbstractTask {
 	}
 	
 	@Override
-	public void run(TaskMonitor taskMonitor) {
-		taskMonitor.setTitle("Creating EnrichmentMap View");
+	public void run(TaskMonitor tm) {
+		tm.setTitle("Creating EnrichmentMap View");
 		visualizeMap();
-		taskMonitor.setStatusMessage("");
+		tm.setStatusMessage("");
 	}
 
 	private void visualizeMap() {
@@ -53,8 +53,9 @@ public class CreateEMViewTask extends AbstractTask {
 		if (layout == null)
 			layout = layoutManager.getDefaultLayout();
 		
-		Task styleTask = applyStyleTaskFactory.create(new EMStyleOptions(view, map), null, false);
-		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
+		Task styleTask = applyStyleTaskFactory.create(new EMStyleOptions(view, map), false);
+		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(),
+				CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
 		
 		TaskIterator tasks = new TaskIterator(styleTask);
 		tasks.append(layoutTasks);

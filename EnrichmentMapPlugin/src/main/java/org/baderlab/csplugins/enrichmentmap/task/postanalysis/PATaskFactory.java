@@ -11,7 +11,6 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -65,12 +64,11 @@ public class PATaskFactory extends AbstractTaskFactory {
 			EMStyleOptions options = controlPanelMediator.createStyleOptions(netView);
 			options.setPostAnalysis(true);
 			
-			CyCustomGraphics2<?> chart = controlPanelMediator.createChart(options);
 			List<EMDataSet> dataSetList = getDataSets(map);
 			
 			TaskIterator tasks = new TaskIterator();
 			tasks.append(signatureTaskFactory.create(params, map, dataSetList));
-			tasks.append(applyStyleTaskFactory.create(options, chart, false));
+			tasks.append(applyStyleTaskFactory.create(options, false));
 			
 			return tasks;
 		} else {

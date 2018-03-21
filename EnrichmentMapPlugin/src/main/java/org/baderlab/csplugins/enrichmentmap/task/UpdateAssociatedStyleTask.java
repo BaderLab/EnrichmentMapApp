@@ -1,27 +1,43 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import javax.annotation.Nullable;
-
+import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.ExpressionData;
+import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
+import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleOptions;
+import org.baderlab.csplugins.enrichmentmap.style.ChartData;
+import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
+import org.baderlab.csplugins.enrichmentmap.style.ChartType;
+import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
+import org.baderlab.csplugins.enrichmentmap.style.charts.AbstractChart;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
+import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
@@ -38,28 +54,29 @@ import com.google.inject.assistedinject.Assisted;
 public class UpdateAssociatedStyleTask extends AbstractTask {
 
 	@Inject private VisualMappingManager visualMappingManager;
-	
+	@Inject private ChartFactoryManager chartFactoryManager;
+	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private Provider<AssociatedStyleBuilder> styleBuilderProvider;
 
 	private final AssociatedStyleOptions options;
-	private final CyCustomGraphics2<?> chart;
 	
 	private static final Logger logger = LoggerFactory.getLogger(UpdateAssociatedStyleTask.class);
 
 	public interface Factory {
-		UpdateAssociatedStyleTask create(AssociatedStyleOptions options, CyCustomGraphics2<?> chart);
+		UpdateAssociatedStyleTask create(AssociatedStyleOptions options);
 	}
 
 	@Inject
-	public UpdateAssociatedStyleTask(@Assisted AssociatedStyleOptions options,
-			@Assisted @Nullable CyCustomGraphics2<?> chart) {
+	public UpdateAssociatedStyleTask(@Assisted AssociatedStyleOptions options) {
 		this.options = options;
-		this.chart = chart;
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("Update GeneMANIA Style");
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Update " + options.getAssociatedApp() + " Style");
+		tm.setStatusMessage("Updating Data Columns...");
+		tm.setProgress(0.0);
+		
 		ChartOptions chartOptions = options.getChartOptions();
 		
 		if (chartOptions != null && chartOptions.getData() != null) {
@@ -74,6 +91,9 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 					break;
 			}
 		}
+		
+		tm.setStatusMessage("Updating Style...");
+		tm.setProgress(0.6);
 		
 		updateVisualStyle();
 	}
@@ -93,6 +113,7 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 		Map<Long, double[]> columnData = new HashMap<>();
 		EnrichmentMap map = options.getEnrichmentMap();
 		ExpressionData exp = options.getExpressionData();
+		
 		int n = exp.getSize();
 
 		for (CyNode node : network.getNodeList()) {
@@ -175,6 +196,87 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 	private void updateVisualStyle() {
 		CyNetworkView view = options.getNetworkView();
 		VisualStyle vs = visualMappingManager.getVisualStyle(view);
+		CyCustomGraphics2<?> chart = createChart();
 		styleBuilderProvider.get().updateProperties(vs, options, chart);
+	}
+	
+	private CyCustomGraphics2<?> createChart() {
+		CyCustomGraphics2<?> chart = null;
+		ChartOptions chartOptions = options.getChartOptions();
+		ChartData data = chartOptions != null ? chartOptions.getData() : null;
+		
+		if (data != null && data != ChartData.NONE) {
+			ChartType type = chartOptions.getType();
+			List<AbstractDataSet> dataSets = options.getDataSets(); // Ignore Signature Data Sets in charts
+			
+			if (type != null && !dataSets.isEmpty()) {
+				Map<String, Object> props = new HashMap<>(type.getProperties());
+				AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
+				
+				if (data == ChartData.DATA_SET) {
+					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
+					List<Color> colors = options.getEnrichmentMap().getDataSetColors();
+					
+					props.put("cy_dataColumns", columns);
+					props.put("cy_colors", colors);
+					props.put("cy_showItemLabels", chartOptions.isShowLabels());
+				} else if (data == ChartData.EXPRESSION_DATA) {
+					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
+					List<Double> range = null;
+					List<Color> colors = null;
+					
+					AbstractDataSet ds = dataSets.get(0);
+					
+					if (ds instanceof EMDataSet) {
+						GeneExpressionMatrix matrix = ((EMDataSet) ds).getExpressionSets();
+						Optional<DataSetColorRange> dsColorRange = DataSetColorRange.create(matrix, options.getTransform());
+						
+						if (dsColorRange.isPresent()) {
+							Color c1 = dsColorRange.get().getTheme().getMinColor();
+							Color c2 = dsColorRange.get().getTheme().getCenterColor();
+							Color c3 = dsColorRange.get().getTheme().getMaxColor();
+							colors = Arrays.asList(new Color[] { c1, c2, c3 });
+						}
+					}
+					
+					range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
+					System.out.println(range.get(0)+","+range.get(1));
+					
+					if (colors == null || colors.isEmpty())
+						colors = new ArrayList<>(ColorScheme.RD_YL_BU_3.getColors());
+					
+					if (range.size() > 0 && range.get(0) < 0) // Does it have negative numbers?
+						Collections.reverse(colors);
+					
+					props.put("cy_dataColumns", columns);
+					props.put("cy_range", range);
+					props.put("cy_autoRange", false);
+					props.put("cy_globalRange", true);
+					props.put("cy_showRangeZeroBaseline", true);
+					props.put("cy_showItemLabels", chartOptions.isShowLabels());
+					props.put("cy_colors", colors);
+					
+					ColorScheme colorScheme = chartOptions != null ? chartOptions.getColorScheme() : null;
+					
+					if (colorScheme != null && colorScheme.getPoints() != null) {
+						List<Double> points = colorScheme.getPoints();
+						
+						if (!points.isEmpty())
+							props.put(AbstractChart.COLOR_POINTS, points);
+					}
+				}
+				
+				try {
+					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
+					
+					if (factory != null)
+						chart = factory.getInstance(props);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return chart;
 	}
 }

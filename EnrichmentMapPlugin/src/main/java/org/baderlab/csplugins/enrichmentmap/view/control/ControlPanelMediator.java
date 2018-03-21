@@ -7,7 +7,6 @@ import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
@@ -16,8 +15,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,7 +22,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
@@ -56,21 +52,17 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.ExpressionCache;
 import org.baderlab.csplugins.enrichmentmap.model.ExpressionData;
-import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.model.Uncompressed;
-import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
-import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
-import org.baderlab.csplugins.enrichmentmap.style.charts.AbstractChart;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask.FilterMode;
@@ -84,12 +76,10 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewCont
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
 import org.baderlab.csplugins.enrichmentmap.view.legend.CreationParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
-import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -111,10 +101,6 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
-import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
-import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.FinishStatus;
@@ -150,8 +136,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private FilterNodesEdgesTask.Factory filterNodesEdgesTaskFactory;
 	@Inject private SelectNodesEdgesTask.Factory selectNodesEdgesTaskFactory;
 	@Inject private DialogTaskManager dialogTaskManager;
-	@Inject private CyColumnIdentifierFactory columnIdFactory;
-	@Inject private ChartFactoryManager chartFactoryManager;
 	
 	private FilterMode filterMode = FilterMode.HIDE;
 	
@@ -336,62 +320,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		return createStyleOptions(map, viewPanel);
 	}
 	
-	public CyCustomGraphics2<?> createChart(EMStyleOptions options) {
-		CyCustomGraphics2<?> chart = null;
-		ChartOptions chartOptions = options.getChartOptions();
-		ChartData data = chartOptions != null ? chartOptions.getData() : null;
-		
-		if (data != null && data != ChartData.NONE) {
-			// Ignore Signature Data Sets in charts
-			Set<EMDataSet> dataSets = filterDataSets(options.getDataSets());
-			
-			if (!dataSets.isEmpty()) {
-				ChartType type = chartOptions.getType();
-				Map<String, Object> props = new HashMap<>(type.getProperties());
-				AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
-				
-				if(data == ChartData.DATA_SET) {
-					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
-					List<Color> colors = options.getEnrichmentMap().getDataSetColors();
-					props.put("cy_dataColumns", columns);
-					props.put("cy_colors", colors);
-					props.put("cy_showItemLabels", chartOptions.isShowLabels());
-					props.put("cy_rotation", "CLOCKWISE");
-					
-				} else {
-					List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
-							dataSets, columnDescriptor, columnIdFactory);
-	
-					List<Color> colors = ChartUtil.getChartColors(chartOptions);
-					List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
-					
-					props.put("cy_dataColumns", columns);
-					props.put("cy_range", range);
-					props.put("cy_autoRange", false);
-					props.put("cy_globalRange", true);
-					props.put("cy_showItemLabels", chartOptions.isShowLabels());
-					props.put("cy_colors", colors);
-					
-					ColorScheme colorScheme = chartOptions != null ? chartOptions.getColorScheme() : null;
-					if (colorScheme != null && colorScheme.getPoints() != null) {
-						List<Double> points = colorScheme.getPoints();
-						if (!points.isEmpty())
-							props.put(AbstractChart.COLOR_POINTS, points);
-					}
-				}
-				try {
-					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
-					if (factory != null)
-						chart = factory.getInstance(props);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		return chart;
-	}
-
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		if (getControlPanel().isDisplayable())
@@ -519,8 +447,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				filterNodesAndEdges(viewPanel, map);
 				ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
 				
-				Set<EMDataSet> oldDataSets = filterDataSets((Collection<AbstractDataSet>) evt.getOldValue());
-				Set<EMDataSet> newDataSets = filterDataSets((Collection<AbstractDataSet>) evt.getNewValue());
+				Set<EMDataSet> oldDataSets = filterEMDataSets((Collection<AbstractDataSet>) evt.getOldValue());
+				Set<EMDataSet> newDataSets = filterEMDataSets((Collection<AbstractDataSet>) evt.getNewValue());
 				int oldSize = oldDataSets.size();
 				int newSize = newDataSets.size();
 				
@@ -762,7 +690,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		if (viewPanel == null)
 			return Collections.emptySet();
 		
-		return filterDataSets(viewPanel.getCheckedDataSets()); // Ignore Signature Data Sets
+		return filterEMDataSets(viewPanel.getCheckedDataSets()); // Ignore Signature Data Sets
 	}
 	
 	private ChartType getChartType(EMViewControlPanel viewPanel) {
@@ -809,12 +737,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	private void updateVisualStyle(EnrichmentMap map, EMViewControlPanel viewPanel, boolean updateChartOnly) {
 		EMStyleOptions options = createStyleOptions(map, viewPanel);
-		CyCustomGraphics2<?> chart = createChart(options);
-		applyVisualStyle(options, chart, updateChartOnly);
+		applyVisualStyle(options, updateChartOnly);
 	}
 
-	private void applyVisualStyle(EMStyleOptions options, CyCustomGraphics2<?> chart, boolean updateChartOnly) {
-		ApplyEMStyleTask task = applyStyleTaskFactory.create(options, chart, updateChartOnly);
+	private void applyVisualStyle(EMStyleOptions options, boolean updateChartOnly) {
+		ApplyEMStyleTask task = applyStyleTaskFactory.create(options, updateChartOnly);
 		dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
 			@Override
 			public void taskFinished(ObservableTask task) {
@@ -832,9 +759,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		
 		if (netView != null && map != null) {
 			AssociatedStyleOptions options = createAssociatedStyleOptions(map, viewPanel);
-			CyCustomGraphics2<?> chart = createChart(options);
-			
-			UpdateAssociatedStyleTask task = updateAssociatedStyleTaskFactory.create(options, chart);
+			UpdateAssociatedStyleTask task = updateAssociatedStyleTaskFactory.create(options);
 			dialogTaskManager.execute(new TaskIterator(task));
 		}
 	}
@@ -905,87 +830,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		}
 		
 		return exp;
-	}
-	
-	private CyCustomGraphics2<?> createChart(AssociatedStyleOptions options) {
-		CyCustomGraphics2<?> chart = null;
-		ChartOptions chartOptions = options.getChartOptions();
-		ChartData data = chartOptions != null ? chartOptions.getData() : null;
-		
-		if (data != null && data != ChartData.NONE) {
-			ChartType type = chartOptions.getType();
-			List<AbstractDataSet> dataSets = options.getDataSets(); // Ignore Signature Data Sets in charts
-			
-			if (type != null && !dataSets.isEmpty()) {
-				Map<String, Object> props = new HashMap<>(type.getProperties());
-				AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
-				
-				if (data == ChartData.DATA_SET) {
-					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
-					List<Color> colors = options.getEnrichmentMap().getDataSetColors();
-					
-					props.put("cy_dataColumns", columns);
-					props.put("cy_colors", colors);
-					props.put("cy_showItemLabels", chartOptions.isShowLabels());
-				} else if (data == ChartData.EXPRESSION_DATA) {
-					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
-					List<Double> range = null;
-					List<Color> colors = null;
-					
-					AbstractDataSet ds = dataSets.get(0);
-					
-					if (ds instanceof EMDataSet) {
-						GeneExpressionMatrix matrix = ((EMDataSet) ds).getExpressionSets();
-						Optional<DataSetColorRange> dsColorRange = DataSetColorRange.create(matrix, options.getTransform());
-						
-						if (dsColorRange.isPresent()) {
-							// TODO ???
-//							double min = dsColorRange.get().getRange().getMinValue();
-//							double max = dsColorRange.get().getRange().getMaxValue();
-//							range = Arrays.asList(new Double[] { min, max });
-//							System.out.println(min +", " + max);
-							
-							Color c1 = dsColorRange.get().getTheme().getMinColor();
-							Color c2 = dsColorRange.get().getTheme().getCenterColor();
-							Color c3 = dsColorRange.get().getTheme().getMaxColor();
-							colors = Arrays.asList(new Color[] { c1, c2, c3 });
-						}
-					}
-					
-					if (range == null || range.isEmpty())
-						range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
-					if (colors == null || colors.isEmpty())
-						colors = new ArrayList<>(ColorScheme.RD_YL_BU_3.getColors());
-					
-					props.put("cy_dataColumns", columns);
-					props.put("cy_range", range);
-					props.put("cy_autoRange", false);
-					props.put("cy_globalRange", true);
-					props.put("cy_showItemLabels", chartOptions.isShowLabels());
-					props.put("cy_colors", colors);
-					
-					ColorScheme colorScheme = chartOptions != null ? chartOptions.getColorScheme() : null;
-					
-					if (colorScheme != null && colorScheme.getPoints() != null) {
-						List<Double> points = colorScheme.getPoints();
-						
-						if (!points.isEmpty())
-							props.put(AbstractChart.COLOR_POINTS, points);
-					}
-				}
-				
-				try {
-					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
-					
-					if (factory != null)
-						chart = factory.getInstance(props);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		return chart;
 	}
 	
 	/**
@@ -1104,7 +948,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static Set<EMDataSet> filterDataSets(Collection<AbstractDataSet> abstractDataSets) {
+	private static Set<EMDataSet> filterEMDataSets(Collection<AbstractDataSet> abstractDataSets) {
 		Set<?> set = abstractDataSets.stream()
 				.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets
 				.collect(Collectors.toSet());
