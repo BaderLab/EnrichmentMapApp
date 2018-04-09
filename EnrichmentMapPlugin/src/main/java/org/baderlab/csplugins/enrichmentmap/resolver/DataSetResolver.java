@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -52,40 +53,46 @@ public class DataSetResolver {
 	
 	
 	public static List<DataSetParameters> guessDataSets(Path rootFolder, CancelStatus cancelStatus) {
-		if(cancelStatus == null) {
-			cancelStatus = CancelStatus.notCancelable();
-		}
-		
 		// First test if rootFolder is itself a GSEA results folder
 		Optional<DataSetParameters> dataset = GSEAResolver.resolveGSEAResultsFolder(rootFolder);
 		if(dataset.isPresent())
 			return ImmutableList.of(dataset.get());
 		
-		if(cancelStatus.isCancelled())
-			return Collections.emptyList();
-		
-		try(Stream<Path> contents = Files.list(rootFolder)) {
-			Map<Type,List<Path>> types = new EnumMap<>(Type.class);
-			for(Type type : Type.values()) {
-				types.put(type, new ArrayList<>());
-			}
-			
-			for(Path path : (Iterable<Path>)contents::iterator) {
-				if(cancelStatus.isCancelled())
-					return Collections.emptyList();
-				
-				Type type = guessType(path);
-				types.get(type).add(path);
-			}
-			
-			if(cancelStatus.isCancelled())
-				return Collections.emptyList();
-			
-			return createDataSets(types);
+		try {
+			List<Path> files = Files.list(rootFolder).collect(Collectors.toList());
+			return guessDataSets(files, cancelStatus);
 		} catch(IOException e) {
 			e.printStackTrace();
 			return Collections.emptyList();
 		}
+	}
+	
+	
+	public static List<DataSetParameters> guessDataSets(List<Path> files, CancelStatus cancelStatus) {
+		if(files.isEmpty())
+			return Collections.emptyList();
+		if(cancelStatus == null)
+			cancelStatus = CancelStatus.notCancelable();
+		if(cancelStatus.isCancelled())
+			return Collections.emptyList();
+		
+		Map<Type,List<Path>> types = new EnumMap<>(Type.class);
+		for(Type type : Type.values()) {
+			types.put(type, new ArrayList<>());
+		}
+		
+		for(Path path : files) {
+			if(cancelStatus.isCancelled())
+				return Collections.emptyList();
+			
+			Type type = guessType(path);
+			types.get(type).add(path);
+		}
+		
+		if(cancelStatus.isCancelled())
+			return Collections.emptyList();
+		
+		return createDataSets(types);
 	}
 	
 	

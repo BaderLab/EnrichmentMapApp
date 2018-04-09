@@ -13,11 +13,11 @@ import org.cytoscape.work.TaskMonitor;
 
 public class ResolverTask extends AbstractTask implements ObservableTask, CancelStatus {
 
-	private final List<Path> folders = new ArrayList<>();
+	private final List<Path> paths = new ArrayList<>();
 	private final List<DataSetParameters> results = new ArrayList<>();
 	
 	public ResolverTask(Path root) {
-		folders.add(root);
+		paths.add(root);
 	}
 	
 	public ResolverTask(File root) {
@@ -26,35 +26,48 @@ public class ResolverTask extends AbstractTask implements ObservableTask, Cancel
 	
 	public ResolverTask(List<File> files) {
 		for(File file : files) 
-			folders.add(file.toPath());
+			paths.add(file.toPath());
 	}
 	
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("EnrichmentMap");
-		taskMonitor.setStatusMessage("Scanning Folder for Data Sets");
+	public void run(TaskMonitor tm) {
+		tm.setTitle("EnrichmentMap");
+		tm.setStatusMessage("Scanning Folder for Data Sets");
 		
-		if(folders.size() == 1) {
-			Path path = folders.get(0);
+		// If its a single folder we will scan all the subfolders 1 level deep
+		if(paths.size() == 1) {
+			Path path = paths.get(0);
 			if(Files.isDirectory(path)) {
 				for(File subdirectory : path.toFile().listFiles(File::isDirectory)) {
-					folders.add(subdirectory.toPath());
+					paths.add(subdirectory.toPath());
 				}
 			}
 		}
 		
-		for(Path path : folders) {
+		List<Path> miscFiles = new ArrayList<>();
+		
+		for(Path path : paths) {
 			if(cancelled)
 				break;
-			
 			try {
 				if(Files.isDirectory(path)) {
-					List<DataSetParameters> dataSets = DataSetResolver.guessDataSets(path, (CancelStatus)this);
+					List<DataSetParameters> dataSets = DataSetResolver.guessDataSets(path, this);
 					results.addAll(dataSets);
+				} else {
+					miscFiles.add(path);
 				}
 			} catch(Exception e) {
 				throw new RuntimeException("Error while resolving path: " + path, e);
 			}
+		}
+		
+		try {
+			if(!miscFiles.isEmpty()) {
+				List<DataSetParameters> dataSets = DataSetResolver.guessDataSets(miscFiles, this);
+				results.addAll(dataSets);
+			}
+		} catch(Exception e) {
+			throw new RuntimeException("Error while resolving paths", e);
 		}
 	}
 	
