@@ -7,7 +7,7 @@ public class GMGene implements Serializable {
 	private static final long serialVersionUID = -4637681171522174342L;
 
 	private String symbol;
-	private String querySymbol;
+	private String queryTerm;
 	private boolean queryGene;
 	private String description;
 	private double score;
@@ -20,12 +20,12 @@ public class GMGene implements Serializable {
 		this.symbol = symbol;
 	}
 
-	public String getQuerySymbol() {
-		return querySymbol;
+	public String getQueryTerm() {
+		return queryTerm;
 	}
 
 	public void setQuerySymbol(String querySymbol) {
-		this.querySymbol = querySymbol;
+		this.queryTerm = querySymbol;
 	}
 
 	public boolean isQueryGene() {
