@@ -68,6 +68,8 @@ import org.baderlab.csplugins.enrichmentmap.view.util.TextIcon;
  */
 public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 
+	public static final int MIN_HEIGHT = 65;
+	
 	private Optional<Color> labelBackgroundColor;
 	
 	public ColumnHeaderVerticalRenderer(Color labelBackgroundColor) {
@@ -83,8 +85,7 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
 		EMDataSet dataset = model.getDataSet(col);
 		
-		String labelText = SwingUtil.abbreviate(value.toString(), 40);
-		JLabel verticalLabel = createVerticalLabel(labelText);
+		JLabel verticalLabel = createVerticalLabel(value.toString());
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(verticalLabel, BorderLayout.CENTER);
@@ -117,6 +118,11 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		label.setIcon(new VerticalTextIcon(s, label.getFontMetrics(font), foreground, false));
 		label.setVerticalAlignment(JLabel.BOTTOM);
 		label.setHorizontalAlignment(JLabel.CENTER);
+		
+		Dimension prefSize = label.getPreferredSize();
+		if(prefSize.height < MIN_HEIGHT) {
+			label.setPreferredSize(new Dimension(prefSize.width, MIN_HEIGHT));
+		}
 		
 		return label;
 	}
