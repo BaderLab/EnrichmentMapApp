@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -101,7 +102,7 @@ public class HeatMapRanksTest extends BaseNetworkTest {
 		
 		// Convert to useful collections
 		Map<RankValue,Integer> rankToGeneId = HashBiMap.create(ranks).inverse();
-		List<RankValue> sortedRanks = ranks.values().stream().sorted().collect(Collectors.toList());
+		List<RankValue> sortedRanks = ranks.values().stream().sorted(Comparator.comparing(RankValue::getRank)).collect(Collectors.toList());
 		
 		// Test leading edge
 		for(int i = 0; i < sortedRanks.size(); i++) {

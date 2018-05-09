@@ -47,6 +47,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderVerti
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.GradientLegendPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapCellRenderer;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapRowSorter;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankOptionErrorHeader;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
@@ -277,10 +278,10 @@ public class HeatMapContentPanel extends JPanel {
 			table.setFillsViewportHeight(true);
 			table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			table.setCellSelectionEnabled(true);
-			table.setAutoCreateRowSorter(true);
 			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			table.setDefaultRenderer(Double.class, new HeatMapCellRenderer());
 			table.setDefaultRenderer(RankValue.class, new RankValueRenderer());
+			table.setRowSorter(new HeatMapRowSorter(model));
 		}
 		
 		return table;

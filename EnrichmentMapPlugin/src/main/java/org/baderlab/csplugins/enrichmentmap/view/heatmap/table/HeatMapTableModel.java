@@ -170,6 +170,11 @@ public class HeatMapTableModel extends AbstractTableModel {
 		return exp != null ? exp.getName(col - DESC_COL_COUNT) : null;
 	}
 
+	/**
+	 * Note: For HeatMapRowSorter to work properly this method
+	 * cannot return null for rank or expression values.
+	 * Return RankValue.EMPTY for ranks and Double.NaN for expressions.
+	 */
 	@Override
 	public Object getValueAt(int row, int col) {
 		if (row < 0)
@@ -178,7 +183,6 @@ public class HeatMapTableModel extends AbstractTableModel {
 			return getRankValue(row);
 		
 		String gene = getGene(row);
-		
 		if (col == GENE_COL)
 			return gene;
 		
@@ -186,14 +190,13 @@ public class HeatMapTableModel extends AbstractTableModel {
 		
 		if (map != null && gene != null) {
 			geneID = map.getHashFromGene(gene);
-			
 			if (geneID == null) {
 				// It may be another gene symbol (given by another app), other than the original query term,
 				// so we need to get the original query term
 				gene = NetworkUtil.getQueryTerm(network, gene);
-				
-				if (gene != null)
+				if (gene != null) {
 					geneID = map.getHashFromGene(gene);
+				}
 			}
 		}
 		
@@ -201,8 +204,9 @@ public class HeatMapTableModel extends AbstractTableModel {
 			return geneID != null ? getDescription(geneID) : null;
 		
 		ExpressionData exp = data.get(compress);
-		
-		return exp != null && geneID != null ? exp.getValue(geneID, col - DESC_COL_COUNT, compress) : null;
+		if(exp == null || geneID == null)
+			return Double.NaN; // because the DefaultRowSorter doesn't sort null the way we want
+		return exp.getValue(geneID, col - DESC_COL_COUNT, compress);
 	}
 	
 	public RankValue getRankValue(int row) {
