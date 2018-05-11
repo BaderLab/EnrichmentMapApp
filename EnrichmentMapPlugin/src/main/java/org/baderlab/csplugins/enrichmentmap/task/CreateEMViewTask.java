@@ -10,7 +10,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
@@ -42,23 +41,34 @@ public class CreateEMViewTask extends AbstractTask {
 		visualizeMap();
 		tm.setStatusMessage("");
 	}
-
+	
 	private void visualizeMap() {
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		CyNetworkView view = networkViewFactory.createNetworkView(network);
-		networkViewManager.addNetworkView(view);
+		
+		// The ApplyEMStyleTask actually runs twice, once here and again by the ControlPanelMediator 
+		// triggered by the call to networkViewManager.addNetworkView(). This is why the call to 
+		// addNetworkView() must be at the very end to avoid a race condition.
+		// The one here sets the basic style options, the one from ControlPanelMediator sets the cart properties.
+		// This should probably get fixed so that the task only runs once...
+		
+		EMStyleOptions options = new EMStyleOptions(view, map);
+		ApplyEMStyleTask styleTask = applyStyleTaskFactory.create(options, false);
 		
 		//apply force directed layout
 		CyLayoutAlgorithm layout = layoutManager.getLayout("force-directed");
 		if (layout == null)
 			layout = layoutManager.getDefaultLayout();
-		
-		Task styleTask = applyStyleTaskFactory.create(new EMStyleOptions(view, map), false);
-		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(),
-				CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
+		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
 		
 		TaskIterator tasks = new TaskIterator(styleTask);
 		tasks.append(layoutTasks);
+		tasks.append(new AbstractTask() {
+			@Override public void run(TaskMonitor tm)  {
+				networkViewManager.addNetworkView(view);
+			}
+		});
+		
 		insertTasksAfterCurrentTask(tasks);
 	}
 }
