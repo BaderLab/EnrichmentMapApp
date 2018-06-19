@@ -353,11 +353,14 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
 			
+			boolean foundDatasets = false;
+			
 			@Override
 			public void taskFinished(ObservableTask task) {
 				@SuppressWarnings("unchecked")
 				List<DataSetParameters> datasets = task.getResults(List.class);
 				if(!datasets.isEmpty()) {
+					foundDatasets = true;
 					datasets.forEach(MasterDetailDialogPage.this::addDataSetToList);
 					dataSetList.setSelectedValue(datasets.get(0), true);
 				}
@@ -367,6 +370,9 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			public void allFinished(FinishStatus finishStatus) {
 				scanButton.setEnabled(true);
 				updateButtonEnablement();
+				if(!foundDatasets) {
+					JOptionPane.showMessageDialog(callback.getDialogFrame(), "No data sets found", "EnrichmentMap", JOptionPane.WARNING_MESSAGE);
+				}
 			}
 		});
 	}
