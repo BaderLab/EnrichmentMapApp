@@ -1,9 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
+import java.net.URISyntaxException;
 import java.util.Properties;
 
-import javax.ws.rs.core.UriBuilder;
-
+import org.apache.http.client.utils.URIBuilder;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
@@ -20,6 +20,8 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.name.Named;
 
 public class OpenPathwayCommonsTask extends AbstractTask {
+	
+	public static final String DEFAULT_BASE_URL = "http://apps.pathwaycommons.org/paint";
 
 	@Inject private OpenBrowser openBrowser;
 	@Inject private PropertyManager propertyManager;
@@ -45,25 +47,32 @@ public class OpenPathwayCommonsTask extends AbstractTask {
 			return null;
 		
 		int port = Integer.parseInt(cy3props.getProperties().getProperty("rest.port"));
-		
-		String returnUri = UriBuilder
-			.fromPath("/enrichmentmap/expressions/{0}/{1}")
-			.host("localhost")
-			.scheme("http")
-			.port(port)
-			.build(network.getSUID(), node.getSUID())
-			.toString();
-		
 		String pcBaseUri = propertyManager.getValue(PropertyManager.PATHWAY_COMMONS_URL);
+		String nodeLabel = getNodeLabel(map);
 		
-		String pcUri = UriBuilder
-			.fromUri(pcBaseUri)
-			.queryParam("uri", returnUri)
-			.queryParam("q", getNodeLabel(map))
-			.build()
-			.toString();
+		try {
+			String returnUri = new URIBuilder()
+				.setScheme("http")
+				.setHost("localhost")
+				.setPath(String.format("/enrichmentmap/expressions/%s/%s", network.getSUID(), node.getSUID()))
+				.setPort(port)
+				.build()
+				.toString();
+			
+			String pcUri = new URIBuilder(pcBaseUri)
+				.addParameter("uri", returnUri)
+				.addParameter("q", nodeLabel)
+				.build()
+				.toString();
 		
-		return pcUri;
+//			System.out.println("return uri: " + returnUri);
+//			System.out.println("pc uri    : " + pcUri);
+			
+			return pcUri;
+		} catch(URISyntaxException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	private String getNodeLabel(EnrichmentMap map) {

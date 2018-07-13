@@ -99,6 +99,11 @@
 			<version>3.5</version>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.6</version>
+		</dependency>
+		<dependency>
 			<groupId>com.itextpdf</groupId>
 			<artifactId>itextpdf</artifactId>
 			<version>5.5.12</version>
@@ -154,11 +159,6 @@
 			<artifactId>jcolorbrewer</artifactId>
 			<version>5.2</version>
 		</dependency>
-<!-- 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.3</version>
-		</dependency> -->
 		
 		<!-- Dependency Injection -->
 		<dependency>
@@ -257,7 +257,7 @@
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Bundle-Activator>${bundle.namespace}.enrichmentmap.CyActivator</Bundle-Activator>
 						<Embed-Dependency>
-							colt,commons-math3,commons-lang3,itextpdf,guava,gson,jsr305,guice,peaberry,javax.inject,
+							colt,commons-math3,commons-lang3,httpclient,httpcore,itextpdf,guava,gson,jsr305,guice,peaberry,javax.inject,
 							aopalliance,guice-multibindings,guice-assistedinject,jatl,jcolorbrewer,jfreechart,jcommon
 						</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>

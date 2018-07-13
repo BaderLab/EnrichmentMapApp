@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
 
+import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTask;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.cytoscape.property.CyProperty;
 
@@ -36,7 +37,7 @@ public class PropertyManager {
 	public static final Property<Double> Q_VALUE = new Property<>("default.qvalue", 0.1, Double::valueOf);
 	public static final Property<Boolean> CREATE_WARN = new Property<>("create.warn", true, Boolean::valueOf);
 	public static final Property<Distance> DISTANCE_METRIC = new Property<>("default.distanceMetric", Distance.PEARSON, Distance::valueOf);
-	public static final Property<String> PATHWAY_COMMONS_URL = new Property<>("pathway.commons.url", "http://apps.pathwaycommons.org/paint", String::valueOf);
+	public static final Property<String> PATHWAY_COMMONS_URL = new Property<>("pathway.commons.url", OpenPathwayCommonsTask.DEFAULT_BASE_URL, String::valueOf);
 	
 	@Inject private CyProperty<Properties> cyProps;
 	
