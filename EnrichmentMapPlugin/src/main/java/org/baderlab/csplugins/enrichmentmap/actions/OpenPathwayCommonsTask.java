@@ -17,6 +17,7 @@ import org.cytoscape.work.TaskMonitor;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 
 public class OpenPathwayCommonsTask extends AbstractTask {
@@ -29,15 +30,22 @@ public class OpenPathwayCommonsTask extends AbstractTask {
 	@Inject private @Named("cytoscape3.props") CyProperty<Properties> cy3props;
 	
 	public static interface Factory {
-		OpenPathwayCommonsTask create(CyNode node, CyNetwork network);
+		OpenPathwayCommonsTask create(CyNetwork network, CyNode node);
+		OpenPathwayCommonsTask createForHeatMap(CyNetwork network);
 	}
 	
 	private final CyNode node;
 	private final CyNetwork network;
 	
-	@Inject
-	public OpenPathwayCommonsTask(@Assisted CyNode node, @Assisted CyNetwork network) {
+	@AssistedInject
+	public OpenPathwayCommonsTask(@Assisted CyNetwork network, @Assisted CyNode node) {
 		this.node = node;
+		this.network = network;
+	}
+	
+	@AssistedInject
+	public OpenPathwayCommonsTask(@Assisted CyNetwork network) {
+		this.node = null;
 		this.network = network;
 	}
 	
@@ -51,10 +59,16 @@ public class OpenPathwayCommonsTask extends AbstractTask {
 		String nodeLabel = getNodeLabel(map);
 		
 		try {
+			String returnPath;
+			if(node == null)
+				returnPath = "/enrichmentmap/expressions/heatmap";
+			else
+				returnPath = String.format("/enrichmentmap/expressions/%s/%s", network.getSUID(), node.getSUID());
+			
 			String returnUri = new URIBuilder()
 				.setScheme("http")
 				.setHost("localhost")
-				.setPath(String.format("/enrichmentmap/expressions/%s/%s", network.getSUID(), node.getSUID()))
+				.setPath(returnPath)
 				.setPort(port)
 				.build()
 				.toString();
@@ -65,9 +79,6 @@ public class OpenPathwayCommonsTask extends AbstractTask {
 				.build()
 				.toString();
 		
-//			System.out.println("return uri: " + returnUri);
-//			System.out.println("pc uri    : " + pcUri);
-			
 			return pcUri;
 		} catch(URISyntaxException e) {
 			e.printStackTrace();
@@ -77,7 +88,10 @@ public class OpenPathwayCommonsTask extends AbstractTask {
 	
 	private String getNodeLabel(EnrichmentMap map) {
 		String prefix = map.getParams().getAttributePrefix();
-		return Columns.NODE_GS_DESCR.get(network.getRow(node), prefix);
+		if(node == null)
+			return "EnrichmentMap";
+		else
+			return Columns.NODE_GS_DESCR.get(network.getRow(node), prefix);
 	}
 
 	@Override

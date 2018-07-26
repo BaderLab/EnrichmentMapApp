@@ -24,6 +24,7 @@ import javax.swing.SwingUtilities;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
+import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTask;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.Compress;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -99,6 +100,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@Inject private ExportPDFAction.Factory pdfActionFactory;
 	@Inject private QueryGeneManiaTask.Factory queryGeneManiaTaskFactory;
 	@Inject private QueryStringTask.Factory queryStringTaskFactory;
+	@Inject private OpenPathwayCommonsTask.Factory pathwayCommonsFactory;
 	
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyServiceRegistrar serviceRegistrar;
@@ -142,12 +144,22 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		contentPanel.getOptionsPopup().setDistanceConsumer(this::updateSetting_Distance);
 		contentPanel.getOptionsPopup().getGeneManiaButton().addActionListener(e -> runGeneMANIA());
 		contentPanel.getOptionsPopup().getStringButton().addActionListener(e -> runString());
+		contentPanel.getOptionsPopup().getPathwayCommonsButton().addActionListener(e -> runPathwayCommons());
 		contentPanel.getOptionsPopup().getAddRanksButton().addActionListener(e -> addRankings());
 		contentPanel.getOptionsPopup().getExportTxtButton().addActionListener(txtActionFactory.create(contentPanel.getTable()));
 		contentPanel.getOptionsPopup().getExportPdfButton().addActionListener(pdfActionFactory.create(contentPanel.getTable(), contentPanel::getRankingOption));
 		
 		// Property Change Listeners
 		contentPanel.addPropertyChangeListener("selectedRankingOption", evt -> settingChanged());
+	}
+	
+	
+	public List<String> getGenes() {
+		return contentPanel.getGenes();
+	}
+	
+	public EnrichmentMap getEnrichmentMap() {
+		return contentPanel.getEnrichmentMap();
 	}
 	
 	public void showHeatMapPanel() {
@@ -532,7 +544,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			}
 		});
 	}
-
+	
 	private void onGeneManiaQueryFinished(GMSearchResult res, HeatMapContentPanel contentPanel) {
 		CyNetwork net = null;
 		
@@ -654,6 +666,13 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 //			for (CyNetworkView netView : netViewList)
 //				updateGeneManiaStyle(netView);
 		}
+	}
+	
+	private void runPathwayCommons() {
+		long uuid = getEnrichmentMap().getNetworkID();
+		CyNetwork network = networkManager.getNetwork(uuid);
+		OpenPathwayCommonsTask task = pathwayCommonsFactory.createForHeatMap(network);
+		taskManager.execute(new TaskIterator(task));
 	}
 
 	private boolean isHeatMapPanelRegistered() {

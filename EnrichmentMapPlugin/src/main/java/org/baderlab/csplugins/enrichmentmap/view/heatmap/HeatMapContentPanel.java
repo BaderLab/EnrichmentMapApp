@@ -423,7 +423,6 @@ public class HeatMapContentPanel extends JPanel {
 	
 	protected EnrichmentMap getEnrichmentMap() {
 		HeatMapTableModel model = (HeatMapTableModel) getTable().getModel();
-		
 		return model.getEnrichmentMap();
 	}
 	

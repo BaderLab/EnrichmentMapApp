@@ -59,7 +59,7 @@ public class OpenPathwayCommonsTaskTest extends BaseNetworkTest {
 		String returnUri = URLEncoder.encode("http://localhost:1234/enrichmentmap/expressions/" + network.getSUID() + "/" + node.getSUID());
 		String expectedUri = "http://pathway.commons/paint?uri=" + returnUri + "&q=top1_plus100";
 		
-		OpenPathwayCommonsTask task = pathwayCommonsTaskFactory.create(node, network);
+		OpenPathwayCommonsTask task = pathwayCommonsTaskFactory.create(network, node);
 		String uri = task.getPathwayCommonsURL();
 		assertEquals(expectedUri, uri);
 	}

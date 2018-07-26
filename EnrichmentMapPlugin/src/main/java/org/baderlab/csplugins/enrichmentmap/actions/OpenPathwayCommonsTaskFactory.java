@@ -20,7 +20,7 @@ public class OpenPathwayCommonsTaskFactory implements NodeViewTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
-		return new TaskIterator(taskFactory.create(nodeView.getModel(), networkView.getModel()));
+		return new TaskIterator(taskFactory.create(networkView.getModel(), nodeView.getModel()));
 	}
 
 	/**

@@ -33,6 +33,7 @@ public class OptionsPopup extends JPopupMenu {
 	
 	private JMenuItem geneManiaButton;
 	private JMenuItem stringButton;
+	private JMenuItem pcButton;
 	
 	private JCheckBoxMenuItem cosineRadio;
 	private JCheckBoxMenuItem euclideanRadio;
@@ -73,6 +74,9 @@ public class OptionsPopup extends JPopupMenu {
 		stringButton.setIcon(new TextIcon(IconUtil.STRING_ICON, IconUtil.getIconFont(16.0f), iconColor,
 				iconSize, iconSize));
 		
+		pcButton = new JMenuItem("Show in Pathway Commons...");
+		pcButton.setIcon(new TextIcon(IconManager.ICON_EXTERNAL_LINK, iconFont, iconColor, iconSize, iconSize));
+		
 		JMenu distanceMenu = new JMenu("Hierarchical Cluster - Distance Metric");
 		
 		cosineRadio = new JCheckBoxMenuItem("Cosine");
@@ -95,6 +99,7 @@ public class OptionsPopup extends JPopupMenu {
 		
 		add(geneManiaButton);
 		add(stringButton);
+		add(pcButton);
 		addSeparator();
 		add(addRanksButton);
 		add(exportTxtButton);
@@ -131,6 +136,10 @@ public class OptionsPopup extends JPopupMenu {
 	
 	public JMenuItem getStringButton() {
 		return stringButton;
+	}
+	
+	public JMenuItem getPathwayCommonsButton() {
+		return pcButton;
 	}
 	
 	public void update(HeatMapParams params) {

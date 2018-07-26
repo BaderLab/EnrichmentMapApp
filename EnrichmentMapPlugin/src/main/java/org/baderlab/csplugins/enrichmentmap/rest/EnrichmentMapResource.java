@@ -17,12 +17,14 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.io.ModelSerializer;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -34,6 +36,8 @@ public class EnrichmentMapResource {
 
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private CyNetworkManager networkManager;
+	@Inject private Provider<HeatMapMediator> heatMapMediatorProvider;
+	
 	
 	@GET
 	@ApiOperation(value="Get enrichment map model data for a given network.", response=EnrichmentMap.class)
@@ -90,6 +94,22 @@ public class EnrichmentMapResource {
 		return Response.status(Status.NOT_FOUND).build();
 	}
 	
+	
+	@GET
+	@ApiOperation(value="Get enrichment map model data for a given network.", response=ExpressionDataResponse.class)
+	@Path("/expressions/heatmap")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getExpressionDataForHeatMap() {
+		HeatMapMediator heatMapMediator = heatMapMediatorProvider.get();
+		List<String> genes = heatMapMediator.getGenes();
+		EnrichmentMap map  = heatMapMediator.getEnrichmentMap();
+		
+		if(genes == null || genes.isEmpty() || map == null)
+			return Response.status(Status.NOT_FOUND).build();
+		
+		ExpressionDataResponse response = new ExpressionDataResponse(map, Optional.of(new HashSet<>(genes)));
+		return Response.ok(response).build();
+	}
 	
 	
 	private String getEnrichmentMapJSON(EnrichmentMap map) {
