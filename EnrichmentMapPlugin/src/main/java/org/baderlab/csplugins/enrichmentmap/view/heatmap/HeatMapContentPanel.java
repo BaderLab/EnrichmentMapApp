@@ -87,7 +87,7 @@ public class HeatMapContentPanel extends JPanel {
 	private JComboBox<ComboItem<Compress>> compressCombo;
 	private JCheckBox showValuesCheck;
 	
-	private ClusterRankingOption clusterRankingOption;
+	private RankingOption clusterRankingOption;
 	private List<RankingOption> moreRankOptions;
 	private RankingOption selectedRankingOption;
 	
@@ -345,6 +345,12 @@ public class HeatMapContentPanel extends JPanel {
 		return new ArrayList<>(interGenes);
 	}
 	
+	
+	void clear() {
+		HeatMapParams params = new HeatMapParams.Builder().build();
+		update(null, null, params, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), RankingOption.none());
+	}
+	
 	void update(
 			CyNetwork network,
 			EnrichmentMap map,
@@ -352,7 +358,7 @@ public class HeatMapContentPanel extends JPanel {
 			List<RankingOption> moreRankOptions,
 			Collection<String> union,
 			Collection<String> intersection,
-			ClusterRankingOption clusterRankingOption
+			RankingOption clusterRankingOption
 	) {
 		this.clusterRankingOption = clusterRankingOption;
 		this.moreRankOptions = moreRankOptions.isEmpty() ? Arrays.asList(RankingOption.none()) : moreRankOptions;
@@ -371,7 +377,7 @@ public class HeatMapContentPanel extends JPanel {
 		getCompressCombo().removeAllItems();
 		getCompressCombo().addItem(new ComboItem<>(Compress.NONE, Labels.NONE));
 
-		if (map.hasClassData()) {
+		if (map != null && map.hasClassData()) {
 			getCompressCombo().addItem(new ComboItem<>(Compress.CLASS_MEDIAN, "Class: Median"));
 			getCompressCombo().addItem(new ComboItem<>(Compress.CLASS_MIN, "Class: Min"));
 			getCompressCombo().addItem(new ComboItem<>(Compress.CLASS_MAX, "Class: Max"));

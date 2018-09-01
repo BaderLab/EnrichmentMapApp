@@ -6,7 +6,7 @@ import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.EM_ICON_CO
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.LAYERED_EM_ICON;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.getIconFont;
 
-import java.awt.CardLayout;
+import java.awt.BorderLayout;
 import java.awt.Component;
 
 import javax.swing.GroupLayout;
@@ -21,7 +21,6 @@ import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -30,10 +29,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 
 	public static final String ID = "enrichmentmap.view.ExpressionViewerPanel";
 	
-	@Inject private HeatMapContentPanel contentPanel;
-	
 	private final NullContentPanel nullContentPanel = new NullContentPanel();
-	private final CardLayout cardLayout = new CardLayout();
 	
 	private final Icon compIcon = new TextIcon(LAYERED_EM_ICON, getIconFont(18.0f), EM_ICON_COLORS, 16, 16);
 
@@ -42,19 +38,19 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 		if (LookAndFeelUtil.isAquaLAF())
 			setOpaque(false);
 		
-		setLayout(cardLayout);
-		add(nullContentPanel, nullContentPanel.getName());
-		add(contentPanel, contentPanel.getName());
-		showEmptyView();
+		setLayout(new BorderLayout());
+		add(nullContentPanel, BorderLayout.CENTER);
 	}
 	
-	public void showContentPanel() {
-		cardLayout.show(this, contentPanel.getName());
+	
+	public void showContentPanel(HeatMapContentPanel contentPanel) {
+		removeAll();
+		if(contentPanel != null)
+			add(contentPanel, BorderLayout.CENTER);
+		else
+			add(nullContentPanel, BorderLayout.CENTER);
 	}
 	
-	public void showEmptyView() {
-		cardLayout.show(this, nullContentPanel.getName());
-	}
 	
 	@Override
 	public CytoPanelName getCytoPanelName() {

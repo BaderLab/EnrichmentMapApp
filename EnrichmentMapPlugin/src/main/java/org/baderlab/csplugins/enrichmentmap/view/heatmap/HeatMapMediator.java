@@ -22,7 +22,6 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTask;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
@@ -112,15 +111,15 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@Inject private OpenBrowser openBrowser;
 	
 	@Inject private HeatMapPanel heatMapPanel;
-	@Inject private HeatMapContentPanel contentPanel;
+	@Inject private Provider<HeatMapContentPanel> contentPanelProvider;
+	@Inject private HeatMapContentPanel contentPanel2;
 	
 	private final CoalesceTimer selectionEventTimer = new CoalesceTimer(200, 1);
 	private boolean onlyEdges;
 	
 	private boolean isResetting;
 	
-	@AfterInjection
-	private void init() {
+	private HeatMapContentPanel getContentPanel() {
 		// Add UI listeners
 		if (operatorActionListener == null)
 			operatorActionListener = evt -> updateSetting_Operator();
@@ -132,34 +131,44 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			showValueActionListener = evt -> updateSetting_ShowValues();
 		
 		// Tool Bar
-		contentPanel.getOperatorCombo().addActionListener(operatorActionListener);
-		contentPanel.getNormCombo().addActionListener(normActionListener);
-		contentPanel.getCompressCombo().addActionListener(compressActionListener);
-		contentPanel.getShowValuesCheck().addActionListener(showValueActionListener);
-		
-		// Fire a setting changed event when column sort changes
-		contentPanel.getTable().getRowSorter().addRowSorterListener(e -> settingChanged()); 
-		
-		// Options Popup
-		contentPanel.getOptionsPopup().setDistanceConsumer(this::updateSetting_Distance);
-		contentPanel.getOptionsPopup().getGeneManiaButton().addActionListener(e -> runGeneMANIA());
-		contentPanel.getOptionsPopup().getStringButton().addActionListener(e -> runString());
-		contentPanel.getOptionsPopup().getPathwayCommonsButton().addActionListener(e -> runPathwayCommons());
-		contentPanel.getOptionsPopup().getAddRanksButton().addActionListener(e -> addRankings());
-		contentPanel.getOptionsPopup().getExportTxtButton().addActionListener(txtActionFactory.create(contentPanel.getTable()));
-		contentPanel.getOptionsPopup().getExportPdfButton().addActionListener(pdfActionFactory.create(contentPanel.getTable(), contentPanel::getRankingOption));
-		
-		// Property Change Listeners
-		contentPanel.addPropertyChangeListener("selectedRankingOption", evt -> settingChanged());
+		if(contentPanel2 == null) {
+			contentPanel2 = contentPanelProvider.get();
+			contentPanel2.getOperatorCombo().addActionListener(operatorActionListener);
+			contentPanel2.getNormCombo().addActionListener(normActionListener);
+			contentPanel2.getCompressCombo().addActionListener(compressActionListener);
+			contentPanel2.getShowValuesCheck().addActionListener(showValueActionListener);
+			
+			// Fire a setting changed event when column sort changes
+			contentPanel2.getTable().getRowSorter().addRowSorterListener(e -> settingChanged()); 
+			
+			// Options Popup
+			contentPanel2.getOptionsPopup().setDistanceConsumer(this::updateSetting_Distance);
+			contentPanel2.getOptionsPopup().getGeneManiaButton().addActionListener(e -> runGeneMANIA());
+			contentPanel2.getOptionsPopup().getStringButton().addActionListener(e -> runString());
+			contentPanel2.getOptionsPopup().getPathwayCommonsButton().addActionListener(e -> runPathwayCommons());
+			contentPanel2.getOptionsPopup().getAddRanksButton().addActionListener(e -> addRankings());
+			contentPanel2.getOptionsPopup().getExportTxtButton().addActionListener(txtActionFactory.create(contentPanel2.getTable()));
+			contentPanel2.getOptionsPopup().getExportPdfButton().addActionListener(pdfActionFactory.create(contentPanel2.getTable(), contentPanel2::getRankingOption));
+			
+			// Property Change Listeners
+			contentPanel2.addPropertyChangeListener("selectedRankingOption", evt -> settingChanged());
+		}
+		heatMapPanel.showContentPanel(contentPanel2);
+		return contentPanel2;
+	}
+	
+	private void disposeContentPanel() {
+		contentPanel2 = null;
+		heatMapPanel.showContentPanel(null);
 	}
 	
 	
 	public List<String> getGenes() {
-		return contentPanel.getGenes();
+		return getContentPanel().getGenes();
 	}
 	
 	public EnrichmentMap getEnrichmentMap() {
-		return contentPanel.getEnrichmentMap();
+		return getContentPanel().getEnrichmentMap();
 	}
 	
 	public void showHeatMapPanel() {
@@ -209,7 +218,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		if (netView != null && (emManager.isEnrichmentMap(netView) || emManager.isAssociatedEnrichmentMap(netView)))
 			updateHeatMap(netView);
 		else
-			heatMapPanel.showEmptyView();
+			disposeContentPanel();
 	}
 	
 	public void reset() {
@@ -218,7 +227,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		if (netView != null && (emManager.isEnrichmentMap(netView) || emManager.isAssociatedEnrichmentMap(netView)))
 			updateHeatMap(netView);
 		else
-			heatMapPanel.showEmptyView();
+			disposeContentPanel();
 	}
 	
 	private void heatMapParamsChanged(HeatMapParams params) {
@@ -247,8 +256,9 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		CyNetwork network = networkView.getModel();
 		EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
 		
-		if (map == null)
+		if (map == null) {
 			return;
+		}
 		
 		List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 		List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
@@ -285,7 +295,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		ClusterRankingOption clusterRankingOption = getClusterRankingOption(map);
 		
 		invokeOnEDT(() -> {
-			heatMapPanel.showContentPanel();
+			HeatMapContentPanel contentPanel = getContentPanel();
 			contentPanel.update(network, map, params, rankOptions, union, inter, clusterRankingOption);
 			
 			if (propertyManager.getValue(PropertyManager.HEATMAP_AUTOFOCUS))
@@ -312,19 +322,19 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	}
 	
 	private void updateSetting_Operator() {
-		Operator oper = contentPanel.getOperator();
+		Operator oper = getContentPanel().getOperator();
 		
 		if (oper != null) {
-			HeatMapTableModel tableModel = (HeatMapTableModel) contentPanel.getTable().getModel();
-			tableModel.setGenes(contentPanel.getGenes(oper));
+			HeatMapTableModel tableModel = (HeatMapTableModel) getContentPanel().getTable().getModel();
+			tableModel.setGenes(getContentPanel().getGenes(oper));
 			settingChanged();
 		}
 	}
 	
 	private void updateSetting_Transform() {
-		Transform transform = contentPanel.getTransform();
-		Compress compress = contentPanel.getCompress();
-		HeatMapTableModel tableModel = (HeatMapTableModel) contentPanel.getTable().getModel();
+		Transform transform = getContentPanel().getTransform();
+		Compress compress = getContentPanel().getCompress();
+		HeatMapTableModel tableModel = (HeatMapTableModel) getContentPanel().getTable().getModel();
 		
 		if (tableModel.getCompress() != compress) {
 			invokeOnEDT(() -> updateHeatMapPanel());
@@ -337,8 +347,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	}
 	
 	private void updateHeatMapPanel() {
-		HeatMapParams params = contentPanel.buildParams();
-		HeatMapTableModel tableModel = (HeatMapTableModel) contentPanel.getTable().getModel();
+		HeatMapParams params = getContentPanel().buildParams();
+		HeatMapTableModel tableModel = (HeatMapTableModel) getContentPanel().getTable().getModel();
 		EnrichmentMap map = tableModel.getEnrichmentMap();
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		List<RankingOption> rankOptions = getDataSetRankOptions(map);
@@ -346,44 +356,44 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 
 		isResetting = true;
 		
-		contentPanel.getOperatorCombo().removeActionListener(operatorActionListener);
-		contentPanel.getNormCombo().removeActionListener(normActionListener);
-		contentPanel.getCompressCombo().removeActionListener(compressActionListener);
-		contentPanel.getShowValuesCheck().removeActionListener(showValueActionListener);
+		getContentPanel().getOperatorCombo().removeActionListener(operatorActionListener);
+		getContentPanel().getNormCombo().removeActionListener(normActionListener);
+		getContentPanel().getCompressCombo().removeActionListener(compressActionListener);
+		getContentPanel().getShowValuesCheck().removeActionListener(showValueActionListener);
 
 		try {
-			contentPanel.update(network, map, params, rankOptions, contentPanel.getUnionGenes(), contentPanel.getInterGenes(), clusterRankingOption);
+			getContentPanel().update(network, map, params, rankOptions, getContentPanel().getUnionGenes(), getContentPanel().getInterGenes(), clusterRankingOption);
 		} finally {
-			contentPanel.getOperatorCombo().addActionListener(operatorActionListener);
-			contentPanel.getNormCombo().addActionListener(normActionListener);
-			contentPanel.getCompressCombo().addActionListener(compressActionListener);
-			contentPanel.getShowValuesCheck().addActionListener(showValueActionListener);
+			getContentPanel().getOperatorCombo().addActionListener(operatorActionListener);
+			getContentPanel().getNormCombo().addActionListener(normActionListener);
+			getContentPanel().getCompressCombo().addActionListener(compressActionListener);
+			getContentPanel().getShowValuesCheck().addActionListener(showValueActionListener);
 			
 			isResetting = false;
 		}
 	}
 
 	private void updateSetting_ShowValues() {
-		boolean showValues = contentPanel.isShowValues();
-		HeatMapCellRenderer renderer = (HeatMapCellRenderer) contentPanel.getTable().getDefaultRenderer(Double.class);
+		boolean showValues = getContentPanel().isShowValues();
+		HeatMapCellRenderer renderer = (HeatMapCellRenderer) getContentPanel().getTable().getDefaultRenderer(Double.class);
 		renderer.setShowValues(showValues);
-		contentPanel.clearTableHeader();
-		contentPanel.updateTableHeader(showValues);
-		contentPanel.getTable().revalidate();
+		getContentPanel().clearTableHeader();
+		getContentPanel().updateTableHeader(showValues);
+		getContentPanel().getTable().revalidate();
 		settingChanged();
 	}
 	
 	private void updateSetting_Distance(Distance distance) {
-		EnrichmentMap map = contentPanel.getEnrichmentMap();
+		EnrichmentMap map = getContentPanel().getEnrichmentMap();
 		ClusterRankingOption clusterRankingOption = getClusterRankingOption(map);
 		clusterRankingOption.setDistance(distance);
-		contentPanel.setSelectedRankingOption(clusterRankingOption);
+		getContentPanel().setSelectedRankingOption(clusterRankingOption);
 		settingChanged();
 	}
 	
 	private void settingChanged() {
 		if (!isResetting) {
-			HeatMapParams params = contentPanel.buildParams();
+			HeatMapParams params = getContentPanel().buildParams();
 			heatMapParamsChanged(params);
 		}
 	}
@@ -405,12 +415,12 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	}
 	
 	private void addRankings() {
-		EnrichmentMap map = contentPanel.getEnrichmentMap();
+		EnrichmentMap map = getContentPanel().getEnrichmentMap();
 		AddRanksDialog dialog = ranksDialogFactory.create(map);
 		Optional<String> ranksName = dialog.open();
 		
 		if (ranksName.isPresent())
-			contentPanel.setMoreRankOptions(getDataSetRankOptions(map));
+			getContentPanel().setMoreRankOptions(getDataSetRankOptions(map));
 	}
 	
 	private List<RankingOption> getDataSetRankOptions(EnrichmentMap map, CyNetwork network, List<CyNode> nodes, List<CyEdge> edges) {
@@ -486,7 +496,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		if (commands == null || !commands.contains(GENEMANIA_SEARCH_COMMAND)) {
 			if (JOptionPane.showConfirmDialog(
-					SwingUtilities.getWindowAncestor(contentPanel),
+					SwingUtilities.getWindowAncestor(getContentPanel()),
 					"This action requires a version of the GeneMANIA app that is not installed?\n" +
 					"Would you like to install or update the GeneMANIA app now?",
 					"Cannot Find GeneMANIA App",
@@ -498,7 +508,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			return;
 		}
 		
-		QueryGeneManiaTask queryTask = queryGeneManiaTaskFactory.create(contentPanel.getGenes());
+		QueryGeneManiaTask queryTask = queryGeneManiaTaskFactory.create(getContentPanel().getGenes());
 		
 		// Get list of organisms from GeneMANIA
 		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
@@ -540,7 +550,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			@Override
 			public void allFinished(FinishStatus finishStatus) {
 				if (finishStatus == FinishStatus.getSucceeded())
-					onGeneManiaQueryFinished(queryTask.getResult(), contentPanel);
+					onGeneManiaQueryFinished(queryTask.getResult(), getContentPanel());
 			}
 		});
 	}
@@ -582,7 +592,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		if (commands == null || !commands.contains(STRING_SPECIES_COMMAND)) {
 			if (JOptionPane.showConfirmDialog(
-					SwingUtilities.getWindowAncestor(contentPanel),
+					SwingUtilities.getWindowAncestor(getContentPanel()),
 					"This action requires a version of the STRING app that is not installed?\n" +
 					"Would you like to install or update the STRING app now?",
 					"Cannot Find STRING App",
@@ -594,7 +604,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			return;
 		}
 		
-		QueryStringTask queryTask = queryStringTaskFactory.create(contentPanel.getGenes());
+		QueryStringTask queryTask = queryStringTaskFactory.create(getContentPanel().getGenes());
 		
 		// Get list of organisms from STRING App
 		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
@@ -636,7 +646,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			@Override
 			public void allFinished(FinishStatus finishStatus) {
 				if (finishStatus == FinishStatus.getSucceeded())
-					onStringQueryFinished(queryTask.getResult(), contentPanel);
+					onStringQueryFinished(queryTask.getResult(), getContentPanel());
 			}
 		});
 	}
