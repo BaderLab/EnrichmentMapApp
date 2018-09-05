@@ -61,9 +61,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.google.inject.Singleton;
 
-@Singleton
 @SuppressWarnings("serial")
 public class HeatMapContentPanel extends JPanel {
 
