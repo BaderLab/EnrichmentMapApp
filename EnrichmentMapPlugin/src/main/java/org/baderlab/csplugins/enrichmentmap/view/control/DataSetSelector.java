@@ -157,6 +157,8 @@ public class DataSetSelector extends JPanel {
 		
 		LookAndFeelUtil.equalizeSize(getSelectAllButton(), getSelectNoneButton());
 		
+		final int rh = getTable().getRowHeight() + 2;
+		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
@@ -177,7 +179,7 @@ public class DataSetSelector extends JPanel {
 						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
-   				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+   				.addComponent(getTableScrollPane(), rh * 2, rh * 3, Short.MAX_VALUE)
    				.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    		);
 		

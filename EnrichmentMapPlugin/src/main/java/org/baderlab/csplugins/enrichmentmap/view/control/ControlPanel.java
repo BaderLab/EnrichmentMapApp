@@ -20,6 +20,7 @@ import static org.cytoscape.util.swing.IconManager.ICON_REFRESH;
 import static org.cytoscape.util.swing.IconManager.ICON_STAR;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -52,6 +53,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
@@ -442,11 +444,34 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		protected final CyNetworkView networkView;
 		
+		protected JScrollPane scrollPane;
+		protected JPanel contentPane;
 		protected JButton resetStyleButton;
 		
 		protected AbstractViewControlPanel(CyNetworkView networkView, String name) {
 			this.networkView = networkView;
 			setName(name);
+			init();
+		}
+		
+		protected void init() {
+			setLayout(new BorderLayout());
+			add(getScrollPane(), BorderLayout.CENTER);
+			
+			if (LookAndFeelUtil.isAquaLAF())
+				setOpaque(false);
+		}
+		
+		JScrollPane getScrollPane() {
+			if (scrollPane == null) {
+				scrollPane = new JScrollPane(getContentPane(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+						JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				scrollPane.setOpaque(false);
+				scrollPane.getViewport().setOpaque(false);
+				scrollPane.setBorder(BorderFactory.createLineBorder(UIManager.getColor(BORDER_COLOR_KEY)));
+			}
+			
+			return scrollPane;
 		}
 		
 		protected JButton getResetStyleButton() {
@@ -466,6 +491,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return networkView;
 		}
 		
+		abstract JPanel getContentPane();
+		
 		abstract void update();
 	}
 	
@@ -476,14 +503,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		private JRadioButton pValueRadio;
 		private JRadioButton qValueRadio;
-		private final ButtonGroup nodeCutoffGroup = new ButtonGroup();
+		private ButtonGroup nodeCutoffGroup;
 		private SliderBarPanel pValueSliderPanel;
 		private SliderBarPanel qValueSliderPanel;
 		private SliderBarPanel similaritySliderPanel;
 		
-		private JLabel chartDataLabel = new JLabel("Chart Data:");
-		private JLabel chartTypeLabel = new JLabel("Chart Type:");
-		private JLabel chartColorsLabel = new JLabel("Chart Colors:");
+		private JLabel chartDataLabel;
+		private JLabel chartTypeLabel;
+		private JLabel chartColorsLabel;
 		
 		private DataSetSelector dataSetSelector;
 		private JCheckBox publicationReadyCheck;
@@ -496,28 +523,17 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		private EMViewControlPanel(CyNetworkView networkView) {
 			super(networkView, "__EM_VIEW_CONTROL_PANEL_" + networkView.getSUID());
-			setBorder(BorderFactory.createLineBorder(UIManager.getColor(BORDER_COLOR_KEY)));
+		}
+		
+		@Override
+		protected void init() {
+			nodeCutoffGroup = new ButtonGroup();
 			
-			final JPanel filterPanel = createFilterPanel();
-			final JPanel stylePanel = createStylePanel();
+			chartDataLabel = new JLabel("Chart Data:");
+			chartTypeLabel = new JLabel("Chart Type:");
+			chartColorsLabel = new JLabel("Chart Colors:");
 			
-			final GroupLayout layout = new GroupLayout(this);
-			setLayout(layout);
-			layout.setAutoCreateContainerGaps(LookAndFeelUtil.isWinLAF());
-			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
-			
-	   		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
-					.addComponent(filterPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(stylePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-	   		);
-	   		layout.setVerticalGroup(layout.createSequentialGroup()
-	   				.addComponent(filterPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(stylePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	   		);
-			
-			if (LookAndFeelUtil.isAquaLAF())
-				setOpaque(false);
-			
+			super.init();
 			update();
 		}
 		
@@ -811,6 +827,35 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			);
 		}
 		
+		@Override
+		JPanel getContentPane() {
+			if (contentPane == null) {
+				contentPane = new JPanel();
+				
+				final JPanel filterPanel = createFilterPanel();
+				final JPanel stylePanel = createStylePanel();
+				
+				final GroupLayout layout = new GroupLayout(contentPane);
+				contentPane.setLayout(layout);
+				layout.setAutoCreateContainerGaps(LookAndFeelUtil.isWinLAF());
+				layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+				
+		   		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+						.addComponent(filterPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(stylePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		   		);
+		   		layout.setVerticalGroup(layout.createSequentialGroup()
+		   				.addComponent(filterPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(stylePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		   		);
+				
+				if (LookAndFeelUtil.isAquaLAF())
+					contentPane.setOpaque(false);
+			}
+			
+			return contentPane;
+		}
+		
 		JRadioButton getPValueRadio() {
 			if (pValueRadio == null) {
 				pValueRadio = new JRadioButton("P-value");
@@ -1000,25 +1045,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		private AssociatedViewControlPanel(CyNetworkView networkView) {
 			super(networkView, "__EM_CHILD_VIEW_CONTROL_PANEL_" + networkView.getSUID());
-			setBorder(BorderFactory.createLineBorder(UIManager.getColor(BORDER_COLOR_KEY)));
-			
-			final JPanel stylePanel = createStylePanel();
-			
-			final GroupLayout layout = new GroupLayout(this);
-			setLayout(layout);
-			layout.setAutoCreateContainerGaps(LookAndFeelUtil.isWinLAF());
-			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
-			
-	   		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
-					.addComponent(stylePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-	   		);
-	   		layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(stylePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	   		);
-			
-			if (LookAndFeelUtil.isAquaLAF())
-				setOpaque(false);
-			
+		}
+		
+		@Override
+		protected void init() {
+			super.init();
 			update();
 		}
 		
@@ -1092,6 +1123,32 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				panel.setOpaque(false);
 			
 			return panel;
+		}
+		
+		@Override
+		JPanel getContentPane() {
+			if (contentPane == null) {
+				contentPane = new JPanel();
+				
+				final JPanel stylePanel = createStylePanel();
+				
+				final GroupLayout layout = new GroupLayout(contentPane);
+				contentPane.setLayout(layout);
+				layout.setAutoCreateContainerGaps(LookAndFeelUtil.isWinLAF());
+				layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+				
+		   		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+						.addComponent(stylePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		   		);
+		   		layout.setVerticalGroup(layout.createSequentialGroup()
+						.addComponent(stylePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		   		);
+				
+				if (LookAndFeelUtil.isAquaLAF())
+					contentPane.setOpaque(false);
+			}
+			
+			return contentPane;
 		}
 		
 		JComboBox<ChartData> getChartDataCombo() {
