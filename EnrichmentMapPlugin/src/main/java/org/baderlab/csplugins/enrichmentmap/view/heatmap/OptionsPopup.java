@@ -67,15 +67,16 @@ public class OptionsPopup extends JPopupMenu {
 		exportPdfButton.setIcon(new TextIcon(IconManager.ICON_EXTERNAL_LINK, iconFont, iconColor, iconSize, iconSize));
 		
 		geneManiaButton = new JMenuItem("Show in GeneMANIA...");
-		geneManiaButton.setIcon(new TextIcon(IconUtil.GENEMANIA_ICON, IconUtil.getIconFont(14.0f), iconColor,
+		geneManiaButton.setIcon(new TextIcon(IconUtil.GENEMANIA_ICON, IconUtil.getIconFont(14.0f), IconUtil.GENEMANIA_ICON_COLOR,
 				iconSize, iconSize));
 
 		stringButton = new JMenuItem("Show in STRING...");
-		stringButton.setIcon(new TextIcon(IconUtil.STRING_ICON, IconUtil.getIconFont(16.0f), iconColor,
+		stringButton.setIcon(new TextIcon(IconUtil.LAYERED_STRING_ICON, IconUtil.getIconFont(16.0f), IconUtil.STRING_ICON_COLORS,
 				iconSize, iconSize));
 		
 		pcButton = new JMenuItem("Show in Pathway Commons...");
-		pcButton.setIcon(new TextIcon(IconManager.ICON_EXTERNAL_LINK, iconFont, iconColor, iconSize, iconSize));
+		pcButton.setIcon(new TextIcon(IconUtil.LAYERED_PC_ICON, IconUtil.getIconFont(16.0f), IconUtil.PC_ICON_COLORS,
+				iconSize, iconSize));
 		
 		JMenu distanceMenu = new JMenu("Hierarchical Cluster - Distance Metric");
 		

@@ -6,7 +6,7 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.EM_ICON_COLORS;
-import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.EM_STRING_COLORS;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.STRING_ICON_COLORS;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.GENEMANIA_ICON;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.GENEMANIA_ICON_COLOR;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.LAYERED_EM_ICON;
@@ -214,7 +214,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			
 			Icon emIcon = new TextIcon(LAYERED_EM_ICON, getIconFont(16.0f), EM_ICON_COLORS, 16, 16);
 			Icon gmIcon = new TextIcon(GENEMANIA_ICON, getIconFont(15.0f), GENEMANIA_ICON_COLOR, 16, 16);
-			Icon strIcon = new TextIcon(LAYERED_STRING_ICON, getIconFont(15.0f), EM_STRING_COLORS, 16, 16);
+			Icon strIcon = new TextIcon(LAYERED_STRING_ICON, getIconFont(15.0f), STRING_ICON_COLORS, 16, 16);
 			
 			Border appBorder = BorderFactory.createEmptyBorder(0, 20, 0, 0);
 
