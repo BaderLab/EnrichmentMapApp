@@ -147,7 +147,7 @@ public class EMStyleBuilder {
 
 	public static class Colors {
 		// See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=6
-		public static final Color DEF_NODE_BORDER_COLOR = new Color(148, 148, 148);
+		public static final Color DEF_NODE_BORDER_COLOR = new Color(51, 51, 51);
 		public static final Color DEF_NODE_COLOR = new Color(240, 240, 240);
 		public static final Color SIG_NODE_BORDER_COLOR = new Color(239, 138, 98);
 		public static final Color SIG_NODE_COLOR = new Color(253, 219, 199);
