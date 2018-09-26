@@ -162,7 +162,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		heatMapPanel.showContentPanel(null);
 	}
 	
-	
 	public List<String> getGenes() {
 		return getContentPanel().getGenes();
 	}
@@ -508,6 +507,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			return;
 		}
 		
+		EnrichmentMap map = getContentPanel().getEnrichmentMap();
 		QueryGeneManiaTask queryTask = queryGeneManiaTaskFactory.create(getContentPanel().getGenes());
 		
 		// Get list of organisms from GeneMANIA
@@ -550,12 +550,12 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			@Override
 			public void allFinished(FinishStatus finishStatus) {
 				if (finishStatus == FinishStatus.getSucceeded())
-					onGeneManiaQueryFinished(queryTask.getResult(), getContentPanel());
+					onGeneManiaQueryFinished(queryTask.getResult(), map);
 			}
 		});
 	}
 	
-	private void onGeneManiaQueryFinished(GMSearchResult res, HeatMapContentPanel contentPanel) {
+	private void onGeneManiaQueryFinished(GMSearchResult res, EnrichmentMap map) {
 		CyNetwork net = null;
 		
 		if (res != null && res.getNetwork() != null && res.getGenes() != null
@@ -565,7 +565,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		if (net == null) {
 			invokeOnEDT(() -> {
 				JOptionPane.showMessageDialog(
-						SwingUtilities.getWindowAncestor(contentPanel),
+						SwingUtilities.getWindowAncestor(getContentPanel()),
 						"The GeneMANIA search returned no results.",
 						"No Results",
 						JOptionPane.INFORMATION_MESSAGE
@@ -573,9 +573,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			});
 		} else {
 			// Update the model
-			EnrichmentMap map = contentPanel.getEnrichmentMap();
 			map.addAssociatedNetworkID(net.getSUID());
-			
 			emManager.addAssociatedAppAttributes(net, map, AssociatedApp.GENEMANIA);
 //	TODO	
 //			// Modify GeneMANIA's style
@@ -604,6 +602,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			return;
 		}
 		
+		EnrichmentMap map = getContentPanel().getEnrichmentMap();
 		QueryStringTask queryTask = queryStringTaskFactory.create(getContentPanel().getGenes());
 		
 		// Get list of organisms from STRING App
@@ -646,18 +645,18 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			@Override
 			public void allFinished(FinishStatus finishStatus) {
 				if (finishStatus == FinishStatus.getSucceeded())
-					onStringQueryFinished(queryTask.getResult(), getContentPanel());
+					onStringQueryFinished(queryTask.getResult(), map);
 			}
 		});
 	}
 	
-	private void onStringQueryFinished(Long netId, HeatMapContentPanel contentPanel) {
+	private void onStringQueryFinished(Long netId, EnrichmentMap map) {
 		CyNetwork net = netId != null ? networkManager.getNetwork(netId) : null;
 		
 		if (net == null) {
 			invokeOnEDT(() -> {
 				JOptionPane.showMessageDialog(
-						SwingUtilities.getWindowAncestor(contentPanel),
+						SwingUtilities.getWindowAncestor(getContentPanel()),
 						"The STRING protein query returned no results.",
 						"No Results",
 						JOptionPane.INFORMATION_MESSAGE
@@ -665,9 +664,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			});
 		} else {
 			// Update the model
-			EnrichmentMap map = contentPanel.getEnrichmentMap();
 			map.addAssociatedNetworkID(net.getSUID());
-			
 			emManager.addAssociatedAppAttributes(net, map, AssociatedApp.STRING);
 // TODO		
 //			// Modify GeneMANIA's style
