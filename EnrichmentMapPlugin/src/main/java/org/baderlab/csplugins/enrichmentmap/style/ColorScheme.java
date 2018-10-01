@@ -35,8 +35,14 @@ public enum ColorScheme {
 	
 	RD_YL_BU_3("RdYlBu-3", "ColorBrewer 3-class RdYlBu (Diverging, Colorblind Safe)",
 			new Color(145, 191, 219), new Color(255, 255, 191), new Color(252, 141, 89)),
+	
+	BLUE_YELLOW("Yellow-Blue Custom", "Custom color",
+			new Color(51, 117, 255), new Color(247, 247, 247), new Color(245, 255, 18))
 	;
 
+//	Blue (negative): C 80%, M 54%, Y 0%, K 0%
+//	Yellow (positive): C 4%, M 0%, Y 93%, K 0%
+	
 	private final String name;
 	private final String description;
 	private final Color[] colors;
