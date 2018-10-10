@@ -4,11 +4,9 @@ import java.io.File;
 import java.io.FileWriter;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.io.ModelSerializer;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
@@ -19,12 +17,9 @@ public class ExportModelJsonCommandTask extends AbstractTask {
 	@Tunable(required=true, description="File used as destination for model JSON. Will be overwritten if it already exists.")
 	public File file;
 	
-	@Tunable
-	public CyNetwork network;
+	@Inject @ContainsTunables
+	public NetworkTunable networkTunable;
 	
-	
-	@Inject private CyApplicationManager applicationManager;
-	@Inject private EnrichmentMapManager emManager;
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
@@ -32,11 +27,7 @@ public class ExportModelJsonCommandTask extends AbstractTask {
 		if(!file.canWrite())
 			throw new IllegalArgumentException("Cannot write to file");
 		
-		CyNetwork selectedNetwork = getSelectedNetwork();
-		if(selectedNetwork == null)
-			throw new IllegalArgumentException("Invalid network");
-		
-		EnrichmentMap map = emManager.getEnrichmentMap(selectedNetwork.getSUID());
+		EnrichmentMap map = networkTunable.getEnrichmentMap();
 		if(map == null)
 			throw new IllegalArgumentException("Network is not an Enrichment Map.");
 		
@@ -48,9 +39,4 @@ public class ExportModelJsonCommandTask extends AbstractTask {
 	}
 
 	
-	private CyNetwork getSelectedNetwork() {
-		return network == null
-			? applicationManager.getCurrentNetwork()
-			: network;
-	}
 }

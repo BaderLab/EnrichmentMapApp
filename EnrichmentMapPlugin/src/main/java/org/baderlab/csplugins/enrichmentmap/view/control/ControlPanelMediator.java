@@ -114,8 +114,7 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
-public class ControlPanelMediator implements SetCurrentNetworkViewListener, NetworkViewAddedListener,
-		NetworkViewAboutToBeDestroyedListener {
+public class ControlPanelMediator implements SetCurrentNetworkViewListener, NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener {
 
 	@Inject private Provider<ControlPanel> controlPanelProvider;
 	@Inject private Provider<LegendPanelMediator> legendPanelMediatorProvider;
@@ -255,15 +254,12 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				else if (params.getNodeCutoffParam() == CutoffParam.Q_VALUE)
 					viewPanel.getQValueRadio().doClick();
 				
-				Set<String> filteredOutDataSetNames = params.getFilteredOutDataSets();
-				
-				if (filteredOutDataSetNames != null && !filteredOutDataSetNames.isEmpty()) {
-					Set<AbstractDataSet> allDataSets = viewPanel.getAllDataSets();
-					Set<AbstractDataSet> filteredDataSets = allDataSets.stream()
-							.filter(ds -> !filteredOutDataSetNames.contains(ds.getName()))
-							.collect(Collectors.toSet());
-					viewPanel.getDataSetSelector().setCheckedItems(filteredDataSets);
-				}
+				Set<String> filteredOutDataSetNames = new HashSet<>(params.getFilteredOutDataSets());
+				Set<AbstractDataSet> allDataSets = viewPanel.getAllDataSets();
+				Set<AbstractDataSet> filteredDataSets = allDataSets.stream()
+						.filter(ds -> !filteredOutDataSetNames.contains(ds.getName()))
+						.collect(Collectors.toSet());
+				viewPanel.getDataSetSelector().setCheckedItems(filteredDataSets);
 				
 				// Update Style options
 				ChartOptions chartOptions = params.getChartOptions();

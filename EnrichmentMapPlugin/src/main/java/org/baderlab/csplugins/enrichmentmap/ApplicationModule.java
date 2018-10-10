@@ -6,6 +6,7 @@ import java.lang.annotation.Retention;
 import java.util.Properties;
 
 import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTask;
+import org.baderlab.csplugins.enrichmentmap.commands.DatasetShowCommandTask;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
@@ -108,6 +109,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(PAWeightPanel.Factory.class);
 		installFactory(QueryGeneManiaTask.Factory.class);
 		installFactory(QueryStringTask.Factory.class);
+		installFactory(DatasetShowCommandTask.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

@@ -3,13 +3,11 @@ package org.baderlab.csplugins.enrichmentmap.commands;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
@@ -21,11 +19,9 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetricSet;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.NamingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
@@ -59,8 +55,8 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	@Tunable
 	public String name;
 	
-	@Tunable
-	public CyNetwork network;
+	@ContainsTunables @Inject
+	public NetworkTunable networkTunable;
 	
 	@Tunable(description="Name of data set to run PA against, or \"ALL\" to run in batch mode against all data sets.")
 	public String dataSetName = "ALL";
@@ -68,14 +64,10 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	@Tunable(description=MannWhitRanks.DESCRIPTION)
 	public MannWhitRanks mannWhitRanks = new MannWhitRanks();
 	
-	
-	@Inject private CyApplicationManager applicationManager;
-	@Inject private CyNetworkViewManager networkViewManager;
+
 	@Inject private SynchronousTaskManager<?> syncTaskManager;
-	
 	@Inject private PATaskFactory.Factory taskFactoryFactory;
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
-	@Inject private EnrichmentMapManager emManager;
 	
 	
 	private SetOfGeneSets signatureGenesets = null;
@@ -108,24 +100,11 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 		if(gmtFile == null || !gmtFile.canRead())
 			throw new IllegalArgumentException("Signature GMT file name not valid");
 		
-		CyNetwork selectedNetwork;
-		CyNetworkView selectedView;
-		if(network == null) {
-			selectedNetwork = applicationManager.getCurrentNetwork();
-			selectedView = applicationManager.getCurrentNetworkView();
-			if(selectedNetwork == null || selectedView == null) {
-				throw new IllegalArgumentException("Current network not available.");
-			}
-		} else {
-			selectedNetwork = network;
-			Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
-			if(networkViews == null || networkViews.isEmpty()) {
-				throw new IllegalArgumentException("No network view for: " + network);
-			}
-			selectedView = networkViews.iterator().next();
-		}
+		CyNetworkView selectedView = networkTunable.getNetworkView();
+		if(selectedView == null)
+			throw new IllegalArgumentException("No associated network view.");
 		
-		EnrichmentMap map = emManager.getEnrichmentMap(selectedNetwork.getSUID());
+		EnrichmentMap map = networkTunable.getEnrichmentMap();
 		if(map == null)
 			throw new IllegalArgumentException("Network is not an Enrichment Map.");
 		

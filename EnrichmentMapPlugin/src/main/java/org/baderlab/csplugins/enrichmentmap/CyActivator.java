@@ -1,6 +1,9 @@
  package org.baderlab.csplugins.enrichmentmap;
 
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.work.ServiceProperties.APPS_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.Properties;
 
@@ -10,6 +13,8 @@ import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTaskFactor
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.BuildCommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.BuildTableCommand;
+import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.DatasetHide;
+import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.DatasetShow;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.GSEACommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.JsonCommand;
 import org.baderlab.csplugins.enrichmentmap.commands.CommandModule.PACommand;
@@ -62,13 +67,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, sessionListener);
 		
 		// commands
-		registerCommand(bc, "build",        injector.getInstance(Key.get(TaskFactory.class, BuildCommand.class)));
-		registerCommand(bc, "gseabuild",    injector.getInstance(Key.get(TaskFactory.class, GSEACommand.class)));
-		registerCommand(bc, "mastermap",    injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
-		registerCommand(bc, "pa",           injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
-		registerCommand(bc, "export-model", injector.getInstance(Key.get(TaskFactory.class, JsonCommand.class)));
-		registerCommand(bc, "build-table",  injector.getInstance(Key.get(TaskFactory.class, BuildTableCommand.class)));
-		registerService(bc, new MannWhitRanksTunableHandlerFactory(), StringTunableHandlerFactory.class);
+		initializeCommands(bc);
 		
 		// jax-rs resources
 		registerService(bc, injector.getInstance(EnrichmentMapResource.class), EnrichmentMapResource.class);
@@ -115,6 +114,19 @@ public class CyActivator extends AbstractCyActivator {
 		sessionListener.restore(null);
 		
 		Em21Handler.removeVersion21(bc, injector.getInstance(CyApplicationConfiguration.class));
+	}
+	
+	
+	private void initializeCommands(BundleContext bc) {
+		registerCommand(bc, "build",        injector.getInstance(Key.get(TaskFactory.class, BuildCommand.class)));
+		registerCommand(bc, "gseabuild",    injector.getInstance(Key.get(TaskFactory.class, GSEACommand.class)));
+		registerCommand(bc, "mastermap",    injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
+		registerCommand(bc, "pa",           injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
+		registerCommand(bc, "export-model", injector.getInstance(Key.get(TaskFactory.class, JsonCommand.class)));
+		registerCommand(bc, "build-table",  injector.getInstance(Key.get(TaskFactory.class, BuildTableCommand.class)));
+		registerCommand(bc, "dataset show", injector.getInstance(Key.get(TaskFactory.class, DatasetShow.class)));
+		registerCommand(bc, "dataset hide", injector.getInstance(Key.get(TaskFactory.class, DatasetHide.class)));
+		registerService(bc, new MannWhitRanksTunableHandlerFactory(), StringTunableHandlerFactory.class);
 	}
 	
 	
