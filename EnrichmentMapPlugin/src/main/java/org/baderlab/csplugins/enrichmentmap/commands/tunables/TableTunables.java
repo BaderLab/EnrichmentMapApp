@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.commands;
+package org.baderlab.csplugins.enrichmentmap.commands.tunables;
 
 import org.baderlab.csplugins.enrichmentmap.model.TableParameters;
 import org.cytoscape.model.CyColumn;

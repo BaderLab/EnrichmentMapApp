@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.commands;
+package org.baderlab.csplugins.enrichmentmap.commands.tunables;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

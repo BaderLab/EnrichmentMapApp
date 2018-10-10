@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.commands;
 import java.io.File;
 import java.io.FileWriter;
 
+import org.baderlab.csplugins.enrichmentmap.commands.tunables.NetworkTunable;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.io.ModelSerializer;
 import org.cytoscape.work.AbstractTask;

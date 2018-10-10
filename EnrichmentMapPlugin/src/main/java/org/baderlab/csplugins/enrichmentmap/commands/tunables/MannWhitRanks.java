@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.commands;
+package org.baderlab.csplugins.enrichmentmap.commands.tunables;
 
 import java.util.Collections;
 import java.util.HashMap;

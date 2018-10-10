@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.commands;
+package org.baderlab.csplugins.enrichmentmap.commands.tunables;
 
 import org.cytoscape.command.StringTunableHandlerFactory;
 import org.cytoscape.work.BasicTunableHandlerFactory;

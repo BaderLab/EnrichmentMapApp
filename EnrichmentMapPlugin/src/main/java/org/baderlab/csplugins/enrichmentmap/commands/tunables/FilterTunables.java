@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.commands;
+package org.baderlab.csplugins.enrichmentmap.commands.tunables;
 
 
 import static org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric.COMBINED;

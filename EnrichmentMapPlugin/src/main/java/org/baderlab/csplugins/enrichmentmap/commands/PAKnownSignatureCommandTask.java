@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.commands.tunables.FilterTunables;
+import org.baderlab.csplugins.enrichmentmap.commands.tunables.MannWhitRanks;
+import org.baderlab.csplugins.enrichmentmap.commands.tunables.NetworkTunable;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisFilterType;

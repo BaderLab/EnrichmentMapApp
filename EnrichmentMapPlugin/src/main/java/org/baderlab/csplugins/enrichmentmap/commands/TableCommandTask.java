@@ -3,6 +3,8 @@ package org.baderlab.csplugins.enrichmentmap.commands;
 import java.util.Collections;
 import java.util.List;
 
+import org.baderlab.csplugins.enrichmentmap.commands.tunables.FilterTunables;
+import org.baderlab.csplugins.enrichmentmap.commands.tunables.TableTunables;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;

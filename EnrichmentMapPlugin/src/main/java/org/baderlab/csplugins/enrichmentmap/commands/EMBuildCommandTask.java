@@ -51,6 +51,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.baderlab.csplugins.enrichmentmap.commands.tunables.FilterTunablesLegacy;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
