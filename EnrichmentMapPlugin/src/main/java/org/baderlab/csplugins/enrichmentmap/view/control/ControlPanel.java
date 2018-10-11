@@ -6,11 +6,11 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.EM_ICON_COLORS;
-import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.STRING_ICON_COLORS;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.GENEMANIA_ICON;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.GENEMANIA_ICON_COLOR;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.LAYERED_EM_ICON;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.LAYERED_STRING_ICON;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.STRING_ICON_COLORS;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.getIconFont;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 import static org.cytoscape.util.swing.IconManager.ICON_BARS;
@@ -464,8 +464,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		JScrollPane getScrollPane() {
 			if (scrollPane == null) {
-				scrollPane = new JScrollPane(getContentPane(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-						JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				scrollPane = new JScrollPane(getContentPane(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				scrollPane.setOpaque(false);
 				scrollPane.getViewport().setOpaque(false);
 				scrollPane.setBorder(BorderFactory.createLineBorder(UIManager.getColor(BORDER_COLOR_KEY)));
@@ -841,8 +840,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 				
 		   		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
-						.addComponent(filterPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(stylePanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(filterPanel, 100, 100, Short.MAX_VALUE)
+						.addComponent(stylePanel, 100, 100, Short.MAX_VALUE)
 		   		);
 		   		layout.setVerticalGroup(layout.createSequentialGroup()
 		   				.addComponent(filterPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
