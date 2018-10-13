@@ -5,6 +5,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 
 import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
+import org.baderlab.csplugins.enrichmentmap.commands.ChartCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.DatasetShowCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.EMBuildCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.EMGseaCommandTask;
@@ -12,7 +13,6 @@ import org.baderlab.csplugins.enrichmentmap.commands.ExportModelJsonCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.PAKnownSignatureCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.ResolverCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.TableCommandTask;
-import org.baderlab.csplugins.enrichmentmap.commands.DatasetShowCommandTask.Factory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
@@ -31,8 +31,9 @@ public class CommandModule extends AbstractModule {
 	@BindingAnnotation @Retention(RUNTIME) public @interface PACommand { }
 	@BindingAnnotation @Retention(RUNTIME) public @interface JsonCommand { }
 	@BindingAnnotation @Retention(RUNTIME) public @interface BuildTableCommand { }
-	@BindingAnnotation @Retention(RUNTIME) public @interface DatasetShow { }
-	@BindingAnnotation @Retention(RUNTIME) public @interface DatasetHide { }
+	@BindingAnnotation @Retention(RUNTIME) public @interface DatasetShowCommand { }
+	@BindingAnnotation @Retention(RUNTIME) public @interface DatasetHideCommand { }
+	@BindingAnnotation @Retention(RUNTIME) public @interface ChartCommand { }
 	
 	@Override
 	protected void configure() {
@@ -55,12 +56,12 @@ public class CommandModule extends AbstractModule {
 	
 	@Provides @PACommand
 	public TaskFactory providePA(Provider<PAKnownSignatureCommandTask> taskProvider) {
-		return createTaskFactory(taskProvider.get(), null);
+		return createTaskFactory(taskProvider.get());
 	}
 	
 	@Provides @JsonCommand
 	public TaskFactory provideJson(Provider<ExportModelJsonCommandTask> taskProvider) {
-		return createTaskFactory(taskProvider.get(), null);
+		return createTaskFactory(taskProvider.get());
 	}
 	
 	@Provides @BuildTableCommand
@@ -68,24 +69,32 @@ public class CommandModule extends AbstractModule {
 		return createTaskFactory(taskProvider.get(), showTask);
 	}
 	
-	@Provides @DatasetShow
+	@Provides @DatasetShowCommand
 	public TaskFactory provideDatasetShow(DatasetShowCommandTask.Factory taskFactory) {
-		return createTaskFactory(taskFactory.create(true), null);
+		return createTaskFactory(taskFactory.create(true));
 	}
 	
-	@Provides @DatasetHide
+	@Provides @DatasetHideCommand
 	public TaskFactory provideDatasetHide(DatasetShowCommandTask.Factory taskFactory) {
-		return createTaskFactory(taskFactory.create(false), null);
+		return createTaskFactory(taskFactory.create(false));
 	}
 	
-	private static TaskFactory createTaskFactory(Task task, OpenEnrichmentMapAction showTask) {
+	@Provides @ChartCommand
+	public TaskFactory provideChart(Provider<ChartCommandTask> taskFactory) {
+		return createTaskFactory(taskFactory.get());
+	}
+	
+	
+	
+	private static TaskFactory createTaskFactory(Task ... tasks) {
 		return new AbstractTaskFactory() {
 			@Override
 			public TaskIterator createTaskIterator() {
-				TaskIterator tasks = new TaskIterator(task);
-				if(showTask != null)
-					tasks.append(showTask);
-				return tasks;
+				TaskIterator taskIterator = new TaskIterator();
+				for(Task task : tasks) {
+					taskIterator.append(task);
+				}
+				return taskIterator;
 			}
 		};
 	}
