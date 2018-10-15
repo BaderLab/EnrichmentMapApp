@@ -41,56 +41,56 @@ public class CommandModule extends AbstractModule {
 	
 	@Provides @BuildCommand
 	public TaskFactory provideBuild(Provider<EMBuildCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
-		return createTaskFactory(taskProvider.get(), showTask);
+		return createTaskFactory(taskProvider, showTask);
 	}
 	
 	@Provides @GSEACommand
 	public TaskFactory provideGSEA(Provider<EMGseaCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
-		return createTaskFactory(taskProvider.get(), showTask);
+		return createTaskFactory(taskProvider, showTask);
 	}
 	
 	@Provides @ResolveCommand
 	public TaskFactory provideResolve(Provider<ResolverCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
-		return createTaskFactory(taskProvider.get(), showTask);
+		return createTaskFactory(taskProvider, showTask);
 	}
 	
 	@Provides @PACommand
 	public TaskFactory providePA(Provider<PAKnownSignatureCommandTask> taskProvider) {
-		return createTaskFactory(taskProvider.get());
+		return createTaskFactory(taskProvider);
 	}
 	
 	@Provides @JsonCommand
 	public TaskFactory provideJson(Provider<ExportModelJsonCommandTask> taskProvider) {
-		return createTaskFactory(taskProvider.get());
+		return createTaskFactory(taskProvider);
 	}
 	
 	@Provides @BuildTableCommand
 	public TaskFactory provideBuildTable(Provider<TableCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
-		return createTaskFactory(taskProvider.get(), showTask);
+		return createTaskFactory(taskProvider, showTask);
 	}
 	
 	@Provides @DatasetShowCommand
 	public TaskFactory provideDatasetShow(DatasetShowCommandTask.Factory taskFactory) {
-		return createTaskFactory(taskFactory.create(true));
+		return createTaskFactory(() -> taskFactory.create(true));
 	}
 	
 	@Provides @DatasetHideCommand
 	public TaskFactory provideDatasetHide(DatasetShowCommandTask.Factory taskFactory) {
-		return createTaskFactory(taskFactory.create(false));
+		return createTaskFactory(() -> taskFactory.create(false));
 	}
 	
 	@Provides @ChartCommand
 	public TaskFactory provideChart(Provider<ChartCommandTask> taskFactory) {
-		return createTaskFactory(taskFactory.get());
+		return createTaskFactory(taskFactory);
 	}
 	
 	
 	
-	private static TaskFactory createTaskFactory(Task ... tasks) {
+	private static TaskFactory createTaskFactory(Provider<? extends Task> taskProvider, Task ... tasks) {
 		return new AbstractTaskFactory() {
 			@Override
 			public TaskIterator createTaskIterator() {
-				TaskIterator taskIterator = new TaskIterator();
+				TaskIterator taskIterator = new TaskIterator(taskProvider.get());
 				for(Task task : tasks) {
 					taskIterator.append(task);
 				}

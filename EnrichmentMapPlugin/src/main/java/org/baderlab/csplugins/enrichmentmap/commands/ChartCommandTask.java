@@ -1,9 +1,20 @@
 package org.baderlab.csplugins.enrichmentmap.commands;
 
+import static org.baderlab.csplugins.enrichmentmap.style.ChartData.DATA_SET;
+import static org.baderlab.csplugins.enrichmentmap.style.ChartData.EXPRESSION_DATA;
+import static org.baderlab.csplugins.enrichmentmap.style.ChartData.FDR_VALUE;
+import static org.baderlab.csplugins.enrichmentmap.style.ChartData.NES_VALUE;
+import static org.baderlab.csplugins.enrichmentmap.style.ChartData.NONE;
+import static org.baderlab.csplugins.enrichmentmap.style.ChartData.PHENOTYPES;
+import static org.baderlab.csplugins.enrichmentmap.style.ChartData.P_VALUE;
+import static org.baderlab.csplugins.enrichmentmap.style.ChartType.DATASET_PIE;
+import static org.baderlab.csplugins.enrichmentmap.style.ChartType.HEAT_MAP;
+import static org.baderlab.csplugins.enrichmentmap.style.ChartType.HEAT_STRIPS;
+import static org.baderlab.csplugins.enrichmentmap.style.ChartType.RADIAL_HEAT_MAP;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.NetworkTunable;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -40,13 +51,13 @@ public class ChartCommandTask extends AbstractTask {
 	public ListSingleSelection<String> colors;
 	
 	@Tunable
-	public boolean showLabels;
+	public boolean showChartLabels = true;
 	
 	
 	public ChartCommandTask() {
-		data   = lssFromEnum(ChartData.values(), x -> true);
-		type   = lssFromEnum(ChartType.values(), ct -> ct != ChartType.DATASET_PIE);
-		colors = lssFromEnum(ColorScheme.values(), x -> true);
+		data   = lssFromEnum(NES_VALUE, P_VALUE, FDR_VALUE, PHENOTYPES, DATA_SET, EXPRESSION_DATA, NONE); // want NES to be the default
+		type   = lssFromEnum(RADIAL_HEAT_MAP, HEAT_STRIPS, HEAT_MAP); // don't include DATASET_PIE
+		colors = lssFromEnum(ColorScheme.values());
 	}
 	
 	@Override
@@ -57,13 +68,9 @@ public class ChartCommandTask extends AbstractTask {
 		if(networkView == null || map == null)
 			throw new IllegalArgumentException("network is not an EnrichmentMap network");
 		
-		Map<Long,ViewParams> viewParamsMap = controlPanelMediator.getAllViewParams();
-		ViewParams params = viewParamsMap.get(networkView.getSUID());
-		ChartOptions chartOptions = params.getChartOptions();
-		
-		ChartData chartData = "null".equals(data.getSelectedValue()) ? chartOptions.getData() : ChartData.valueOf(data.getSelectedValue());
-		ChartType chartType = "null".equals(type.getSelectedValue()) ? chartOptions.getType() : ChartType.valueOf(type.getSelectedValue());
-		ColorScheme colorScheme = "null".equals(colors.getSelectedValue()) ? chartOptions.getColorScheme() : ColorScheme.valueOf(colors.getSelectedValue());
+		ChartData chartData = ChartData.valueOf(data.getSelectedValue());
+		ChartType chartType = chartData == DATA_SET ? DATASET_PIE : ChartType.valueOf(type.getSelectedValue());
+		ColorScheme colorScheme = ColorScheme.valueOf(colors.getSelectedValue());
 		
 		// validate
 		if(chartData == ChartData.EXPRESSION_DATA && !networkTunable.isAssociatedEnrichmenMap())
@@ -75,22 +82,19 @@ public class ChartCommandTask extends AbstractTask {
 		if(chartData == ChartData.FDR_VALUE && !map.getParams().isFDR())
 			throw new IllegalArgumentException("data=FDR_VALUE cannot be used on this network");
 		
-		if(chartData == ChartData.DATA_SET)
-			chartType = ChartType.DATASET_PIE;
+		ChartOptions options = new ChartOptions(chartData, chartType, colorScheme, showChartLabels);
 		
-		ChartOptions options = new ChartOptions(chartData, chartType, colorScheme, showLabels);
+		Map<Long,ViewParams> viewParamsMap = controlPanelMediator.getAllViewParams();
+		ViewParams params = viewParamsMap.get(networkView.getSUID());
 		params.setChartOptions(options);
 		controlPanelMediator.reset(params);
 	}
 
 	
-	private static ListSingleSelection<String> lssFromEnum(Enum<?>[] values, Predicate<Enum<?>> valueTester) {
+	private static ListSingleSelection<String> lssFromEnum(Enum<?> ... values) {
 		List<String> names = new ArrayList<>(values.length);
-		names.add("null"); // important, need to know if the user did not set the value
 		for(Enum<?> value : values) {
-			if(valueTester.test(value)) {
-				names.add(value.name());
-			}
+			names.add(value.name());
 		}
 		return new ListSingleSelection<>(names);
 	}
