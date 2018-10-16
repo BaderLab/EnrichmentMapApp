@@ -6,6 +6,7 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -37,7 +38,7 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 			double d = ((Number)value).doubleValue();
 			
 			HeatMapTableModel model = (HeatMapTableModel) table.getModel();
-			Color color = getColor(model, col, d);
+			Color color = getColorFor(model, col, d);
 			label.setBackground(color);
 			Border border = BorderFactory.createMatteBorder(1, 1, 1, 1, isSelected ? table.getSelectionForeground() : color);
 			label.setBorder(border);
@@ -73,23 +74,31 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 		return format;
 	}
 
-	public Color getColor(HeatMapTableModel model, int col, double d) {
+	private static Color getColor(HeatMapTableModel model, int col, double d, BiFunction<EMDataSet,Transform,DataSetColorRange> getColorRange) {
 		EMDataSet dataset = model.getDataSet(col);
 		Transform transform = model.getTransform();
-		Optional<DataSetColorRange> range = getRange(dataset, transform);
-		if(range.isPresent()) {
-			Color color = getColor(d, range.get());
+		DataSetColorRange range = getColorRange.apply(dataset, transform);
+		if(range != null) {
+			Color color = getColor(d, range);
 			return color;
 		} else {
 			return Color.GRAY;
 		}
 	}
 	
-	public Optional<DataSetColorRange> getRange(EMDataSet dataset, Transform transform) {
+	public static Color getColor(HeatMapTableModel model, int col, double d) {
+		return getColor(model, col, d, (dataset,transform) -> DataSetColorRange.create(dataset.getExpressionSets(), transform).orElse(null));
+	}
+	
+	private Color getColorFor(HeatMapTableModel model, int col, double d) {
+		return getColor(model, col, d, this::getRange);
+	}
+	
+	public DataSetColorRange getRange(EMDataSet dataset, Transform transform) {
 		// creating the color range for Transform.ROW_NORMALIZED consumes memory, so cache the value
 		return colorRanges.computeIfAbsent(Pair.of(dataset, transform), 
 			pair -> DataSetColorRange.create(pair.getLeft().getExpressionSets(), pair.getRight())
-		);
+		).orElse(null);
 	}
 	
 	public static Color getColor(Double measurement, DataSetColorRange range) {

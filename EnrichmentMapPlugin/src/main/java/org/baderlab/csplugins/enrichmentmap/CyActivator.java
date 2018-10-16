@@ -13,6 +13,7 @@ import org.baderlab.csplugins.enrichmentmap.CommandModule.BuildTableCommand;
 import org.baderlab.csplugins.enrichmentmap.CommandModule.ChartCommand;
 import org.baderlab.csplugins.enrichmentmap.CommandModule.DatasetHideCommand;
 import org.baderlab.csplugins.enrichmentmap.CommandModule.DatasetShowCommand;
+import org.baderlab.csplugins.enrichmentmap.CommandModule.ExportPDFCommand;
 import org.baderlab.csplugins.enrichmentmap.CommandModule.GSEACommand;
 import org.baderlab.csplugins.enrichmentmap.CommandModule.JsonCommand;
 import org.baderlab.csplugins.enrichmentmap.CommandModule.PACommand;
@@ -122,11 +123,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerCommand(bc, "gseabuild",    injector.getInstance(Key.get(TaskFactory.class, GSEACommand.class)));
 		registerCommand(bc, "mastermap",    injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
 		registerCommand(bc, "pa",           injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
-		registerCommand(bc, "export-model", injector.getInstance(Key.get(TaskFactory.class, JsonCommand.class)));
+		registerCommand(bc, "export model", injector.getInstance(Key.get(TaskFactory.class, JsonCommand.class)));
 		registerCommand(bc, "build-table",  injector.getInstance(Key.get(TaskFactory.class, BuildTableCommand.class)));
 		registerCommand(bc, "dataset show", injector.getInstance(Key.get(TaskFactory.class, DatasetShowCommand.class)));
 		registerCommand(bc, "dataset hide", injector.getInstance(Key.get(TaskFactory.class, DatasetHideCommand.class)));
 		registerCommand(bc, "chart",        injector.getInstance(Key.get(TaskFactory.class, ChartCommand.class)));
+		registerCommand(bc, "export pdf",   injector.getInstance(Key.get(TaskFactory.class, ExportPDFCommand.class)));
 		registerService(bc, new MannWhitRanksTunableHandlerFactory(), StringTunableHandlerFactory.class);
 	}
 	

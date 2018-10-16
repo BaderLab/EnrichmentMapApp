@@ -46,9 +46,23 @@ public class HeatMapTableModel extends AbstractTableModel {
 	private Map<Integer, RankValue> ranking;
 	private String ranksColName = "Ranks";
 	
+	
 	public HeatMapTableModel() {
 		update(null, null, null, Collections.emptyList(), Transform.AS_IS, Compress.NONE);
 	}
+	
+	
+	public HeatMapTableModel(
+			CyNetwork network,
+			EnrichmentMap map,
+			Map<Integer, RankValue> ranking,
+			List<String> genes,
+			Transform transform,
+			Compress compress
+	) {
+		update(network, map, ranking, genes, transform, compress);
+	}
+	
 	
 	public void update(
 			CyNetwork network,
@@ -93,6 +107,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		fireTableStructureChanged();	
 		fireTableDataChanged();
 	}
+	
 	
 	public List<EMDataSet> getDataSets() {
 		return Collections.unmodifiableList(datasets);

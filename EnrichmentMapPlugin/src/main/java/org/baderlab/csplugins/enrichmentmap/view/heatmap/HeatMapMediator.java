@@ -148,7 +148,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			contentPanel2.getOptionsPopup().getPathwayCommonsButton().addActionListener(e -> runPathwayCommons());
 			contentPanel2.getOptionsPopup().getAddRanksButton().addActionListener(e -> addRankings());
 			contentPanel2.getOptionsPopup().getExportTxtButton().addActionListener(txtActionFactory.create(contentPanel2.getTable()));
-			contentPanel2.getOptionsPopup().getExportPdfButton().addActionListener(pdfActionFactory.create(contentPanel2.getTable(), contentPanel2::getRankingOption));
+			contentPanel2.getOptionsPopup().getExportPdfButton().addActionListener(pdfActionFactory.create(contentPanel2.getTable(), contentPanel2::getRankingOption, contentPanel2::isShowValues));
 			
 			// Property Change Listeners
 			contentPanel2.addPropertyChangeListener("selectedRankingOption", evt -> settingChanged());
@@ -451,7 +451,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		return options;
 	}
 
-	private static Set<String> unionGenesets(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
+	public static Set<String> unionGenesets(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
 		Set<String> union = new HashSet<>();
 		for(CyNode node : nodes) {
 			union.addAll(getGenes(network, node, prefix));
@@ -463,7 +463,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		return union;
 	}
 	
-	private static Set<String> intersectionGenesets(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
+	public static Set<String> intersectionGenesets(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
 		Set<String> inter = null;
 		for(CyNode node : nodes) {
 			Collection<String> genes = getGenes(network, node, prefix);
@@ -483,7 +483,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		return inter == null ? Collections.emptySet() : inter;
 	}
 	
-	private static Collection<String> getGenes(CyNetwork network, CyNode node, String prefix) {
+	public static Collection<String> getGenes(CyNetwork network, CyNode node, String prefix) {
 		CyRow row = network.getRow(node);
 		// This is already the union of all the genes across data sets
 		return EMStyleBuilder.Columns.NODE_GENES.get(row, prefix, null);

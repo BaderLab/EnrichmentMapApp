@@ -5,8 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
-
-import javax.swing.JTable;
+import java.util.function.IntUnaryOperator;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapCellRenderer;
@@ -35,22 +34,24 @@ public class ExportPDFTask extends AbstractTask {
 	private static final BaseColor HEADER_BACKGROUND = BaseColor.LIGHT_GRAY;
 	
 	private final File file;
-	private final JTable jTable;
+	private final HeatMapTableModel model;
 	private final RankingOption ranking;
+	private final boolean showValues;
 	
-	public ExportPDFTask(File file, JTable jTable, RankingOption ranking) {
+	private IntUnaryOperator rowToModel = x -> x;
+	
+	
+	public ExportPDFTask(File file, HeatMapTableModel model, RankingOption ranking, boolean showValues) {
 		this.file = file;
-		this.jTable = jTable;
+		this.model = model;
 		this.ranking = ranking;
+		this.showValues = showValues;
 	}
 	
-	private HeatMapTableModel getModel() {
-		return (HeatMapTableModel) jTable.getModel();
+	public void setRowToModelRow(IntUnaryOperator rowToModel) {
+		this.rowToModel = rowToModel;
 	}
 	
-	private HeatMapCellRenderer getCellRenderer() {
-		return (HeatMapCellRenderer) jTable.getDefaultRenderer(Double.class);
-	}
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws IOException, DocumentException {
@@ -75,7 +76,6 @@ public class ExportPDFTask extends AbstractTask {
 	
 	
 	private PdfPTable createTable() {
-		HeatMapTableModel model = getModel();
 		int colCount = model.getColumnCount();
 		
 		PdfPTable table = new PdfPTable(colCount);
@@ -108,7 +108,7 @@ public class ExportPDFTask extends AbstractTask {
 		}
 		
 		for(int row = 0; row < model.getRowCount(); row++) {
-			int modelRow = jTable.convertRowIndexToModel(row);
+			int modelRow = rowToModel.applyAsInt(row);
 			
 			table.addCell(createGeneCell(modelRow));
 			table.addCell(createDescriptionCell(modelRow));
@@ -123,13 +123,13 @@ public class ExportPDFTask extends AbstractTask {
 	
 	
 	private PdfPCell createGeneHeader() {
-		PdfPCell cell = new PdfPCell(new Phrase(getModel().getColumnName(HeatMapTableModel.GENE_COL)));
+		PdfPCell cell = new PdfPCell(new Phrase(model.getColumnName(HeatMapTableModel.GENE_COL)));
 		cell.setBackgroundColor(HEADER_BACKGROUND);
 		return cell;
 	}
 	
 	private PdfPCell createDesciptionHeader() {
-		PdfPCell cell = new PdfPCell(new Phrase(getModel().getColumnName(HeatMapTableModel.DESC_COL)));
+		PdfPCell cell = new PdfPCell(new Phrase(model.getColumnName(HeatMapTableModel.DESC_COL)));
 		cell.setBackgroundColor(HEADER_BACKGROUND);
 		return cell;
 	}
@@ -155,7 +155,7 @@ public class ExportPDFTask extends AbstractTask {
 	}
 	
 	private PdfPCell createExpressionHeader(int col) {
-		String text = getModel().getColumnName(col);
+		String text = model.getColumnName(col);
 		text = SwingUtil.abbreviate(text, 14);
 		PdfPCell cell = new PdfPCell(new Phrase(text));
 		cell.setRotation(90);
@@ -164,18 +164,18 @@ public class ExportPDFTask extends AbstractTask {
 	}
 	
 	private PdfPCell createGeneCell(int modelRow) {
-		String text = ExportTXTTask.getGeneText(getModel(), modelRow);
+		String text = ExportTXTTask.getGeneText(model, modelRow);
 		return new PdfPCell(new Phrase(text));
 	}
 	
 	private PdfPCell createDescriptionCell(int modelRow) {
-		String text = ExportTXTTask.getDescriptionText(getModel(), modelRow);
+		String text = ExportTXTTask.getDescriptionText(model, modelRow);
 		return new PdfPCell(new Phrase(text));
 	}
 	
 	private PdfPCell createRankCell(int modelRow) {
 		PdfPCell cell = new PdfPCell();
-		RankValue rankValue = (RankValue) getModel().getValueAt(modelRow, HeatMapTableModel.RANK_COL);
+		RankValue rankValue = (RankValue) model.getValueAt(modelRow, HeatMapTableModel.RANK_COL);
 		cell.setPhrase(new Phrase(ExportTXTTask.getRankText(HeatMapCellRenderer.getFormat(), rankValue)));
 		if(rankValue.isSignificant()) {
 			cell.setBackgroundColor(color(RankValueRenderer.SIGNIFICANT_COLOR));
@@ -185,10 +185,8 @@ public class ExportPDFTask extends AbstractTask {
 	
 	
 	private PdfPCell createExpressionCell(int row, int col) {
-		double value = (double) getModel().getValueAt(row, col);
-		HeatMapCellRenderer cellRenderer = getCellRenderer();
-		Color color = cellRenderer.getColor(getModel(), col, value);
-		boolean showValues = cellRenderer.getShowValues();
+		double value = (double) model.getValueAt(row, col);
+		Color color = HeatMapCellRenderer.getColor(model, col, value);
 		
 		PdfPCell cell = new PdfPCell();
 		cell.setBackgroundColor(color(color));

@@ -10,6 +10,7 @@ import org.baderlab.csplugins.enrichmentmap.commands.DatasetShowCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.EMBuildCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.EMGseaCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.ExportModelJsonCommandTask;
+import org.baderlab.csplugins.enrichmentmap.commands.ExportPDFCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.PAKnownSignatureCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.ResolverCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.TableCommandTask;
@@ -34,6 +35,7 @@ public class CommandModule extends AbstractModule {
 	@BindingAnnotation @Retention(RUNTIME) public @interface DatasetShowCommand { }
 	@BindingAnnotation @Retention(RUNTIME) public @interface DatasetHideCommand { }
 	@BindingAnnotation @Retention(RUNTIME) public @interface ChartCommand { }
+	@BindingAnnotation @Retention(RUNTIME) public @interface ExportPDFCommand { }
 	
 	@Override
 	protected void configure() {
@@ -84,6 +86,10 @@ public class CommandModule extends AbstractModule {
 		return createTaskFactory(taskFactory);
 	}
 	
+	@Provides @ExportPDFCommand
+	public TaskFactory provideExportPDF(Provider<ExportPDFCommandTask> taskProvider) {
+		return createTaskFactory(taskProvider);
+	}
 	
 	
 	private static TaskFactory createTaskFactory(Provider<? extends Task> taskProvider, Task ... tasks) {

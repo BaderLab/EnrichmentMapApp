@@ -511,8 +511,7 @@ public class HeatMapContentPanel extends JPanel {
 	public DataSetColorRange getDataSetColorRange(EMDataSet dataSet) {
 		HeatMapTableModel tableModel = (HeatMapTableModel) getTable().getModel();
 		HeatMapCellRenderer renderer = (HeatMapCellRenderer) getTable().getDefaultRenderer(Double.class);
-		Optional<DataSetColorRange> colorRange = renderer.getRange(dataSet, tableModel.getTransform());
-		
-		return colorRange.isPresent() ? colorRange.get() : null;
+		DataSetColorRange colorRange = renderer.getRange(dataSet, tableModel.getTransform());
+		return colorRange;
 	}
 }

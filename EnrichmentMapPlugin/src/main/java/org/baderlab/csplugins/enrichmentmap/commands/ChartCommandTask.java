@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.commands;
 
+import static org.baderlab.csplugins.enrichmentmap.commands.tunables.CommandUtil.lssFromEnum;
 import static org.baderlab.csplugins.enrichmentmap.style.ChartData.DATA_SET;
 import static org.baderlab.csplugins.enrichmentmap.style.ChartData.EXPRESSION_DATA;
 import static org.baderlab.csplugins.enrichmentmap.style.ChartData.FDR_VALUE;
@@ -12,8 +13,6 @@ import static org.baderlab.csplugins.enrichmentmap.style.ChartType.HEAT_MAP;
 import static org.baderlab.csplugins.enrichmentmap.style.ChartType.HEAT_STRIPS;
 import static org.baderlab.csplugins.enrichmentmap.style.ChartType.RADIAL_HEAT_MAP;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.NetworkTunable;
@@ -90,14 +89,4 @@ public class ChartCommandTask extends AbstractTask {
 		controlPanelMediator.reset(params);
 	}
 
-	
-	private static ListSingleSelection<String> lssFromEnum(Enum<?> ... values) {
-		List<String> names = new ArrayList<>(values.length);
-		for(Enum<?> value : values) {
-			names.add(value.name());
-		}
-		return new ListSingleSelection<>(names);
-	}
-
-	
 }
