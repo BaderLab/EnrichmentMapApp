@@ -25,7 +25,7 @@ public class NetworkTunable {
 	public CyNetwork getNetwork() {
 		if(network == null)
 			return applicationManager.getCurrentNetwork();
-		return null;
+		return network;
 	}
 	
 	public CyNetworkView getNetworkView() {
