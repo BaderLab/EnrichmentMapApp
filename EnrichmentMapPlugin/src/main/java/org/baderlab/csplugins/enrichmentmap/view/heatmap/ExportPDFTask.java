@@ -57,15 +57,17 @@ public class ExportPDFTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws IOException, DocumentException {
 		taskMonitor.setTitle("Export HeatMap to PDF");
 		
-		FileOutputStream out = new FileOutputStream(file);
-		
 		PdfPTable table = createTable();
+		if(cancelled)
+			return;
+		
 		setColumnWidths(table);
 		
 		float width  = table.getTotalWidth()  + MARGIN * 2;
 		float height = table.getTotalHeight() + MARGIN * 2;
 		Rectangle pageSize = new Rectangle(width, height);
 		
+		FileOutputStream out = new FileOutputStream(file);
 		Document document = new Document(pageSize);
 		PdfWriter.getInstance(document, out);
 		document.setMargins(MARGIN, MARGIN, MARGIN, MARGIN);
@@ -83,6 +85,9 @@ public class ExportPDFTask extends AbstractTask {
 		PdfPCell geneHeaderCell  = createGeneHeader();
 		PdfPCell descHeaderCell  = createDesciptionHeader();
 		PdfPCell scoreHeaderCell = createScoreHeader();
+		
+		if(cancelled) 
+			return null;
 		
 		if(model.getCompress().isNone()) {
 			geneHeaderCell.setRowspan(2);
@@ -103,11 +108,17 @@ public class ExportPDFTask extends AbstractTask {
 			table.addCell(scoreHeaderCell);
 		}
 		
+		if(cancelled) 
+			return null;
+		
 		for(int col = HeatMapTableModel.DESC_COL_COUNT; col < colCount; col++) {
 			table.addCell(createExpressionHeader(col));
 		}
 		
 		for(int row = 0; row < model.getRowCount(); row++) {
+			if(cancelled) 
+				return null;
+			
 			int modelRow = rowToModel.applyAsInt(row);
 			
 			table.addCell(createGeneCell(modelRow));
