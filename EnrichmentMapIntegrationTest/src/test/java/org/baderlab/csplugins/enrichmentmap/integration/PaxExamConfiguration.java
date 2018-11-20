@@ -1,6 +1,12 @@
 package org.baderlab.csplugins.enrichmentmap.integration;
 
-import static org.ops4j.pax.exam.CoreOptions.*;
+import static org.ops4j.pax.exam.CoreOptions.frameworkStartLevel;
+import static org.ops4j.pax.exam.CoreOptions.junitBundles;
+import static org.ops4j.pax.exam.CoreOptions.maven;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import static org.ops4j.pax.exam.CoreOptions.options;
+import static org.ops4j.pax.exam.CoreOptions.systemProperty;
+import static org.ops4j.pax.exam.CoreOptions.vmOption;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.karafDistributionConfiguration;
 
 import org.ops4j.pax.exam.Configuration;
@@ -18,15 +24,16 @@ public abstract class PaxExamConfiguration {
 	public Option[] config() {
 		
 		// These have to match what's in the pom.xml files.
-		final String cyVersion = "3.5.0"; 
-		final String emVersion = "3.2.0-SNAPSHOT";
+		final String cyVersion = "3.7.1-SNAPSHOT"; 
+		final String emVersion = "3.2.0-BETA1";
+		final String karafVersion = "4.2.1";
 		final String groupId   = "org.baderlab.csplugins";
 		final String appBundle = "EnrichmentMap";
  
 		return options(
 			karafDistributionConfiguration()
-		       	.frameworkUrl(maven().groupId("org.apache.karaf").artifactId("apache-karaf").type("zip").versionAsInProject())
-	            .karafVersion("3.0.2").name("Apache Karaf").useDeployFolder(false),
+		       	.frameworkUrl(maven().groupId("org.apache.karaf").artifactId("apache-karaf").type("zip").version(karafVersion))
+	            .karafVersion(karafVersion).name("Apache Karaf").useDeployFolder(false),
 			systemProperty("org.osgi.framework.system.packages.extra").value("com.sun.xml.internal.bind"),
 			junitBundles(),
 			vmOption("-Xmx512M"),
@@ -59,6 +66,7 @@ public abstract class PaxExamConfiguration {
 			mavenBundle().groupId("org.cytoscape").artifactId("datasource-impl").version(cyVersion).startLevel(9),
 			mavenBundle().groupId("org.cytoscape").artifactId("equations-impl").version(cyVersion).startLevel(9),
 			mavenBundle().groupId("org.cytoscape").artifactId("event-impl").version(cyVersion).startLevel(9),
+			mavenBundle().groupId("org.cytoscape").artifactId("util-impl").version(cyVersion).startLevel(9),
 			mavenBundle().groupId("org.cytoscape").artifactId("model-impl").version(cyVersion).startLevel(11),
 			mavenBundle().groupId("org.cytoscape").artifactId("work-impl").version(cyVersion).startLevel(11),
 			mavenBundle().groupId("org.cytoscape").artifactId("work-headless-impl").version(cyVersion).startLevel(11),
