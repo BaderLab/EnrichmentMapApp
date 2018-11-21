@@ -43,6 +43,7 @@ public class Protocol1Test extends BaseIntegrationTest {
 		task.filterArgs.qvalue = 0.00001;
 		task.filterArgs.similaritycutoff = 0.25;
 		task.filterArgs.edgeStrategy.setSelectedValue(EdgeStrategy.COMPOUND.name());
+		task.filterArgs.attributePrefix = "EM1_";
 		
 		SerialTestTaskManager taskManager = new SerialTestTaskManager();
 		taskManager.execute(new TaskIterator(task));

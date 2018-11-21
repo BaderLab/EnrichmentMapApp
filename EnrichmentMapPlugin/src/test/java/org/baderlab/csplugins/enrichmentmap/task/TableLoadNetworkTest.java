@@ -83,6 +83,7 @@ public class TableLoadNetworkTest extends BaseNetworkTest {
 		command.tableArgs.nameColumn = NAME;
 		command.tableArgs.genesColumn = GENES;
 		command.tableArgs.descriptionColumn = DESCRIPTION;
+		command.filterArgs.attributePrefix = "EM1_";
 		
 	   	SerialTestTaskManager testTaskManager = new SerialTestTaskManager();
 	   	testTaskManager.ignoreTask(CreateEMViewTask.class);

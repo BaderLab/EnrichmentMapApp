@@ -25,12 +25,15 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.io.SessionListener;
 import org.baderlab.csplugins.enrichmentmap.rest.EnrichmentMapResource;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChartFactory;
+import org.baderlab.csplugins.enrichmentmap.view.EMColumnPresentation;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.swing.CyColumnPresentation;
 import org.cytoscape.command.StringTunableHandlerFactory;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -109,6 +112,11 @@ public class CyActivator extends AbstractCyActivator {
 			registerAllServices(bc, controlPanelMediator);
 			HeatMapMediator heatMapMediator = injector.getInstance(HeatMapMediator.class);
 			registerAllServices(bc, heatMapMediator);
+			
+			// column namespace
+			Properties colProps = new Properties();
+			colProps.put(CyColumnPresentation.NAMESPACE, EMStyleBuilder.Columns.NAMESPACE);
+			registerService(bc, new EMColumnPresentation(), CyColumnPresentation.class, colProps);
 		}
 		
 		// If the App is updated or restarted then we want to reload the model and view from the tables

@@ -14,10 +14,9 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrat
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
-
-import com.google.inject.Inject;
 
 
 /**
@@ -56,8 +55,8 @@ public class FilterTunables {
 	@Tunable
 	public String networkName = null;
 	
-	
-	@Inject private LegacySupport legacySupport;
+	@Tunable(description="Prefix added to all column names. In older versions of EnrichmentMap this was typically 'EM1_'.")
+	public String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
 	
 	
 	public FilterTunables() {
@@ -72,8 +71,7 @@ public class FilterTunables {
 
 	
 	public EMCreationParameters getCreationParameters() throws IllegalArgumentException {
-		String prefix = legacySupport.getNextAttributePrefix();
-		return new EMCreationParameters(prefix, pvalue, qvalue, getNesFilter(), 
+		return new EMCreationParameters(attributePrefix, pvalue, qvalue, getNesFilter(), 
 					Optional.ofNullable(minExperiments), filterByExpressions,
 					getSimilarityMetric(), similaritycutoff, combinedConstant, 
 					getEdgeStrategy());

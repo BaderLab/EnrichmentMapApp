@@ -54,8 +54,8 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrat
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
-import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
@@ -81,7 +81,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Inject private Provider<JFrame> jframeProvider;
 	@Inject private FileBrowser fileBrowser;
 	@Inject private PropertyManager propertyManager;
-	@Inject private LegacySupport legacySupport;
 	
 	@Inject private Provider<DetailCommonPanel> commonPanelProvider;
 	@Inject private DetailDataSetPanel.Factory dataSetPanelFactory;
@@ -120,7 +119,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		if(!validateInput())
 			return;
 		
-		String prefix = legacySupport.getNextAttributePrefix();
+		String prefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
+		
 		SimilarityMetric similarityMetric = cutoffPanel.getSimilarityMetric();
 		double pvalue = cutoffPanel.getPValue();
 		double qvalue = cutoffPanel.getQValue();

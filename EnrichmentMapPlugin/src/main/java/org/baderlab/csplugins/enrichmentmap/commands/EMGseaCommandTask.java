@@ -11,10 +11,10 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -55,10 +55,11 @@ public class EMGseaCommandTask extends AbstractTask {
 	@Tunable(description="combinedconstant ", groups={"User Input","Parameters"}, gravity = 19.0, tooltip="coeffecient between 0 and 1.")
 	public Double combinedconstant ;
 
+	@Tunable(description="Prefix added to all column names. In older versions of EnrichmentMap this was typically 'EM1_'.")
+	public String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
+	
 	
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
-	@Inject private EnrichmentMapManager emManager;
-	@Inject private LegacySupport legacySupport;
 	
 	public EMGseaCommandTask() {
 		similaritymetric = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP, EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
@@ -79,9 +80,8 @@ public class EMGseaCommandTask extends AbstractTask {
 		
 		SimilarityMetric metric = EnrichmentMapParameters.stringToSimilarityMetric(similaritymetric.getSelectedValue());
 		
-		String prefix = legacySupport.getNextAttributePrefix();
 		EMCreationParameters creationParams = 
-				new EMCreationParameters(prefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true,
+				new EMCreationParameters(attributePrefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true,
 						metric, overlap, combinedconstant, EdgeStrategy.AUTOMATIC);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);

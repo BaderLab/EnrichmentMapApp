@@ -19,7 +19,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		AUTOMATIC, DISTINCT, COMPOUND
 	}
 	
-	private String attributePrefix; // MKTODO this shouldn't be here
+	private String attributePrefix;
 	
 	// Node filtering (gene-sets)
 	private double pvalue;

@@ -84,6 +84,9 @@ public class EMStyleBuilder {
 	private static final NodeShape SIGNATURE_NODE_SHAPE = DIAMOND;
 	
 	public static class Columns {
+		public static final String NAMESPACE = "EnrichmentMap";
+		public static final String NAMESPACE_PREFIX = NAMESPACE + "::"; // added in Cytoscape 3.7
+		
 		// Common attributes that apply to the entire network
 		public static final ColumnDescriptor<String> NODE_NAME = new ColumnDescriptor<>("Name", String.class);
 		public static final ColumnDescriptor<String> NODE_GS_DESCR = new ColumnDescriptor<>("GS_DESCR", String.class);
