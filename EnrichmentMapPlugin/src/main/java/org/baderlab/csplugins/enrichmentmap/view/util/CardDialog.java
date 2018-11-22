@@ -27,8 +27,11 @@ import javax.swing.border.Border;
 
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
 
 public class CardDialog {
 
@@ -243,6 +246,11 @@ public class CardDialog {
 		}
 		
 		@Override
+		public CardDialog getDialog() {
+			return CardDialog.this;
+		}
+		
+		@Override
 		public Task getCloseTask() {
 			return new AbstractTask() {
 				@Override
@@ -254,9 +262,19 @@ public class CardDialog {
 		}
 		
 		@Override
-		public CardDialog getDialog() {
-			return CardDialog.this;
+		public TaskObserver getCloseTaskObserver() {
+			return new TaskObserver() {
+				@Override
+				public void taskFinished(ObservableTask task) {
+				}
+				@Override
+				public void allFinished(FinishStatus finishStatus) {
+					// because the finishButton listener disables the Finish button
+					// need to re-enable the finish button even if the task fails
+					finishButton.setEnabled(true); 
+					close();
+				}
+			};
 		}
-
 	}
 }

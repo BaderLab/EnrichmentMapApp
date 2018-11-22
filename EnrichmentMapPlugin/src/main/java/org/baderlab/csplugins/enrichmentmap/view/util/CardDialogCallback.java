@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.view.util;
 import javax.swing.JDialog;
 
 import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskObserver;
 
 public interface CardDialogCallback {
 	
@@ -15,4 +16,6 @@ public interface CardDialogCallback {
 	void close();
 	
 	Task getCloseTask();
+	
+	TaskObserver getCloseTaskObserver();
 }

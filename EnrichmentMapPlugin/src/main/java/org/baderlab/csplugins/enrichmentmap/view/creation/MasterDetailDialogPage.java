@@ -164,10 +164,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
 		
-		// Close this dialog after the progress dialog finishes normally
-		tasks.append(callback.getCloseTask());
-		
-		dialogTaskManager.execute(tasks);
+		dialogTaskManager.execute(tasks, callback.getCloseTaskObserver());
 	}
 	
 	
