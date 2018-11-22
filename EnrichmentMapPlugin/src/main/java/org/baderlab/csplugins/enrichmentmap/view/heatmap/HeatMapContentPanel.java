@@ -390,7 +390,7 @@ public class HeatMapContentPanel extends JPanel {
 		// MKTODO this wont work if selected item is Class but doesn't exist anymore
 		getCompressCombo().setSelectedItem(ComboItem.of(params.getCompress()));
 		
-		selectedRankingOption = getRankOptionFromParams(params);
+		RankingOption rankingOption = getRankOptionFromParams(params);
 
 		// Update the setings panel
 		optionsPopup.update(params);
@@ -418,7 +418,7 @@ public class HeatMapContentPanel extends JPanel {
 		} catch(IllegalArgumentException e) {}
 		
 		// Re-compute the ranking
-		setSelectedRankingOption(selectedRankingOption);
+		setSelectedRankingOption(rankingOption);
 	}
 	
 	protected OptionsPopup getOptionsPopup() {
@@ -472,33 +472,31 @@ public class HeatMapContentPanel extends JPanel {
 	}
 	
 	public void setSelectedRankingOption(RankingOption newValue) {
-		if (selectedRankingOption != newValue) {
-			RankingOption oldValue = selectedRankingOption;
-			selectedRankingOption = newValue;
-			List<String> genes = unionGenes; // always use all the genes, fixes #310
-			
-			HeatMapTableModel tableModel = (HeatMapTableModel) getTable().getModel();
-			EnrichmentMap map = tableModel.getEnrichmentMap();
-			List<Integer> geneIds = genes.stream().map(map::getHashFromGene).collect(Collectors.toList());
-			
-			CompletableFuture<Optional<Map<Integer,RankValue>>> rankingFuture = newValue.computeRanking(geneIds);
-			
-			if (rankingFuture != null) {
-				rankingFuture.whenComplete((ranking, ex) -> {
-					if (ranking.isPresent()) {
-						tableModel.setRanking(newValue.getName(), ranking.get());
-						getTable().getColumnModel().getColumn(HeatMapTableModel.RANK_COL).setHeaderValue(newValue);
-					} else {
-						tableModel.setRanking(newValue.getName(), null);
-						getTable().getColumnModel().getColumn(HeatMapTableModel.RANK_COL)
-								.setHeaderValue(new RankOptionErrorHeader(newValue));
-					}
-					getTable().getTableHeader().repaint();
-				});
-			}
-			
-			firePropertyChange("selectedRankingOption", oldValue, newValue);
+		RankingOption oldValue = selectedRankingOption;
+		this.selectedRankingOption = newValue;
+		List<String> genes = unionGenes; // always use all the genes, fixes #310
+		
+		HeatMapTableModel tableModel = (HeatMapTableModel) getTable().getModel();
+		EnrichmentMap map = tableModel.getEnrichmentMap();
+		List<Integer> geneIds = genes.stream().map(map::getHashFromGene).collect(Collectors.toList());
+		
+		CompletableFuture<Optional<Map<Integer,RankValue>>> rankingFuture = newValue.computeRanking(geneIds);
+		
+		if (rankingFuture != null) {
+			rankingFuture.whenComplete((ranking, ex) -> {
+				if (ranking.isPresent()) {
+					tableModel.setRanking(newValue.getName(), ranking.get());
+					getTable().getColumnModel().getColumn(HeatMapTableModel.RANK_COL).setHeaderValue(newValue);
+				} else {
+					tableModel.setRanking(newValue.getName(), null);
+					getTable().getColumnModel().getColumn(HeatMapTableModel.RANK_COL)
+							.setHeaderValue(new RankOptionErrorHeader(newValue));
+				}
+				getTable().getTableHeader().repaint();
+			});
 		}
+		
+		firePropertyChange("selectedRankingOption", oldValue, newValue);
 	}
 	
 	List<String> getGenes(Operator operator) {
