@@ -17,6 +17,10 @@ public abstract class AbstractColumnDescriptor {
 		return name;
 	}
 	
+	public String with(String prefix) {
+		return with(prefix, null);
+	}
+	
 	public String with(String prefix, AbstractDataSet ds) {
 		StringBuilder sb = new StringBuilder();
 		if(prefix != null)
@@ -40,10 +44,18 @@ public abstract class AbstractColumnDescriptor {
 	
 	public abstract void createColumn(CyTable table);
 	
+	public void createColumn(CyTable table, String prefix) {
+		createColumn(table, prefix, null);
+	}
+	
 	
 	public void createColumnIfAbsent(CyTable table, String prefix, AbstractDataSet ds) {
 		if(table.getColumn(with(prefix,ds)) == null)
 			createColumn(table, prefix, ds);
+	}
+	
+	public void createColumnIfAbsent(CyTable table, String prefix) {
+		createColumnIfAbsent(table, prefix);
 	}
 	
 	public void createColumnIfAbsent(CyTable table) {
@@ -53,6 +65,14 @@ public abstract class AbstractColumnDescriptor {
 	
 	public boolean hasColumn(CyTable table) {
 		return table.getColumn(name) != null;
+	}
+	
+	public boolean hasColumn(CyTable table, String prefix) {
+		return hasColumn(table, prefix, null);
+	}
+	
+	public boolean hasColumn(CyTable table, String prefix, AbstractDataSet ds) {
+		return table.getColumn(with(prefix,ds)) != null;
 	}
 	
 	/**

@@ -102,55 +102,60 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 		CyNetwork network = options.getNetworkView().getModel();
 		CyTable nodeTable = network.getDefaultNodeTable();
 		
-		if (!Columns.EXPRESSION_DATA_CHART.hasColumn(nodeTable)) {
+		String prefix = options.getEnrichmentMap().getParams().getAttributePrefix();
+		
+		if (!Columns.EXPRESSION_DATA_CHART.hasColumn(nodeTable, prefix)) {
 			try {
-				Columns.EXPRESSION_DATA_CHART.createColumn(nodeTable);
+				Columns.EXPRESSION_DATA_CHART.createColumn(nodeTable, prefix);
 			} catch (Exception e) {
-				logger.error("Cannot create column " + Columns.EXPRESSION_DATA_CHART.getBaseName(), e);
+				logger.error("Cannot create column " + Columns.EXPRESSION_DATA_CHART.with(prefix), e);
 			}
-		}
 		
-		Map<Long, double[]> columnData = new HashMap<>();
-		EnrichmentMap map = options.getEnrichmentMap();
-		ExpressionData exp = options.getExpressionData();
 		
-		int n = exp.getSize();
-
-		for (CyNode node : network.getNodeList()) {
-			double[] data = new double[n];
-			columnData.put(node.getSUID(), data);
+			Map<Long, double[]> columnData = new HashMap<>();
+			EnrichmentMap map = options.getEnrichmentMap();
+			ExpressionData exp = options.getExpressionData();
 			
-			String name = NetworkUtil.getGeneName(network, node);
-			
-			if (name == null)
-				continue;
-			
-			String queryTerm = NetworkUtil.getQueryTerm(network, name);
-			Integer id = map.getHashFromGene(queryTerm != null ? queryTerm : name);
-			
-			if (id == null)
-				continue;
-			
-			for (int i = 0; i < n; i++) {
-				double value = exp.getValue(id, i, options.getCompress());
-				data[i] = value;
+			int n = exp.getSize();
+	
+			for (CyNode node : network.getNodeList()) {
+				double[] data = new double[n];
+				columnData.put(node.getSUID(), data);
+				
+				String name = NetworkUtil.getGeneName(network, node);
+				
+				if (name == null)
+					continue;
+				
+				String queryTerm = NetworkUtil.getQueryTerm(network, name);
+				Integer id = map.getHashFromGene(queryTerm != null ? queryTerm : name);
+				
+				if (id == null)
+					continue;
+				
+				for (int i = 0; i < n; i++) {
+					double value = exp.getValue(id, i, options.getCompress());
+					data[i] = value;
+				}
 			}
+	
+			columnData.forEach((suid, data) ->
+				Columns.EXPRESSION_DATA_CHART.set(nodeTable.getRow(suid), prefix, Doubles.asList(data))
+			);
 		}
-
-		columnData.forEach((suid, data) -> {
-			Columns.EXPRESSION_DATA_CHART.set(nodeTable.getRow(suid), Doubles.asList(data));
-		});
 	}
 
 	private void createDataSetColumn() {
 		CyNetwork network = options.getNetworkView().getModel();
 		CyTable nodeTable = network.getDefaultNodeTable();
 		
-		if (!Columns.DATASET_CHART.hasColumn(nodeTable)) {
+		String prefix = options.getEnrichmentMap().getParams().getAttributePrefix();
+		
+		if (!Columns.DATASET_CHART.hasColumn(nodeTable, prefix)) {
 			try {
-				Columns.DATASET_CHART.createColumn(nodeTable);
+				Columns.DATASET_CHART.createColumn(nodeTable, prefix);
 			} catch (Exception e) {
-				logger.error("Cannot create column " + Columns.DATASET_CHART.getBaseName(), e);
+				logger.error("Cannot create column " + Columns.DATASET_CHART.with(prefix), e);
 			}
 
 			Map<Long, int[]> columnData = new HashMap<>();
@@ -187,9 +192,9 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 				}
 			}
 
-			columnData.forEach((suid, data) -> {
-				Columns.DATASET_CHART.set(nodeTable.getRow(suid), Ints.asList(data));
-			});
+			columnData.forEach((suid, data) ->
+				Columns.DATASET_CHART.set(nodeTable.getRow(suid), prefix, Ints.asList(data))
+			);
 		}
 	}
 	
@@ -211,17 +216,19 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 			
 			if (type != null && !dataSets.isEmpty()) {
 				Map<String, Object> props = new HashMap<>(type.getProperties());
+				
+				String prefix = options.getEnrichmentMap().getParams().getAttributePrefix();
 				AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
 				
 				if (data == ChartData.DATA_SET) {
-					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
+					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.with(prefix)));
 					List<Color> colors = options.getEnrichmentMap().getDataSetColors();
 					
 					props.put("cy_dataColumns", columns);
 					props.put("cy_colors", colors);
 					props.put("cy_showItemLabels", chartOptions.isShowLabels());
 				} else if (data == ChartData.EXPRESSION_DATA) {
-					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
+					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.with(prefix)));
 					List<Double> range = null;
 					List<Color> colors = null;
 					

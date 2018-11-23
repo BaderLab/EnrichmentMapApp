@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
+import org.baderlab.csplugins.enrichmentmap.model.Columns;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -17,9 +18,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class NetworkUtil {
 
-	public static final String EM_NETWORK_SUID_COLUMN = "EM_Network.SUID";
-	public static final String EM_ASSOCIATED_APP_COLUMN = "EM_Associated_App";
-	
 	private NetworkUtil() { }
 	
 	public static String getName(final CyNetwork network) {
@@ -96,10 +94,10 @@ public class NetworkUtil {
 	public static AssociatedApp getAssociatedApp(CyNetwork network) {
 		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
 		
-		if (table.getColumn(EM_ASSOCIATED_APP_COLUMN) == null)
+		if(!Columns.EM_ASSOCIATED_APP.hasColumn(table))
 			return null;
 			
-		String app = network.getRow(network, CyNetwork.HIDDEN_ATTRS).get(EM_ASSOCIATED_APP_COLUMN, String.class);
+		String app = Columns.EM_ASSOCIATED_APP.get(network.getRow(network, CyNetwork.HIDDEN_ATTRS));
 		
 		if (AssociatedApp.GENEMANIA.name().equalsIgnoreCase(app))
 			return AssociatedApp.GENEMANIA;
@@ -111,9 +109,7 @@ public class NetworkUtil {
 	
 	public static boolean isAssociatedNetwork(CyNetwork network) {
 		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
-		
-		return table.getColumn(EM_NETWORK_SUID_COLUMN) != null
-				&& network.getRow(network, CyNetwork.HIDDEN_ATTRS).get(EM_NETWORK_SUID_COLUMN, Long.class) != null;
+		return Columns.EM_NETWORK_SUID.hasColumn(table) && Columns.EM_NETWORK_SUID.get(network.getRow(network, CyNetwork.HIDDEN_ATTRS)) != null;
 	}
 	
 	/**

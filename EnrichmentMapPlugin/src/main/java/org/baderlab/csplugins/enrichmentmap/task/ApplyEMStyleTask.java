@@ -88,8 +88,10 @@ public class ApplyEMStyleTask extends AbstractTask {
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		CyTable nodeTable = network.getDefaultNodeTable();
 		
-		if (!Columns.DATASET_CHART.hasColumn(nodeTable)) {
-			Columns.DATASET_CHART.createColumn(nodeTable);
+		String prefix = map.getParams().getAttributePrefix();
+		
+		if (!Columns.DATASET_CHART.hasColumn(nodeTable, prefix)) {
+			Columns.DATASET_CHART.createColumn(nodeTable, prefix);
 
 			Map<Long, int[]> columnData = new HashMap<>();
 			List<EMDataSet> dataSets = map.getDataSetList();
@@ -105,9 +107,9 @@ public class ApplyEMStyleTask extends AbstractTask {
 					columnData.get(suid)[i] = 1;
 			}
 
-			columnData.forEach((suid, data) -> {
-				Columns.DATASET_CHART.set(nodeTable.getRow(suid), Ints.asList(data));
-			});
+			columnData.forEach((suid, data) ->
+				Columns.DATASET_CHART.set(nodeTable.getRow(suid), prefix, Ints.asList(data))
+			);
 		}
 	}
 	
@@ -165,10 +167,12 @@ public class ApplyEMStyleTask extends AbstractTask {
 			if (!dataSets.isEmpty()) {
 				ChartType type = chartOptions.getType();
 				Map<String, Object> props = new HashMap<>(type.getProperties());
+				
+				String prefix = options.getAttributePrefix();
 				AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
 				
 				if (data == ChartData.DATA_SET) {
-					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.getBaseName()));
+					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.with(prefix)));
 					List<Color> colors = options.getEnrichmentMap().getDataSetColors();
 					props.put("cy_dataColumns", columns);
 					props.put("cy_colors", colors);
@@ -176,7 +180,7 @@ public class ApplyEMStyleTask extends AbstractTask {
 					props.put("cy_rotation", "CLOCKWISE");
 					
 				} else {
-					List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
+					List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(prefix,
 							dataSets, columnDescriptor, columnIdFactory);
 	
 					List<Color> colors = ChartUtil.getChartColors(chartOptions);

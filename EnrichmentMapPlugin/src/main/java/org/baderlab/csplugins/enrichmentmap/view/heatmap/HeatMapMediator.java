@@ -496,7 +496,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		if (commands == null || !commands.contains(GENEMANIA_SEARCH_COMMAND)) {
 			if (JOptionPane.showConfirmDialog(
 					SwingUtilities.getWindowAncestor(getContentPanel()),
-					"This action requires a version of the GeneMANIA app that is not installed?\n" +
+					"This action requires a version of the GeneMANIA app that is not installed.\n" +
 					"Would you like to install or update the GeneMANIA app now?",
 					"Cannot Find GeneMANIA App",
 					JOptionPane.YES_NO_OPTION
@@ -591,7 +591,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		if (commands == null || !commands.contains(STRING_SPECIES_COMMAND)) {
 			if (JOptionPane.showConfirmDialog(
 					SwingUtilities.getWindowAncestor(getContentPanel()),
-					"This action requires a version of the STRING app that is not installed?\n" +
+					"This action requires a version of the STRING app that is not installed.\n" +
 					"Would you like to install or update the STRING app now?",
 					"Cannot Find STRING App",
 					JOptionPane.YES_NO_OPTION
@@ -666,12 +666,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			// Update the model
 			map.addAssociatedNetworkID(net.getSUID());
 			emManager.addAssociatedAppAttributes(net, map, AssociatedApp.STRING);
-// TODO		
-//			// Modify GeneMANIA's style
-//			Collection<CyNetworkView> netViewList = netViewManager.getNetworkViews(strNet);
-//			
-//			for (CyNetworkView netView : netViewList)
-//				updateGeneManiaStyle(netView);
 		}
 	}
 	
