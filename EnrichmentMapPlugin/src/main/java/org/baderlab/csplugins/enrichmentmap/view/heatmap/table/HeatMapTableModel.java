@@ -92,8 +92,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		expressionCache = new ExpressionCache(transform);
 		
 		ExpressionData uncompressed = new Uncompressed(datasets, expressionCache);
-		ExpressionData compressedDataSet = new CompressedDataSet(datasets, expressionCache,
-				map != null && map.isDistinctExpressionSets());
+		ExpressionData compressedDataSet = new CompressedDataSet(datasets, expressionCache, map != null && map.isDistinctExpressionSets());
 		ExpressionData compressedClass = new CompressedClass(datasets, expressionCache);
 		
 		data.put(Compress.NONE, uncompressed);

@@ -796,15 +796,13 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		final AssociatedApp app = NetworkUtil.getAssociatedApp(netView.getModel());
 		List<EMDataSet> datasets = ds != null ? Collections.singletonList(ds) : map.getDataSetList();
 		
-		ExpressionData exp = data == ChartData.EXPRESSION_DATA ?
-				createExpressionData(map, datasets, transform, compress) : null;
+		ExpressionData exp = data == ChartData.EXPRESSION_DATA ? createExpressionData(map, datasets, transform, compress) : null;
 		ChartOptions chartOptions = data != null ? new ChartOptions(data, type, null, false) : null;
 
 		return new AssociatedStyleOptions(netView, map, transform, compress, exp, chartOptions, app);
 	}
 	
-	private ExpressionData createExpressionData(EnrichmentMap map, List<EMDataSet> datasets, Transform transform,
-			Compress compress) {
+	private ExpressionData createExpressionData(EnrichmentMap map, List<EMDataSet> datasets, Transform transform, Compress compress) {
 		ExpressionData exp = null;
 		ExpressionCache cache = new ExpressionCache(transform);
 		

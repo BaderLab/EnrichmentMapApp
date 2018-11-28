@@ -1,9 +1,13 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
+import java.awt.Color;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
+import org.baderlab.csplugins.enrichmentmap.view.util.ColorUtil;
 import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientRange;
 import org.baderlab.csplugins.org.mskcc.colorgradient.ColorGradientTheme;
 
@@ -11,6 +15,10 @@ public class DataSetColorRange {
 
 	private final ColorGradientTheme theme;
 	private final ColorGradientRange range;
+	
+	private List<Double> points;
+	private List<Color>  colors;
+	
 	
 	private DataSetColorRange(ColorGradientTheme theme, ColorGradientRange range) {
 		this.theme = theme;
@@ -49,7 +57,6 @@ public class DataSetColorRange {
 		}
 	}
 	
-	
 	public ColorGradientTheme getTheme() {
 		return theme;
 	}
@@ -57,6 +64,49 @@ public class DataSetColorRange {
 	public ColorGradientRange getRange() {
 		return range;
 	}
+	
+	
+	public Color getColor(Double value) {
+		if(value == null || !Double.isFinite(value))
+			return theme.getNoDataColor();
+		
+		if(points == null)
+			points = Arrays.asList(range.getMaxValue(), range.getCenterHighValue(), range.getMinValue());
+		if(colors == null)
+			colors = Arrays.asList(theme.getMaxColor(), theme.getCenterColor(),     theme.getMinColor());
+		
+		return ColorUtil.getColor(value, colors, points);
+	}
+	
+	
+	/**
+	 * Returns the (max, center, min) colors. 
+	 * Compatible with the "cy_colors" property of the RadialHeatMap.
+	 */
+	public List<Color> getColors() {
+		if(colors == null)
+			colors = Arrays.asList(theme.getMaxColor(), theme.getCenterColor(), theme.getMinColor());
+		return colors;
+	}
+	
+	/**
+	 * Returns the (max, center, min) points of the range.
+	 * Compatible with the "cy_colorPoints" property of the RadialHeatMap.
+	 */
+	public List<Double> getPoints() {
+		if(points == null)
+			points = Arrays.asList(range.getMaxValue(), range.getCenterHighValue(), range.getMinValue());
+		return points;
+	}
+	
+	/**
+	 * Returns the range bounds as a two-element List.
+	 * Compatible with the "cy_range" property of the RadialHeatMap.
+	 */
+	public List<Double> getRangeMinMax() {
+		return Arrays.asList(range.getMinValue(), range.getMaxValue());
+	}
+	
 	
 	@Override
 	public String toString() {

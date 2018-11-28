@@ -105,8 +105,7 @@ public final class ColorUtil {
 				double p2 = points.get(i - 1);
 				Color c1 = colors.get(i);
 				Color c2 = colors.get(i - 1);
-				float t = interpolate(value, p1, p2);
-
+				float t = interpolate(value, p2, p1);
 				return interpolate(c1, c2, t);
 			}
 		}
@@ -125,16 +124,18 @@ public final class ColorUtil {
 		return new Color(comp3[0], comp3[1], comp3[2], comp3[3]);
 	}
 	
+	
 	private static float interpolate(final double value, final double lowerBound, final double upperBound) {
-		// Linearly interpolate the value
-		final double f = value < 0.0 ? MathUtil.invLinearInterp(value, lowerBound, 0)
-				: MathUtil.invLinearInterp(value, 0, upperBound);
-		float t = (float) (value < 0.0 ? MathUtil.linearInterp(f, 0.0, 1.0) : MathUtil.linearInterp(f, 1.0, 0.0));
-
-		// Make sure it's between 0.0-1.0
-		t = Math.max(0.0f, t);
-		t = Math.min(1.0f, t);
-		
-		return t;
+		return (float) MathUtil.invLinearInterp(value, lowerBound, upperBound);
+//		// Linearly interpolate the value
+//		final double f = value < 0.0 ? MathUtil.invLinearInterp(value, lowerBound, 0)
+//				: MathUtil.invLinearInterp(value, 0, upperBound);
+//		float t = (float) (value < 0.0 ? MathUtil.linearInterp(f, 0.0, 1.0) : MathUtil.linearInterp(f, 1.0, 0.0));
+//
+//		// Make sure it's between 0.0-1.0
+//		t = Math.max(0.0f, t);
+//		t = Math.min(1.0f, t);
+//		
+//		return t;
 	}
 }

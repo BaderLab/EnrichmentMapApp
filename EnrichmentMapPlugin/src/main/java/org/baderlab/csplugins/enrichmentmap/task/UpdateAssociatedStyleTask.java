@@ -1,10 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,12 +22,10 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
-import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.charts.AbstractChart;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
-import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
@@ -110,39 +106,38 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 			} catch (Exception e) {
 				logger.error("Cannot create column " + Columns.EXPRESSION_DATA_CHART.with(prefix), e);
 			}
-		
-		
-			Map<Long, double[]> columnData = new HashMap<>();
-			EnrichmentMap map = options.getEnrichmentMap();
-			ExpressionData exp = options.getExpressionData();
-			
-			int n = exp.getSize();
-	
-			for (CyNode node : network.getNodeList()) {
-				double[] data = new double[n];
-				columnData.put(node.getSUID(), data);
-				
-				String name = NetworkUtil.getGeneName(network, node);
-				
-				if (name == null)
-					continue;
-				
-				String queryTerm = NetworkUtil.getQueryTerm(network, name);
-				Integer id = map.getHashFromGene(queryTerm != null ? queryTerm : name);
-				
-				if (id == null)
-					continue;
-				
-				for (int i = 0; i < n; i++) {
-					double value = exp.getValue(id, i, options.getCompress());
-					data[i] = value;
-				}
-			}
-	
-			columnData.forEach((suid, data) ->
-				Columns.EXPRESSION_DATA_CHART.set(nodeTable.getRow(suid), prefix, Doubles.asList(data))
-			);
 		}
+		
+		Map<Long, double[]> columnData = new HashMap<>();
+		EnrichmentMap map = options.getEnrichmentMap();
+		ExpressionData exp = options.getExpressionData();
+		
+		int n = exp.getSize();
+
+		for (CyNode node : network.getNodeList()) {
+			double[] data = new double[n];
+			columnData.put(node.getSUID(), data);
+			
+			String name = NetworkUtil.getGeneName(network, node);
+			
+			if (name == null)
+				continue;
+			
+			String queryTerm = NetworkUtil.getQueryTerm(network, name);
+			Integer id = map.getHashFromGene(queryTerm != null ? queryTerm : name);
+			
+			if (id == null)
+				continue;
+			
+			for (int i = 0; i < n; i++) {
+				double value = exp.getValue(id, i, options.getCompress());
+				data[i] = value;
+			}
+		}
+
+		columnData.forEach((suid, data) ->
+			Columns.EXPRESSION_DATA_CHART.set(nodeTable.getRow(suid), prefix, Doubles.asList(data))
+		);
 	}
 
 	private void createDataSetColumn() {
@@ -215,7 +210,7 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 			List<AbstractDataSet> dataSets = options.getDataSets(); // Ignore Signature Data Sets in charts
 			
 			if (type != null && !dataSets.isEmpty()) {
-				Map<String, Object> props = new HashMap<>(type.getProperties());
+				Map<String,Object> props = new HashMap<>(type.getProperties());
 				
 				String prefix = options.getEnrichmentMap().getParams().getAttributePrefix();
 				AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
@@ -231,6 +226,7 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.with(prefix)));
 					List<Double> range = null;
 					List<Color> colors = null;
+					List<Double> colorPoints = null;
 					
 					AbstractDataSet ds = dataSets.get(0);
 					
@@ -239,21 +235,11 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 						Optional<DataSetColorRange> dsColorRange = DataSetColorRange.create(matrix, options.getTransform());
 						
 						if (dsColorRange.isPresent()) {
-							Color c1 = dsColorRange.get().getTheme().getMinColor();
-							Color c2 = dsColorRange.get().getTheme().getCenterColor();
-							Color c3 = dsColorRange.get().getTheme().getMaxColor();
-							colors = Arrays.asList(new Color[] { c1, c2, c3 });
+							range = dsColorRange.get().getRangeMinMax();
+							colors = dsColorRange.get().getColors();
+							colorPoints = dsColorRange.get().getPoints();
 						}
 					}
-					
-					range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
-					System.out.println(range.get(0)+","+range.get(1));
-					
-					if (colors == null || colors.isEmpty())
-						colors = new ArrayList<>(ColorScheme.RD_YL_BU_3.getColors());
-					
-					if (range.size() > 0 && range.get(0) < 0) // Does it have negative numbers?
-						Collections.reverse(colors);
 					
 					props.put("cy_dataColumns", columns);
 					props.put("cy_range", range);
@@ -262,20 +248,11 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 					props.put("cy_showRangeZeroBaseline", true);
 					props.put("cy_showItemLabels", chartOptions.isShowLabels());
 					props.put("cy_colors", colors);
-					
-					ColorScheme colorScheme = chartOptions != null ? chartOptions.getColorScheme() : null;
-					
-					if (colorScheme != null && colorScheme.getPoints() != null) {
-						List<Double> points = colorScheme.getPoints();
-						
-						if (!points.isEmpty())
-							props.put(AbstractChart.COLOR_POINTS, points);
-					}
+					props.put(AbstractChart.COLOR_POINTS, colorPoints);
 				}
 				
 				try {
 					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
-					
 					if (factory != null)
 						chart = factory.getInstance(props);
 				} catch (Exception e) {
