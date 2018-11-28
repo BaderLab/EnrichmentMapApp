@@ -42,7 +42,7 @@ public class CompressedClass implements ExpressionData {
 	}
 	
 	@Override
-	public double getValue(int geneID, int idx, Compress compress) {
+	public double getValue(int geneID, int idx, Compress compress, Transform transform) {
 		EMDataSet dataset = getDataSet(idx);
 		String pheno = getName(idx);
 
@@ -51,7 +51,7 @@ public class CompressedClass implements ExpressionData {
 		if (phenotypes == null || phenotypes.length == 0)
 			return Double.NaN;
 
-		Optional<float[]> optExpr = expressionCache.getExpressions(dataset, geneID);
+		Optional<float[]> optExpr = expressionCache.getExpressions(geneID, dataset, transform);
 
 		if (!optExpr.isPresent())
 			return Double.NaN;

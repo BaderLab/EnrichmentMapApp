@@ -89,7 +89,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 			datasets = Collections.emptyList();
 		}
 		
-		expressionCache = new ExpressionCache(transform);
+		expressionCache = new ExpressionCache();
 		
 		ExpressionData uncompressed = new Uncompressed(datasets, expressionCache);
 		ExpressionData compressedDataSet = new CompressedDataSet(datasets, expressionCache, map != null && map.isDistinctExpressionSets());
@@ -120,7 +120,6 @@ public class HeatMapTableModel extends AbstractTableModel {
 		boolean structureChanged = !this.compress.sameStructure(compress);
 		this.transform = transform;
 		this.compress = compress;
-		this.expressionCache = new ExpressionCache(transform);
 		
 		if (structureChanged)
 			fireTableStructureChanged();
@@ -220,7 +219,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		ExpressionData exp = data.get(compress);
 		if(exp == null || geneID == null)
 			return Double.NaN; // because the DefaultRowSorter doesn't sort null the way we want
-		return exp.getValue(geneID, col - DESC_COL_COUNT, compress);
+		return exp.getValue(geneID, col - DESC_COL_COUNT, compress, transform);
 	}
 	
 	public RankValue getRankValue(int row) {

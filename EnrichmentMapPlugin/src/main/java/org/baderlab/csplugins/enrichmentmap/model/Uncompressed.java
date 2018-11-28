@@ -37,10 +37,10 @@ public class Uncompressed implements ExpressionData {
 	}
 	
 	@Override
-	public double getValue(int geneID, int idx, Compress compress) {
+	public double getValue(int geneID, int idx, Compress compress, Transform transform) {
 		EMDataSet dataset = getDataSet(idx);
 		
-		return expressionCache.getExpression(dataset, geneID, getIndexInDataSet(idx));
+		return expressionCache.getExpression(geneID, dataset, transform, getIndexInDataSet(idx));
 	}
 
 	@Override

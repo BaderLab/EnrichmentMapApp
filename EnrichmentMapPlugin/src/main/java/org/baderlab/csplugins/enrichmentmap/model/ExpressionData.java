@@ -9,7 +9,7 @@ public interface ExpressionData {
 	
 	EMDataSet getDataSet(int col);
 
-	double getValue(int geneID, int col, Compress compress);
+	double getValue(int geneID, int col, Compress compress, Transform transform);
 
 	String getName(int col);
 

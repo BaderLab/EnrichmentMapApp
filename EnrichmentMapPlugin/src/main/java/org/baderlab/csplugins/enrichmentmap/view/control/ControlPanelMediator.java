@@ -804,7 +804,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	
 	private ExpressionData createExpressionData(EnrichmentMap map, List<EMDataSet> datasets, Transform transform, Compress compress) {
 		ExpressionData exp = null;
-		ExpressionCache cache = new ExpressionCache(transform);
+		ExpressionCache cache = new ExpressionCache();
 		
 		switch (compress) {
 			case DATASET_MEDIAN:

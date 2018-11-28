@@ -21,9 +21,9 @@ public class CompressedDataSet implements ExpressionData {
 	}
 	
 	@Override
-	public double getValue(int geneID, int idx, Compress compress) {
+	public double getValue(int geneID, int idx, Compress compress, Transform transform) {
 		EMDataSet dataset = getDataSet(idx);
-		Optional<float[]> expression = expressionCache.getExpressions(dataset, geneID);
+		Optional<float[]> expression = expressionCache.getExpressions(geneID, dataset, transform);
 		
 		if (compress == null || !expression.isPresent())
 			return Float.NaN;

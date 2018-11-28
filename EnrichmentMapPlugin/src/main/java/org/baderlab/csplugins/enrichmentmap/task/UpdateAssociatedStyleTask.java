@@ -130,7 +130,7 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 				continue;
 			
 			for (int i = 0; i < n; i++) {
-				double value = exp.getValue(id, i, options.getCompress());
+				double value = exp.getValue(id, i, options.getCompress(), options.getTransform());
 				data[i] = value;
 			}
 		}

@@ -6,38 +6,36 @@ import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 public class ExpressionCache {
 	
-	private final Cache<Pair<Integer, EMDataSet>, Optional<float[]>> cache;
-	private final Transform transform;
+	private final Cache<Triple<Integer,EMDataSet,Transform>, Optional<float[]>> cache;
 
-	public ExpressionCache(Transform transform) {
-		this.transform = transform;
+	public ExpressionCache() {
 		this.cache = CacheBuilder.newBuilder().maximumSize(20).build();
 	}
 
-	public Optional<float[]> getExpressions(EMDataSet dataset, int geneID) {
+	public Optional<float[]> getExpressions(int geneID, EMDataSet dataset, Transform transform) {
 		try {
-			return cache.get(Pair.of(geneID, dataset), 
-				() -> Optional.ofNullable(getExpression(dataset, geneID, transform))
+			return cache.get(Triple.of(geneID, dataset, transform), 
+				() -> Optional.ofNullable(getExpression(geneID, dataset, transform))
 			);
 		} catch (ExecutionException e) {
 			return Optional.empty();
 		}
 	}
 	
-	public float getExpression(EMDataSet dataset, int geneID, int expressionIndex) {
-		Optional<float[]> vals = getExpressions(dataset, geneID);
+	public float getExpression(int geneID, EMDataSet dataset, Transform transform, int expressionIndex) {
+		Optional<float[]> vals = getExpressions(geneID, dataset, transform);
 		
 		return vals.isPresent() ? vals.get()[expressionIndex] : Float.NaN;
 	}
 
-	public static GeneExpression getGeneExpression(EMDataSet dataset, int geneID) {
+	public static GeneExpression getGeneExpression(int geneID, EMDataSet dataset) {
 		GeneExpressionMatrix matrix = dataset.getExpressionSets();
 		Map<Integer, GeneExpression> expressions = matrix.getExpressionMatrix();
 		GeneExpression row = expressions.get(geneID);
@@ -45,8 +43,8 @@ public class ExpressionCache {
 		return row;
 	}
 	
-	private static @Nullable float[] getExpression(EMDataSet dataset, int geneID, Transform transform) {
-		GeneExpression expression = getGeneExpression(dataset, geneID);
+	private static @Nullable float[] getExpression(int geneID, EMDataSet dataset, Transform transform) {
+		GeneExpression expression = getGeneExpression(geneID, dataset);
 		
 		if (expression != null) {
 			switch (transform) {
