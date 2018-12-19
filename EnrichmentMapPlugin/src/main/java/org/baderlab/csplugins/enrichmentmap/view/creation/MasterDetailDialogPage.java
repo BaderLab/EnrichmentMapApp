@@ -121,8 +121,10 @@ public class MasterDetailDialogPage implements CardDialogPage {
 
 	@Override
 	public void finish() {
-		if(!validateInput())
+		if(!validateInput()) {
+			updateButtonEnablement();
 			return;
+		}
 		
 		String prefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
 		
@@ -169,7 +171,10 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
 		
-		dialogTaskManager.execute(tasks, callback.getCloseTaskObserver());
+		dialogTaskManager.execute(tasks);
+		
+		callback.setFinishButtonEnabled(true);
+		callback.close();
 	}
 	
 	
