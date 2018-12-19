@@ -13,6 +13,9 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,8 +37,10 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.LayoutStyle;
@@ -294,6 +299,31 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		}
 	}
 	
+	private void moveItemUp() {
+		int index = dataSetList.getSelectedIndex();
+		// can't move "common files" or top data set
+		if(index >= 2) {
+			swap(index, index - 1);
+		}
+	}
+	
+	private void moveItemDown() {
+		int index = dataSetList.getSelectedIndex();
+		if(index != 0 && index != dataSetListModel.getSize() - 1) {
+			swap(index, index + 1);
+		}
+	}
+	
+	private void swap(int a, int b) {
+        DataSetListItem itemA = dataSetListModel.getElementAt(a);
+        DataSetListItem itemB = dataSetListModel.getElementAt(b);
+        dataSetListModel.set(a, itemB);
+        dataSetListModel.set(b, itemA);
+        dataSetList.setSelectedIndex(b);
+        dataSetList.ensureIndexIsVisible(b);
+    }
+	
+	
 	private void selectItem(DataSetListItem params) {
 		cardLayout.show(dataSetDetailPanel, params == null ? "nothing" : params.id);
 		dataSetDetailPanel.revalidate();
@@ -499,6 +529,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 			setDropMode(DropMode.ON);
 			setTransferHandler(new ResolverTaskTransferHandler());
+			addMouseListener(getContextMenuMouseListener());
 			try {
 				getDropTarget().addDropTargetListener(getDropTargetListener());
 			} catch (TooManyListenersException e) { /* do nothing */ }
@@ -535,6 +566,45 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			}
 		}
 		
+		
+		private MouseListener getContextMenuMouseListener() {
+			return new MouseAdapter() {
+				@Override public void mousePressed(MouseEvent e) {
+					showContextMenu(e);
+				}
+				@Override public void mouseReleased(MouseEvent e) {
+					showContextMenu(e);
+				}
+				private void showContextMenu(MouseEvent e) {
+					if(!e.isPopupTrigger())
+						return;
+					
+					int index = locationToIndex(e.getPoint());
+					if(index != -1 && getCellBounds(index,index).contains(e.getPoint())) {
+						setSelectedIndex(index);
+						
+						JMenuItem deleteItem = new JMenuItem("Delete");
+						deleteItem.addActionListener(ae -> deleteSelectedItems());
+						JMenuItem upItem = new JMenuItem("Move Up");
+						upItem.addActionListener(ae -> moveItemUp());
+						JMenuItem downItem = new JMenuItem("Move Down");
+						downItem.addActionListener(ae -> moveItemDown());
+						
+						deleteItem.setEnabled(index > 0);
+						upItem.setEnabled(index > 1);
+						downItem.setEnabled(index != 0 && index != getModel().getSize()-1);
+						
+						JPopupMenu menu = new JPopupMenu();
+						menu.add(upItem);
+						menu.add(downItem);
+						menu.addSeparator();
+						menu.add(deleteItem);
+						menu.show(DataSetList.this, e.getX(), e.getY());
+					}
+				}
+			};
+		}
+		
 		private DropTargetListener getDropTargetListener() {
 			return new DropTargetAdapter() {
 				Color normalColor = getBackground();
@@ -554,6 +624,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				}
 			};
 		}
+		
 	}
 	
 	
