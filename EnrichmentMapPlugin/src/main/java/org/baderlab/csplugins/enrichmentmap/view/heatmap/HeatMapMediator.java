@@ -295,7 +295,9 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		invokeOnEDT(() -> {
 			HeatMapContentPanel contentPanel = getContentPanel();
-			contentPanel.update(network, map, params, rankOptions, union, inter, clusterRankingOption);
+			resetWithoutListeners(() -> {
+				contentPanel.update(network, map, params, rankOptions, union, inter, clusterRankingOption);
+			});
 			
 			if (propertyManager.getValue(PropertyManager.HEATMAP_AUTOFOCUS))
 				bringToFront();
@@ -353,6 +355,13 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		List<RankingOption> rankOptions = getDataSetRankOptions(map);
 		ClusterRankingOption clusterRankingOption = getClusterRankingOption(map);
 
+		resetWithoutListeners(() -> {
+			getContentPanel().update(network, map, params, rankOptions, getContentPanel().getUnionGenes(), getContentPanel().getInterGenes(), clusterRankingOption);
+		});
+	}
+	
+	
+	private void resetWithoutListeners(Runnable runnable) {
 		isResetting = true;
 		
 		getContentPanel().getOperatorCombo().removeActionListener(operatorActionListener);
@@ -361,7 +370,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		getContentPanel().getShowValuesCheck().removeActionListener(showValueActionListener);
 
 		try {
-			getContentPanel().update(network, map, params, rankOptions, getContentPanel().getUnionGenes(), getContentPanel().getInterGenes(), clusterRankingOption);
+			runnable.run();
 		} finally {
 			getContentPanel().getOperatorCombo().addActionListener(operatorActionListener);
 			getContentPanel().getNormCombo().addActionListener(normActionListener);
