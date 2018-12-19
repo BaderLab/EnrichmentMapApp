@@ -51,7 +51,7 @@ public abstract class CancellableParallelTask<T> extends AbstractTask {
 	
 	public static DiscreteTaskMonitor discreteTaskMonitor(TaskMonitor tm, int size) {
 		DiscreteTaskMonitor taskMonitor = new DiscreteTaskMonitor(tm, size);
-        taskMonitor.setTitle("Post Analysis Geneset Similarities...");
+        taskMonitor.setTitle("Computing Geneset Similarities...");
         taskMonitor.setStatusMessageTemplate("Computing Geneset Similarity: {0} of {1} tasks");
         return taskMonitor;
 	}
