@@ -14,7 +14,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -115,13 +114,13 @@ public class DataSetResolver {
 		
 		// MKTODO what about other enrichment types?
 		for(Path enrichment : types.get(Type.ENRICHMENT_GENERIC)) {
-			DataSetFiles files = new DataSetFiles();
-			files.setEnrichmentFileName1(enrichment.toAbsolutePath().toString());
-			
 			Optional<Path> closestExpr  = findClosestMatch(enrichment, exprFiles);
 			Optional<Path> closestRanks = findClosestMatch(enrichment, rankFiles);
 			Optional<Path> closestClass = findClosestMatch(enrichment, clasFiles);
 			Optional<Path> closestGmt   = findClosestMatch(enrichment, gmtFiles);
+			
+			DataSetFiles files = new DataSetFiles();
+			files.setEnrichmentFileName1(enrichment.toAbsolutePath().toString());
 			
 			closestExpr.ifPresent(path -> {
 				exprFiles.remove(path);
@@ -151,10 +150,10 @@ public class DataSetResolver {
 	private static Optional<Path> findClosestMatch(Path p, List<Path> candidates) {
 		String pf = p.getFileName().toString();
 		
-		Map<Path,Integer> scores = new HashMap<>();
+		Map<Path,Double> scores = new HashMap<>();
 		for(Path candidate : candidates) {
 			String filename = candidate.getFileName().toString();
-			int score1 = StringUtils.getFuzzyDistance(pf, filename, Locale.getDefault());
+			double score1 = StringUtils.getJaroWinklerDistance(pf, filename);
 			scores.put(candidate, score1);
 		}
 		
