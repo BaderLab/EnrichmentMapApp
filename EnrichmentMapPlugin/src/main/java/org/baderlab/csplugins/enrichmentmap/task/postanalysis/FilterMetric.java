@@ -263,6 +263,10 @@ public interface FilterMetric {
 			overlapGeneScores = Arrays.copyOf(overlapGeneScores, j);
 			double[] scores = ranks.getScores();
 			
+			if(overlapGeneScores.length == 0 || scores.length == 0) {
+				return 1.0;  // avoid NoDataException
+			}
+			
 			if(similarity == null) {
 				MannWhitneyUTestSided mann_whit = new MannWhitneyUTestSided();
 				return mann_whit.mannWhitneyUTest(overlapGeneScores, scores, type.mannWhitneyTestType());
