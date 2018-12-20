@@ -49,6 +49,7 @@ public class HeatMapPanel extends JPanel implements CytoPanelComponent2 {
 			add(contentPanel, BorderLayout.CENTER);
 		else
 			add(nullContentPanel, BorderLayout.CENTER);
+		repaint();
 	}
 	
 	

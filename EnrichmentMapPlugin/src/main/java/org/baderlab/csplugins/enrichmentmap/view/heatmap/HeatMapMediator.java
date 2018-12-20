@@ -112,8 +112,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	
 	@Inject private HeatMapPanel heatMapPanel;
 	@Inject private Provider<HeatMapContentPanel> contentPanelProvider;
-	@Inject private HeatMapContentPanel contentPanel2;
 	
+	private HeatMapContentPanel contentPanel2;
 	private final CoalesceTimer selectionEventTimer = new CoalesceTimer(200, 1);
 	private boolean onlyEdges;
 	
@@ -153,7 +153,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			// Property Change Listeners
 			contentPanel2.addPropertyChangeListener("selectedRankingOption", evt -> settingChanged());
 		}
-		heatMapPanel.showContentPanel(contentPanel2);
 		return contentPanel2;
 	}
 	
@@ -295,6 +294,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		invokeOnEDT(() -> {
 			HeatMapContentPanel contentPanel = getContentPanel();
+			heatMapPanel.showContentPanel(contentPanel2);
+			
 			resetWithoutListeners(() -> {
 				contentPanel.update(network, map, params, rankOptions, union, inter, clusterRankingOption);
 			});
