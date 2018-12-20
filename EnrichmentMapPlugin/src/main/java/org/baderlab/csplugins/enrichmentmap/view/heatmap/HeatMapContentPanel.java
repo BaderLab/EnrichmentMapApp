@@ -395,6 +395,8 @@ public class HeatMapContentPanel extends JPanel {
 		// Update the setings panel
 		optionsPopup.update(params);
 		getShowValuesCheck().setSelected(params.isShowValues());
+		HeatMapCellRenderer renderer = (HeatMapCellRenderer) getTable().getDefaultRenderer(Double.class);
+		renderer.setShowValues(params.isShowValues());
 		
 		// Update the Table
 		clearTableHeader();
