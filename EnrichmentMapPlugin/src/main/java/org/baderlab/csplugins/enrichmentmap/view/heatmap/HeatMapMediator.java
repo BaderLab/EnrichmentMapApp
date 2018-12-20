@@ -291,7 +291,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		List<RankingOption> rankOptions = getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
 		HeatMapParams params = getHeatMapParams(map, network.getSUID(), onlyEdges);
-		ClusterRankingOption clusterRankingOption = getClusterRankingOption(map);
+		ClusterRankingOption clusterRankingOption = clusterRankOptionFactory.create(map, params.getDistanceMetric());
 		
 		invokeOnEDT(() -> {
 			HeatMapContentPanel contentPanel = getContentPanel();
@@ -353,7 +353,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		EnrichmentMap map = tableModel.getEnrichmentMap();
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		List<RankingOption> rankOptions = getDataSetRankOptions(map);
-		ClusterRankingOption clusterRankingOption = getClusterRankingOption(map);
+		ClusterRankingOption clusterRankingOption = clusterRankOptionFactory.create(map, params.getDistanceMetric());
 
 		resetWithoutListeners(() -> {
 			getContentPanel().update(network, map, params, rankOptions, getContentPanel().getUnionGenes(), getContentPanel().getInterGenes(), clusterRankingOption);
@@ -392,9 +392,10 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	}
 	
 	private void updateSetting_Distance(Distance distance) {
-		EnrichmentMap map = getContentPanel().getEnrichmentMap();
-		ClusterRankingOption clusterRankingOption = getClusterRankingOption(map);
-		clusterRankingOption.setDistance(distance);
+		RankingOption clusterRankingOption = getContentPanel().getClusterRankingOption();
+		if(clusterRankingOption instanceof ClusterRankingOption) {
+			((ClusterRankingOption)clusterRankingOption).setDistance(distance);
+		}
 		getContentPanel().setSelectedRankingOption(clusterRankingOption);
 		settingChanged();
 	}
@@ -404,10 +405,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			HeatMapParams params = getContentPanel().buildParams();
 			heatMapParamsChanged(params);
 		}
-	}
-	
-	public ClusterRankingOption getClusterRankingOption(EnrichmentMap map) {
-		return clusterRankOptionFactory.create(map);
 	}
 	
 	public List<RankingOption> getDataSetRankOptions(EnrichmentMap map) {

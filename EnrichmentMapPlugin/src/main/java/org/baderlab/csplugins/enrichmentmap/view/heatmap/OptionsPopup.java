@@ -144,35 +144,21 @@ public class OptionsPopup extends JPopupMenu {
 	}
 	
 	public void update(HeatMapParams params) {
+		updateDistanceMenu(params.getDistanceMetric());
+	}
+
+	private void updateDistanceMenu(Distance dm) {
 		cosineRadio.removeActionListener(cosineListener);
 		euclideanRadio.removeActionListener(euclideanListener);
 		pearsonRadio.removeActionListener(pearsonListener);
 		
-		updateDistanceMenu(params.getDistanceMetric());
+		cosineRadio.setSelected(dm == Distance.COSINE);
+		euclideanRadio.setSelected(dm == Distance.EUCLIDEAN);
+		pearsonRadio.setSelected(dm == Distance.PEARSON);
 		
 		cosineRadio.addActionListener(cosineListener);
 		euclideanRadio.addActionListener(euclideanListener);
 		pearsonRadio.addActionListener(pearsonListener);
-	}
-
-	private void updateDistanceMenu(Distance dm) {
-		switch (dm) {
-			case COSINE:
-				cosineRadio.setSelected(true);
-				euclideanRadio.setSelected(false);
-				pearsonRadio.setSelected(false);
-				break;
-			case EUCLIDEAN:
-				cosineRadio.setSelected(false);
-				euclideanRadio.setSelected(true);
-				pearsonRadio.setSelected(false);
-				break;
-			case PEARSON:
-				cosineRadio.setSelected(false);
-				euclideanRadio.setSelected(false);
-				pearsonRadio.setSelected(true);
-				break;
-		}
 	}
 	
 	

@@ -25,16 +25,17 @@ public class ClusterRankingOption implements RankingOption {
 	private final TaskManager<?,?> taskManager;
 	
 	private final EnrichmentMap map;
-	private Distance distance = Distance.PEARSON;
+	private Distance distance;
 
 	public interface Factory {
-		ClusterRankingOption create(EnrichmentMap map);
+		ClusterRankingOption create(EnrichmentMap map, Distance distance);
 	}
 	
 	@Inject
-	public ClusterRankingOption(@Assisted EnrichmentMap map, @Dialog TaskManager<?,?> taskManager) {
+	public ClusterRankingOption(@Assisted EnrichmentMap map, @Assisted Distance distance, @Dialog TaskManager<?,?> taskManager) {
 		this.map = map;
 		this.taskManager = taskManager;
+		this.distance = distance;
 	}
 
 	@Override
