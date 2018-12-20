@@ -29,6 +29,7 @@ public class GradientLegendPanel extends JPanel {
 		setOpaque(false);
 		
 		table.getSelectionModel().addListSelectionListener(e -> handleChange(table));
+		table.getColumnModel().getSelectionModel().addListSelectionListener(e -> handleChange(table));
 		table.getModel().addTableModelListener(e -> handleChange(table));
 		setBorder(BorderFactory.createEmptyBorder(BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH));
 	}
