@@ -143,6 +143,22 @@ public class CreationParametersPanel extends JPanel {
 						li().text("Expression File: ").span().style("${code}")
 							.text(shortenPathname(ds.getDataSetFiles().getExpressionFileName())).end().end();
 					}
+					if (ds.getDataSetFiles().getClassFile() != null) {
+						li().text("Class File: ").span().style("${code}")
+							.text(shortenPathname(ds.getDataSetFiles().getClassFile())).end().end();
+					}
+					if (ds.getDataSetFiles().getRankedFile() != null) {
+						li().text("Ranks File: ").span().style("${code}")
+							.text(shortenPathname(ds.getDataSetFiles().getRankedFile())).end().end();
+					}
+					if (ds.getDataSetFiles().getPhenotype1() != null) {
+						li().text("Positive Phenotype: ").span().style("${code}")
+							.text(shortenPathname(ds.getDataSetFiles().getPhenotype1())).end().end();
+					}
+					if (ds.getDataSetFiles().getPhenotype2() != null) {
+						li().text("Negative Phenotype: ").span().style("${code}")
+							.text(shortenPathname(ds.getDataSetFiles().getPhenotype2())).end().end();
+					}
 					if (ds.getDataSetFiles().getGseaHtmlReportFile() != null) {
 						li().text("GSEA Report: ").span().style("${code}")
 							.text(shortenPathname(ds.getDataSetFiles().getGseaHtmlReportFile())).end().end();
