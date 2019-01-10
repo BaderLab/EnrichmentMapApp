@@ -52,10 +52,12 @@ public class LegacySupport {
 					String tmpPrefix = tmpMap.getParams().getAttributePrefix();
 					tmpPrefix = tmpPrefix.replace("EM", "");
 					tmpPrefix = tmpPrefix.replace("_", "");
-					int tmpNum = Integer.parseInt(tmpPrefix);
-					if(tmpNum > max_prefix) {
-						max_prefix = tmpNum;
-					}
+					try {
+						int tmpNum = Integer.parseInt(tmpPrefix);
+						if(tmpNum > max_prefix) {
+							max_prefix = tmpNum;
+						}
+					} catch(NumberFormatException e) { }
 				}
 			}
 			return "EM" + (max_prefix + 1) + "_";

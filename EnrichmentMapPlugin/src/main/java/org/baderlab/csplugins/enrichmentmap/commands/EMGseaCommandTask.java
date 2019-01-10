@@ -55,11 +55,10 @@ public class EMGseaCommandTask extends AbstractTask {
 	@Tunable(description="combinedconstant ", groups={"User Input","Parameters"}, gravity = 19.0, tooltip="coeffecient between 0 and 1.")
 	public Double combinedconstant ;
 
-	@Tunable(description="Prefix added to all column names. In older versions of EnrichmentMap this was typically 'EM1_'.")
-	public String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
-	
 	
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
+	@Inject private LegacySupport legacySupport;
+	
 	
 	public EMGseaCommandTask() {
 		similaritymetric = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP, EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
@@ -79,9 +78,11 @@ public class EMGseaCommandTask extends AbstractTask {
 		}
 		
 		SimilarityMetric metric = EnrichmentMapParameters.stringToSimilarityMetric(similaritymetric.getSelectedValue());
+		String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
+		String stylePrefix = legacySupport.getNextAttributePrefix();
 		
 		EMCreationParameters creationParams = 
-				new EMCreationParameters(attributePrefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true,
+				new EMCreationParameters(attributePrefix, stylePrefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true,
 						metric, overlap, combinedconstant, EdgeStrategy.AUTOMATIC);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);

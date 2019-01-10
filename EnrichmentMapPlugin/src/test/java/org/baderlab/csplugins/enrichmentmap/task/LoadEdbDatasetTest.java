@@ -43,7 +43,7 @@ public class LoadEdbDatasetTest {
 		double pvalue = 1.0;
 		double qvalue = 1.0;
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("EM1_", null, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 	
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);

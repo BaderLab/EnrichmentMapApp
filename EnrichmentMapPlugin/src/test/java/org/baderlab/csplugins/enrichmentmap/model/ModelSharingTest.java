@@ -1,6 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,7 +44,7 @@ public class ModelSharingTest extends BaseNetworkTest {
 		dataset2files.setEnrichmentFileName1(PATH + "fakeEnrichments.txt");
 		dataset2files.setRankedFile(PATH + "FakeRank2.rnk");
 
-		EMCreationParameters params = new EMCreationParameters("ExpressionSharing_", 0.1, 0.1, NESFilter.ALL,
+		EMCreationParameters params = new EMCreationParameters("ExpressionSharing_", null, 0.1, 0.1, NESFilter.ALL,
 				Optional.empty(), true, SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
 
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();

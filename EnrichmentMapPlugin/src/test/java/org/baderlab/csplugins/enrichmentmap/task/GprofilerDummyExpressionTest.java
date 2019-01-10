@@ -42,7 +42,7 @@ public class GprofilerDummyExpressionTest extends BaseNetworkTest {
 		files.setGMTFileName(PATH + "Supplementary_Table5_hsapiens.pathways.NAME.gmt");
 		files.setEnrichmentFileName1(PATH + "Supplementary_Table4_gprofiler_results.txt");
 
-		EMCreationParameters params = new EMCreationParameters("Gprofiler", 1.0, 0.1, NESFilter.ALL,
+		EMCreationParameters params = new EMCreationParameters("Gprofiler", null, 1.0, 0.1, NESFilter.ALL,
 				Optional.empty(), false, SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
 
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();

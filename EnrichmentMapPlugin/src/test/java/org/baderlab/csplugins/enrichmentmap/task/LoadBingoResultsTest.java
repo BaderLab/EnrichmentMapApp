@@ -42,7 +42,7 @@ public class LoadBingoResultsTest {
 		double qvaule = 0.00000005; // 5.0 X 10-8
 		double similarityCutoff = 0.25;
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("EM1_", null, pvalue, qvaule, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		EMDataSet dataset = em.createDataSet(LegacySupport.DATASET1, Method.Specialized, files);				
@@ -103,7 +103,7 @@ public class LoadBingoResultsTest {
 		double qvaule = 0.00000005; // 5.0 X 10-8
 		double similarityCutoff = 0.25;
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", pvalue, qvaule, NESFilter.ALL, Optional.empty(), true, 
+			new EMCreationParameters("EM1_", null, pvalue, qvaule, NESFilter.ALL, Optional.empty(), true, 
 					SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 		
 		//create an new enrichment Map

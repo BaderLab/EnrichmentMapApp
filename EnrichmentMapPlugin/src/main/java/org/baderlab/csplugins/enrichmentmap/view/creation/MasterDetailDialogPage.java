@@ -59,6 +59,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrat
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
+import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
@@ -86,6 +87,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Inject private Provider<JFrame> jframeProvider;
 	@Inject private FileBrowser fileBrowser;
 	@Inject private PropertyManager propertyManager;
+	@Inject private LegacySupport legacySupport;
 	
 	@Inject private Provider<DetailCommonPanel> commonPanelProvider;
 	@Inject private DetailDataSetPanel.Factory dataSetPanelFactory;
@@ -126,7 +128,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			return;
 		}
 		
-		String prefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
+		String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
+		String stylePrefix = legacySupport.getNextAttributePrefix();
 		
 		SimilarityMetric similarityMetric = cutoffPanel.getSimilarityMetric();
 		double pvalue = cutoffPanel.getPValue();
@@ -140,7 +143,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		EdgeStrategy edgeStrategy = cutoffPanel.getEdgeStrategy();
 		
 		EMCreationParameters params = 
-			new EMCreationParameters(prefix, pvalue, qvalue, nesFilter, minExperiments, filterByExpressions, 
+			new EMCreationParameters(attributePrefix, stylePrefix, pvalue, qvalue, nesFilter, minExperiments, filterByExpressions, 
 					similarityMetric, cutoff, combined, edgeStrategy);
 		
 		params.setNetworkName(networkName);

@@ -83,7 +83,6 @@ public class TableLoadNetworkTest extends BaseNetworkTest {
 		command.tableArgs.nameColumn = NAME;
 		command.tableArgs.genesColumn = GENES;
 		command.tableArgs.descriptionColumn = DESCRIPTION;
-		command.filterArgs.attributePrefix = "EM1_";
 		
 	   	SerialTestTaskManager testTaskManager = new SerialTestTaskManager();
 	   	testTaskManager.ignoreTask(CreateEMViewTask.class);
@@ -96,23 +95,23 @@ public class TableLoadNetworkTest extends BaseNetworkTest {
 	   	
 	   	CyTable nodeTable = network.getDefaultNodeTable();
 	   	
-	   	CyRow row1 = nodeTable.getMatchingRows("EM1_Name", "gs1").iterator().next();
-	   	assertEquals("gs1", row1.get("EM1_Name", String.class));
-		assertEquals((Double)0.001, row1.get("EM1_pvalue (Data Set 1)", Double.class));
-		assertEquals("gs1_d", row1.get("EM1_GS_DESCR", String.class));
-		assertEquals(Arrays.asList("A","B","C"), row1.getList("EM1_Genes", String.class));
+	   	CyRow row1 = nodeTable.getMatchingRows("EnrichmentMap::Name", "gs1").iterator().next();
+	   	assertEquals("gs1", row1.get("EnrichmentMap::Name", String.class));
+		assertEquals((Double)0.001, row1.get("EnrichmentMap::pvalue (Data Set 1)", Double.class));
+		assertEquals("gs1_d", row1.get("EnrichmentMap::GS_DESCR", String.class));
+		assertEquals(Arrays.asList("A","B","C"), row1.getList("EnrichmentMap::Genes", String.class));
 		
-		CyRow row2 = nodeTable.getMatchingRows("EM1_Name", "gs2").iterator().next();
-	   	assertEquals("gs2", row2.get("EM1_Name", String.class));
-		assertEquals((Double)0.001, row2.get("EM1_pvalue (Data Set 1)", Double.class));
-		assertEquals("gs2_d", row2.get("EM1_GS_DESCR", String.class));
-		assertEquals(Arrays.asList("B","C","D"), row2.getList("EM1_Genes", String.class));
+		CyRow row2 = nodeTable.getMatchingRows("EnrichmentMap::Name", "gs2").iterator().next();
+	   	assertEquals("gs2", row2.get("EnrichmentMap::Name", String.class));
+		assertEquals((Double)0.001, row2.get("EnrichmentMap::pvalue (Data Set 1)", Double.class));
+		assertEquals("gs2_d", row2.get("EnrichmentMap::GS_DESCR", String.class));
+		assertEquals(Arrays.asList("B","C","D"), row2.getList("EnrichmentMap::Genes", String.class));
 		
-		CyRow row3 = nodeTable.getMatchingRows("EM1_Name", "gs3").iterator().next();
-	   	assertEquals("gs3", row3.get("EM1_Name", String.class));
-		assertEquals((Double)0.001, row3.get("EM1_pvalue (Data Set 1)", Double.class));
-		assertEquals("gs3_d", row3.get("EM1_GS_DESCR", String.class));
-		assertEquals(Arrays.asList("C","D","E"), row3.getList("EM1_Genes", String.class));
+		CyRow row3 = nodeTable.getMatchingRows("EnrichmentMap::Name", "gs3").iterator().next();
+	   	assertEquals("gs3", row3.get("EnrichmentMap::Name", String.class));
+		assertEquals((Double)0.001, row3.get("EnrichmentMap::pvalue (Data Set 1)", Double.class));
+		assertEquals("gs3_d", row3.get("EnrichmentMap::GS_DESCR", String.class));
+		assertEquals(Arrays.asList("C","D","E"), row3.getList("EnrichmentMap::Genes", String.class));
 	}
 	
 }

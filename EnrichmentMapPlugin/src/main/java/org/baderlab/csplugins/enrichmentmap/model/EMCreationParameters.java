@@ -20,6 +20,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	}
 	
 	private String attributePrefix;
+	private String stylePrefix;
 	
 	// Node filtering (gene-sets)
 	private double pvalue;
@@ -57,6 +58,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 
 	public EMCreationParameters(
 			String attributePrefix, 
+			String stylePrefix,
 			double pvalue,
 			double qvalue,
 			NESFilter nesFilter,
@@ -69,6 +71,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	) { 
 		this.similarityMetric = similarityMetric;
 		this.attributePrefix = attributePrefix;
+		this.stylePrefix = stylePrefix;
 		this.pvalue = pvalue;
 		this.qvalue = qvalue;
 		this.nesFilter = nesFilter;
@@ -90,6 +93,14 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	
 	public String getAttributePrefix() {
 		return attributePrefix;
+	}
+
+	/**
+	 * Before version 3.2 the attributePrefix was also used as the stylePrefix.
+	 * Loading a session created with version 3.1 the stylePrefix will be null.
+	 */
+	public String getStylePrefix() {
+		return (stylePrefix == null) ? attributePrefix : stylePrefix;
 	}
 
 	@Override

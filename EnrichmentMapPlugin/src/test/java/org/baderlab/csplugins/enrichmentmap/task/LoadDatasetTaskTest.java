@@ -42,7 +42,7 @@ public class LoadDatasetTaskTest {
 		files.setEnrichmentFileName2(testGSEAResults2FileName);
 		
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("EM1_", null, 0.1, 0.1, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);

@@ -42,7 +42,7 @@ public class LoadDavidResultTest {
 		double pvalue = 0.005;
 		double qvalue = 0.005; // 5.0 X 10-3
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("EM1_", null, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 	
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
@@ -105,7 +105,7 @@ public class LoadDavidResultTest {
 		double pvalue = 0.005;
 		double qvalue = 0.005; // 5.0 X 10-3
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", pvalue, qvalue, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("EM1_", null, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 		
 		//create an new enrichment Map
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);

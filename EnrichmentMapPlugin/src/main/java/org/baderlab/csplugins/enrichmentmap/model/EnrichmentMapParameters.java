@@ -230,7 +230,7 @@ public class EnrichmentMapParameters {
 	
 	public EMCreationParameters getCreationParameters() {
 		SimilarityMetric similarityMetric = stringToSimilarityMetric(getSimilarityMetric());
-		EMCreationParameters params = new EMCreationParameters(getAttributePrefix(), 
+		EMCreationParameters params = new EMCreationParameters(getAttributePrefix(), null,
 				getPvalue(), getQvalue(), NESFilter.ALL, Optional.empty(), true, similarityMetric, getSimilarityCutOff(), getCombinedConstant(), EdgeStrategy.AUTOMATIC);
 		params.setEnrichmentEdgeType(enrichment_edge_type);
 		params.setFDR(fdr);

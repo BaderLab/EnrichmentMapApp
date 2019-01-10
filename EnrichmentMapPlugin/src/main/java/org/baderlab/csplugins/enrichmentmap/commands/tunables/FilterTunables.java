@@ -18,6 +18,8 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
+import com.google.inject.Inject;
+
 
 /**
  * Use with the @ContainsTunables annotation.
@@ -55,8 +57,8 @@ public class FilterTunables {
 	@Tunable
 	public String networkName = null;
 	
-	@Tunable(description="Prefix added to all column names. In older versions of EnrichmentMap this was typically 'EM1_'.")
-	public String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
+	
+	@Inject private LegacySupport legacySupport;
 	
 	
 	public FilterTunables() {
@@ -71,7 +73,10 @@ public class FilterTunables {
 
 	
 	public EMCreationParameters getCreationParameters() throws IllegalArgumentException {
-		return new EMCreationParameters(attributePrefix, pvalue, qvalue, getNesFilter(), 
+		String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
+		String stylePrefix = legacySupport.getNextAttributePrefix();
+		
+		return new EMCreationParameters(attributePrefix, stylePrefix, pvalue, qvalue, getNesFilter(), 
 					Optional.ofNullable(minExperiments), filterByExpressions,
 					getSimilarityMetric(), similaritycutoff, combinedConstant, 
 					getEdgeStrategy());

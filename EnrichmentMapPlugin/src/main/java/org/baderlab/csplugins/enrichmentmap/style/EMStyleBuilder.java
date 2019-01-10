@@ -180,7 +180,7 @@ public class EMStyleBuilder {
 	@Inject private CyEventHelper eventHelper;
 	
 	public static String getStyleName(EnrichmentMap map) {
-		String prefix = map.getParams().getAttributePrefix();
+		String prefix = map.getParams().getStylePrefix();
 		return prefix + DEFAULT_NAME_SUFFIX;
 	}
 	

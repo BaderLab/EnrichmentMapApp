@@ -1,6 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 import java.util.Optional;
@@ -36,7 +39,7 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
 		
 		EMCreationParameters params = 
-			new EMCreationParameters("ModelSerializer_", 0.1, 0.1, NESFilter.ALL, Optional.empty(), true, 
+			new EMCreationParameters("ModelSerializer_", null, 0.1, 0.1, NESFilter.ALL, Optional.empty(), true, 
 					SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
 		
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
