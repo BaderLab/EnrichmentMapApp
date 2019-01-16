@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +68,12 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		taskMonitor.setStatusMessage("");
 	}
 	
+	
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, Long.class);
+	}
+	
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
 		if(String.class.equals(type)) {
@@ -76,6 +83,7 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		}
 		return null;
 	}
+	
 	
 	private long createEMNetwork() {
 		// Create the CyNetwork

@@ -1,24 +1,29 @@
 package org.baderlab.csplugins.enrichmentmap.commands;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.FilterTunables;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
+import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.Tunable;
 
 import com.google.inject.Inject;
 
-public class ResolverCommandTask extends AbstractTask {
+public class ResolverCommandTask extends AbstractTask implements ObservableTask {
 
 	@Tunable(required=true)
 	public File rootFolder;
@@ -37,6 +42,8 @@ public class ResolverCommandTask extends AbstractTask {
 	@Inject private SynchronousTaskManager<?> taskManager;
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	
+	
+	private Long[] result = { null };
 	
 	
 	@Override
@@ -90,10 +97,36 @@ public class ResolverCommandTask extends AbstractTask {
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
-		taskManager.execute(tasks);
+		
+		taskManager.execute(tasks, new TaskObserver() {
+			@Override 
+			public void taskFinished(ObservableTask task) {
+				if(task instanceof CreateEMNetworkTask) {
+					CreateEMNetworkTask networkTask = (CreateEMNetworkTask) task;
+					result[0] = networkTask.getResults(Long.class);
+				}
+			}
+			@Override 
+			public void allFinished(FinishStatus finishStatus) { }
+		});
 		
 		tm.setStatusMessage("Done.");
 	}
 	
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, Long.class);
+	}
+	
+	@Override
+	public <R> R getResults(Class<? extends R> type) {
+		if(String.class.equals(type)) {
+			return type.cast(String.valueOf(result[0]));
+		}
+		if(Long.class.equals(type)) {
+			return type.cast(result[0]);
+		}
+		return null;
+	}
 	
 }
