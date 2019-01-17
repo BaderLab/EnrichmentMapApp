@@ -57,6 +57,9 @@ public class FilterTunables {
 	@Tunable
 	public String networkName = null;
 	
+	// Not a tunable, for use by integration tests
+	public String attributePrefix = null;
+	
 	
 	@Inject private LegacySupport legacySupport;
 	
@@ -73,10 +76,10 @@ public class FilterTunables {
 
 	
 	public EMCreationParameters getCreationParameters() throws IllegalArgumentException {
-		String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
+		String attPrefix = this.attributePrefix == null ? EMStyleBuilder.Columns.NAMESPACE_PREFIX : attributePrefix;
 		String stylePrefix = legacySupport.getNextAttributePrefix();
 		
-		return new EMCreationParameters(attributePrefix, stylePrefix, pvalue, qvalue, getNesFilter(), 
+		return new EMCreationParameters(attPrefix, stylePrefix, pvalue, qvalue, getNesFilter(), 
 					Optional.ofNullable(minExperiments), filterByExpressions,
 					getSimilarityMetric(), similaritycutoff, combinedConstant, 
 					getEdgeStrategy());

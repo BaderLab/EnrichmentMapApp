@@ -65,7 +65,7 @@ public class CreateEnrichmentMapTaskTest extends BaseIntegrationTest {
 		
 		PropertyManager pm = new PropertyManager();
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", pm.getValue(PropertyManager.P_VALUE), pm.getValue(PropertyManager.Q_VALUE), 
+			new EMCreationParameters("EM1_", "EM1_", pm.getValue(PropertyManager.P_VALUE), pm.getValue(PropertyManager.Q_VALUE), 
 									NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, 
 									LegacySupport.jaccardCutOff_default, LegacySupport.combinedConstant_default, EdgeStrategy.COMPOUND);
 		
