@@ -4,6 +4,7 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
 import org.cytoscape.command.CommandExecutorTaskFactory;
@@ -49,12 +50,12 @@ public class QueryGeneManiaTask extends AbstractTask {
 	@Inject private CommandExecutorTaskFactory commandExecutorTaskFactory;
 	
 	public static interface Factory {
-		QueryGeneManiaTask create(List<String> geneList);
+		QueryGeneManiaTask create(List<String> geneList, Set<String> leadingEdge);
 	}
 	
 	@Inject
-	public QueryGeneManiaTask(@Assisted List<String> geneList) {
-		this.geneList = new GeneListTunable(geneList);
+	public QueryGeneManiaTask(@Assisted List<String> geneList, @Assisted Set<String> leadingEdge) {
+		this.geneList = new GeneListTunable(geneList, leadingEdge);
 		this.organisms = new ListSingleSelection<>();
 		this.weightingMethods = new ListSingleSelection<>(GMWeightingMethod.values());
 		this.weightingMethods.setSelectedValue(weightingMethods.getPossibleValues().get(0));
@@ -87,7 +88,6 @@ public class QueryGeneManiaTask extends AbstractTask {
 			tm.setStatusMessage("Querying GeneMANIA...");
 			
 			String query = String.join("|", geneList.getSelectedGenes());
-			System.out.println(query);
 			
 			Map<String, Object> args = new HashMap<>();
 			args.put("organism", "" + organisms.getSelectedValue().getTaxonomyId());
@@ -121,7 +121,7 @@ public class QueryGeneManiaTask extends AbstractTask {
 					// Never called by Cytoscape...
 				}
 			});
-			getTaskIterator().append(ti);
+			insertTasksAfterCurrentTask(ti);
 			
 			// Save this as the default organism for next time
 			lastTaxonomyId = organisms.getSelectedValue().getTaxonomyId();

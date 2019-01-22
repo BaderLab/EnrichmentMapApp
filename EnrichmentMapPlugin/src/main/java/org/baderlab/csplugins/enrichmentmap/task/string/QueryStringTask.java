@@ -3,7 +3,9 @@ package org.baderlab.csplugins.enrichmentmap.task.string;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.AbstractTask;
@@ -29,6 +31,9 @@ public class QueryStringTask extends AbstractTask {
 	public static final String STRING_SPECIES_COMMAND = "list species";
 	public static final String STRING_SEARCH_COMMAND = "protein query";
 	
+	@Tunable(description = "Genes:")
+	public GeneListTunable geneList;
+	
 	@Tunable(description = "Species:")
 	public ListSingleSelection<STRSpecies> organisms;
 	
@@ -38,7 +43,6 @@ public class QueryStringTask extends AbstractTask {
 	@Tunable(description = "Max Additional Interactors:", params = "slider=true")
 	public BoundedInteger limit = new BoundedInteger(0, 0, 100, false, false);
 	
-	private final String query;
 	private Long result;
 	
 	private static long lastTaxonomyId = 9606; // H.sapiens
@@ -46,13 +50,13 @@ public class QueryStringTask extends AbstractTask {
 	@Inject private CommandExecutorTaskFactory commandExecutorTaskFactory;
 	
 	public static interface Factory {
-		QueryStringTask create(List<String> geneList);
+		QueryStringTask create(List<String> geneList, Set<String> leadingEdge);
 	}
 	
 	@Inject
-	public QueryStringTask(@Assisted List<String> geneList) {
-		query = String.join(",", geneList);
-		organisms = new ListSingleSelection<>();
+	public QueryStringTask(@Assisted List<String> geneList, @Assisted Set<String> leadingEdge) {		
+		this.geneList = new GeneListTunable(geneList, leadingEdge);
+		this.organisms = new ListSingleSelection<>();
 	}
 	
 	@ProvidesTitle
@@ -80,6 +84,8 @@ public class QueryStringTask extends AbstractTask {
 		if (organisms.getSelectedValue() != null) {
 			tm.setTitle("EnrichmentMap");
 			tm.setStatusMessage("Querying STRING...");
+			
+			String query = String.join(",", geneList.getSelectedGenes());
 			
 			Map<String, Object> args = new HashMap<>();
 			args.put("taxonID", "" + organisms.getSelectedValue().getTaxonomyId());
@@ -113,7 +119,7 @@ public class QueryStringTask extends AbstractTask {
 					// Never called by Cytoscape...
 				}
 			});
-			getTaskIterator().append(ti);
+			insertTasksAfterCurrentTask(ti);
 			
 			// Save this as the default organism for next time
 			lastTaxonomyId = organisms.getSelectedValue().getTaxonomyId();

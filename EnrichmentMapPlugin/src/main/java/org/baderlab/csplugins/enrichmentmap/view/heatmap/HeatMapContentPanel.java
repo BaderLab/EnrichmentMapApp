@@ -13,6 +13,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -330,9 +331,11 @@ public class HeatMapContentPanel extends JPanel {
 	}
 	
 	public List<String> getGenes() {
-		HeatMapTableModel model = (HeatMapTableModel) getTable().getModel();
-		
-		return model.getGenes();
+		return ((HeatMapTableModel) getTable().getModel()).getGenes();
+	}
+	
+	public Set<String> getLeadingEdgeGenes() {
+		return ((HeatMapTableModel) getTable().getModel()).getLeadingEdgeGenes();
 	}
 	
 	public List<String> getUnionGenes() {

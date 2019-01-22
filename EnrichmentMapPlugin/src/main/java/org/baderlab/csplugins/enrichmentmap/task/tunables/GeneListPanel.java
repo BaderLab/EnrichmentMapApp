@@ -3,11 +3,12 @@ package org.baderlab.csplugins.enrichmentmap.task.tunables;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
-import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.swing.GroupLayout;
@@ -20,19 +21,25 @@ import javax.swing.event.ListDataListener;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxList;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListModel;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
-public class GeneListPanel<T> extends JPanel {
+public class GeneListPanel extends JPanel {
 
-	private CheckboxList<T> checkboxList;
-	private CheckboxListModel<T> checkboxListModel;
+	private CheckboxList<String> checkboxList;
+	private CheckboxListModel<String> checkboxListModel;
+	
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
+	private JButton selectEdgeButton;
 	
-	
-	public GeneListPanel() {
+	public GeneListPanel(List<String> genes, Set<String> leadingEdge) {
 		checkboxListModel = new CheckboxListModel<>();
+		genes.stream().sorted().forEach(gene -> {
+			checkboxListModel.addElement(new CheckboxData<>(gene, gene, true));
+		});
+		
 		checkboxList = new CheckboxList<>(checkboxListModel);
 		
 		JScrollPane scrollPane = new JScrollPane();
@@ -40,27 +47,16 @@ public class GeneListPanel<T> extends JPanel {
 		
 		selectAllButton  = new JButton("Select All");
 		selectNoneButton = new JButton("Select None");
+		selectEdgeButton = new JButton("Select Leading Edge");
 		
-		selectAllButton.addActionListener(e -> {
-			List<CheckboxData<T>> oldValue = getSelectedData();
-			checkboxListModel.forEach(cb -> cb.setSelected(true));
-			checkboxList.invalidate();
-			checkboxList.repaint();
-			updateSelectionButtons();
-			firePropertyChange("selectedData", oldValue, getSelectedData());
-		});
-		selectNoneButton.addActionListener(e -> {
-			List<CheckboxData<T>> oldValue = getSelectedData();
-			checkboxListModel.forEach(cb -> cb.setSelected(false));
-			checkboxList.invalidate();
-			checkboxList.repaint();
-			updateSelectionButtons();
-			firePropertyChange("selectedData", oldValue, Collections.emptyList());
-		});
-		
+		selectAllButton .addActionListener(selectionListener(cb -> cb.setSelected(true)));
+		selectNoneButton.addActionListener(selectionListener(cb -> cb.setSelected(false)));
+		selectEdgeButton.addActionListener(selectionListener(cb -> cb.setSelected(leadingEdge.contains(cb.getData()))));
 		
 		selectAllButton.setEnabled(false);
 		selectNoneButton.setEnabled(false);
+		selectEdgeButton.setEnabled(true);
+		selectEdgeButton.setVisible(!leadingEdge.isEmpty());
 		
 		checkboxListModel.addListDataListener(new ListDataListener() {
 			@Override
@@ -84,14 +80,8 @@ public class GeneListPanel<T> extends JPanel {
 			}
 		});
 		
-		if (isAquaLAF()) {
-			selectAllButton.putClientProperty("JButton.buttonType", "gradient");
-			selectAllButton.putClientProperty("JComponent.sizeVariant", "small");
-			selectNoneButton.putClientProperty("JButton.buttonType", "gradient");
-			selectNoneButton.putClientProperty("JComponent.sizeVariant", "small");
-		}
-		
-		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton);
+		SwingUtil.makeSmall(selectAllButton, selectEdgeButton, selectNoneButton);		
+		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton, selectEdgeButton);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -103,6 +93,7 @@ public class GeneListPanel<T> extends JPanel {
 				.addGroup(layout.createParallelGroup(CENTER, true)
 						.addComponent(selectAllButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(selectNoneButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectEdgeButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    		);
    		layout.setVerticalGroup(layout.createParallelGroup()
@@ -110,31 +101,46 @@ public class GeneListPanel<T> extends JPanel {
    				.addGroup(layout.createSequentialGroup()
 						.addComponent(selectAllButton)
 						.addComponent(selectNoneButton)
+						.addGap(20)
+						.addComponent(selectEdgeButton)
    				)
    		);
 		
 		if (LookAndFeelUtil.isAquaLAF())
 			setOpaque(false);
+		
+		updateSelectionButtons();
 	}
 	
 	
+	private ActionListener selectionListener(Consumer<CheckboxData<String>> action) {
+		return e -> {
+			List<CheckboxData<String>> oldValue = getSelectedData();
+			checkboxListModel.forEach(action);
+			checkboxList.invalidate();
+			checkboxList.repaint();
+			updateSelectionButtons();
+			firePropertyChange("selectedData", oldValue, getSelectedData());
+		};
+	}
+	
 	private void updateSelectionButtons() {
 		boolean enabled = isEnabled() && !checkboxListModel.isEmpty();
-		List<CheckboxData<T>> selectedData = getSelectedData();
+		List<CheckboxData<String>> selectedData = getSelectedData();
 		
 		selectAllButton.setEnabled(enabled && selectedData.size() < checkboxListModel.size());
 		selectNoneButton.setEnabled(enabled && selectedData.size() > 0);
 	}
 	
-	public CheckboxList<T> getCheckboxList() {
+	public CheckboxList<String> getCheckboxList() {
 		return checkboxList;
 	}
 	
-	public CheckboxListModel<T> getModel() {
+	public CheckboxListModel<String> getModel() {
 		return checkboxListModel;
 	}
 	
-	public List<T> getSelectedDataItems() {
+	public List<String> getSelectedDataItems() {
 		return checkboxListModel.stream()
 				.filter(CheckboxData::isSelected)
 				.map(CheckboxData::getData)
@@ -148,12 +154,12 @@ public class GeneListPanel<T> extends JPanel {
 		updateSelectionButtons();
 	}
 	
-	public List<CheckboxData<T>> getSelectedData() {
-		List<CheckboxData<T>> list = new ArrayList<>();
+	public List<CheckboxData<String>> getSelectedData() {
+		List<CheckboxData<String>> list = new ArrayList<>();
 		int size = getModel().getSize();
 		
 		for (int i = 0; i < size; i++) {
-			CheckboxData<T> data = (CheckboxData<T>) getModel().getElementAt(i);
+			CheckboxData<String> data = (CheckboxData<String>) getModel().getElementAt(i);
 			
 			if (data.isSelected())
 				list.add(data);

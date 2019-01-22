@@ -2,25 +2,27 @@ package org.baderlab.csplugins.enrichmentmap.task.tunables;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class GeneListTunable {
 	
 	private List<String> genes;
 	private List<String> selectedGenes;
-	private List<String> leadingEdgeGenes;
+	private Set<String> leadingEdgeGenes;
 	
 	
-	public GeneListTunable(List<String> genes) {
-		this.genes = genes;
+	public GeneListTunable(List<String> genes, Set<String> leadingEdge) {
+		this.genes = Objects.requireNonNull(genes);
+		this.leadingEdgeGenes = leadingEdge == null ? Collections.emptySet() : leadingEdge;
 		this.selectedGenes = genes;
-		this.leadingEdgeGenes = Collections.emptyList();
 	}
 	
-	public void setLeadingEdgeGenes(List<String> genes) {
+	public void setLeadingEdgeGenes(Set<String> genes) {
 		this.leadingEdgeGenes = genes;
 	}
 	
-	public List<String> getLeadingEdgeGenes() {
+	public Set<String> getLeadingEdgeGenes() {
 		return leadingEdgeGenes;
 	}
 	

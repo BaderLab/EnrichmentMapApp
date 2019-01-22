@@ -3,10 +3,12 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -226,10 +228,8 @@ public class HeatMapTableModel extends AbstractTableModel {
 		// Use empty RankValue objects for missing genes instead of nulls so that they sort last (see RankValue.compareTo()).
 		if (ranking == null)
 			return RankValue.EMPTY;
-		
 		String gene = getGene(row);
 		Integer geneID = map != null && gene != null ? map.getHashFromGene(gene) : null;
-		
 		return geneID != null ? ranking.getOrDefault(geneID, RankValue.EMPTY) : RankValue.EMPTY;
 	}
 	
@@ -247,8 +247,17 @@ public class HeatMapTableModel extends AbstractTableModel {
 	public boolean hasSignificantRanks() {
 		if (ranking == null)
 			return false;
-		
 		return ranking.values().stream().anyMatch(RankValue::isSignificant);
+	}
+	
+	public Set<String> getLeadingEdgeGenes() {
+		Set<String> leadingEdge = new HashSet<>();
+		for(int row = 0; row < getRowCount(); row++) {
+			if(getRankValue(row).isSignificant()) {
+				leadingEdge.add(getGene(row));
+			}
+		}
+		return leadingEdge;
 	}
 	
 	public Optional<String> getPhenotype(int col) {
@@ -264,11 +273,9 @@ public class HeatMapTableModel extends AbstractTableModel {
 	private String getDescription(int geneID) {
 		for (EMDataSet dataset : datasets) {
 			GeneExpression row = getGeneExpression(dataset, geneID);
-			
 			if (row != null)
 				return row.getDescription();
 		}
-		
 		return null;
 	}
 	
@@ -276,7 +283,6 @@ public class HeatMapTableModel extends AbstractTableModel {
 		GeneExpressionMatrix matrix = dataset.getExpressionSets();
 		Map<Integer,GeneExpression> expressions = matrix.getExpressionMatrix();
 		GeneExpression row = expressions.get(geneID);
-		
 		return row;
 	}
 }

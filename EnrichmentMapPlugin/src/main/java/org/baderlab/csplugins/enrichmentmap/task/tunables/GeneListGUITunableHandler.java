@@ -3,13 +3,12 @@ package org.baderlab.csplugins.enrichmentmap.task.tunables;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.GroupLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
-import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxList;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -17,7 +16,7 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
 public class GeneListGUITunableHandler extends AbstractGUITunableHandler {
 
 	private JPanel panel;
-	private CheckboxList<String> checkBoxList;
+	private GeneListPanel checkboxPanel;
 	
 	public GeneListGUITunableHandler(Field field, Object instance, Tunable tunable) {
 		super(field, instance, tunable);
@@ -44,10 +43,10 @@ public class GeneListGUITunableHandler extends AbstractGUITunableHandler {
 	private JPanel createGeneListPanel() {
 		JLabel title = new JLabel(getDescription());
 		
-		GeneListPanel<String> checkboxPanel = new GeneListPanel<>();
-		for(String gene : getGeneListTunable().getGenes()) {
-			checkboxPanel.getModel().addElement(new CheckboxData<>(gene));
-		}
+		List<String> genes = getGeneListTunable().getGenes();
+		Set<String> leadingEdgeGenes = getGeneListTunable().getLeadingEdgeGenes();
+		
+		checkboxPanel = new GeneListPanel(genes, leadingEdgeGenes);
 		
 		JPanel panel = new JPanel();
 		
@@ -82,7 +81,7 @@ public class GeneListGUITunableHandler extends AbstractGUITunableHandler {
 
 	@Override
 	public void handle() {
-		List<String> selectedGenes = checkBoxList.getSelectedData();
+		List<String> selectedGenes = checkboxPanel.getSelectedDataItems();
 		getGeneListTunable().setSelectedGenes(selectedGenes);
 	}
 

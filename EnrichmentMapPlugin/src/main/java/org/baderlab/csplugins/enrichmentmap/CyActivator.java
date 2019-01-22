@@ -27,6 +27,8 @@ import org.baderlab.csplugins.enrichmentmap.rest.EnrichmentMapResource;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChartFactory;
+import org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaNodeViewTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.string.QueryStringNodeViewTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListGUITunableHandler;
 import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
 import org.baderlab.csplugins.enrichmentmap.view.EMColumnPresentation;
@@ -95,11 +97,9 @@ public class CyActivator extends AbstractCyActivator {
 			registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class));
 			
 			// context menu actions in network view
-			Properties pathwayCommonsProps = new Properties();
-			pathwayCommonsProps.setProperty(IN_MENU_BAR, "false");
-			pathwayCommonsProps.setProperty(PREFERRED_MENU, APPS_MENU);
-			pathwayCommonsProps.setProperty(TITLE, "EnrichmentMap - Open Pathway Commons");
-			registerAllServices(bc, injector.getInstance(OpenPathwayCommonsTaskFactory.class), pathwayCommonsProps);
+			registerNodeViewMenu(bc, "Pathway Commons", OpenPathwayCommonsTaskFactory.class);
+			registerNodeViewMenu(bc, "GeneMANIA",       QueryGeneManiaNodeViewTaskFactory.class);
+			registerNodeViewMenu(bc, "STRING",          QueryStringNodeViewTaskFactory.class);
 			
 			// chart listener
 			ChartFactoryManager chartFactoryManager = injector.getInstance(ChartFactoryManager.class);
@@ -134,6 +134,13 @@ public class CyActivator extends AbstractCyActivator {
 		Em21Handler.removeVersion21(bc, injector.getInstance(CyApplicationConfiguration.class));
 	}
 	
+	private void registerNodeViewMenu(BundleContext bc, String text, Class<?> klass) {
+		Properties props = new Properties();
+		props.setProperty(IN_MENU_BAR, "false");
+		props.setProperty(PREFERRED_MENU, APPS_MENU);
+		props.setProperty(TITLE, "EnrichmentMap - Show in " + text);
+		registerAllServices(bc, injector.getInstance(klass), props);
+	}
 	
 	private void initializeCommands(BundleContext bc) {
 		registerCommand(bc, "build",        injector.getInstance(Key.get(TaskFactory.class, BuildCommand.class)));

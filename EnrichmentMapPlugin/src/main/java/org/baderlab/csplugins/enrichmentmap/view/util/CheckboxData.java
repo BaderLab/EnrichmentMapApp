@@ -12,10 +12,6 @@ public class CheckboxData<T> {
 	private final String display;
 	private final T data;
 
-	public CheckboxData(T data) {
-		this(String.valueOf(data), data);
-	}
-	
 	public CheckboxData(String display, T data) {
 		this(display, data, false);
 	}

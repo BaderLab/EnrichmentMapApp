@@ -1,14 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
-import static org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GENEMANIA_NAMESPACE;
-import static org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GENEMANIA_ORGANISMS_COMMAND;
-import static org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask.GENEMANIA_SEARCH_COMMAND;
-import static org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask.STRING_NAMESPACE;
-import static org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask.STRING_SPECIES_COMMAND;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
 import java.awt.event.ActionListener;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,9 +12,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTask;
@@ -35,26 +26,20 @@ import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
-import org.baderlab.csplugins.enrichmentmap.task.genemania.GMOrganismsResult;
-import org.baderlab.csplugins.enrichmentmap.task.genemania.GMSearchResult;
-import org.baderlab.csplugins.enrichmentmap.task.genemania.QueryGeneManiaTask;
-import org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask;
-import org.baderlab.csplugins.enrichmentmap.task.string.STRSpecies;
+import org.baderlab.csplugins.enrichmentmap.task.genemania.GeneManiaMediator;
+import org.baderlab.csplugins.enrichmentmap.task.string.StringAppMediator;
 import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapCellRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel;
-import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.command.AvailableCommands;
-import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -65,15 +50,9 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.swing.DialogTaskManager;
 
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -92,23 +71,20 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	private ActionListener showValueActionListener;
 	
 	@Inject private EnrichmentMapManager emManager;
+	@Inject private GeneManiaMediator geneManiaMediator;
+	@Inject private StringAppMediator stringAppMediator;
 	@Inject private PropertyManager propertyManager;
 	@Inject private ClusterRankingOption.Factory clusterRankOptionFactory;
 	@Inject private AddRanksDialog.Factory ranksDialogFactory;
 	@Inject private ExportTXTAction.Factory txtActionFactory;
 	@Inject private ExportPDFAction.Factory pdfActionFactory;
-	@Inject private QueryGeneManiaTask.Factory queryGeneManiaTaskFactory;
-	@Inject private QueryStringTask.Factory queryStringTaskFactory;
 	@Inject private OpenPathwayCommonsTask.Factory pathwayCommonsFactory;
 	
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private Provider<CySwingApplication> swingApplicationProvider;
 	@Inject private CyApplicationManager applicationManager;
-	@Inject private AvailableCommands availableCommands;
-	@Inject private CommandExecutorTaskFactory commandExecutorTaskFactory;
 	@Inject private DialogTaskManager taskManager;
-	@Inject private OpenBrowser openBrowser;
 	
 	@Inject private HeatMapPanel heatMapPanel;
 	@Inject private Provider<HeatMapContentPanel> contentPanelProvider;
@@ -496,185 +472,21 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		return EMStyleBuilder.Columns.NODE_GENES.get(row, prefix, null);
 	}
 	
-	private void runGeneMANIA() {
-		// Show message to user if genemania not installed
-		List<String> commands = availableCommands.getCommands(GENEMANIA_NAMESPACE);
-		
-		if (commands == null || !commands.contains(GENEMANIA_SEARCH_COMMAND)) {
-			if (JOptionPane.showConfirmDialog(
-					SwingUtilities.getWindowAncestor(getContentPanel()),
-					"This action requires a version of the GeneMANIA app that is not installed.\n" +
-					"Would you like to install or update the GeneMANIA app now?",
-					"Cannot Find GeneMANIA App",
-					JOptionPane.YES_NO_OPTION
-				) == JOptionPane.YES_OPTION) {
-				openBrowser.openURL("http://apps.cytoscape.org/apps/genemania");
-			}
-			
-			return;
-		}
-		
-		EnrichmentMap map = getContentPanel().getEnrichmentMap();
-		QueryGeneManiaTask queryTask = queryGeneManiaTaskFactory.create(getContentPanel().getGenes());
-		
-		// Get list of organisms from GeneMANIA
-		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
-				GENEMANIA_NAMESPACE, GENEMANIA_ORGANISMS_COMMAND, Collections.emptyMap(), new TaskObserver() {
-					
-					@Override
-					@SuppressWarnings("serial")
-					public void taskFinished(ObservableTask task) {
-						if (task instanceof ObservableTask) {
-							if (((ObservableTask) task).getResultClasses().contains(JSONResult.class)) {
-								JSONResult json = ((ObservableTask) task).getResults(JSONResult.class);
-								
-								if (json != null && json.getJSON() != null) {
-									Gson gson = new Gson();
-									Type type = new TypeToken<GMOrganismsResult>(){}.getType();
-									GMOrganismsResult res = gson.fromJson(json.getJSON(), type);
-									
-									if (res != null && res.getOrganisms() != null && !res.getOrganisms().isEmpty())
-										queryTask.updatetOrganisms(res.getOrganisms());
-									else
-										throw new RuntimeException("Unable to retrieve available organisms from GeneMANIA.");
-								}
-							}
-						}
-					}
-					
-					@Override
-					public void allFinished(FinishStatus finishStatus) {
-						// Never called by Cytoscape...
-					}
-				});
-		ti.append(queryTask);
-		
-		taskManager.execute(ti, new TaskObserver() {
-			@Override
-			public void taskFinished(ObservableTask task) {
-				// Never called...
-			}
-			@Override
-			public void allFinished(FinishStatus finishStatus) {
-				if (finishStatus == FinishStatus.getSucceeded())
-					onGeneManiaQueryFinished(queryTask.getResult(), map);
-			}
-		});
-	}
 	
-	private void onGeneManiaQueryFinished(GMSearchResult res, EnrichmentMap map) {
-		CyNetwork net = null;
-		
-		if (res != null && res.getNetwork() != null && res.getGenes() != null
-				&& !res.getGenes().isEmpty())
-			net = networkManager.getNetwork(res.getNetwork());
-		
-		if (net == null) {
-			invokeOnEDT(() -> {
-				JOptionPane.showMessageDialog(
-						SwingUtilities.getWindowAncestor(getContentPanel()),
-						"The GeneMANIA search returned no results.",
-						"No Results",
-						JOptionPane.INFORMATION_MESSAGE
-				);
-			});
-		} else {
-			// Update the model
-			map.addAssociatedNetworkID(net.getSUID());
-			emManager.addAssociatedAppAttributes(net, map, AssociatedApp.GENEMANIA);
-//	TODO	
-//			// Modify GeneMANIA's style
-//			Collection<CyNetworkView> netViewList = netViewManager.getNetworkViews(net);
-//			
-//			for (CyNetworkView netView : netViewList)
-//				updateGeneManiaStyle(netView);
-		}
+	private void runGeneMANIA() {
+		EnrichmentMap map = getContentPanel().getEnrichmentMap();
+		List<String> genes = getContentPanel().getGenes();
+		Set<String> leadingEdgeGenes = getContentPanel().getLeadingEdgeGenes();
+		geneManiaMediator.runGeneMANIA(map, genes, leadingEdgeGenes);
 	}
 	
 	private void runString() {
-		// Show message to user if STRING App not installed
-		List<String> commands = availableCommands.getCommands(STRING_NAMESPACE);
-		
-		if (commands == null || !commands.contains(STRING_SPECIES_COMMAND)) {
-			if (JOptionPane.showConfirmDialog(
-					SwingUtilities.getWindowAncestor(getContentPanel()),
-					"This action requires a version of the STRING app that is not installed.\n" +
-					"Would you like to install or update the STRING app now?",
-					"Cannot Find STRING App",
-					JOptionPane.YES_NO_OPTION
-				) == JOptionPane.YES_OPTION) {
-				openBrowser.openURL("http://apps.cytoscape.org/apps/stringapp");
-			}
-			
-			return;
-		}
-		
 		EnrichmentMap map = getContentPanel().getEnrichmentMap();
-		QueryStringTask queryTask = queryStringTaskFactory.create(getContentPanel().getGenes());
-		
-		// Get list of organisms from STRING App
-		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
-				STRING_NAMESPACE, STRING_SPECIES_COMMAND, Collections.emptyMap(), new TaskObserver() {
-					
-					@Override
-					@SuppressWarnings("serial")
-					public void taskFinished(ObservableTask task) {
-						if (task instanceof ObservableTask) {
-							if (((ObservableTask) task).getResultClasses().contains(JSONResult.class)) {
-								JSONResult json = ((ObservableTask) task).getResults(JSONResult.class);
-								
-								if (json != null && json.getJSON() != null) {
-									Gson gson = new Gson();
-									Type type = new TypeToken<ArrayList<STRSpecies>>(){}.getType();
-									List<STRSpecies> organisms = gson.fromJson(json.getJSON(), type);
-									
-									if (organisms != null && !organisms.isEmpty())
-										queryTask.updatetOrganisms(organisms);
-									else
-										throw new RuntimeException("Unable to retrieve available species from STRING App.");
-								}
-							}
-						}
-					}
-					
-					@Override
-					public void allFinished(FinishStatus finishStatus) {
-						// Never called by Cytoscape...
-					}
-				});
-		ti.append(queryTask);
-		
-		taskManager.execute(ti, new TaskObserver() {
-			@Override
-			public void taskFinished(ObservableTask task) {
-				// Never called...
-			}
-			@Override
-			public void allFinished(FinishStatus finishStatus) {
-				if (finishStatus == FinishStatus.getSucceeded())
-					onStringQueryFinished(queryTask.getResult(), map);
-			}
-		});
+		List<String> genes = getContentPanel().getGenes();
+		Set<String> leadingEdgeGenes = getContentPanel().getLeadingEdgeGenes();
+		stringAppMediator.runString(map, genes, leadingEdgeGenes);
 	}
 	
-	private void onStringQueryFinished(Long netId, EnrichmentMap map) {
-		CyNetwork net = netId != null ? networkManager.getNetwork(netId) : null;
-		
-		if (net == null) {
-			invokeOnEDT(() -> {
-				JOptionPane.showMessageDialog(
-						SwingUtilities.getWindowAncestor(getContentPanel()),
-						"The STRING protein query returned no results.",
-						"No Results",
-						JOptionPane.INFORMATION_MESSAGE
-				);
-			});
-		} else {
-			// Update the model
-			map.addAssociatedNetworkID(net.getSUID());
-			emManager.addAssociatedAppAttributes(net, map, AssociatedApp.STRING);
-		}
-	}
 	
 	private void runPathwayCommons() {
 		long uuid = getEnrichmentMap().getNetworkID();
