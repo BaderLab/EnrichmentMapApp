@@ -27,6 +27,8 @@ import org.baderlab.csplugins.enrichmentmap.rest.EnrichmentMapResource;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChartFactory;
+import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListGUITunableHandler;
+import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
 import org.baderlab.csplugins.enrichmentmap.view.EMColumnPresentation;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
@@ -40,6 +42,8 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.swing.GUITunableHandlerFactory;
+import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
 import org.ops4j.peaberry.osgi.OSGiModule;
 import org.osgi.framework.BundleContext;
 
@@ -117,6 +121,11 @@ public class CyActivator extends AbstractCyActivator {
 			Properties colProps = new Properties();
 			colProps.put(CyColumnPresentation.NAMESPACE, EMStyleBuilder.Columns.NAMESPACE);
 			registerService(bc, new EMColumnPresentation(), CyColumnPresentation.class, colProps);
+			
+			// gene list GUI tunable handler
+			SimpleGUITunableHandlerFactory<GeneListGUITunableHandler> geneListGuiHandler 
+				= new SimpleGUITunableHandlerFactory<>(GeneListGUITunableHandler.class, GeneListTunable.class);
+			registerService(bc, geneListGuiHandler, GUITunableHandlerFactory.class);
 		}
 		
 		// If the App is updated or restarted then we want to reload the model and view from the tables

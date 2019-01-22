@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;
@@ -29,6 +30,9 @@ public class QueryGeneManiaTask extends AbstractTask {
 	public static final String GENEMANIA_ORGANISMS_COMMAND = "organisms";
 	public static final String GENEMANIA_SEARCH_COMMAND = "search";
 	
+	@Tunable(description = "Genes:")
+	public GeneListTunable geneList;
+	
 	@Tunable(description = "Organism:")
 	public ListSingleSelection<GMOrganism> organisms;
 	
@@ -38,7 +42,6 @@ public class QueryGeneManiaTask extends AbstractTask {
 	@Tunable(description = "Network Weighting:")
 	public ListSingleSelection<GMWeightingMethod> weightingMethods;
 	
-	private final String query;
 	private GMSearchResult result;
 	
 	private static long lastTaxonomyId = 9606; // H.sapiens
@@ -51,10 +54,10 @@ public class QueryGeneManiaTask extends AbstractTask {
 	
 	@Inject
 	public QueryGeneManiaTask(@Assisted List<String> geneList) {
-		query = String.join("|", geneList);
-		organisms = new ListSingleSelection<>();
-		weightingMethods = new ListSingleSelection<>(GMWeightingMethod.values());
-		weightingMethods.setSelectedValue(weightingMethods.getPossibleValues().get(0));
+		this.geneList = new GeneListTunable(geneList);
+		this.organisms = new ListSingleSelection<>();
+		this.weightingMethods = new ListSingleSelection<>(GMWeightingMethod.values());
+		this.weightingMethods.setSelectedValue(weightingMethods.getPossibleValues().get(0));
 	}
 	
 	@ProvidesTitle
@@ -82,6 +85,9 @@ public class QueryGeneManiaTask extends AbstractTask {
 		if (organisms.getSelectedValue() != null) {
 			tm.setTitle("EnrichmentMap");
 			tm.setStatusMessage("Querying GeneMANIA...");
+			
+			String query = String.join("|", geneList.getSelectedGenes());
+			System.out.println(query);
 			
 			Map<String, Object> args = new HashMap<>();
 			args.put("organism", "" + organisms.getSelectedValue().getTaxonomyId());
