@@ -12,6 +12,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
@@ -48,6 +49,7 @@ public class QueryGeneManiaTask extends AbstractTask {
 	private static long lastTaxonomyId = 9606; // H.sapiens
 
 	@Inject private CommandExecutorTaskFactory commandExecutorTaskFactory;
+	@Inject private SynchronousTaskManager<?> syncTaskManager;
 	
 	public static interface Factory {
 		QueryGeneManiaTask create(List<String> geneList, Set<String> leadingEdge);
@@ -121,7 +123,33 @@ public class QueryGeneManiaTask extends AbstractTask {
 					// Never called by Cytoscape...
 				}
 			});
-			insertTasksAfterCurrentTask(ti);
+			
+			
+			// run the task right here so we can handle errors
+			boolean[] timedOut = { false };
+			Exception[] cause = { null };
+			
+			syncTaskManager.execute(ti, new TaskObserver() {
+				
+				@Override
+				public void taskFinished(ObservableTask task) {
+				}
+				
+				@Override
+				public void allFinished(FinishStatus finishStatus) {
+					if(finishStatus.getType() == FinishStatus.Type.FAILED) {
+						Exception ex = finishStatus.getException();
+						if(ex != null && ex.getMessage() != null && ex.getMessage().contains("timeout")) {
+							timedOut[0] = true;
+							cause[0] = ex;
+						}
+					}
+				}
+			});
+			
+			if(timedOut[0]) {
+				throw new RuntimeException("GeneMANIA query timed out. Please try again with fewer genes.", cause[0]);
+			}
 			
 			// Save this as the default organism for next time
 			lastTaxonomyId = organisms.getSelectedValue().getTaxonomyId();
