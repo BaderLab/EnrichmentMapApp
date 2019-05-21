@@ -7,7 +7,7 @@
 	<parent>
 	    <groupId>org.baderlab.csplugins</groupId>
 	    <artifactId>enrichmentmap-parent</artifactId>
-	    <version>3.2.0</version>
+	    <version>3.2.1-SNAPSHOT</version>
 	</parent>
    
 	<artifactId>enrichmentmap-integration</artifactId>
@@ -15,7 +15,7 @@
 	
 	<properties>
 		<exam.version>4.12.0</exam.version>
-		<cy3.version>3.7.1-SNAPSHOT</cy3.version>
+		<cy3.version>3.7.1</cy3.version>
 		<url.version>2.5.4</url.version>
 		<karaf.version>4.2.1</karaf.version>
 	</properties>

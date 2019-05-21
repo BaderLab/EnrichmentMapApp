@@ -24,8 +24,8 @@ public abstract class PaxExamConfiguration {
 	public Option[] config() {
 		
 		// These have to match what's in the pom.xml files.
-		final String cyVersion = "3.7.1-SNAPSHOT"; 
-		final String emVersion = "3.2.0";
+		final String cyVersion = "3.7.1"; 
+		final String emVersion = "3.2.1-SNAPSHOT";
 		final String karafVersion = "4.2.1";
 		final String groupId   = "org.baderlab.csplugins";
 		final String appBundle = "EnrichmentMap";
