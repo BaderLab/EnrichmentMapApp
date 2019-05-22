@@ -40,13 +40,13 @@ public class ChartCommandTask extends AbstractTask {
 	@ContainsTunables @Inject
 	public NetworkTunable networkTunable;
 	
-	@Tunable
+	@Tunable(description = "Sets the chart data to show.")
 	public ListSingleSelection<String> data;
 	
-	@Tunable
+	@Tunable(description = "Sets the chart type.")
 	public ListSingleSelection<String> type;
 	
-	@Tunable
+	@Tunable(description = "Sets the chart colors.")
 	public ListSingleSelection<String> colors;
 	
 	@Tunable

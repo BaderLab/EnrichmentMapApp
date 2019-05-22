@@ -37,7 +37,7 @@ public class ExportPDFCommandTask extends AbstractTask {
 	@ContainsTunables @Inject
 	public NetworkTunable networkTunable;
 	
-	@Tunable(required=true)
+	@Tunable(required=true, description = "Absolute path to the PDF file to be exported. Will be overwritten if it already exists.")
 	public File file;
 	
 	@Tunable(description="true (default) for only selected nodes and edges, false for all nodes and edges")

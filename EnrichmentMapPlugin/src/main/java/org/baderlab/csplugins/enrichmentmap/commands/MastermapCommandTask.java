@@ -23,15 +23,17 @@ import org.cytoscape.work.Tunable;
 
 import com.google.inject.Inject;
 
-public class ResolverCommandTask extends AbstractTask implements ObservableTask {
 
-	@Tunable(required=true)
+public class MastermapCommandTask extends AbstractTask implements ObservableTask {
+
+	@Tunable(required=true, description="Absolute path to a folder containing the data files. "
+			+ "The files will be scanned and automatically grouped into data sets. Sub-folders will be scanned up to one level deep.")
 	public File rootFolder;
 	
-	@Tunable
+	@Tunable(description="Absolute path to a GMT file that will be used for every data set. Overrides other GMT files.")
 	public File commonGMTFile;
 	
-	@Tunable
+	@Tunable(description="Absolute path to an expression file that will be used for every data set. Overrides other expression files.")
 	public File commonExpressionFile;
 	
 	@ContainsTunables
@@ -50,7 +52,7 @@ public class ResolverCommandTask extends AbstractTask implements ObservableTask 
 	public void run(TaskMonitor tm) throws Exception {
 		if(tm == null)
 			tm = new NullTaskMonitor();
-		tm.setStatusMessage("Running EnrichmentMap Data Set Resolver Task");
+		tm.setStatusMessage("Running EnrichmentMap Mastermap Task");
 		
 		if(rootFolder == null || !rootFolder.exists()) {
 			throw new IllegalArgumentException("rootFolder is invalid: " + rootFolder);

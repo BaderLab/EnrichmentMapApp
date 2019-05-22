@@ -1,9 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap;
 
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Retention;
-
 import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.baderlab.csplugins.enrichmentmap.commands.ChartCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.DatasetShowCommandTask;
@@ -11,98 +7,99 @@ import org.baderlab.csplugins.enrichmentmap.commands.EMBuildCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.EMGseaCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.ExportModelJsonCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.ExportPDFCommandTask;
+import org.baderlab.csplugins.enrichmentmap.commands.MastermapCommandTask;
+import org.baderlab.csplugins.enrichmentmap.commands.MastermapListCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.PAKnownSignatureCommandTask;
-import org.baderlab.csplugins.enrichmentmap.commands.ResolverCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.TableCommandTask;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.BindingAnnotation;
 import com.google.inject.Provider;
-import com.google.inject.Provides;
+import com.google.inject.multibindings.MultibindingsScanner;
+import com.google.inject.multibindings.ProvidesIntoSet;
 
 public class CommandModule extends AbstractModule {
 
-	@BindingAnnotation @Retention(RUNTIME) public @interface BuildCommand { }
-	@BindingAnnotation @Retention(RUNTIME) public @interface GSEACommand { }
-	@BindingAnnotation @Retention(RUNTIME) public @interface ResolveCommand { }
-	@BindingAnnotation @Retention(RUNTIME) public @interface PACommand { }
-	@BindingAnnotation @Retention(RUNTIME) public @interface JsonCommand { }
-	@BindingAnnotation @Retention(RUNTIME) public @interface BuildTableCommand { }
-	@BindingAnnotation @Retention(RUNTIME) public @interface DatasetShowCommand { }
-	@BindingAnnotation @Retention(RUNTIME) public @interface DatasetHideCommand { }
-	@BindingAnnotation @Retention(RUNTIME) public @interface ChartCommand { }
-	@BindingAnnotation @Retention(RUNTIME) public @interface ExportPDFCommand { }
-	
 	@Override
-	protected void configure() {
-	}
-	
-	@Provides @BuildCommand
-	public TaskFactory provideBuild(Provider<EMBuildCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
-		return createTaskFactory(taskProvider, showTask);
-	}
-	
-	@Provides @GSEACommand
-	public TaskFactory provideGSEA(Provider<EMGseaCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
-		return createTaskFactory(taskProvider, showTask);
-	}
-	
-	@Provides @ResolveCommand
-	public TaskFactory provideResolve(Provider<ResolverCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
-		return createTaskFactory(taskProvider, showTask);
-	}
-	
-	@Provides @PACommand
-	public TaskFactory providePA(Provider<PAKnownSignatureCommandTask> taskProvider) {
-		return createTaskFactory(taskProvider);
-	}
-	
-	@Provides @JsonCommand
-	public TaskFactory provideJson(Provider<ExportModelJsonCommandTask> taskProvider) {
-		return createTaskFactory(taskProvider);
-	}
-	
-	@Provides @BuildTableCommand
-	public TaskFactory provideBuildTable(Provider<TableCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
-		return createTaskFactory(taskProvider, showTask);
-	}
-	
-	@Provides @DatasetShowCommand
-	public TaskFactory provideDatasetShow(DatasetShowCommandTask.Factory taskFactory) {
-		return createTaskFactory(() -> taskFactory.create(true));
-	}
-	
-	@Provides @DatasetHideCommand
-	public TaskFactory provideDatasetHide(DatasetShowCommandTask.Factory taskFactory) {
-		return createTaskFactory(() -> taskFactory.create(false));
-	}
-	
-	@Provides @ChartCommand
-	public TaskFactory provideChart(Provider<ChartCommandTask> taskFactory) {
-		return createTaskFactory(taskFactory);
-	}
-	
-	@Provides @ExportPDFCommand
-	public TaskFactory provideExportPDF(Provider<ExportPDFCommandTask> taskProvider) {
-		return createTaskFactory(taskProvider);
+	protected void configure() { 
+		install(MultibindingsScanner.asModule());
 	}
 	
 	
-	private static TaskFactory createTaskFactory(Provider<? extends Task> taskProvider, Task ... tasks) {
-		return new AbstractTaskFactory() {
-			@Override
-			public TaskIterator createTaskIterator() {
-				TaskIterator taskIterator = new TaskIterator(taskProvider.get());
-				for(Task task : tasks) {
-					taskIterator.append(task);
-				}
-				return taskIterator;
-			}
-		};
+	@ProvidesIntoSet
+	public CommandTaskFactory provideBuild(Provider<EMBuildCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+		String desc = "Creates an EnrichmentMap network containing one or two data sets.";
+		return CommandTaskFactory.create("build", desc, null, taskProvider, showTask);
 	}
 	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideGSEA(Provider<EMGseaCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+		String desc = "Creates an EnrichmetMap network from one or two GSEA results. (Deprecated, use 'build' or 'mastermap' command instead.)";
+		return CommandTaskFactory.create("gseabuild", desc, null, taskProvider, showTask);
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideMastermap(Provider<MastermapCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+		String desc = "Creates an EnrichmentMap network containing any number of data sets by scanning files in a folder.";
+		String longDesc = "Uses the same algorithm as the Create EnrichmentMap Dialog to scan the files in a folder and "
+				+ "automatically group them into data sets. Sub-folders will be scanned up to one level deep, allowing you to "
+				+ "organize your data sets into sub-folders under the root folder. Please see the EnrichmentMap documentation "
+				+ "for more details on how files are chosen for each data set.";
+		return CommandTaskFactory.create("mastermap", desc, longDesc, taskProvider, showTask);
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideMastermapList(Provider<MastermapListCommandTask> taskProvider) {
+		String desc = "Scans files in a folder and prints out how they would be grouped into data sets, but does not create a network. "
+				+ "This command is intended to help debug the 'mastermap' command by showing how the files will be grouped into data sets "
+				+ "without actually creating the network.";
+		return CommandTaskFactory.create("mastermap list", desc, null, taskProvider);
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory providePA(Provider<PAKnownSignatureCommandTask> taskProvider) {
+		String desc = "Adds more gene sets to an existing network. This is done by calculating the overlap between gene sets of the "
+				+ "current EnrichmentMap network and all the gene sets contained in the provided signature gene set file.";
+		return CommandTaskFactory.create("pa", desc, null, taskProvider);
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideJson(Provider<ExportModelJsonCommandTask> taskProvider) {
+		String desc = "Exports the EnrichmentMap data model to a file. Intended mainly for debugging.";
+		return CommandTaskFactory.create("export model", desc, null, taskProvider);
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideBuildTable(Provider<TableCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+		String desc = "Creates an EnrichmentMap network from values in a table.";
+		String longDesc = "Intended mainly for other Apps to programatically create an EnrichmentMap network.";
+		return CommandTaskFactory.create("build-table", desc, longDesc, taskProvider, showTask);
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideDatasetShow(DatasetShowCommandTask.Factory taskFactory) {
+		String desc = "Allows to select the data sets to show in an EnrichmentMap network.";
+		String longDesc = "This command is basically the same as clicking the checkboxes next to the data sets in the main EnrichmentMap panel.";
+		return CommandTaskFactory.create("dataset show", desc, longDesc, () -> taskFactory.create(true));
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideDatasetHide(DatasetShowCommandTask.Factory taskFactory) {
+		String desc = "Allows to de-select the data sets to show in an EnrichmentMap network.";
+		String longDesc = "This command is basically the same as clicking the checkboxes next to the data sets in the main EnrichmentMap panel.";
+		return CommandTaskFactory.create("dataset hide", desc, longDesc, () -> taskFactory.create(false));
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideChart(Provider<ChartCommandTask> taskFactory) {
+		String desc = "Sets the chart options for an EnrichmentMap network.";
+		String longDesc = "This command is basically the same as setting the chart options in the main EnrichmentMap panel.";
+		return CommandTaskFactory.create("chart", desc, longDesc, taskFactory);
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideExportPDF(Provider<ExportPDFCommandTask> taskProvider) {
+		String desc = "Exports the contents of the Heat Map panel to a PDF file.";
+		return CommandTaskFactory.create("export pdf", desc, null, taskProvider);
+	}
+
 }

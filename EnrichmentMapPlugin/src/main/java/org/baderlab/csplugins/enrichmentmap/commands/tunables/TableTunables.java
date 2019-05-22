@@ -10,8 +10,8 @@ import com.google.inject.Inject;
 
 public class TableTunables {
 
-	// TODO change tooltip to longDescription and set dependency on 3.6
-	@Tunable(description="Table", context="nogui", tooltip="Specifies a table by table name. If the prefix ```SUID:``` is used, the table corresponding the SUID will be returned. Example: \"galFiltered.sif default node\"")
+	@Tunable(description="Specifies a table by table name. ", 
+			longDescription = "If the prefix ```SUID:``` is used, the table corresponding the SUID will be returned. Example: \"galFiltered.sif default node\"")
 	public String table;
 
 	@Tunable(required=true)

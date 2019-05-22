@@ -16,7 +16,7 @@ public class DataSetParameters {
 	
 	// one or the other of the following must be provided
 	private final @Nullable DataSetFiles files;
-	private final @Nullable TableParameters tableParameters;
+	private final @Nullable transient TableParameters tableParameters;
 	
 	
 	public DataSetParameters(String name, Method method, DataSetFiles files) {

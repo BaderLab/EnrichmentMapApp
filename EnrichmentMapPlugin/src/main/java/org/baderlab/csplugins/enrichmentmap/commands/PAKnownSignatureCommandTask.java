@@ -40,28 +40,28 @@ import com.google.inject.Provider;
 public class PAKnownSignatureCommandTask extends AbstractTask {
 
 	
-	@Tunable
+	@Tunable(description = "Absolute path to GMT file containing gene sets to add to the network.")
 	public File gmtFile;
 	
-	@Tunable
+	@Tunable(description = "Type of statistical test to use for edge weight. Please see the EnrichmentMap documentation for more details.")
 	public ListSingleSelection<String> filterType;
 	
-	@Tunable
+	@Tunable(description = "Edges with a similarity score lower than the one entered will not be included in the network.")
 	public double cutoff = 0.5;
 	
-	@Tunable
+	@Tunable(description = "When 'filterType' is HYPERGEOM allows to choose how the value for N is calculated.")
 	public ListSingleSelection<String> hypergeomUniverseType;
 	
-	@Tunable
+	@Tunable(description = "When 'hypergeomUniverseType' is USER_DEFINED, sets the value for N.")
 	public int userDefinedUniverseSize = 0;
 	
-	@Tunable
+	@Tunable(description = "Name of the data set.")
 	public String name;
 	
 	@ContainsTunables @Inject
 	public NetworkTunable networkTunable;
 	
-	@Tunable(description="Name of data set to run PA against, or \"ALL\" to run in batch mode against all data sets.")
+	@Tunable(description="Name of existing data set to run PA against, or \"ALL\" to run in batch mode against all data sets.")
 	public String dataSetName = "ALL";
 	
 	@Tunable(description=MannWhitRanks.DESCRIPTION)

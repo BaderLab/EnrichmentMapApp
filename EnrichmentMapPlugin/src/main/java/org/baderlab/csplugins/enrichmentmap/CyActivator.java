@@ -6,18 +6,9 @@ import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.Properties;
+import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
-import org.baderlab.csplugins.enrichmentmap.CommandModule.BuildCommand;
-import org.baderlab.csplugins.enrichmentmap.CommandModule.BuildTableCommand;
-import org.baderlab.csplugins.enrichmentmap.CommandModule.ChartCommand;
-import org.baderlab.csplugins.enrichmentmap.CommandModule.DatasetHideCommand;
-import org.baderlab.csplugins.enrichmentmap.CommandModule.DatasetShowCommand;
-import org.baderlab.csplugins.enrichmentmap.CommandModule.ExportPDFCommand;
-import org.baderlab.csplugins.enrichmentmap.CommandModule.GSEACommand;
-import org.baderlab.csplugins.enrichmentmap.CommandModule.JsonCommand;
-import org.baderlab.csplugins.enrichmentmap.CommandModule.PACommand;
-import org.baderlab.csplugins.enrichmentmap.CommandModule.ResolveCommand;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.MannWhitRanksTunableHandlerFactory;
@@ -143,25 +134,20 @@ public class CyActivator extends AbstractCyActivator {
 	}
 	
 	private void initializeCommands(BundleContext bc) {
-		registerCommand(bc, "build",        injector.getInstance(Key.get(TaskFactory.class, BuildCommand.class)));
-		registerCommand(bc, "gseabuild",    injector.getInstance(Key.get(TaskFactory.class, GSEACommand.class)));
-		registerCommand(bc, "mastermap",    injector.getInstance(Key.get(TaskFactory.class, ResolveCommand.class)));
-		registerCommand(bc, "pa",           injector.getInstance(Key.get(TaskFactory.class, PACommand.class)));
-		registerCommand(bc, "export model", injector.getInstance(Key.get(TaskFactory.class, JsonCommand.class)));
-		registerCommand(bc, "build-table",  injector.getInstance(Key.get(TaskFactory.class, BuildTableCommand.class)));
-		registerCommand(bc, "dataset show", injector.getInstance(Key.get(TaskFactory.class, DatasetShowCommand.class)));
-		registerCommand(bc, "dataset hide", injector.getInstance(Key.get(TaskFactory.class, DatasetHideCommand.class)));
-		registerCommand(bc, "chart",        injector.getInstance(Key.get(TaskFactory.class, ChartCommand.class)));
-		registerCommand(bc, "export pdf",   injector.getInstance(Key.get(TaskFactory.class, ExportPDFCommand.class)));
+		Set<CommandTaskFactory> commands = injector.getInstance(Key.get(new TypeLiteral<Set<CommandTaskFactory>>(){}));
+		for(CommandTaskFactory command : commands) {
+			Properties props = new Properties();
+			props.put(ServiceProperties.COMMAND, command.getName());
+			props.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
+			props.put(ServiceProperties.COMMAND_DESCRIPTION, command.getDescription());
+			if(command.getLongDescription() != null)
+				props.put(ServiceProperties.COMMAND_LONG_DESCRIPTION, command.getLongDescription());
+			if(command.supportsJson())
+				props.put(ServiceProperties.COMMAND_SUPPORTS_JSON, true);
+			
+			registerService(bc, command, TaskFactory.class, props);
+		}
 		registerService(bc, new MannWhitRanksTunableHandlerFactory(), StringTunableHandlerFactory.class);
-	}
-	
-	
-	private void registerCommand(BundleContext bc, String command, TaskFactory taskFactory) {
-		Properties props = new Properties();
-		props.put(ServiceProperties.COMMAND, command);
-		props.put(ServiceProperties.COMMAND_NAMESPACE, "enrichmentmap");
-		registerService(bc, taskFactory, TaskFactory.class, props);
 	}
 	
 	

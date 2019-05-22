@@ -26,35 +26,41 @@ import com.google.inject.Inject;
  */
 public class FilterTunables {
 
-	//Parameter Tuneables
-	@Tunable(description = "P-value Cutoff", groups = { "User Input", "Parameters" }, gravity = 17.0, tooltip = "P-value between 0 and 1.")
+	@Tunable(description = "P-value Cutoff (value between 0 and 1). Gene set nodes with a p-value lower than the given value will not be included in the network.")
 	public Double pvalue = 0.005;
 
-	@Tunable(description = "FDR Q-value Cutoff", groups = { "User Input", "Parameters" }, gravity = 18.0, tooltip = "FDR Q-value between 0 and 1.")
+	@Tunable(description = "FDR Q-value Cutoff (value between 0 and 1). Gene set nodes with a q-value lower than the one entered will not be included in the network.")
 	public Double qvalue = 0.1;
 
-	@Tunable(description = "Similarity Cutoff", groups = { "User Input", "Parameters" }, gravity = 19.0, tooltip = "coeffecient between 0 and 1.")
+	@Tunable(description = "Similarity Cutoff (value between 0 and 1). Edges with a similarity score lower than the one entered will not be included in the network.")
 	public Double similaritycutoff = 0.25;
 
-	@Tunable(description = "Similarity Coeffecient", groups = { "User Input", "Parameters" }, gravity = 20.0, tooltip = "coeffecient between 0 and 1.")
+	@Tunable(description = "Similarity Coeffecient (value between 0 and 1). Used to choose the formula used to calculate the similarity score.")
 	public ListSingleSelection<String> coefficients;
 
-	@Tunable
+	@Tunable(description = "When coefficients=COMBINED this parameter is used to determine what percentage to use for JACCARD and OVERLAP when combining their value."
+			+ "Value between 0 and 1, where 0 means 100% JACCARD and 0% OVERLAP, and 1 means 0% JACCARD and 100% OVERLAP.")
 	public double combinedConstant = LegacySupport.combinedConstant_default;
 	
-	@Tunable
+	@Tunable(description = "DISTINCT: Create separate edges for each data set when appropriate. A separate similarity score will be calculated for each data set. "
+			+ "COMPOUND: Gene sets with the same name are combined (set union) and then the similarity score is calculated. "
+			+ "AUTOMATIC: EnrichmentMap decides which of the previous options to use. See the EnrichmentMap documentation for more details.")
 	public ListSingleSelection<String> edgeStrategy;
 	
-	@Tunable
+	@Tunable(description = "A gene set must be included in this many data sets to be included in the network (optional).")
 	public Integer minExperiments = null;
 	
-	@Tunable
+	@Tunable(description = "POSITIVE: Only gene sets from the positive enrichment file will be included.\n" + 
+			"NEGATIVE: Only gene sets from the negative enrichment file will be included.\n" + 
+			"All: Both enrichment files will be included")
 	public ListSingleSelection<String> nesFilter;
 	
-	@Tunable
+	@Tunable(description = "If true then genes that are contained in the gene set (GMT) files or the enrichment files,"
+			+ " but are not contained in the expression files will not be included in the network.")
 	public boolean filterByExpressions = true;
 	
-	@Tunable
+	@Tunable(description = "The name of the EnrichmentMap network. If not provided then EnrichmentMap will automatically generate a name "
+			+ "for the network based on the name of the first data set.")
 	public String networkName = null;
 	
 	// Not a tunable, for use by integration tests
