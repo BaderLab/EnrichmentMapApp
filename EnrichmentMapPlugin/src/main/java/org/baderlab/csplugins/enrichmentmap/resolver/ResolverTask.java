@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.resolver;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,10 +12,13 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class ResolverTask extends AbstractTask implements ObservableTask, CancelStatus {
+public class ResolverTask extends AbstractTask implements ObservableTask {
 
 	private final List<Path> paths = new ArrayList<>();
 	private final List<DataSetParameters> results = new ArrayList<>();
+	
+	private PathMatcher matcher = null;
+	
 	
 	public ResolverTask(Path root) {
 		paths.add(root);
@@ -29,6 +33,11 @@ public class ResolverTask extends AbstractTask implements ObservableTask, Cancel
 			paths.add(file.toPath());
 	}
 	
+	public void setPathMatcher(PathMatcher matcher) {
+		this.matcher = matcher;
+	}
+	
+	
 	@Override
 	public void run(TaskMonitor tm) {
 		tm.setTitle("EnrichmentMap");
@@ -39,7 +48,10 @@ public class ResolverTask extends AbstractTask implements ObservableTask, Cancel
 			Path path = paths.get(0);
 			if(Files.isDirectory(path)) {
 				for(File subdirectory : path.toFile().listFiles(File::isDirectory)) {
-					paths.add(subdirectory.toPath());
+					Path subDirPath = subdirectory.toPath();
+					if(matcher == null || matcher.matches(subDirPath.getFileName())) {
+						paths.add(subDirPath);
+					}
 				}
 			}
 		}
@@ -47,11 +59,13 @@ public class ResolverTask extends AbstractTask implements ObservableTask, Cancel
 		List<Path> miscFiles = new ArrayList<>();
 		
 		for(Path path : paths) {
-			if(cancelled)
-				break;
+			if(cancelled) {
+				results.clear();
+				return;
+			}
 			try {
 				if(Files.isDirectory(path)) {
-					List<DataSetParameters> dataSets = DataSetResolver.guessDataSets(path, this);
+					List<DataSetParameters> dataSets = DataSetResolver.guessDataSets(path, () -> cancelled);
 					results.addAll(dataSets);
 				} else {
 					miscFiles.add(path);
@@ -62,8 +76,12 @@ public class ResolverTask extends AbstractTask implements ObservableTask, Cancel
 		}
 		
 		try {
+			if(cancelled) {
+				results.clear();
+				return;
+			}
 			if(!miscFiles.isEmpty()) {
-				List<DataSetParameters> dataSets = DataSetResolver.guessDataSets(miscFiles, this);
+				List<DataSetParameters> dataSets = DataSetResolver.guessDataSets(miscFiles, () -> cancelled);
 				results.addAll(dataSets);
 			}
 		} catch(Exception e) {
@@ -83,9 +101,4 @@ public class ResolverTask extends AbstractTask implements ObservableTask, Cancel
 		return results;
 	}
 
-	@Override
-	public boolean isCancelled() {
-		return cancelled;
-	}
-	
 }

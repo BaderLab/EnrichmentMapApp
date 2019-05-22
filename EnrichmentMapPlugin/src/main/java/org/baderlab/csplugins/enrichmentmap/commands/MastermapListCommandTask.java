@@ -1,6 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.commands;
 
 import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.PathMatcher;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,6 +27,10 @@ public class MastermapListCommandTask extends AbstractTask implements Observable
 			+ "The files will be scanned and automatically grouped into data sets. Sub-folders will be scanned up to one level deep.")
 	public File rootFolder;
 	
+	@Tunable(description="A glob-style path filter. Sub-folders inside the root folder that do not match the pattern will be ignored. "
+			+ "For more details on syntax see https://docs.oracle.com/javase/8/docs/api/java/nio/file/FileSystem.html#getPathMatcher-java.lang.String-")
+	public String pattern;
+	
 	@Inject private SynchronousTaskManager<?> taskManager;
 	
 	private List<DataSetParameters> results;
@@ -40,8 +46,13 @@ public class MastermapListCommandTask extends AbstractTask implements Observable
 			throw new IllegalArgumentException("rootFolder is invalid: " + rootFolder);
 		}
 		
-		// Scan root folder (note: throws exception if no data sets were found)
 		ResolverTask resolverTask = new ResolverTask(rootFolder);
+		
+		if(pattern != null) {
+			PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
+			resolverTask.setPathMatcher(matcher);
+		}
+		
 		taskManager.execute(new TaskIterator(resolverTask)); // blocks
 		results = resolverTask.getDataSetResults();
 		
