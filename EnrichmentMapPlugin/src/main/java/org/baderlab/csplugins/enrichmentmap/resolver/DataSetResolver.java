@@ -159,16 +159,6 @@ public class DataSetResolver {
 		
 		// Find closest match by using edit distance on file name;
 		Optional<Path> closest = candidates.stream().reduce(BinaryOperator.maxBy(Comparator.comparing(scores::get)));
-		
-		// There should be a threshold for considering the path a match
-		// MKTODO can this heuristic be improved?
-//		if(closest.isPresent()) {
-//			int score = scores.get(closest.get());
-//			if(score == 0) {
-//				return Optional.empty();
-//			}
-//		}
-		
 		return closest;
 	}
 	
@@ -183,11 +173,7 @@ public class DataSetResolver {
 			return Type.IGNORE;
 		}
 		if(Files.isDirectory(path)) {
-//			if(GSEAResolver.isGSEAResultsFolder(path)) {
-//				return Type.GSEA_FOLDER;
-//			} else {
-				return Type.IGNORE;
-//			}
+			return Type.IGNORE;
 		}
 		
 		return guess(path);

@@ -82,65 +82,54 @@ import com.google.inject.Inject;
  */
 public class EMBuildCommandTask extends AbstractTask {
 
-	@Tunable(description = "Analysis Type", groups = { "Analysis Type" }, gravity = 1.0)
-	public ListSingleSelection<String> analysisType = new ListSingleSelection<String>(method_GSEA, method_generic, method_Specialized);;
+	@Tunable(description = "Analysis Type")
+	public ListSingleSelection<String> analysisType = new ListSingleSelection<String>(method_GSEA, method_generic, method_Specialized);
 
-	@Tunable(description = "GMT", groups = { "User Input", "Gene Sets" }, gravity = 2.0, dependsOn = "analysisType=" + method_generic, 
-			params = "fileCategory=table;input=true", tooltip = "File specifying gene sets.\nFormat: geneset name <tab> description <tab> gene ...")
+	@Tunable(description = "Path to GMT File specifying gene sets. Format: geneset name <tab> description <tab> gene ...")
 	public File gmtFile;
 
 	//Dataset 1 Tunables
-	@Tunable(description = "Expression", groups = { "User Input", "Datasets", "Dataset 1" }, gravity = 3.0, params = "fileCategory=table;input=true", 
-			tooltip = "File with gene expression values.\nFormat: gene <tab> description <tab> expression value <tab> ...")
+	@Tunable(description = "Path to Expression File for Dataset 1 with gene expression values. Format: gene <tab> description <tab> expression value <tab> ...")
 	public File expressionDataset1;
 
-	@Tunable(description = "Enrichments", groups = { "User Input", "Datasets", "Dataset 1" }, gravity = 4.0, 
-			dependsOn = "analysisType=" + method_generic, params = "fileCategory=table;input=true", tooltip = "File specifying enrichment results.\n")
+	@Tunable(description = "Path to Enrichments File for Dataset 1 specifying enrichment results.")
 	public File enrichmentsDataset1;
 
-	@Tunable(description = "Enrichments 2", groups = { "User Input", "Datasets", "Dataset 1" }, gravity = 5.0, 
-			dependsOn = "analysisType=" + method_GSEA, params = "fileCategory=table;input=true", tooltip = "File specifying enrichment results.\n")
+	@Tunable(description = "Path to a second Enrichments File for Dataset 1 specifying enrichment results.")
 	public File enrichments2Dataset1;
 
-	@Tunable(description = "Ranks", groups = { "User Input", "Datasets", "Dataset 1", "Advanced" }, gravity = 6.0, params = "fileCategory=table;input=true", 
-			tooltip = "File specifying ranked genes.\nFormat: gene <tab> score or statistic")
+	@Tunable(description = "Path to a Ranks File for Dataset 1 specifying ranked genes. Format: gene <tab> score or statistic")
 	public File ranksDataset1;
 
-	@Tunable(description = "Classes", groups = { "User Input", "Datasets", "Dataset 1", "Advanced" }, gravity = 7.0, params = "fileCategory=table;input=true", 
-			tooltip = "File specifying the classes of each sample in expression file.\nformat: see GSEA website")
+	@Tunable(description = "Path to Classes File for Dataset 1 specifying the classes of each sample in expression file. Format: see GSEA website")
 	public File classDataset1;
 
-	@Tunable(description = "Phenotype1", groups = { "User Input", "Datasets", "Dataset 1", "Advanced" }, gravity = 8.0, tooltip = "Dataset1 phenotype/class")
+	@Tunable(description = "Phenotype 1 for Dataset 1")
 	public String phenotype1Dataset1;
 
-	@Tunable(description = "Phenotype2", groups = { "User Input", "Datasets", "Dataset 1", "Advanced" }, gravity = 9.0, tooltip = "Dataset1 phenotype/class")
+	@Tunable(description = "Phenotype 2 for Dataset 1")
 	public String phenotype2Dataset1;
 
 	//Dataset 2 Tunables
-	@Tunable(description = "Expression", groups = { "User Input", "Datasets", "Dataset 2" }, gravity = 10.0, 
-			params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File with gene expression values.\nFormat: gene <tab> description <tab> expression value <tab> ...")
+	@Tunable(description = "Path to Expression File for Dataset 2 with gene expression values. Format: gene <tab> description <tab> expression value <tab> ...")
 	public File expressionDataset2;
 
-	@Tunable(description = "Enrichments", groups = { "User Input", "Datasets", "Dataset 2" }, gravity = 11.0, 
-			dependsOn = "analysisType=" + method_generic, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying enrichment results.\n")
+	@Tunable(description = "Path to Enrichments File for Dataset 2 specifying enrichment results.")
 	public File enrichmentsDataset2;
 
-	@Tunable(description = "Enrichments 2", groups = { "User Input", "Datasets", "Dataset 2" }, gravity = 12.0, 
-			dependsOn = "analysisType=" + method_GSEA, params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying enrichment results.\n")
+	@Tunable(description = "Path to a second Enrichments File for Dataset 2 specifying enrichment results.")
 	public File enrichments2Dataset2;
 
-	@Tunable(description = "Ranks", groups = { "User Input", "Datasets", "Dataset 2", "Advanced" }, gravity = 13.0, 
-			params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying ranked genes.\nFormat: gene <tab> score or statistic")
+	@Tunable(description = "Path to Ranks File for Dataset 2 specifying ranked genes. Format: gene <tab> score or statistic")
 	public File ranksDataset2;
 
-	@Tunable(description = "Classes", groups = { "User Input", "Datasets", "Dataset 2", "Advanced" }, gravity = 14.0, 
-			params = "fileCategory=table;input=true;displayState=callapsed", tooltip = "File specifying the classes of each sample in expression file.\nformat: see GSEA website")
+	@Tunable(description = "Path to Classes File for Dataset 2 specifying the classes of each sample in expression file. format: see GSEA website")
 	public File classDataset2;
 
-	@Tunable(description = "Phenotype1", groups = { "User Input", "Datasets", "Dataset 2", "Advanced" }, gravity = 15.0, params = "displayState=callapsed", tooltip = "Dataset2 phenotype/class")
+	@Tunable(description = "Phenotype 1 for Dataset 2")
 	public String phenotype1Dataset2;
 
-	@Tunable(description = "Phenotype2", groups = { "User Input", "Datasets", "Dataset 2", "Advanced" }, gravity = 16.0, params = "displayState=callapsed", tooltip = "Dataset2 phenotype/class")
+	@Tunable(description = "Phenotype 2 for Dataset 2")
 	public String phenotype2Dataset2;
 
 	

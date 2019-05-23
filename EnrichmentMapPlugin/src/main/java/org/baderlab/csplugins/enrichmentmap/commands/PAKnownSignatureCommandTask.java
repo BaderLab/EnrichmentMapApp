@@ -55,7 +55,7 @@ public class PAKnownSignatureCommandTask extends AbstractTask {
 	@Tunable(description = "When 'hypergeomUniverseType' is USER_DEFINED, sets the value for N.")
 	public int userDefinedUniverseSize = 0;
 	
-	@Tunable(description = "Name of the data set.")
+	@Tunable(description = "Name of the signature data set that will be created.")
 	public String name;
 	
 	@ContainsTunables @Inject

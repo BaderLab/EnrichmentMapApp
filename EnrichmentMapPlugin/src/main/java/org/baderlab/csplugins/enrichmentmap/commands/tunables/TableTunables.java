@@ -14,16 +14,16 @@ public class TableTunables {
 			longDescription = "If the prefix ```SUID:``` is used, the table corresponding the SUID will be returned. Example: \"galFiltered.sif default node\"")
 	public String table;
 
-	@Tunable(required=true)
+	@Tunable(required=true, description="Name of column that contains the names of the gene sets.")
 	public String nameColumn;
 	
-	@Tunable(required=true)
+	@Tunable(required=true, description="Name of column that contains the list of genes.")
 	public String genesColumn;
 	
-	@Tunable(required=true)
+	@Tunable(required=true, description="Name of column that contains p values.")
 	public String pvalueColumn;
 	
-	@Tunable
+	@Tunable(description="Name of column that contains the gene set description (optional).")
 	public String descriptionColumn;
 
 	

@@ -35,7 +35,7 @@ public class FilterTunables {
 	@Tunable(description = "Similarity Cutoff (value between 0 and 1). Edges with a similarity score lower than the one entered will not be included in the network.")
 	public Double similaritycutoff = 0.25;
 
-	@Tunable(description = "Similarity Coeffecient (value between 0 and 1). Used to choose the formula used to calculate the similarity score.")
+	@Tunable(description = "Used to choose the formula used to calculate the similarity score.")
 	public ListSingleSelection<String> coefficients;
 
 	@Tunable(description = "When coefficients=COMBINED this parameter is used to determine what percentage to use for JACCARD and OVERLAP when combining their value."
