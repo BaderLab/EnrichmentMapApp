@@ -530,9 +530,15 @@ public class LegendPanel extends JPanel implements LegendContent {
 		VisualStyle style = netView != null ? visualMappingManager.getVisualStyle(netView) : null;
 		
 		final Collator collator = Collator.getInstance();
-		Map<Object,Paint> dmMap = new TreeMap<>((Object o1, Object o2) -> {
-			if (Columns.EDGE_DATASET_VALUE_SIG.equals(o1)) return 1;
-			if (Columns.EDGE_DATASET_VALUE_SIG.equals(o2)) return -1;
+		Map<Object,Paint> dmMap = new TreeMap<>((o1, o2) -> {
+			boolean sig1 = Columns.EDGE_DATASET_VALUE_SIG.equals(o1);
+			boolean sig2 = Columns.EDGE_DATASET_VALUE_SIG.equals(o2);
+			if(sig1 && sig2) 
+				return 0;
+			if(sig1)
+				return 1;
+			if(sig2)
+				return -1;
 			return collator.compare("" + o1, "" + o2);
 		});
 		
@@ -545,6 +551,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 				
 				dmMap.putAll(dm.getAll());
 				dmMap.remove(Columns.EDGE_DATASET_VALUE_COMPOUND);
+				dmMap.remove(Columns.EDGE_INTERACTION_VALUE_OVERLAP);
 				
 				// Special case of 1 dataset with distinct edges and maybe signature genesets as well
 				if (map.getDataSetCount() == 1) {
@@ -557,17 +564,20 @@ public class LegendPanel extends JPanel implements LegendContent {
 						dmMap.put(Columns.EDGE_DATASET_VALUE_SIG, p2);
 				}
 				
-				if (!map.hasSignatureDataSets())
+				if (!map.hasSignatureDataSets()) {
 					dmMap.remove(Columns.EDGE_DATASET_VALUE_SIG);
-				
-				if (dmMap.size() > 0) {
-					
+					dmMap.remove(Columns.EDGE_INTERACTION_VALUE_SIG);
 				}
 			}
 		}
 		
 		if (dmMap.isEmpty()) {
-			dmMap.put(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.COMPOUND_EDGE_COLOR);			
+			Color[] colors = EMStyleBuilder.getColorPalette(map.getDataSetCount());
+			if(colors != null && colors.length > 0) {
+				dmMap.put(Columns.EDGE_DATASET_VALUE_COMPOUND, colors[0]);	
+			} else {
+				dmMap.put(Columns.EDGE_DATASET_VALUE_COMPOUND, Colors.COMPOUND_EDGE_COLOR);		
+			}
 			if (map.hasSignatureDataSets()) {
 				dmMap.put(Columns.EDGE_DATASET_VALUE_SIG, Colors.SIG_EDGE_COLOR);
 			}

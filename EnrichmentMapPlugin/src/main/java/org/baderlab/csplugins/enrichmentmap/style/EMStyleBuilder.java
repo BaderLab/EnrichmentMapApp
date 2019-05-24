@@ -1,22 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LINE_TYPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TOOLTIP;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.DIAMOND;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.ELLIPSE;
 import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.RECTANGLE;
@@ -272,6 +256,20 @@ public class EMStyleBuilder {
 		vs.addVisualMappingFunction(edgeStrokePaint);
 	}
 	
+	
+	public static Color[] getColorPalette(int datasetCount) {
+		final ColorBrewer colorBrewer;
+		// Try colorblind and/or print friendly colours first
+		if (datasetCount <= 4) // Try a colorblind safe color scheme first
+			colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=4
+		else if (datasetCount <= 5) // Same--more than 5, it adds a RED that can be confused with the edge selection color
+			colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=5
+		else
+			colorBrewer = ColorBrewer.Set3; // http://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12
+			
+		return colorBrewer.getColorPalette(datasetCount);
+	}
+	
 	private DiscreteMapping<String, Paint> createEdgeColorMapping(EMStyleOptions options, VisualProperty<Paint> vp) {
 		int dataSetCount = options.getEnrichmentMap().getDataSetCount();
 		boolean distinctEdges = options.getEnrichmentMap().getParams().getCreateDistinctEdges();
@@ -292,17 +290,7 @@ public class EMStyleBuilder {
 			List<EMDataSet> dataSets = options.getEnrichmentMap().getDataSetList();
 			
 //			if (dataSetCount > 1 && distinctEdges) {
-				final ColorBrewer colorBrewer;
-				
-				// Try colorblind and/or print friendly colours first
-				if (dataSets.size() <= 4) // Try a colorblind safe color scheme first
-					colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=4
-				else if (dataSets.size() <= 5) // Same--more than 5, it adds a RED that can be confused with the edge selection color
-					colorBrewer = ColorBrewer.Paired; // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=5
-				else
-					colorBrewer = ColorBrewer.Set3; // http://colorbrewer2.org/#type=qualitative&scheme=Set3&n=12
-					
-				Color[] colors = colorBrewer.getColorPalette(dataSets.size());
+				Color[] colors = getColorPalette(dataSets.size());
 				
 				// Do not use the filtered data sets here, because we don't want edge colours changing when filtering
 				for (int i = 0; i < dataSets.size(); i++) {
