@@ -229,10 +229,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		CyNetwork network = networkView.getModel();
 		EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
-		
-		if (map == null) {
+		if (map == null)
 			return;
-		}
 		
 		List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 		List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
@@ -243,25 +241,26 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		final Set<String> union;
 		final Set<String> inter;
 		
-		AssociatedApp app = NetworkUtil.getAssociatedApp(network);
-		
 		if (emManager.isEnrichmentMap(networkView)) {
 			union = unionGenesets(network, selectedNodes, selectedEdges, prefix);
 			inter = intersectionGenesets(network, selectedNodes, selectedEdges, prefix);
-		} else if (app != null) {
-			union = new HashSet<>();
-			
-			for (CyNode node : selectedNodes) {
-				CyRow row = network.getRow(node);
-				String geneName = app.getGeneNameColumn().get(row, null, null);
-				
-				if (geneName != null)
-					union.add(geneName);
-			}
-			
-			inter = union;
 		} else {
-			inter = union = Collections.emptySet();
+			AssociatedApp app = NetworkUtil.getAssociatedApp(network);
+			if (app != null) {
+				union = new HashSet<>();
+				
+				for (CyNode node : selectedNodes) {
+					CyRow row = network.getRow(node);
+					String geneName = app.getGeneNameColumn().get(row, null, null);
+					
+					if (geneName != null)
+						union.add(geneName);
+				}
+				
+				inter = union;
+			} else {
+				inter = union = Collections.emptySet();
+			}
 		}
 		
 		List<RankingOption> rankOptions = getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
@@ -270,11 +269,11 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		invokeOnEDT(() -> {
 			HeatMapContentPanel contentPanel = getContentPanel();
-			heatMapPanel.showContentPanel(contentPanel2);
+			heatMapPanel.showContentPanel(contentPanel);
 			
-			resetWithoutListeners(() -> {
-				contentPanel.update(network, map, params, rankOptions, union, inter, clusterRankingOption);
-			});
+			resetWithoutListeners(() ->
+				contentPanel.update(network, map, params, rankOptions, union, inter, clusterRankingOption)
+			);
 			
 			if (propertyManager.getValue(PropertyManager.HEATMAP_AUTOFOCUS))
 				bringToFront();
