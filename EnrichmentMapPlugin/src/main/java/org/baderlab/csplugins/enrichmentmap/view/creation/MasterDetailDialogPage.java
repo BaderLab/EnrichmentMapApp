@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -396,6 +397,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				List<DataSetParameters> datasets = task.getResults(List.class);
 				if(!datasets.isEmpty()) {
 					foundDatasets = true;
+					datasets.sort(Comparator.comparing(DataSetParameters::getName));
 					datasets.forEach(MasterDetailDialogPage.this::addDataSetToList);
 					dataSetList.setSelectedValue(datasets.get(0), true);
 				}

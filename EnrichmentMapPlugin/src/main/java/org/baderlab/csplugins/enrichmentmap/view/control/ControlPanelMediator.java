@@ -76,6 +76,7 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewCont
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.baderlab.csplugins.enrichmentmap.view.legend.CreationParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
@@ -120,6 +121,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private Provider<LegendPanelMediator> legendPanelMediatorProvider;
 	@Inject private Provider<PADialogMediator> paDialogMediatorProvider;
 	@Inject private Provider<EdgeWidthDialog> dialogProvider;
+	@Inject private Provider<HeatMapMediator> heatMapMediatorProvider;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private CreationDialogShowAction masterMapDialogAction;
 	@Inject private VisualMappingManager visualMappingManager;
@@ -456,10 +458,12 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				updateStyle = updateStyle || oldSize == 0 && newSize > 0;
 				updateStyle = updateStyle || oldSize > 0 && newSize == 0;
 				
-				if (updateStyle)
+				if (updateStyle) {
 					updateVisualStyle(map, viewPanel);
-				else
+					heatMapMediatorProvider.get().reset();
+				} else {
 					netView.updateView();
+				}
 			}
 		});
 		

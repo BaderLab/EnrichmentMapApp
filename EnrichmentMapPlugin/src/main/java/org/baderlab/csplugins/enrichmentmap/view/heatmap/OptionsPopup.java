@@ -67,35 +67,38 @@ public class OptionsPopup extends JPopupMenu {
 		exportPdfButton.setIcon(new TextIcon(IconManager.ICON_EXTERNAL_LINK, iconFont, iconColor, iconSize, iconSize));
 		
 		geneManiaButton = new JMenuItem("Show in GeneMANIA...");
-		geneManiaButton.setIcon(new TextIcon(IconUtil.GENEMANIA_ICON, IconUtil.getIconFont(14.0f), IconUtil.GENEMANIA_ICON_COLOR,
-				iconSize, iconSize));
+		geneManiaButton.setIcon(new TextIcon(IconUtil.GENEMANIA_ICON, IconUtil.getIconFont(14.0f), IconUtil.GENEMANIA_ICON_COLOR, iconSize, iconSize));
 
 		stringButton = new JMenuItem("Show in STRING...");
-		stringButton.setIcon(new TextIcon(IconUtil.LAYERED_STRING_ICON, IconUtil.getIconFont(16.0f), IconUtil.STRING_ICON_COLORS,
-				iconSize, iconSize));
+		stringButton.setIcon(new TextIcon(IconUtil.LAYERED_STRING_ICON, IconUtil.getIconFont(16.0f), IconUtil.STRING_ICON_COLORS, iconSize, iconSize));
 		
 		pcButton = new JMenuItem("Show in Pathway Commons...");
-		pcButton.setIcon(new TextIcon(IconUtil.LAYERED_PC_ICON, IconUtil.getIconFont(16.0f), IconUtil.PC_ICON_COLORS,
-				iconSize, iconSize));
+		pcButton.setIcon(new TextIcon(IconUtil.LAYERED_PC_ICON, IconUtil.getIconFont(16.0f), IconUtil.PC_ICON_COLORS, iconSize, iconSize));
 		
 		JMenu distanceMenu = new JMenu("Hierarchical Cluster - Distance Metric");
 		
 		cosineRadio = new JCheckBoxMenuItem("Cosine");
-		cosineRadio.addActionListener(cosineListener = dmListenerFor(Distance.COSINE));
+		cosineRadio.addActionListener(cosineListener = distanceListenerFor(Distance.COSINE));
 		distanceMenu.add(cosineRadio);
 		
 		euclideanRadio = new JCheckBoxMenuItem("Euclidean");
-		euclideanRadio.addActionListener(euclideanListener = dmListenerFor(Distance.EUCLIDEAN));
+		euclideanRadio.addActionListener(euclideanListener = distanceListenerFor(Distance.EUCLIDEAN));
 		distanceMenu.add(euclideanRadio);
 		
 		pearsonRadio = new JCheckBoxMenuItem("Pearson Correlation");
-		pearsonRadio.addActionListener(pearsonListener = dmListenerFor(Distance.PEARSON));
+		pearsonRadio.addActionListener(pearsonListener = distanceListenerFor(Distance.PEARSON));
 		distanceMenu.add(pearsonRadio);
 				
 		JCheckBoxMenuItem autofocusCheckbox = new JCheckBoxMenuItem("Auto-Focus HeatMap");
 		autofocusCheckbox.setSelected(propertyManager.getValue(PropertyManager.HEATMAP_AUTOFOCUS));
 		autofocusCheckbox.addActionListener(e -> {
 			propertyManager.setValue(PropertyManager.HEATMAP_AUTOFOCUS, autofocusCheckbox.isSelected());
+		});
+		
+		JCheckBoxMenuItem syncCheckbox = new JCheckBoxMenuItem("Sync with Control Panel");
+		syncCheckbox.setSelected(propertyManager.getValue(PropertyManager.HEATMAP_DATASET_SYNC));
+		syncCheckbox.addActionListener(e -> {
+			propertyManager.setValue(PropertyManager.HEATMAP_DATASET_SYNC, syncCheckbox.isSelected());
 		});
 		
 		add(geneManiaButton);
@@ -108,9 +111,10 @@ public class OptionsPopup extends JPopupMenu {
 		addSeparator();
 		add(distanceMenu);
 		add(autofocusCheckbox);
+		add(syncCheckbox);
 	}
 	
-	private <T> ActionListener dmListenerFor(Distance dm) {
+	private <T> ActionListener distanceListenerFor(Distance dm) {
 		return e -> {
 			if(distanceConsumer != null) {
 				distanceConsumer.accept(dm);

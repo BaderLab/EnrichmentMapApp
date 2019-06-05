@@ -3,7 +3,10 @@ package org.baderlab.csplugins.enrichmentmap;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -20,6 +23,14 @@ import com.google.inject.Singleton;
 @Singleton
 public class PropertyManager {
 	
+	@FunctionalInterface
+	public interface PropertyListener<T> {
+		void propertyChanged(Property<T> prop, T value);
+	}
+	
+	private final Map<Property<?>,List<PropertyListener<?>>> listeners = new HashMap<>();
+	
+	
 	public static class Property<T> {
 		private final String key;
 		public final T def;
@@ -33,6 +44,7 @@ public class PropertyManager {
 	}
 	
 	public static final Property<Boolean> HEATMAP_AUTOFOCUS = new Property<>("heatmapAutofocus", false, Boolean::valueOf);
+	public static final Property<Boolean> HEATMAP_DATASET_SYNC = new Property<>("heatmapDatasetSync", true, Boolean::valueOf);
 	public static final Property<Double> P_VALUE = new Property<>("default.pvalue", 1.0, Double::valueOf);
 	public static final Property<Double> Q_VALUE = new Property<>("default.qvalue", 0.1, Double::valueOf);
 	public static final Property<Boolean> CREATE_WARN = new Property<>("create.warn", true, Boolean::valueOf);
@@ -48,9 +60,16 @@ public class PropertyManager {
 		.forEach(this::setDefault);
 	}
 	
+	public <T> void addListener(Property<T> property, PropertyListener<T> listener) {
+		listeners.computeIfAbsent(property, k -> new ArrayList<>()).add(listener);
+	}
 	
 	public <T> void setValue(Property<T> property, T value) {
 		cyProps.getProperties().setProperty(property.key, String.valueOf(value));
+		
+		for(PropertyListener<?> listener : listeners.getOrDefault(property, Collections.emptyList())) {
+			((PropertyListener<T>)listener).propertyChanged(property, value);
+		}
 	}
 	
 	public <T> void setDefault(Property<T> property) {

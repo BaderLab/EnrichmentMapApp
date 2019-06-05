@@ -12,7 +12,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTask;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
@@ -30,6 +32,8 @@ import org.baderlab.csplugins.enrichmentmap.task.genemania.GeneManiaMediator;
 import org.baderlab.csplugins.enrichmentmap.task.string.StringAppMediator;
 import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
+import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapCellRenderer;
@@ -71,6 +75,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	private ActionListener showValueActionListener;
 	
 	@Inject private EnrichmentMapManager emManager;
+	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	@Inject private GeneManiaMediator geneManiaMediator;
 	@Inject private StringAppMediator stringAppMediator;
 	@Inject private PropertyManager propertyManager;
@@ -94,6 +99,13 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	private boolean onlyEdges;
 	
 	private boolean isResetting;
+	
+	
+	@AfterInjection
+	public void setPropertyListeners() {
+		propertyManager.addListener(PropertyManager.HEATMAP_DATASET_SYNC, (prop, value) -> reset());
+	}
+	
 	
 	private HeatMapContentPanel getContentPanel() {
 		// Add UI listeners
@@ -223,6 +235,18 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		}
 	}
 	
+	private Collection<EMDataSet> getEnabledDataSets(CyNetworkView networkView, EnrichmentMap map) {
+		if(Boolean.TRUE.equals(propertyManager.getValue(PropertyManager.HEATMAP_DATASET_SYNC))) {
+			// sync with the data set list on the control panel
+			ViewParams params = controlPanelMediatorProvider.get().getAllViewParams().get(networkView.getSUID());
+			Map<String, EMDataSet> dataSets = map.getDataSets();
+			dataSets.keySet().removeAll(params.getFilteredOutDataSets());
+			return dataSets.values();
+		} else {
+			return map.getDataSetList();
+		}
+	}
+	
 	private void updateHeatMap(CyNetworkView networkView) {
 		if (!isHeatMapPanelRegistered())
 			return;
@@ -235,15 +259,20 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 		List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
 		
-		String prefix = map.getParams().getAttributePrefix();
 		onlyEdges = selectedNodes.isEmpty() && !selectedEdges.isEmpty();
 		
 		final Set<String> union;
 		final Set<String> inter;
+		final Collection<EMDataSet> dataSets;
 		
 		if (emManager.isEnrichmentMap(networkView)) {
-			union = unionGenesets(network, selectedNodes, selectedEdges, prefix);
-			inter = intersectionGenesets(network, selectedNodes, selectedEdges, prefix);
+			String prefix = map.getParams().getAttributePrefix();
+			
+			dataSets = getEnabledDataSets(networkView, map);
+			Map<String,Set<Integer>> geneSetToGenes = map.unionGeneSetsOfInterest(dataSets);
+			
+			union = unionGenesets(geneSetToGenes, map, network, selectedNodes, selectedEdges, prefix);
+			inter = interGenesets(geneSetToGenes, map, network, selectedNodes, selectedEdges, prefix);
 		} else {
 			AssociatedApp app = NetworkUtil.getAssociatedApp(network);
 			if (app != null) {
@@ -261,6 +290,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			} else {
 				inter = union = Collections.emptySet();
 			}
+			dataSets = map.getDataSetList();
 		}
 		
 		List<RankingOption> rankOptions = getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
@@ -272,7 +302,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			heatMapPanel.showContentPanel(contentPanel);
 			
 			resetWithoutListeners(() ->
-				contentPanel.update(network, map, params, rankOptions, union, inter, clusterRankingOption)
+				contentPanel.update(network, map, dataSets, params, rankOptions, union, inter, clusterRankingOption)
 			);
 			
 			if (propertyManager.getValue(PropertyManager.HEATMAP_AUTOFOCUS))
@@ -326,13 +356,15 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	private void updateHeatMapPanel() {
 		HeatMapParams params = getContentPanel().buildParams();
 		HeatMapTableModel tableModel = (HeatMapTableModel) getContentPanel().getTable().getModel();
+		List<EMDataSet> datasets = tableModel.getDataSets();
 		EnrichmentMap map = tableModel.getEnrichmentMap();
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		List<RankingOption> rankOptions = getDataSetRankOptions(map);
 		ClusterRankingOption clusterRankingOption = clusterRankOptionFactory.create(map, params.getDistanceMetric());
 
 		resetWithoutListeners(() -> {
-			getContentPanel().update(network, map, params, rankOptions, getContentPanel().getUnionGenes(), getContentPanel().getInterGenes(), clusterRankingOption);
+			getContentPanel().update(network, map, datasets, params, rankOptions, 
+					getContentPanel().getUnionGenes(), getContentPanel().getInterGenes(), clusterRankingOption);
 		});
 	}
 	
@@ -433,42 +465,45 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		return options;
 	}
 
-	public static Set<String> unionGenesets(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
-		Set<String> union = new HashSet<>();
+	public static Set<String> unionGenesets(Map<String,Set<Integer>> geneSetToGenes, 
+			EnrichmentMap map, CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
+		Set<Integer> union = new HashSet<>();
 		for(CyNode node : nodes) {
-			union.addAll(getGenes(network, node, prefix));
+			union.addAll(getGenes(geneSetToGenes, network, node, prefix));
 		}
 		for(CyEdge edge : edges) {
-			union.addAll(getGenes(network, edge.getSource(), prefix));
-			union.addAll(getGenes(network, edge.getTarget(), prefix));
+			union.addAll(getGenes(geneSetToGenes, network, edge.getSource(), prefix));
+			union.addAll(getGenes(geneSetToGenes, network, edge.getTarget(), prefix));
 		}
-		return union;
+		return union.stream().map(map::getGeneFromHashKey).collect(Collectors.toSet());
 	}
 	
-	public static Set<String> intersectionGenesets(CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
-		Set<String> inter = null;
+	public static Set<String> interGenesets(Map<String,Set<Integer>> geneSetToGenes, 
+			EnrichmentMap map, CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
+		Set<Integer> inter = null;
 		for(CyNode node : nodes) {
-			Collection<String> genes = getGenes(network, node, prefix);
+			Collection<Integer> genes = getGenes(geneSetToGenes, network, node, prefix);
 			if(inter == null)
 				inter = new HashSet<>(genes);
 			else
 				inter.retainAll(genes);
 		}
 		for(CyEdge edge : edges) {
-			Collection<String> genes = getGenes(network, edge.getSource(), prefix);
+			Collection<Integer> genes = getGenes(geneSetToGenes, network, edge.getSource(), prefix);
 			if(inter == null)
 				inter = new HashSet<>(genes);
 			else
 				inter.retainAll(genes);
-			inter.retainAll(getGenes(network, edge.getTarget(), prefix));
+			inter.retainAll(getGenes(geneSetToGenes, network, edge.getTarget(), prefix));
 		}
-		return inter == null ? Collections.emptySet() : inter;
+		return inter == null ? Collections.emptySet() : inter.stream().map(map::getGeneFromHashKey).collect(Collectors.toSet());
 	}
 	
-	public static Collection<String> getGenes(CyNetwork network, CyNode node, String prefix) {
+	public static Collection<Integer> getGenes(Map<String,Set<Integer>> geneSetToFilteredGenes, CyNetwork network, CyNode node, String prefix) {
 		CyRow row = network.getRow(node);
-		// This is already the union of all the genes across data sets
-		return EMStyleBuilder.Columns.NODE_GENES.get(row, prefix, null);
+		String gsName = EMStyleBuilder.Columns.NODE_NAME.get(row, prefix);
+		Set<Integer> set = geneSetToFilteredGenes.get(gsName);
+		return set == null ? Collections.emptyList() : set;
 	}
 	
 	

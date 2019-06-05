@@ -92,13 +92,13 @@ public class ResolverTask extends AbstractTask implements ObservableTask {
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
 		if(List.class.equals(type)) {
-			return type.cast(results);
+			return type.cast(getDataSetResults());
 		}
 		return null;
 	}
 	
 	public List<DataSetParameters> getDataSetResults() {
-		return results;
+		return new ArrayList<>(results);
 	}
 
 }

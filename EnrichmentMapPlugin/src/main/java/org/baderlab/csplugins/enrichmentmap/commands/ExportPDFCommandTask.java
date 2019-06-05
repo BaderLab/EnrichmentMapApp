@@ -4,11 +4,16 @@ import static org.baderlab.csplugins.enrichmentmap.commands.tunables.CommandUtil
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.commands.tunables.DatasetListTunable;
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.NetworkTunable;
 import org.baderlab.csplugins.enrichmentmap.model.Compress;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.ExportPDFTask;
@@ -36,6 +41,9 @@ public class ExportPDFCommandTask extends AbstractTask {
 	
 	@ContainsTunables @Inject
 	public NetworkTunable networkTunable;
+	
+	@ContainsTunables @Inject
+	public DatasetListTunable datasetListTunable;
 	
 	@Tunable(required=true, description = "Absolute path to the PDF file to be exported. Will be overwritten if it already exists.")
 	public File file;
@@ -73,9 +81,10 @@ public class ExportPDFCommandTask extends AbstractTask {
 		Transform transformValue = Transform.valueOf(transform.getSelectedValue());
 		Compress compressValue = Compress.valueOf(compress.getSelectedValue());
 		
-		List<String> genes = getGenes();
+		Collection<EMDataSet> dataSets = datasetListTunable.getDataSets(map);
+		List<String> genes = getGenes(dataSets);
 		
-		HeatMapTableModel model = new HeatMapTableModel(network, map, null, genes, transformValue, compressValue);
+		HeatMapTableModel model = new HeatMapTableModel(network, map, dataSets, null, genes, transformValue, compressValue);
 		ExportPDFTask exportTask = new ExportPDFTask(file, model, RankingOption.none(), showValues);
 		
 		TaskIterator moreTasks = new TaskIterator(exportTask);
@@ -87,7 +96,7 @@ public class ExportPDFCommandTask extends AbstractTask {
 	}
 	
 	
-	private List<String> getGenes() {
+	private List<String> getGenes(Collection<EMDataSet> dataSets) {
 		CyNetwork network = networkTunable.getNetwork();
 		EnrichmentMap map = networkTunable.getEnrichmentMap();
 		String prefix = map.getParams().getAttributePrefix();
@@ -102,11 +111,13 @@ public class ExportPDFCommandTask extends AbstractTask {
 			edges = network.getEdgeList();
 		}
 		
+		Map<String,Set<Integer>> geneSetToGenes = map.unionGeneSetsOfInterest(dataSets);
+		
 		List<String> genes;
 		if("union".equals(operator.getSelectedValue())) {
-			genes = new ArrayList<>(HeatMapMediator.unionGenesets(network, nodes, edges, prefix));
+			genes = new ArrayList<>(HeatMapMediator.unionGenesets(geneSetToGenes, map, network, nodes, edges, prefix));
 		} else {
-			genes = new ArrayList<>(HeatMapMediator.intersectionGenesets(network, nodes, edges, prefix));
+			genes = new ArrayList<>(HeatMapMediator.interGenesets(geneSetToGenes, map, network, nodes, edges, prefix));
 		}
 		genes.sort(Comparator.naturalOrder());
 		

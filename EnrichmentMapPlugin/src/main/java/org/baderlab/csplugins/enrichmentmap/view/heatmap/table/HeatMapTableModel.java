@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap.table;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -50,25 +51,27 @@ public class HeatMapTableModel extends AbstractTableModel {
 	
 	
 	public HeatMapTableModel() {
-		update(null, null, null, Collections.emptyList(), Transform.AS_IS, Compress.NONE);
+		update(null, null, null, null, Collections.emptyList(), Transform.AS_IS, Compress.NONE);
 	}
 	
 	
 	public HeatMapTableModel(
 			CyNetwork network,
 			EnrichmentMap map,
+			Collection<EMDataSet> datasets,
 			Map<Integer, RankValue> ranking,
 			List<String> genes,
 			Transform transform,
 			Compress compress
 	) {
-		update(network, map, ranking, genes, transform, compress);
+		update(network, map, datasets, ranking, genes, transform, compress);
 	}
 	
 	
 	public void update(
 			CyNetwork network,
 			EnrichmentMap map,
+			Collection<EMDataSet> datasets,
 			Map<Integer, RankValue> ranking,
 			List<String> genes,
 			Transform transform,
@@ -81,21 +84,21 @@ public class HeatMapTableModel extends AbstractTableModel {
 		this.ranking = ranking;
 		this.genes = genes != null ? new ArrayList<>(genes) : Collections.emptyList();
 
-		// if all the expression sets are the same then just show one of them
-		if (map != null) {
-			if (map.isCommonExpressionValues())
-				datasets = map.getDataSetList().subList(0, 1);
-			else
-				datasets = map.getDataSetList();
+		if(map != null && map.isCommonExpressionValues()) {
+			this.datasets = map.getDataSetList().subList(0, 1);
+		} else if(map != null && datasets == null) {
+			this.datasets = map.getDataSetList();
+		} else if(datasets != null) {
+			this.datasets = new ArrayList<>(datasets);
 		} else {
-			datasets = Collections.emptyList();
+			this.datasets = Collections.emptyList();
 		}
 		
 		expressionCache = new ExpressionCache();
 		
-		ExpressionData uncompressed = new Uncompressed(datasets, expressionCache);
-		ExpressionData compressedDataSet = new CompressedDataSet(datasets, expressionCache, map != null && map.isDistinctExpressionSets());
-		ExpressionData compressedClass = new CompressedClass(datasets, expressionCache);
+		ExpressionData uncompressed = new Uncompressed(this.datasets, expressionCache);
+		ExpressionData compressedDataSet = new CompressedDataSet(this.datasets, expressionCache, map != null && map.isDistinctExpressionSets());
+		ExpressionData compressedClass = new CompressedClass(this.datasets, expressionCache);
 		
 		data.put(Compress.NONE, uncompressed);
 		data.put(Compress.DATASET_MEDIAN, compressedDataSet);

@@ -349,12 +349,14 @@ public class HeatMapContentPanel extends JPanel {
 	
 	void clear() {
 		HeatMapParams params = new HeatMapParams.Builder().build();
-		update(null, null, params, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), RankingOption.none());
+		update(null, null, Collections.emptyList(), params, Collections.emptyList(), 
+				Collections.emptyList(), Collections.emptyList(), RankingOption.none());
 	}
 	
 	void update(
 			CyNetwork network,
 			EnrichmentMap map,
+			Collection<EMDataSet> datasets,
 			HeatMapParams params,
 			List<RankingOption> moreRankOptions,
 			Collection<String> union,
@@ -406,13 +408,20 @@ public class HeatMapContentPanel extends JPanel {
 		
 		List<String> genesToUse = params.getOperator() == Operator.UNION ? unionGenes : interGenes;
 		HeatMapTableModel tableModel = (HeatMapTableModel) getTable().getModel();
-		tableModel.update(network, map, null, genesToUse, params.getTransform(), params.getCompress());
+		tableModel.update(network, map, datasets, null, genesToUse, params.getTransform(), params.getCompress());
 		
 		updateTableHeader(isShowValues());
 		getTable().revalidate();
 		
-		List<? extends SortKey> sortKeys = params.getSortKeys();
+		updateSortKeys(params, rankingOption);
 		
+		// Re-compute the ranking
+		setSelectedRankingOption(rankingOption);
+	}
+	
+	
+	private void updateSortKeys(HeatMapParams params, RankingOption rankingOption) {
+		List<? extends SortKey> sortKeys = params.getSortKeys();
 		if (sortKeys == null)
 			sortKeys = getTable().getRowSorter().getSortKeys();
 		if (sortKeys.isEmpty())
@@ -421,9 +430,6 @@ public class HeatMapContentPanel extends JPanel {
 		try {
 			getTable().getRowSorter().setSortKeys(sortKeys);
 		} catch(IllegalArgumentException e) {}
-		
-		// Re-compute the ranking
-		setSelectedRankingOption(rankingOption);
 	}
 	
 	protected OptionsPopup getOptionsPopup() {

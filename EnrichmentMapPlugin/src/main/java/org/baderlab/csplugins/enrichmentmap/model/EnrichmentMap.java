@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
@@ -281,16 +282,25 @@ public class EnrichmentMap {
 		return allGeneSets;
 	}
 	
-	// MKTODO write a JUnit
 	public Map<String, Set<Integer>> unionAllGeneSetsOfInterest() {
+		return unionGeneSetsOfInterest(x -> true);
+	}
+	
+	public Map<String, Set<Integer>> unionGeneSetsOfInterest(Collection<EMDataSet> dataSets) {
+		return unionGeneSetsOfInterest(dataSets::contains);
+	}
+	
+	private Map<String, Set<Integer>> unionGeneSetsOfInterest(Predicate<EMDataSet> filter) {
 		Map<String, Set<Integer>> allGeneSets = new HashMap<>();
 
 		for (EMDataSet ds : getDataSetList()) {
-			Map<String, GeneSet> geneSets = ds.getGeneSetsOfInterest().getGeneSets();
-			
-			geneSets.forEach((name, gs) -> {
-				allGeneSets.computeIfAbsent(name, k -> new HashSet<>()).addAll(gs.getGenes());
-			});
+			if(filter.test(ds)) {
+				Map<String, GeneSet> geneSets = ds.getGeneSetsOfInterest().getGeneSets();
+				
+				geneSets.forEach((name, gs) -> {
+					allGeneSets.computeIfAbsent(name, k -> new HashSet<>()).addAll(gs.getGenes());
+				});
+			}
 		}
 
 		return allGeneSets;
@@ -333,6 +343,7 @@ public class EnrichmentMap {
 
 	
 	public Map<String, EMDataSet> getDataSets() {
+		// this must return a new HashMap or client code might break
 		return new HashMap<>(dataSets);
 	}
 	
