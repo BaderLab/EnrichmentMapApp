@@ -24,10 +24,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 public class DataSetResolver {
@@ -133,6 +135,10 @@ public class DataSetResolver {
 			closestClass.ifPresent(path -> {
 				clasFiles.remove(path);
 				files.setClassFile(path.toAbsolutePath().toString());
+				getGenericPhenotypes(path).ifPresent(p -> {
+					files.setPhenotype1(p.getLeft());
+					files.setPhenotype2(p.getRight());
+				});
 			});
 			closestGmt.ifPresent(path -> {
 				gmtFiles.remove(path);
@@ -398,6 +404,27 @@ public class DataSetResolver {
 			return name.substring(0, name.lastIndexOf('.'));
 		else
 			return name;
+	}
+	
+	private static Optional<Pair<String,String>> getGenericPhenotypes(Path path) {
+		try(Stream<String> lines = Files.lines(path)) {
+			Optional<String> firstLine = lines.findFirst();
+			if(firstLine.isPresent()) {
+				String[] phenos = firstLine.get().split("\\s");
+				if(phenos != null && phenos.length >= 2 && !Strings.isNullOrEmpty(phenos[0])) {
+					String up = phenos[0];
+					for(int i = 1; i < phenos.length; i++) {
+						if(!Strings.isNullOrEmpty(phenos[i]) && !up.equals(phenos[i])) {
+							String down = phenos[i];
+							return Optional.of(Pair.of(up, down));
+						}
+					}
+				}
+			}
+			return Optional.empty();
+		} catch (IOException e) {
+			return Optional.empty();
+		} 
 	}
 	
 }
