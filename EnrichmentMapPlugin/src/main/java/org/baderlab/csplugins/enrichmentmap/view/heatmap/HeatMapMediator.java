@@ -239,12 +239,13 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		if(Boolean.TRUE.equals(propertyManager.getValue(PropertyManager.HEATMAP_DATASET_SYNC))) {
 			// sync with the data set list on the control panel
 			ViewParams params = controlPanelMediatorProvider.get().getAllViewParams().get(networkView.getSUID());
-			Map<String, EMDataSet> dataSets = map.getDataSets();
-			dataSets.keySet().removeAll(params.getFilteredOutDataSets());
-			return dataSets.values();
-		} else {
-			return map.getDataSetList();
+			if(params != null) {
+				Map<String, EMDataSet> dataSets = map.getDataSets();
+				dataSets.keySet().removeAll(params.getFilteredOutDataSets());
+				return dataSets.values();
+			}
 		}
+		return map.getDataSetList();
 	}
 	
 	private void updateHeatMap(CyNetworkView networkView) {
