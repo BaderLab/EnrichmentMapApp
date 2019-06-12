@@ -83,7 +83,7 @@ public class FilterTunables {
 	
 	public EMCreationParameters getCreationParameters() throws IllegalArgumentException {
 		String attPrefix = this.attributePrefix == null ? EMStyleBuilder.Columns.NAMESPACE_PREFIX : attributePrefix;
-		String stylePrefix = legacySupport.getNextAttributePrefix();
+		String stylePrefix = legacySupport.getNextStylePrefix();
 		
 		return new EMCreationParameters(attPrefix, stylePrefix, pvalue, qvalue, getNesFilter(), 
 					Optional.ofNullable(minExperiments), filterByExpressions,

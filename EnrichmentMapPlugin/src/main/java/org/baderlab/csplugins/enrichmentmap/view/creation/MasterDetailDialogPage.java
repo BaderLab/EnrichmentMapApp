@@ -130,7 +130,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		}
 		
 		String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
-		String stylePrefix = legacySupport.getNextAttributePrefix();
+		String stylePrefix = legacySupport.getNextStylePrefix();
 		
 		SimilarityMetric similarityMetric = cutoffPanel.getSimilarityMetric();
 		double pvalue = cutoffPanel.getPValue();

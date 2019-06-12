@@ -79,7 +79,7 @@ public class EMGseaCommandTask extends AbstractTask {
 		
 		SimilarityMetric metric = EnrichmentMapParameters.stringToSimilarityMetric(similaritymetric.getSelectedValue());
 		String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
-		String stylePrefix = legacySupport.getNextAttributePrefix();
+		String stylePrefix = legacySupport.getNextStylePrefix();
 		
 		EMCreationParameters creationParams = 
 				new EMCreationParameters(attributePrefix, stylePrefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true,

@@ -30,40 +30,43 @@ public class LegacySupport {
 	@Inject private CyNetworkTableManager networkTableManager;
 
 	
-	/**
-	 * The attribute prefix is based on the number of nextworks in cytoscape.
-	 * make attribute prefix independent of cytoscape
-	 */
-	public String getNextAttributePrefix() {
+	public String getNextStylePrefix() {
 		Set<CyNetwork> networks = networkTableManager.getNetworkSet();
 
 		if(networks == null || networks.isEmpty()) {
 			return "EM1_";
-		}
-		else {
-			// how many enrichment maps are there?
-			int max_prefix = 0;
-			// go through all the networks, check to see if they are enrichment maps
-			// if they are then calculate the max EM_# and use the max number + 1 for the current attributes
-			for(CyNetwork current_network : networks) {
-				Long networkId = current_network.getSUID();
-				if(emManager.isEnrichmentMap(networkId)) {// fails
-					EnrichmentMap tmpMap = emManager.getEnrichmentMap(networkId);
-					String tmpPrefix = tmpMap.getParams().getAttributePrefix();
-					tmpPrefix = tmpPrefix.replace("EM", "");
-					tmpPrefix = tmpPrefix.replace("_", "");
-					try {
-						int tmpNum = Integer.parseInt(tmpPrefix);
-						if(tmpNum > max_prefix) {
-							max_prefix = tmpNum;
-						}
-					} catch(NumberFormatException e) { }
+		} else {
+			int maxPrefix = 0;
+			
+			for(CyNetwork network : networks) {
+				Long suid = network.getSUID();
+				if(emManager.isEnrichmentMap(suid)) {
+					EnrichmentMap map = emManager.getEnrichmentMap(suid);
+					int prefix = getPrefix(map);
+					if(prefix > 0) {
+						maxPrefix = Math.max(maxPrefix, prefix);
+					}
 				}
 			}
-			return "EM" + (max_prefix + 1) + "_";
+			
+			maxPrefix++;
+			String prefix = "EM" + maxPrefix + "_";
+			System.out.println("Style prefix: '" + prefix + "'");
+			return prefix;
 		}
 	}
 	
+	private static int getPrefix(EnrichmentMap map) {
+		EMCreationParameters params = map.getParams();
+		String prefix = params.getStylePrefix();
+		prefix = prefix.replace("EM", "");
+		prefix = prefix.replace("_", "");
+		try {
+			return Integer.parseInt(prefix);
+		} catch(NumberFormatException e) { 
+			return -1;
+		}
+	}
 	
 	public static boolean isLegacyEnrichmentMap(EnrichmentMap map) {
 		if(map == null)
