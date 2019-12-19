@@ -17,7 +17,7 @@
 		<exam.version>4.12.0</exam.version>
 		<cy3.version>3.7.1</cy3.version>
 		<url.version>2.5.4</url.version>
-		<karaf.version>4.2.1</karaf.version>
+		<karaf.version>4.2.3</karaf.version>
 	</properties>
 	
 	<build>
