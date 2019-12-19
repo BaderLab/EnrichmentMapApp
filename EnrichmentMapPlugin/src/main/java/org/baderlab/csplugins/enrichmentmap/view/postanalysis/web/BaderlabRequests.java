@@ -13,8 +13,6 @@ import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.List;
 
-import javax.ws.rs.core.UriBuilder;
-
 import org.baderlab.csplugins.enrichmentmap.model.io.ModelSerializer;
 
 import com.google.gson.Gson;
@@ -62,7 +60,9 @@ public class BaderlabRequests {
 	}
 	
 	public static URL buildUrl(String dateFolder, String gmtPath) throws MalformedURLException {
-		return UriBuilder.fromPath(BASE_URL).path(dateFolder).path(gmtPath).build().toURL();
+		String spec = String.format(BASE_URL + "%s/%s", dateFolder, gmtPath);
+		URL url = new URL(spec);
+		return url;
 	}
 	
 }
