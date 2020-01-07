@@ -5,6 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
+import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.HELP_URL_CONTROL;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.EM_ICON_COLORS;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.GENEMANIA_ICON;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.GENEMANIA_ICON_COLOR;
@@ -60,7 +61,6 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
@@ -117,7 +117,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	private JComboBox<CyNetworkView> emViewCombo;
 	private JButton createEmButton;
 	private JButton optionsButton;
-	private JButton aboutButton;
 	private JButton closePanelButton;
 	
 	private Map<Long/*CynetworkView SUID*/, EMViewControlPanel> emViewCtrlPanels = new HashMap<>();
@@ -164,10 +163,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		setMinimumSize(new Dimension(390, 400));
 		setPreferredSize(new Dimension(390, 600));
 		
-		JButton helpButton = SwingUtil.createOnlineHelpButton(EnrichmentMapBuildProperties.USER_MANUAL_URL,
-				"Online Manual...", serviceRegistrar);
+		JButton helpButton = SwingUtil.createOnlineHelpButton(HELP_URL_CONTROL, "Online Manual...", serviceRegistrar);
 		
-		makeSmall(getAboutButton(), getClosePanelButton());
+		makeSmall(getClosePanelButton());
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -178,14 +176,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
    				.addGroup(layout.createSequentialGroup()
    						.addComponent(getEmViewCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    						.addPreferredGap(ComponentPlacement.RELATED)
+   						.addComponent(helpButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addPreferredGap(ComponentPlacement.RELATED)
    						.addComponent(getCreateEmButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addPreferredGap(ComponentPlacement.RELATED)
    						.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
 				.addComponent(getCtrlPanelsContainer(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
-   						.addComponent(helpButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   						.addComponent(getAboutButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addGap(0, 0, Short.MAX_VALUE)
    						.addComponent(getClosePanelButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
@@ -193,13 +191,12 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
    		layout.setVerticalGroup(layout.createSequentialGroup()
    				.addGroup(layout.createParallelGroup(CENTER, false)
    						.addComponent(getEmViewCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(helpButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getCreateEmButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    				.addComponent(getCtrlPanelsContainer(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
    				.addGroup(layout.createParallelGroup(CENTER, false)
-   						.addComponent(helpButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   						.addComponent(getAboutButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getClosePanelButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    		);
@@ -260,7 +257,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			createEmButton = new JButton(ICON_PLUS);
 			SwingUtil.styleHeaderButton(createEmButton, iconManager.getIconFont(16.0f));
 		}
-		
 		return createEmButton;
 	}
 	
@@ -270,23 +266,14 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			optionsButton.setToolTipText("Options...");
 			SwingUtil.styleHeaderButton(optionsButton, iconManager.getIconFont(18.0f));
 		}
-		
 		return optionsButton;
 	}
 	
-	JButton getAboutButton() {
-		if (aboutButton == null) {
-			aboutButton = new JButton(showAboutDialogAction);
-		}
-		
-		return aboutButton;
-	}
 	
 	JButton getClosePanelButton() {
 		if (closePanelButton == null) {
 			closePanelButton = new JButton("Close");
 		}
-		
 		return closePanelButton;
 	}
 	
@@ -299,7 +286,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			if (LookAndFeelUtil.isAquaLAF())
 				ctrlPanelsContainer.setOpaque(false);
 		}
-		
 		return ctrlPanelsContainer;
 	}
 	
@@ -313,7 +299,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			
 			return p;
 		}
-		
 		return null;
 	}
 	
@@ -327,7 +312,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			
 			return p;
 		}
-		
 		return null;
 	}
 	
@@ -514,6 +498,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private DataSetSelector dataSetSelector;
 		private JCheckBox publicationReadyCheck;
 		private JButton setEdgeWidthButton;
+		private JButton showLegendButton;
 		
 		private JComboBox<ChartData> chartDataCombo;
 		private JComboBox<ChartType> chartTypeCombo;
@@ -733,7 +718,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JPanel createStylePanel() {
 			makeSmall(chartDataLabel, chartTypeLabel, chartColorsLabel);
 			makeSmall(getChartDataCombo(), getChartTypeCombo(), getChartColorsCombo(), getShowChartLabelsCheck());
-			makeSmall(getPublicationReadyCheck(), getSetEdgeWidthButton(), getResetStyleButton());
+			makeSmall(getPublicationReadyCheck(), getShowLegendButton(), getSetEdgeWidthButton(), getResetStyleButton());
 			
 			final JPanel panel = new JPanel();
 			panel.setBorder(LookAndFeelUtil.createTitledBorder("Style"));
@@ -762,6 +747,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					.addGroup(layout.createSequentialGroup()
 							.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(getShowLegendButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
 							.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 			);
@@ -783,6 +770,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getShowLegendButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 			);
@@ -999,7 +987,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			if (showChartLabelsCheck == null) {
 				showChartLabelsCheck = new JCheckBox("Show Chart Labels");
 			}
-			
 			return showChartLabelsCheck;
 		}
 		
@@ -1007,19 +994,25 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			if (publicationReadyCheck == null) {
 				publicationReadyCheck = new JCheckBox("Publication-Ready");
 			}
-			
 			return publicationReadyCheck;
 		}
 		
 		JButton getSetEdgeWidthButton() {
 			if (setEdgeWidthButton == null) {
 				setEdgeWidthButton = new JButton("Set Signature Edge Width...");
-				
 				if (isAquaLAF())
 					setEdgeWidthButton.putClientProperty("JButton.buttonType", "gradient");
 			}
-			
 			return setEdgeWidthButton;
+		}
+		
+		JButton getShowLegendButton() {
+			if (showLegendButton == null) {
+				showLegendButton = new JButton("Show Legend...");
+				if (isAquaLAF())
+					showLegendButton.putClientProperty("JButton.buttonType", "gradient");
+			}
+			return showLegendButton;
 		}
 		
 		void updateFilterPanel() {

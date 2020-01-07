@@ -11,28 +11,28 @@ public class EnrichmentMapBuildProperties {
 	
 	public static final String APP_VERSION;
 	public static final String APP_NAME;
-	public static final String APP_URL;
-	public static final String USER_MANUAL_URL;
+	
+	public static final String APP_URL          = "http://www.baderlab.org/Software/EnrichmentMap";
+	public static final String HELP_URL_HOME    = "http://enrichmentmap.readthedocs.io/en/latest";
+	public static final String HELP_URL_CONTROL = "http://enrichmentmap.readthedocs.io/en/latest/MainPanel.html";
 	
 
 	private EnrichmentMapBuildProperties() {}
 	
 	static {
-		APP_URL = "http://www.baderlab.org/Software/EnrichmentMap";
-		USER_MANUAL_URL = "http://enrichmentmap.readthedocs.io/en/latest";
-		
-		Properties plugin_props;
+		Properties props;
 		try {
-			plugin_props = getPropertiesFromClasspath(PROPS_FILE_APP, false);
+			props = getPropertiesFromClasspath(PROPS_FILE_APP, false);
 		} catch (IOException e) {
 			e.printStackTrace();
-			plugin_props = new Properties();
+			props = new Properties();
 		}
 
-		APP_VERSION = plugin_props.getProperty("appVersion", "unknown");
-		APP_NAME    = plugin_props.getProperty("appName", "EnrichmentMap");
+		APP_VERSION = props.getProperty("appVersion", "unknown");
+		APP_NAME    = props.getProperty("appName", "EnrichmentMap");
 	}
 
+	
 	private static Properties getPropertiesFromClasspath(String propFileName, boolean inMaindir) throws IOException {
 		InputStream inputStream;
 		if(inMaindir)

@@ -40,6 +40,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.Compress;
@@ -122,6 +123,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private Provider<PADialogMediator> paDialogMediatorProvider;
 	@Inject private Provider<EdgeWidthDialog> dialogProvider;
 	@Inject private Provider<HeatMapMediator> heatMapMediatorProvider;
+	@Inject private Provider<ShowAboutDialogAction> showAboutDialogActionProvider;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private CreationDialogShowAction masterMapDialogAction;
 	@Inject private VisualMappingManager visualMappingManager;
@@ -553,12 +555,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			if (!updating)
 				updateVisualStyle(map, viewPanel);
 		});
-		viewPanel.getResetStyleButton().addActionListener(evt -> {
-			updateVisualStyle(map, viewPanel);
-		});
-		viewPanel.getSetEdgeWidthButton().addActionListener(evt -> {
-			showEdgeWidthDialog();
-		});
+		
+		viewPanel.getResetStyleButton().addActionListener(evt -> updateVisualStyle(map, viewPanel));
+		viewPanel.getSetEdgeWidthButton().addActionListener(evt -> showEdgeWidthDialog());
+		viewPanel.getShowLegendButton().addActionListener(evt -> showLegendDialog());
 		
 		viewPanel.updateChartDataCombo();
 	}
@@ -632,11 +632,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@AfterInjection
 	private void init() {
 		ControlPanel ctrlPanel = getControlPanel();
-		
+
+		ctrlPanel.getCreateEmButton().setToolTipText("" + masterMapDialogAction.getValue(Action.NAME));
 		ctrlPanel.getCreateEmButton().addActionListener(evt -> {
 			masterMapDialogAction.actionPerformed(evt);
 		});
-		ctrlPanel.getCreateEmButton().setToolTipText("" + masterMapDialogAction.getValue(Action.NAME));
 		
 		ctrlPanel.getOptionsButton().addActionListener(evt -> {
 			getOptionsMenu().show(ctrlPanel.getOptionsButton(), 0, ctrlPanel.getOptionsButton().getHeight());
@@ -871,20 +871,23 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		timer.start();
 	}
 	
+	
+	private void showLegendDialog() {
+		if (legendPanelMediatorProvider.get().getDialog().isVisible()) {
+			legendPanelMediatorProvider.get().hideDialog();
+		} else {
+			CyNetworkView netView = getCurrentEMView();
+			EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
+			legendPanelMediatorProvider.get().showDialog(createStyleOptions(netView), getFilteredDataSets(viewPanel));
+		}
+	}
+	
 	private JPopupMenu getOptionsMenu() {
 		final JPopupMenu menu = new JPopupMenu();
 		
 		{
 			JMenuItem showLegendItem = new JCheckBoxMenuItem("Show Legend");
-			showLegendItem.addActionListener(evt -> {
-				if (legendPanelMediatorProvider.get().getDialog().isVisible()) {
-					legendPanelMediatorProvider.get().hideDialog();
-				} else {
-					CyNetworkView netView = getCurrentEMView();
-					EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(netView);
-					legendPanelMediatorProvider.get().showDialog(createStyleOptions(netView), getFilteredDataSets(viewPanel));
-				}
-			});
+			showLegendItem.addActionListener(evt -> showLegendDialog());
 			showLegendItem.setSelected(legendPanelMediatorProvider.get().getDialog().isVisible());
 			menu.add(showLegendItem);
 			
@@ -904,6 +907,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			mi.setSelected(filterMode == mode);
 			menu.add(mi);
 		}
+		
+		menu.addSeparator();
+		
+		menu.add(new JMenuItem(showAboutDialogActionProvider.get()));
 		
 		return menu;
 	}

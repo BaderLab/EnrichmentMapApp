@@ -62,7 +62,7 @@ public class ShowAboutDialogAction extends AbstractCyAction {
 	@Inject private OpenBrowser browser;
 
 	public ShowAboutDialogAction() {
-		super("About");
+		super("About...");
 	}
 
 	@Override
