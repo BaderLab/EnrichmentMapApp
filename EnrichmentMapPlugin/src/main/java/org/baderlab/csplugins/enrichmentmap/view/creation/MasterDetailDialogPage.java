@@ -91,6 +91,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Inject private LegacySupport legacySupport;
 	
 	@Inject private Provider<DetailCommonPanel> commonPanelProvider;
+	@Inject private Provider<DetailNullPanel> nullPanelProvider;
 	@Inject private DetailDataSetPanel.Factory dataSetPanelFactory;
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private ErrorMessageDialog.Factory errorMessageDialogFactory;
@@ -181,7 +182,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		callback.close();
 	}
 	
-	
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
 		this.callback = callback;
@@ -222,7 +222,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		dataSetDetailPanel.setLayout(cardLayout);
 		
 		// Blank page
-		dataSetDetailPanel.add(new DetailNullPanel(), "nothing");
+		dataSetDetailPanel.add(nullPanelProvider.get(), "nothing");
 		
 		// Common page
 		dataSetListModel.addElement(commonParams);
@@ -250,7 +250,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		SwingUtil.makeSmall(label);
 		
 		JButton addButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS, "Add data set from files");
-		scanButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_FOLDER_O, "Add data sets from folder (scan)");
+		scanButton   = SwingUtil.createIconButton(iconManager, IconManager.ICON_FOLDER_O, "Add data sets from folder (scan)");
 		deleteButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_TRASH_O, "Delete selected data sets");
 		
 		addButton.addActionListener(e -> addNewDataSetToList());
@@ -285,6 +285,14 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		int n = dataSetListModel.size();
 		DataSetParameters params = new DataSetParameters("Data Set " + n, Method.GSEA, new DataSetFiles());
 		addDataSetToList(params);
+	}
+	
+	@Override
+	public void opened() {
+		if(dataSetListModel.getSize() == 1) { // no data sets, only "common files" in list
+			selectItem(null); // reset the detail panel, shows "getting started" message
+			dataSetList.clearSelection();
+		}
 	}
 	
 	private void addDataSetToList(DataSetParameters params) {

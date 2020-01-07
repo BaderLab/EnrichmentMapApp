@@ -61,7 +61,6 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.Compress;
@@ -109,7 +108,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	@Inject private CyNetworkViewManager networkViewManager;
 	@Inject private IconManager iconManager;
 	@Inject private EnrichmentMapManager emManager;
-	@Inject private ShowAboutDialogAction showAboutDialogAction;
 	
 	private JPanel ctrlPanelsContainer;
 	private final CardLayout cardLayout = new CardLayout();

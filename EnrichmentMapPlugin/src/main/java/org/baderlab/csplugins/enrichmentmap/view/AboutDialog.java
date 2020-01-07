@@ -75,7 +75,7 @@ public class AboutDialog extends JDialog {
 		editorPane.setMargin(new Insets(10, 10, 10, 10));
 		editorPane.setEditable(false);
 		editorPane.setEditorKit(new HTMLEditorKit());
-		editorPane.addHyperlinkListener(new HyperlinkAction(editorPane));
+		editorPane.addHyperlinkListener(new HyperlinkAction());
 
 		URL logoURL = getClass().getClassLoader().getResource("images/enrichmentmap_logo.png");
 
@@ -109,15 +109,8 @@ public class AboutDialog extends JDialog {
 		setContentPane(editorPane);
 	}
 
+	
 	private class HyperlinkAction implements HyperlinkListener {
-		
-		@SuppressWarnings("unused")
-		JEditorPane pane;
-
-		public HyperlinkAction(JEditorPane pane) {
-			this.pane = pane;
-		}
-
 		@Override
 		public void hyperlinkUpdate(HyperlinkEvent event) {
 			if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED)

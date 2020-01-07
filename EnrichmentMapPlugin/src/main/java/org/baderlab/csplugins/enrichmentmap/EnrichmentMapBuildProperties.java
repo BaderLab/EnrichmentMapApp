@@ -14,6 +14,7 @@ public class EnrichmentMapBuildProperties {
 	
 	public static final String APP_URL          = "http://www.baderlab.org/Software/EnrichmentMap";
 	public static final String HELP_URL_HOME    = "http://enrichmentmap.readthedocs.io/en/latest";
+	public static final String HELP_URL_CREATE  = "http://enrichmentmap.readthedocs.io/en/latest/CreatingNetwork.html#create-enrichmentmap-dialog";
 	public static final String HELP_URL_CONTROL = "http://enrichmentmap.readthedocs.io/en/latest/MainPanel.html";
 	
 
