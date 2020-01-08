@@ -14,8 +14,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.io.ModelSerializer;
+import org.baderlab.csplugins.enrichmentmap.rest.response.ExpressionDataResponse;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.cytoscape.model.CyNetwork;
@@ -31,38 +30,23 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 @Api(tags="Apps: EnrichmentMap")
-@Path("/enrichmentmap")
-public class EnrichmentMapResource {
+@Path("/enrichmentmap/expressions")
+public class ExpressionsResource {
 
-	@Inject private EnrichmentMapManager emManager;
+	@Inject private ResourceUtil resourceUtil;
 	@Inject private CyNetworkManager networkManager;
 	@Inject private Provider<HeatMapMediator> heatMapMediatorProvider;
 	
 	
 	@GET
-	@ApiOperation(value="Get enrichment map model data for a given network.", response=EnrichmentMap.class)
-	@Path("/model/{network}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getModelData(
-			@ApiParam(value="Network name or SUID") @PathParam("network") String network
-	) {
-		return
-			getEnrichmentMap(network)
-			.map(this::getEnrichmentMapJSON)
-			.map(data -> Response.ok(data).build())
-			.orElse(Response.status(Status.NOT_FOUND).build());
-	}
-	
-	
-	@GET
-	@ApiOperation(value="Get enrichment map model data for a given network.", response=ExpressionDataResponse.class)
-	@Path("/expressions/{network}")
+	@ApiOperation(value="Get expression data for a given network.", response=ExpressionDataResponse.class)
+	@Path("/{network}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getExpressionDataForNetwork(
 			@ApiParam(value="Network name or SUID") @PathParam("network") String network
 	) {
 		return
-			getEnrichmentMap(network)
+			resourceUtil.getEnrichmentMap(network)
 			.map(ExpressionDataResponse::new)
 			.map(data -> Response.ok(data).build())
 			.orElse(Response.status(Status.NOT_FOUND).build());
@@ -70,14 +54,14 @@ public class EnrichmentMapResource {
 	
 	
 	@GET
-	@ApiOperation(value="Get enrichment map model data for a given network.", response=ExpressionDataResponse.class)
-	@Path("/expressions/{network}/{node}")
+	@ApiOperation(value="Get expression data for a given node (gene set).", response=ExpressionDataResponse.class)
+	@Path("/{network}/{node}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getExpressionDataForNode(
 			@ApiParam(value="Network name or SUID") @PathParam("network") String network,
 			@ApiParam(value="Node SUID") @PathParam("node") long nodeID
 	) {
-		Optional<EnrichmentMap> mapOpt = getEnrichmentMap(network);
+		Optional<EnrichmentMap> mapOpt = resourceUtil.getEnrichmentMap(network);
 		if(mapOpt.isPresent()) {
 			EnrichmentMap map = mapOpt.get();
 			String prefix = map.getParams().getAttributePrefix();
@@ -96,8 +80,8 @@ public class EnrichmentMapResource {
 	
 	
 	@GET
-	@ApiOperation(value="Get enrichment map model data for a given network.", response=ExpressionDataResponse.class)
-	@Path("/expressions/heatmap")
+	@ApiOperation(value="Get expression data currently shown in the heat map panel.", response=ExpressionDataResponse.class)
+	@Path("/heatmap")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getExpressionDataForHeatMap() {
 		HeatMapMediator heatMapMediator = heatMapMediatorProvider.get();
@@ -111,32 +95,5 @@ public class EnrichmentMapResource {
 		return Response.ok(response).build();
 	}
 	
-	
-	private String getEnrichmentMapJSON(EnrichmentMap map) {
-		// Don't rely on the auto json serialization because ModelSerializer needs to customize the GSON serializer.
-		return ModelSerializer.serialize(map, true);
-	}
-	
-	
-	private Optional<EnrichmentMap> getEnrichmentMap(String network) {
-		try {
-			long suid = Long.parseLong(network);
-			return Optional.ofNullable(emManager.getEnrichmentMap(suid));
-		} catch(NumberFormatException e) {
-			Optional<Long> suid = getNetworkByName(network);
-			return suid.map(emManager::getEnrichmentMap);
-		}
-	}
-	
-	
-	private Optional<Long> getNetworkByName(String name) {
-		for(CyNetwork network : networkManager.getNetworkSet()) {
-			String netName = network.getRow(network).get(CyNetwork.NAME, String.class);
-			if(name.equals(netName)) {
-				return Optional.of(network.getSUID());
-			}
-		}
-		return Optional.empty();
-	}
 
 }

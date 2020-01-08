@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.rest;
+package org.baderlab.csplugins.enrichmentmap.rest.response;
 
 public class GeneExpressionResponse {
 

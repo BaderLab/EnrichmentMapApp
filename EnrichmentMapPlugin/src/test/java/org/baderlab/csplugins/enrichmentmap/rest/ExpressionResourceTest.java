@@ -15,6 +15,9 @@ import org.baderlab.csplugins.enrichmentmap.TestUtils;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.rest.response.DataSetExpressionResponse;
+import org.baderlab.csplugins.enrichmentmap.rest.response.ExpressionDataResponse;
+import org.baderlab.csplugins.enrichmentmap.rest.response.GeneExpressionResponse;
 import org.baderlab.csplugins.enrichmentmap.task.BaseNetworkTest;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -43,21 +46,21 @@ public class ExpressionResourceTest extends BaseNetworkTest {
 	
 	
 	@Test
-	public void testExpressionDataForNetwork_BadRequest(EnrichmentMapResource resource) {
+	public void testExpressionDataForNetwork_BadRequest(ExpressionsResource resource) {
 		Response response = resource.getExpressionDataForNetwork("-1");
 		assertNotNull(response);
 		assertEquals(404, response.getStatus());
 	}
 	
 	@Test
-	public void testExpressionDataForNode_BadNetworkRequest(EnrichmentMapResource resource) {
+	public void testExpressionDataForNode_BadNetworkRequest(ExpressionsResource resource) {
 		Response response = resource.getExpressionDataForNode("-1", 99);
 		assertNotNull(response);
 		assertEquals(404, response.getStatus());
 	}
 	
 	@Test
-	public void testExpressionDataForNode_BadNodeRequest(EnrichmentMapResource resource, CyNetworkManager networkManager) {
+	public void testExpressionDataForNode_BadNodeRequest(ExpressionsResource resource, CyNetworkManager networkManager) {
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		assertNotNull(network);
 		Response response = resource.getExpressionDataForNode(String.valueOf(map.getNetworkID()), 99);
@@ -66,7 +69,7 @@ public class ExpressionResourceTest extends BaseNetworkTest {
 	}
 	
 	@Test
-	public void testModelData_BadRequest(EnrichmentMapResource resource) {
+	public void testModelData_BadRequest(ModelResource resource) {
 		Response response = resource.getModelData("-1");
 		assertNotNull(response);
 		assertEquals(404, response.getStatus());
@@ -74,7 +77,7 @@ public class ExpressionResourceTest extends BaseNetworkTest {
 	
 	
 	@Test
-	public void testExpressionDataForNetwork(EnrichmentMapResource resource, CyNetworkManager networkManager) {
+	public void testExpressionDataForNetwork(ExpressionsResource resource, CyNetworkManager networkManager) {
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		assertNotNull(network);
 		
@@ -104,7 +107,7 @@ public class ExpressionResourceTest extends BaseNetworkTest {
 	
 	
 	@Test
-	public void testExpressionDataForNode(EnrichmentMapResource resource, CyNetworkManager networkManager) {
+	public void testExpressionDataForNode(ExpressionsResource resource, CyNetworkManager networkManager) {
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		assertNotNull(network);
 		
