@@ -218,7 +218,9 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		dataSetDetailPanel.setLayout(cardLayout);
 		
 		// Blank page
-		dataSetDetailPanel.add(nullPanelProvider.get(), "nothing");
+		DetailNullPanel nullPanel = nullPanelProvider.get();
+		nullPanel.setScanButtonCallback(this::scanButtonClicked);
+		dataSetDetailPanel.add(nullPanel, "nothing");
 		
 		// Common page
 		dataSetListModel.addElement(commonParams);
@@ -376,6 +378,11 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				}
 			}
 			callback.setFinishButtonEnabled(false);
+			
+			if(dataSetListModel.getSize() == 1) { // no data sets, only "common files" in list
+				selectItem(null); // reset the detail panel, shows "getting started" message
+				dataSetList.clearSelection();
+			}
 		}
 	}
 	
