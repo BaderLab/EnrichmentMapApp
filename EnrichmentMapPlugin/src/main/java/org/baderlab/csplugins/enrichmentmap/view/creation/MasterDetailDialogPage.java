@@ -6,8 +6,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -17,7 +15,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -48,7 +45,6 @@ import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
-import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
@@ -546,7 +542,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			setCellRenderer(new CellRenderer());
 			setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 			setDropMode(DropMode.ON);
-			setTransferHandler(new ResolverTaskTransferHandler());
+			setTransferHandler(new ResolverTaskTransferHandler(MasterDetailDialogPage.this::runResolverTask));
 			addMouseListener(getContextMenuMouseListener());
 			try {
 				getDropTarget().addDropTargetListener(getDropTargetListener());
@@ -641,45 +637,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 					setBackground(normalColor); 
 				}
 			};
-		}
-		
-	}
-	
-	
-	private class ResolverTaskTransferHandler extends TransferHandler {
-		
-		@Override
-		public boolean canImport(TransferSupport support) {
-			if(!support.isDrop())
-				return false;
-			if(!support.isDataFlavorSupported(DataFlavor.javaFileListFlavor))
-				return false;
-			boolean copySupported = (COPY & support.getSourceDropActions()) == COPY;
-			if(!copySupported)
-				return false;
-			return true;
-		}
-		
-		@Override
-		public boolean importData(TransferSupport support) {
-			if(!canImport(support))
-				return false;
-			
-			Object transferData;
-			try {
-				transferData = support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
-			} catch (UnsupportedFlavorException | IOException e) {
-				e.printStackTrace();
-				return false;
-			}
-			
-			if(transferData instanceof List) {
-				@SuppressWarnings("unchecked")
-				List<File> fileList = (List<File>) transferData;
-				runResolverTask(fileList);
-				return true;
-			}
-			return false;
 		}
 		
 	}
