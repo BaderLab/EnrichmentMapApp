@@ -4,22 +4,22 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.HELP_URL_CREATE;
 
+import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.URL;
+import java.awt.Font;
 
-import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
+import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
+import org.baderlab.csplugins.enrichmentmap.view.util.TextIcon;
+import org.cytoscape.util.swing.IconManager;
 
 import com.google.inject.Inject;
 
@@ -28,6 +28,7 @@ import com.google.inject.Inject;
 @SuppressWarnings("serial")
 public class DetailNullPanel extends JPanel {
 
+	private @Inject IconManager iconManager;
 	private @Inject OpenBrowser openBrowser;
 	
 	private Runnable scanButtonCallback;
@@ -37,8 +38,8 @@ public class DetailNullPanel extends JPanel {
 		return this;
 	}
 	
-	@Inject
-	public DetailNullPanel() {
+	@AfterInjection
+	public void createContents() {
 		JLabel header = new JLabel("<html><h2>Getting Started with EnrichmentMap</h2></html>");
 		
 		JButton scanButton = new JButton("Scan a folder for enrichment data");
@@ -81,24 +82,12 @@ public class DetailNullPanel extends JPanel {
 	}
 	
 	
-	private ImageIcon getFolderIcon() {
-		BufferedImage iconImg;
-		try {
-			URL url = getClass().getClassLoader().getResource("images/folder_button.png");
-			iconImg = ImageIO.read(url);
-		} catch (IOException e) {
-			return null;
-		}
-		
-		final int w = 28, h = 24;
-		BufferedImage resized = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		
-		Graphics2D g = (Graphics2D) resized.getGraphics();
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-	    g.drawImage(iconImg, 0, 0, w, h, null);
-	    g.dispose();
-	    
-	    return new ImageIcon(resized);
+	private Icon getFolderIcon() {
+		Font iconFont = iconManager.getIconFont(12.0f);
+		Color iconColor = UIManager.getColor("Label.foreground");
+		int iconSize = 20;
+		TextIcon icon = new TextIcon(IconManager.ICON_FOLDER_O, iconFont, iconColor, iconSize, iconSize);
+		return icon;
 	}
 	
 	
