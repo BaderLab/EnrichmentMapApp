@@ -63,6 +63,7 @@ public class DataSetSelector extends JPanel {
 	private JTable table;
 	private JScrollPane tableScrollPane;
 	private JButton addButton;
+	private JButton colorButton;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
 	
@@ -171,7 +172,10 @@ public class DataSetSelector extends JPanel {
 						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
 				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(getColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
    		);
    		layout.setVerticalGroup(layout.createSequentialGroup()
    				.addGroup(layout.createParallelGroup(CENTER, false)
@@ -180,7 +184,10 @@ public class DataSetSelector extends JPanel {
 						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    				.addComponent(getTableScrollPane(), rh * 2, rh * 3, Short.MAX_VALUE)
-   				.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				.addGroup(layout.createParallelGroup(CENTER, false)
+   						.addComponent(getColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   				)
    		);
 		
 		if (isAquaLAF())
@@ -331,15 +338,23 @@ public class DataSetSelector extends JPanel {
 			addButton = new JButton(PADialogMediator.NAME);
 			addButton.setToolTipText("Post Analysis");
 			makeSmall(addButton);
-			
 			if (isAquaLAF())
 				addButton.putClientProperty("JButton.buttonType", "gradient");
 		}
-		
 		return addButton;
 	}
 	
-
+	JButton getColorButton() {
+		if (colorButton == null) {
+			colorButton = new JButton("Change Colors...");
+			colorButton.setToolTipText("Change data set colors");
+			makeSmall(colorButton);
+			if (isAquaLAF())
+				colorButton.putClientProperty("JButton.buttonType", "gradient");
+		}
+		return colorButton;
+	}
+	
 	JButton getSelectAllButton() {
 		if (selectAllButton == null) {
 			selectAllButton = new JButton("Select All");
@@ -347,11 +362,9 @@ public class DataSetSelector extends JPanel {
 				setCheckedToAllRows(true);
 			});
 			makeSmall(selectAllButton);
-			
 			if (isAquaLAF())
 				selectAllButton.putClientProperty("JButton.buttonType", "gradient");
 		}
-		
 		return selectAllButton;
 	}
 	
@@ -362,11 +375,9 @@ public class DataSetSelector extends JPanel {
 				setCheckedToAllRows(false);
 			});
 			makeSmall(selectNoneButton);
-			
 			if (isAquaLAF())
 				selectNoneButton.putClientProperty("JButton.buttonType", "gradient");
 		}
-		
 		return selectNoneButton;
 	}
 	

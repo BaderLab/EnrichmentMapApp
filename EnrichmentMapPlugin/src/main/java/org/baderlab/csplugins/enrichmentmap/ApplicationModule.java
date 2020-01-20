@@ -22,6 +22,7 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PASimilarityTaskPa
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask;
+import org.baderlab.csplugins.enrichmentmap.view.control.DataSetColorSelectorDialog;
 import org.baderlab.csplugins.enrichmentmap.view.creation.DetailDataSetPanel;
 import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog;
 import org.baderlab.csplugins.enrichmentmap.view.creation.PathTextField;
@@ -110,6 +111,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(QueryGeneManiaTask.Factory.class);
 		installFactory(QueryStringTask.Factory.class);
 		installFactory(DatasetShowCommandTask.Factory.class);
+		installFactory(DataSetColorSelectorDialog.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

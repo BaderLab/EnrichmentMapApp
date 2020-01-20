@@ -121,6 +121,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private Provider<ControlPanel> controlPanelProvider;
 	@Inject private Provider<LegendPanelMediator> legendPanelMediatorProvider;
 	@Inject private Provider<PADialogMediator> paDialogMediatorProvider;
+	@Inject private DataSetColorSelectorDialog.Factory colorSelectorDialogFactory;
 	@Inject private Provider<EdgeWidthDialog> dialogProvider;
 	@Inject private Provider<HeatMapMediator> heatMapMediatorProvider;
 	@Inject private Provider<ShowAboutDialogAction> showAboutDialogActionProvider;
@@ -471,6 +472,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		
 		viewPanel.getDataSetSelector().getAddButton().addActionListener(evt -> {
 			paDialogMediatorProvider.get().showDialog(netView);
+		});
+		
+		viewPanel.getDataSetSelector().getColorButton().addActionListener(evt -> {
+			boolean colorsChanged = showColorDialog(map);
+			if(colorsChanged) {
+				viewPanel.getDataSetSelector().update();
+				heatMapMediatorProvider.get().reset();
+				updateVisualStyle(map, viewPanel);
+			}
 		});
 		
 		viewPanel.getDataSetSelector().getTable().addMouseListener(new MouseAdapter() {
@@ -847,6 +857,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					JOptionPane.WARNING_MESSAGE
 			);
 		}
+	}
+	
+	private boolean showColorDialog(EnrichmentMap map) {
+		DataSetColorSelectorDialog dialog = colorSelectorDialogFactory.create(map.getDataSetList());
+		dialog.pack();
+		dialog.setLocationRelativeTo(swingApplication.getJFrame());
+		dialog.setModal(true);
+		dialog.setVisible(true);
+		return dialog.colorsChanged();
 	}
 	
 	private void filterNodesAndEdges(EMViewControlPanel viewPanel, EnrichmentMap map) {

@@ -277,48 +277,47 @@ public class EMStyleBuilder {
 		String col = (dataSetCount > 1 && distinctEdges) ?
 				Columns.EDGE_DATASET.with(options.getAttributePrefix(), null) : CyEdge.INTERACTION;
 		
-		DiscreteMapping<String, Paint> dm = (DiscreteMapping<String, Paint>) dmFactory
+		DiscreteMapping<String, Paint> mapping = (DiscreteMapping<String, Paint>) dmFactory
 				.createVisualMappingFunction(col, String.class, vp);
 		
 		// Silence events fired by this mapping, or it will fire too many VisualMappingFunctionChangedEvents,
 		// which can be captured by VisualStyle later and cause unnecessary view updates,
 		// even though this mapping has not been set to a style yet
 		// (unfortunately that's just how Cytoscape's event payloads work).
-		eventHelper.silenceEventSource(dm);
+		eventHelper.silenceEventSource(mapping);
 		
 		try {
 			List<EMDataSet> dataSets = options.getEnrichmentMap().getDataSetList();
 			
-//			if (dataSetCount > 1 && distinctEdges) {
+			boolean hasColor = dataSets.stream().allMatch(ds -> ds.getColor() != null);
+			
+			Color overlapColor;
+			if(!hasColor) {
+				// set inital colors, user may change later from control panel
 				Color[] colors = getColorPalette(dataSets.size());
-				
 				// Do not use the filtered data sets here, because we don't want edge colours changing when filtering
 				for (int i = 0; i < dataSets.size(); i++) {
 					EMDataSet ds = dataSets.get(i);
 					Color color = colors[i];
-					dm.putMapValue(ds.getName(), color);
+					mapping.putMapValue(ds.getName(), color);
 					ds.setColor(color);
 				}
-				
-				dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_OVERLAP, colors[0]);
-				dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_SIG, Colors.SIG_EDGE_COLOR);
-				
-//			} else {
-//				Color overlapColor = distinctEdges ?
-//						ColorBrewer.Paired.getColorPalette(1)[0] : Colors.COMPOUND_EDGE_COLOR;
-//				
-//				dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_OVERLAP, overlapColor);
-//				dm.putMapValue(Columns.EDGE_INTERACTION_VALUE_SIG, Colors.SIG_EDGE_COLOR);
-//				
-//				for (EMDataSet ds : dataSets) {
-//					ds.setColor(overlapColor);
-//				}
-//			}
+				overlapColor = colors[0];
+			} else {
+				for (EMDataSet ds : dataSets) {
+					mapping.putMapValue(ds.getName(), ds.getColor());
+				}
+				overlapColor = dataSets.get(0).getColor();
+			}
+			
+			mapping.putMapValue(Columns.EDGE_INTERACTION_VALUE_OVERLAP, overlapColor);
+			mapping.putMapValue(Columns.EDGE_INTERACTION_VALUE_SIG, Colors.SIG_EDGE_COLOR);
+
 		} finally {
-			eventHelper.unsilenceEventSource(dm);
+			eventHelper.unsilenceEventSource(mapping);
 		}
 		
-		return dm;
+		return mapping;
 	}
 	
 	private void setEdgeWidth(VisualStyle vs, EMStyleOptions options) {
