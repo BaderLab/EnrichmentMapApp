@@ -30,6 +30,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
+import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -102,6 +103,7 @@ public class CytoscapeServiceModule extends AbstractModule {
 		bindService(CyColumnIdentifierFactory.class);
 		bindService(CyNetworkNaming.class);
 		bindService(CyApplicationConfiguration.class);
+		bindService(CyColorPaletteChooserFactory.class);
 		
 		bindService(DialogTaskManager.class);
 		TypeLiteral<SynchronousTaskManager<?>> synchronousManager = new TypeLiteral<SynchronousTaskManager<?>>(){};
