@@ -353,7 +353,6 @@ public class EnrichmentMap {
 	public List<EMDataSet> getDataSetList() {
 		List<EMDataSet> list = new ArrayList<>(dataSets.values());
 		list.sort(Comparator.naturalOrder());
-		
 		return list;
 	}
 

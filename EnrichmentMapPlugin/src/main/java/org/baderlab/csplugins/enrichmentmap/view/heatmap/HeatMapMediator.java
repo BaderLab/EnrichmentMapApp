@@ -240,9 +240,11 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			// sync with the data set list on the control panel
 			ViewParams params = controlPanelMediatorProvider.get().getAllViewParams().get(networkView.getSUID());
 			if(params != null) {
-				Map<String, EMDataSet> dataSets = map.getDataSets();
-				dataSets.keySet().removeAll(params.getFilteredOutDataSets());
-				return dataSets.values();
+				// important to maintain the order returned by map.getDataSetList() (issue #390)
+				List<EMDataSet> dataSets = new ArrayList<>(map.getDataSetList());
+				Set<String> filter = params.getFilteredOutDataSets();
+				dataSets.removeIf(ds -> filter.contains(ds.getName()));
+				return dataSets;
 			}
 		}
 		return map.getDataSetList();
