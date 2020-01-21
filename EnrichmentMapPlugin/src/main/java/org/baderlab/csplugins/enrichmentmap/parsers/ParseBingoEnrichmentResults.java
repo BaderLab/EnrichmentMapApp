@@ -25,8 +25,7 @@ public class ParseBingoEnrichmentResults extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws IOException {
-		if(taskMonitor == null)
-			taskMonitor = new NullTaskMonitor();
+		taskMonitor = NullTaskMonitor.check(taskMonitor);
 		taskMonitor.setTitle("Parsing Bingo Enrichment Result file");
 		
 		List<String> lines = LineReader.readLines(dataset.getDataSetFiles().getEnrichmentFileName1());

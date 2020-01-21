@@ -92,8 +92,7 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 	 * @return true if successful and false otherwise.
 	 */
 	public void initializeSets(TaskMonitor tm) {
-		if(tm == null)
-			tm = new NullTaskMonitor();
+		tm = NullTaskMonitor.check(tm);
 		DiscreteTaskMonitor taskMonitor = new DiscreteTaskMonitor(tm, map.getDataSetCount());
 
 		//create subset of genesets that contains only the genesets of interest with pvalue and qbalue less than values specified by the user.

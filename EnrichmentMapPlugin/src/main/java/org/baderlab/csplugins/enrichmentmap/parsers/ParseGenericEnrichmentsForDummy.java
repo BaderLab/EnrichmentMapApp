@@ -24,8 +24,7 @@ public class ParseGenericEnrichmentsForDummy extends AbstractTask implements Obs
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws IOException {
-		if(taskMonitor == null)
-			taskMonitor = new NullTaskMonitor();
+		taskMonitor = NullTaskMonitor.check(taskMonitor);
 		taskMonitor.setTitle("Parsing Generic Result file");
 		
 		List<String> lines = LineReader.readLines(fileName);

@@ -28,8 +28,7 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws IOException {
-		if(taskMonitor == null)
-			taskMonitor = new NullTaskMonitor();
+		taskMonitor = NullTaskMonitor.check(taskMonitor);
 		taskMonitor.setTitle("Parsing Bingo Enrichment Result file");
 		
 		dataset.getMap().getParams().setFDR(true);

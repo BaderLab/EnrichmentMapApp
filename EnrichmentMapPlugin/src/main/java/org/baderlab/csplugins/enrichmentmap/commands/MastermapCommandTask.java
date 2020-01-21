@@ -55,8 +55,7 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		if(tm == null)
-			tm = new NullTaskMonitor();
+		tm = NullTaskMonitor.check(tm);
 		tm.setStatusMessage("Running EnrichmentMap Mastermap Task");
 		
 		if(rootFolder == null || !rootFolder.exists()) {

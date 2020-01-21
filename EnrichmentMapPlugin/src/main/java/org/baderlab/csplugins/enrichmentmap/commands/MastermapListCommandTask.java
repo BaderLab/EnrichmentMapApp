@@ -38,8 +38,7 @@ public class MastermapListCommandTask extends AbstractTask implements Observable
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		if(tm == null)
-			tm = new NullTaskMonitor();
+		tm = NullTaskMonitor.check(tm);
 		tm.setStatusMessage("Running EnrichmentMap Mastermap List Task");
 		
 		if(rootFolder == null || !rootFolder.exists()) {

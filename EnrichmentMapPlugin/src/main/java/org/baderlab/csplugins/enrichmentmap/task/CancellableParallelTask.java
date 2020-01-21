@@ -15,8 +15,7 @@ public abstract class CancellableParallelTask<T> extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws InterruptedException {
-		if(tm == null)
-			tm = new NullTaskMonitor();
+		tm = NullTaskMonitor.check(tm);
 			
 		int cpus = Runtime.getRuntime().availableProcessors();
 		ExecutorService executor = Executors.newFixedThreadPool(cpus);

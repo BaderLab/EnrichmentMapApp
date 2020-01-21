@@ -126,8 +126,7 @@ public class RanksFileReaderTask extends AbstractTask {
 	 * parse the rank file
 	 */
 	public void parse(TaskMonitor taskMonitor) throws IOException {
-		if(taskMonitor == null)
-			taskMonitor = new NullTaskMonitor();
+		taskMonitor = NullTaskMonitor.check(taskMonitor);
 		
 		List<String> lines = LineReader.readLines(RankFileName);
 		

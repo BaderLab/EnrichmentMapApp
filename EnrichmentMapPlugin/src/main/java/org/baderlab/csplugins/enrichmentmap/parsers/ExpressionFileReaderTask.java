@@ -81,8 +81,7 @@ public class ExpressionFileReaderTask extends AbstractTask {
 	 * Parse expression/rank file
 	 */
 	public GeneExpressionMatrix parse(TaskMonitor taskMonitor) throws IOException {
-		if(taskMonitor == null)
-			taskMonitor = new NullTaskMonitor();
+		taskMonitor = NullTaskMonitor.check(taskMonitor);
 
 		//Need to check if the file specified as an expression file is actually a rank file
 		//If it is a rank file it can either be 5 or 2 columns but it is important that the rank

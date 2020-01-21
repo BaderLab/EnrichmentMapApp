@@ -98,8 +98,7 @@ public class GMTFileReaderTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		if(taskMonitor == null)
-			taskMonitor = new NullTaskMonitor();
+		taskMonitor = NullTaskMonitor.check(taskMonitor);
 		taskMonitor.setTitle("Parsing GMT file");
 		parse();
 	}

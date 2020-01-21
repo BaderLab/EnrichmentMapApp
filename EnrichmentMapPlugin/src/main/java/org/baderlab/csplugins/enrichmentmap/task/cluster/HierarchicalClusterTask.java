@@ -37,8 +37,7 @@ public class HierarchicalClusterTask extends AbstractTask implements ObservableT
 	}
 
 	public Map<Integer, RankValue> cluster(TaskMonitor tm) {
-		if (tm == null)
-			tm = new NullTaskMonitor();
+		tm = NullTaskMonitor.check(tm);
 		tm.setTitle("Hierarchical Cluster");
 
 		tm.setStatusMessage("Loading expression data");
