@@ -17,6 +17,8 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -60,6 +62,9 @@ import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask.MissingGenesetStrategy;
+import org.baderlab.csplugins.enrichmentmap.task.MissingGenesetsException;
+import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
@@ -126,6 +131,61 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			return;
 		}
 		
+		EMCreationParameters params = getCreationParameters();
+		List<DataSetParameters> dataSets = getDataSetParameters();
+		
+		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
+		TaskIterator tasks = taskFactory.createTaskIterator(MissingGenesetStrategy.FAIL_AT_END);
+		
+		// Attempt to run the tasks one time, if it fails because of missing genesets
+		// inform the user and prompt if they want to run again ignoring the problems.
+		dialogTaskManager.execute(tasks, TaskUtil.onFail(finishStatus -> {
+			Exception e = finishStatus.getException();
+			if(e instanceof MissingGenesetsException) {
+				Collection<String> names = ((MissingGenesetsException)e).getMissingGenesetNames();
+				boolean retry = promptForMissingGenesetRetry(names);
+				if(retry) {
+					// Run the tasks again but this time ignore the missing genesets
+					TaskIterator retryTasks = taskFactory.createTaskIterator(MissingGenesetStrategy.IGNORE);
+					dialogTaskManager.execute(retryTasks);
+				}
+			}
+		}));
+		
+		callback.setFinishButtonEnabled(true);
+		callback.close();
+	}
+	
+	
+	private boolean promptForMissingGenesetRetry(Collection<String> names) {
+		int count = names.size();
+		int limit = 10;
+		
+		String title = "There are " + count + " gene sets in the enrichment file that are missing from the GMT file. ";
+		if(count > limit)
+			title += "The first " + limit + " gene set names are listed below.";
+		
+		ErrorMessageDialog dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
+		List<Message> messages = names.stream().map(Message::warn).limit(limit).collect(Collectors.toList());
+		dialog.addSection(messages, title, IconManager.ICON_WARNING);
+		
+		String bottomMessage = "<html>It is recommend that you click 'Cancel' and fix the errors in your enrichment and GMT files. <br>"
+				+ "However, you may click 'Continue' to create the network without the missing gene sets.</html>";
+		dialog.addSection(Collections.emptyList(), bottomMessage, null);
+		
+		dialog.showDontWarnAgain(false);
+		dialog.setFinishButtonText("Continue");
+		
+		dialog.pack();
+		dialog.setLocationRelativeTo(callback.getDialogFrame());
+		dialog.setModal(true);
+		dialog.setVisible(true);
+		
+		return dialog.shouldContinue();
+	}
+	
+	
+	private EMCreationParameters getCreationParameters() {
 		String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
 		String stylePrefix = legacySupport.getNextStylePrefix();
 		
@@ -145,14 +205,16 @@ public class MasterDetailDialogPage implements CardDialogPage {
 					similarityMetric, cutoff, combined, edgeStrategy);
 		
 		params.setNetworkName(networkName);
-		
-		List<DataSetParameters> dataSets = 
-				dataSetListModel.toList().stream()
-				.map(DataSetListItem::getDetailPanel)
-				.map(DetailPanel::createDataSetParameters)
-				.filter(x -> x != null)
-				.collect(Collectors.toList());
-		
+		return params;
+	}
+	
+	private List<DataSetParameters> getDataSetParameters() {
+		List<DataSetParameters> dataSets = dataSetListModel.toList().stream()
+			.map(DataSetListItem::getDetailPanel)
+			.map(DetailPanel::createDataSetParameters)
+			.filter(x -> x != null)
+			.collect(Collectors.toList());
+
 		// Overwrite all the expression files if the common file has been provided
 		if(commonPanel.hasExpressionFile()) {
 			String exprPath = commonPanel.getExpressionFile();
@@ -168,15 +230,9 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			String classPath = commonPanel.getClassFile();
 			dataSets.forEach(dsp -> dsp.getFiles().setClassFile(classPath));
 		}
-		
-		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
-		TaskIterator tasks = taskFactory.createTaskIterator();
-		
-		dialogTaskManager.execute(tasks);
-		
-		callback.setFinishButtonEnabled(true);
-		callback.close();
+		return dataSets;
 	}
+	
 	
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {

@@ -44,7 +44,7 @@ public class EnrichmentResult {
 	 * This method is meant to be overridden in subclasses. The only reason its not
 	 * abstract is because in JUnits its convenient to just create an instance of this class.
 	 */
-	public boolean geneSetOfInterest(EnrichmentResultFilterParams params) {
+	public boolean isGeneSetOfInterest(EnrichmentResultFilterParams params) {
 		return true;
 	}
 	

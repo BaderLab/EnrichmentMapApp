@@ -29,6 +29,7 @@ import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask;
+import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask.MissingGenesetStrategy;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.model.CyEdge;
@@ -479,8 +480,7 @@ public class LegacySessionLoader {
 					
 					//initialize the Genesets (makes sure the leading edge is set correctly)
 					//Initialize the set of genesets and GSEA results that we want to compute over
-					InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map);
-					genesets_init.setThrowIfMissing(false); // MKTODO really?
+					InitializeGenesetsOfInterestTask genesets_init = new InitializeGenesetsOfInterestTask(map, MissingGenesetStrategy.IGNORE);
 					genesets_init.initializeSets(null);
 
 //					//for each map compute the similarity matrix, (easier than storing it) compute the geneset similarities

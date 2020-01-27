@@ -33,6 +33,7 @@ import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask.MissingGenesetStrategy;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PASimilarityTaskParallel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -127,7 +128,7 @@ public abstract class BaseNetworkTest {
 	protected void buildEnrichmentMap(EMCreationParameters params, DataSetParameters ...datasets) { //, DataSetFiles datasetFiles, Method method, String datasetName) {
 		List<DataSetParameters> dataSets = Arrays.asList(datasets);
 		CreateEnrichmentMapTaskFactory taskFactory = masterMapTaskFactoryFactory.create(params, dataSets);
-		TaskIterator taskIterator = taskFactory.createTaskIterator();
+		TaskIterator taskIterator = taskFactory.createTaskIterator(MissingGenesetStrategy.FAIL_IMMEDIATELY);
 		
 	    // make sure the task iterator completes
 	    TaskObserver observer = new TaskObserver() {

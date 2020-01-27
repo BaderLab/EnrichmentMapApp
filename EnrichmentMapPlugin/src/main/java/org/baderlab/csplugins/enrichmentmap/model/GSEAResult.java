@@ -119,7 +119,7 @@ public class GSEAResult extends EnrichmentResult {
 	//returns true if the enrichment passes both pvalue and qvalue cut-offs 
 	//returns false if it doesn't pass one or both the pvalue or qvalue cut-offs
 	@Override
-	public boolean geneSetOfInterest(EnrichmentResultFilterParams params) {
+	public boolean isGeneSetOfInterest(EnrichmentResultFilterParams params) {
 //		if(params.getNESFilter() == NESFilter.POSITIVE && getNES() <= 0)
 //			return false;
 //		if(params.getNESFilter() == NESFilter.NEGATIVE && getNES() >= 0)

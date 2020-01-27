@@ -88,6 +88,14 @@ public class ErrorMessageDialog extends JDialog {
 		return panel;
 	}
 	
+	public void setFinishButtonText(String text) {
+		finishButton.setText(text);
+	}
+	
+	public void showDontWarnAgain(boolean show) {
+		this.doNotShowCheckbox.setVisible(show);
+	}
+	
 	public boolean isDontWarnAgain() {
 		return doNotShowCheckbox.isSelected();
 	}
@@ -120,7 +128,7 @@ public class ErrorMessageDialog extends JDialog {
 			hasErrors = true;
 		}
 		
-		JLabel iconLabel = new JLabel(" " + icon + "  ");
+		JLabel iconLabel = new JLabel(icon == null ? "" : " " + icon + "  ");
 		iconLabel.setFont(iconManager.getIconFont(13.0f));
 		JLabel titleLabel = new JLabel(title);
 		SwingUtil.makeSmall(titleLabel);

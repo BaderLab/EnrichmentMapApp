@@ -28,17 +28,17 @@ import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGenericEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolver;
+import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask.MissingGenesetStrategy;
 import org.baderlab.csplugins.enrichmentmap.util.Baton;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
-public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
+public class CreateEnrichmentMapTaskFactory {
 
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private @Headless boolean headless;
@@ -59,21 +59,25 @@ public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 		this.params = params;
 	}
 	
-	@Override
+	
 	public TaskIterator createTaskIterator() {
+		return createTaskIterator(MissingGenesetStrategy.FAIL_IMMEDIATELY);
+	}
+	
+	public TaskIterator createTaskIterator(MissingGenesetStrategy strategy) {
 		TaskIterator tasks = new TaskIterator();
 		if(dataSets.isEmpty())
 			return tasks;
 		tasks.append(new TitleTask("Building EnrichmentMap"));
 		
 		EnrichmentMap map = new EnrichmentMap(params, serviceRegistrar);
-		createTasks(map, tasks);
+		createTasks(map, tasks, strategy);
 		
 		return tasks;
 	}
 	
 	
-	private void createTasks(EnrichmentMap map, TaskIterator tasks) {
+	private void createTasks(EnrichmentMap map, TaskIterator tasks, MissingGenesetStrategy strategy) {
 		for(DataSetParameters dataSetParameters : dataSets) {
 			String datasetName = dataSetParameters.getName();
 			Method method = dataSetParameters.getMethod();
@@ -116,8 +120,7 @@ public class CreateEnrichmentMapTaskFactory extends AbstractTaskFactory {
 		}
 		
 		// Filter out genesets that don't pass the p-value and q-value thresholds
-		InitializeGenesetsOfInterestTask genesetsTask = new InitializeGenesetsOfInterestTask(map);
-//		genesetsTask.setThrowIfMissing(false); // TEMPORARY
+		InitializeGenesetsOfInterestTask genesetsTask = new InitializeGenesetsOfInterestTask(map, strategy);
 		tasks.append(genesetsTask);
 		
 		// Trim the genesets to only contain the genes that are in the data file.

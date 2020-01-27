@@ -123,7 +123,7 @@ public class GenericResult extends EnrichmentResult {
 	 *         these values pass the specified thresholds)
 	 */
 	@Override
-	public boolean geneSetOfInterest(EnrichmentResultFilterParams params) {
+	public boolean isGeneSetOfInterest(EnrichmentResultFilterParams params) {
 //		if(params.getNESFilter() == NESFilter.POSITIVE && getNES() <= 0)
 //			return false;
 //		if(params.getNESFilter() == NESFilter.NEGATIVE && getNES() >= 0)

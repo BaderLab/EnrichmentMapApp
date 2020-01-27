@@ -45,6 +45,7 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -58,7 +59,6 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfGeneSets;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
-import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -70,21 +70,25 @@ import org.cytoscape.work.TaskMonitor;
 
 public class InitializeGenesetsOfInterestTask extends AbstractTask {
 
-	private EnrichmentMap map;
+	private final EnrichmentMap map;
 
-	// TEMPORARY - this flag exists to turn off throwing of exception if a gene set is missing
-	private boolean throwIfMissing = true;
+	public enum MissingGenesetStrategy {
+		IGNORE,
+		FAIL_IMMEDIATELY,
+		FAIL_AT_END;
+	}
 	
-
-	public InitializeGenesetsOfInterestTask(EnrichmentMap map) {
+	private final MissingGenesetStrategy missingGenesetStrategy;
+	
+	public InitializeGenesetsOfInterestTask(EnrichmentMap map, MissingGenesetStrategy strategy) {
 		this.map = map;
+		this.missingGenesetStrategy = strategy;
 	}
 	
-	public void setThrowIfMissing(boolean throwIfMissing) {
-		this.throwIfMissing = throwIfMissing;
+	public InitializeGenesetsOfInterestTask(EnrichmentMap map) {
+		this(map, MissingGenesetStrategy.FAIL_IMMEDIATELY);
 	}
 	
-
 	/**
 	 * filter the genesets, restricting them to only those passing the user
 	 * specified thresholds.
@@ -92,16 +96,16 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 	 * @return true if successful and false otherwise.
 	 */
 	public void initializeSets(TaskMonitor tm) {
-		tm = NullTaskMonitor.check(tm);
 		DiscreteTaskMonitor taskMonitor = new DiscreteTaskMonitor(tm, map.getDataSetCount());
 
 		//create subset of genesets that contains only the genesets of interest with pvalue and qbalue less than values specified by the user.
 		//Go through each Dataset populating the Gene set of interest in each dataset object
-		Map<String, EMDataSet> datasets = map.getDataSets();
+		Map<String,EMDataSet> datasets = map.getDataSets();
 		
 		// count how many experiments (DataSets) contain the geneset
 		Optional<Integer> minExperiments = map.getParams().getMinExperiments();
 		Map<String,Integer> occurrences = minExperiments.isPresent() ? new HashMap<>() : null;
+		Set<String> missingGeneSets = new LinkedHashSet<>();
 		
 		for(String datasetName : datasets.keySet()) {
 			taskMonitor.inc();
@@ -133,9 +137,20 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 					updateRankAtMax((GSEAResult)result, ranks);
 				}
 				
-				if(result.geneSetOfInterest(map.getParams())) {
+				if(result.isGeneSetOfInterest(map.getParams())) {
 					GeneSet geneset = genesets.get(genesetName);
-					if(geneset != null) {
+					
+					if(geneset == null) {
+						switch(missingGenesetStrategy) {
+						case FAIL_IMMEDIATELY:
+							throw new MissingGenesetsException(genesetName);
+						case FAIL_AT_END:
+							missingGeneSets.add(genesetName);
+							break;
+						case IGNORE:
+							break;
+						}
+					} else {
 						// while we are checking, update the size of the genesets based on post filtered data
 						result.setGsSize(geneset.getGenes().size());
 						if(occurrences != null) {
@@ -143,11 +158,12 @@ public class InitializeGenesetsOfInterestTask extends AbstractTask {
 						}
 						genesetsOfInterest.put(genesetName, geneset);
 					}
-					else if(throwIfMissing) {
-						throw new IllegalThreadStateException("The Geneset: " + genesetName + " is not found in the GMT file.");
-					}
 				}
 			}
+		}
+		
+		if(!missingGeneSets.isEmpty()) {
+			throw new MissingGenesetsException(missingGeneSets);
 		}
 		
 		// Remove gene-sets that don't pass the minimum occurrence cutoff
