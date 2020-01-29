@@ -13,14 +13,13 @@ import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
+import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.Tunable;
 
 import com.google.inject.Inject;
@@ -110,17 +109,9 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
 		TaskIterator tasks = taskFactory.createTaskIterator();
 		
-		taskManager.execute(tasks, new TaskObserver() {
-			@Override 
-			public void taskFinished(ObservableTask task) {
-				if(task instanceof CreateEMNetworkTask) {
-					CreateEMNetworkTask networkTask = (CreateEMNetworkTask) task;
-					result[0] = networkTask.getResults(Long.class);
-				}
-			}
-			@Override 
-			public void allFinished(FinishStatus finishStatus) { }
-		});
+		taskManager.execute(tasks, TaskUtil.taskFinished(CreateEMNetworkTask.class, networkTask -> {
+			result[0] = networkTask.getResults(Long.class); // get SUID of created network
+		}));
 		
 		tm.setStatusMessage("Done.");
 	}

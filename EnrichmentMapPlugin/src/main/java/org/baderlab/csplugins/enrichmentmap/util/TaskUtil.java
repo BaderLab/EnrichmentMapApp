@@ -23,6 +23,31 @@ public class TaskUtil {
 		};
 	}
 	
+	public static <T> TaskObserver allFinished(Consumer<FinishStatus> consumer) {
+		return new TaskObserver() {
+			@Override
+			public void taskFinished(ObservableTask task) {
+			}
+
+			@Override
+			public void allFinished(FinishStatus finishStatus) { 
+				consumer.accept(finishStatus);
+			}
+		};
+	}
+	
+	public static <T> TaskObserver taskFinished(Consumer<ObservableTask> consumer) {
+		return new TaskObserver() {
+			@Override
+			public void taskFinished(ObservableTask task) {
+				consumer.accept(task);
+			}
+
+			@Override
+			public void allFinished(FinishStatus finishStatus) { }
+		};
+	}
+	
 	public static <T> TaskObserver taskFinished(Class<T> taskType, Consumer<T> consumer) {
 		return new TaskObserver() {
 			@Override

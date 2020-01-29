@@ -16,17 +16,15 @@ import javax.swing.JOptionPane;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -76,17 +74,13 @@ public class StringAppMediator {
 		
 		// Get list of organisms from STRING App
 		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
-				STRING_NAMESPACE, STRING_SPECIES_COMMAND, Collections.emptyMap(), new TaskObserver() {
-					
-					@Override
-					@SuppressWarnings("serial")
-					public void taskFinished(ObservableTask task) {
-						if (task instanceof ObservableTask) {
-							if (((ObservableTask) task).getResultClasses().contains(JSONResult.class)) {
-								JSONResult json = ((ObservableTask) task).getResults(JSONResult.class);
+				STRING_NAMESPACE, STRING_SPECIES_COMMAND, Collections.emptyMap(), TaskUtil.taskFinished(task -> {
+							if (task.getResultClasses().contains(JSONResult.class)) {
+								JSONResult json = task.getResults(JSONResult.class);
 								
 								if (json != null && json.getJSON() != null) {
 									Gson gson = new Gson();
+									@SuppressWarnings("serial")
 									Type type = new TypeToken<ArrayList<STRSpecies>>(){}.getType();
 									List<STRSpecies> organisms = gson.fromJson(json.getJSON(), type);
 									
@@ -96,14 +90,7 @@ public class StringAppMediator {
 										throw new RuntimeException("Unable to retrieve available species from STRING App.");
 								}
 							}
-						}
-					}
-					
-					@Override
-					public void allFinished(FinishStatus finishStatus) {
-						// Never called by Cytoscape...
-					}
-				});
+				}));
 		
 		ti.append(queryTask);
 		

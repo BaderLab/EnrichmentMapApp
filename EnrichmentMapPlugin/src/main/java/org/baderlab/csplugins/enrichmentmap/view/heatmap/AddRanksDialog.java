@@ -26,15 +26,13 @@ import javax.swing.JTextField;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.common.base.Strings;
@@ -86,15 +84,10 @@ public class AddRanksDialog extends JDialog {
 		EMDataSet dataset = getDataSet();
 		RanksFileReaderTask task = new RanksFileReaderTask(rankFileName, dataset, ranksName, true);
 		
-		dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
-			@Override
-			public void taskFinished(ObservableTask task) { }
-			@Override
-			public void allFinished(FinishStatus finishStatus) {
+		dialogTaskManager.execute(new TaskIterator(task), TaskUtil.allFinished(finishStatus -> {
 				resultRanksName = ranksName;
 				dispose();
-			}
-		});
+		}));
 	}
 	
 	private void createContents() {

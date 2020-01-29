@@ -7,15 +7,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
+import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.BoundedInteger;
@@ -98,54 +96,34 @@ public class QueryGeneManiaTask extends AbstractTask {
 			args.put("combiningMethod", weightingMethods.getSelectedValue().name());
 			
 			TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
-					GENEMANIA_NAMESPACE, GENEMANIA_SEARCH_COMMAND, args, new TaskObserver() {
+					GENEMANIA_NAMESPACE, GENEMANIA_SEARCH_COMMAND, args, TaskUtil.taskFinished(task -> {
 				
-				@Override
-				@SuppressWarnings("serial")
-				public void taskFinished(ObservableTask task) {
-					if (task instanceof ObservableTask) {
-						if (((ObservableTask) task).getResultClasses().contains(JSONResult.class)) {
-							JSONResult json = ((ObservableTask) task).getResults(JSONResult.class);
+						if (task.getResultClasses().contains(JSONResult.class)) {
+							JSONResult json = task.getResults(JSONResult.class);
 							
 							if (json != null && json.getJSON() != null) {
 								Gson gson = new Gson();
+								@SuppressWarnings("serial")
 								Type type = new TypeToken<GMSearchResult>(){}.getType();
 								result = gson.fromJson(json.getJSON(), type);
 							} else {
 								throw new RuntimeException("Unexpected error when getting search results from GeneMANIA.");
 							}
 						}
-					}
-				}
-				
-				@Override
-				public void allFinished(FinishStatus finishStatus) {
-					// Never called by Cytoscape...
-				}
-			});
+			}));
 			
 			
 			// run the task right here so we can handle errors
 			boolean[] timedOut = { false };
 			Exception[] cause = { null };
 			
-			syncTaskManager.execute(ti, new TaskObserver() {
-				
-				@Override
-				public void taskFinished(ObservableTask task) {
-				}
-				
-				@Override
-				public void allFinished(FinishStatus finishStatus) {
-					if(finishStatus.getType() == FinishStatus.Type.FAILED) {
+			syncTaskManager.execute(ti, TaskUtil.onFail(finishStatus -> {
 						Exception ex = finishStatus.getException();
 						if(ex != null && ex.getMessage() != null && ex.getMessage().contains("timeout")) {
 							timedOut[0] = true;
 							cause[0] = ex;
 						}
-					}
-				}
-			});
+			}));
 			
 			if(timedOut[0]) {
 				throw new RuntimeException("GeneMANIA query timed out. Please try again with fewer genes.", cause[0]);

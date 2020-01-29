@@ -6,15 +6,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
+import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.BoundedDouble;
@@ -94,31 +93,21 @@ public class QueryStringTask extends AbstractTask {
 			args.put("limit", "" + limit.getValue());
 			
 			TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
-					STRING_NAMESPACE, STRING_SEARCH_COMMAND, args, new TaskObserver() {
+					STRING_NAMESPACE, STRING_SEARCH_COMMAND, args, TaskUtil.taskFinished(task -> {
 				
-				@Override
-				public void taskFinished(ObservableTask task) {
-					if (task instanceof ObservableTask) {
-						if (((ObservableTask) task).getResultClasses().contains(JSONResult.class)) {
+						if (task.getResultClasses().contains(JSONResult.class)) {
 							JSONResult json = ((ObservableTask) task).getResults(JSONResult.class);
 							
 							if (json != null && json.getJSON() != null) {
 								Gson gson = new Gson();
-								Map<?, ?> map = gson.fromJson(json.getJSON(), Map.class);
+								Map<?,?> map = gson.fromJson(json.getJSON(), Map.class);
 								Number suid = (Number) map.get("SUID");
 								result = suid != null ? suid.longValue() : null;
 							} else {
 								throw new RuntimeException("Unexpected error when getting search results from STRING.");
 							}
 						}
-					}
-				}
-				
-				@Override
-				public void allFinished(FinishStatus finishStatus) {
-					// Never called by Cytoscape...
-				}
-			});
+			}));
 			insertTasksAfterCurrentTask(ti);
 			
 			// Save this as the default organism for next time

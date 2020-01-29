@@ -71,6 +71,7 @@ import org.baderlab.csplugins.enrichmentmap.task.SelectNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.UpdateAssociatedStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDataSetsTask;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
+import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.AbstractViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.AssociatedViewControlPanel;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewControlPanel;
@@ -105,10 +106,7 @@ import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.inject.Inject;
@@ -720,17 +718,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				return;
 			
 			RemoveSignatureDataSetsTask task = removeDataSetsTaskFactory.create(dataSets , map);
-			dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
-				@Override
-				public void taskFinished(ObservableTask task) {
-				}
-				@Override
-				public void allFinished(FinishStatus finishStatus) {
+			dialogTaskManager.execute(new TaskIterator(task), TaskUtil.allFinished(finishStatus -> {
 					viewPanel.updateDataSetSelector();
 					updateLegends(viewPanel);
 					viewPanel.getNetworkView().updateView();
-				}
-			});
+			}));
 		}
 	}
 	
@@ -752,16 +744,10 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 
 	private void applyVisualStyle(EMStyleOptions options, boolean updateChartOnly) {
 		ApplyEMStyleTask task = applyStyleTaskFactory.create(options, updateChartOnly);
-		dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
-			@Override
-			public void taskFinished(ObservableTask task) {
-			}
-			@Override
-			public void allFinished(FinishStatus finishStatus) {
+		dialogTaskManager.execute(new TaskIterator(task), TaskUtil.allFinished(finishStatus -> {
 				EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(options.getNetworkView());
 				updateLegends(viewPanel);
-			}
-		});
+		}));
 	}
 	
 	private void updateAssociatedStyle(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {
@@ -1027,18 +1013,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			
 			// Run Task
 			task = filterNodesEdgesTaskFactory.create(netView, filteredInNodes, filteredInEdges, filterMode);
-			dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
-				@Override
-				public void taskFinished(ObservableTask task) {
-				}
-				
-				@Override
-				public void allFinished(FinishStatus finishStatus) {
+			dialogTaskManager.execute(new TaskIterator(task), TaskUtil.allFinished(finishStatus -> {
 					task = null;
 					if (!cancelled)
 						netView.updateView();
-				}
-			});
+			}));
 		}
 		
 		public void cancel() {
