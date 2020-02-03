@@ -79,7 +79,6 @@ import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.Labels;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
-import org.baderlab.csplugins.enrichmentmap.view.util.TextIcon;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyDisposable;
@@ -88,6 +87,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 

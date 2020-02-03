@@ -16,10 +16,10 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.view.util.TextIcon;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 
 import com.google.inject.Singleton;
 

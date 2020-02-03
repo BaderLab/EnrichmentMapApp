@@ -47,10 +47,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.util.Optional;
 
 import javax.swing.JLabel;
@@ -61,7 +57,6 @@ import javax.swing.table.TableCellRenderer;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
-import org.baderlab.csplugins.enrichmentmap.view.util.TextIcon;
 
 /**
  * Flips column headers to vertical position
@@ -115,7 +110,7 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		Font font = UIManager.getFont("TableHeader.font");
 		Color foreground = UIManager.getColor("TableHeader.foreground");
 		
-		label.setIcon(new VerticalTextIcon(s, label.getFontMetrics(font), foreground, false));
+		label.setIcon(new VerticalTextIcon(label.getFontMetrics(font), foreground, false, s));
 		label.setVerticalAlignment(JLabel.BOTTOM);
 		label.setHorizontalAlignment(JLabel.CENTER);
 		
@@ -127,29 +122,4 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		return label;
 	}
 	
-	private class VerticalTextIcon extends TextIcon {
-
-		private final boolean clockwise;
-		
-		public VerticalTextIcon(String text, FontMetrics fm, Color color, boolean clockwise) {
-			super(text, fm.getFont(), color, fm.getHeight() + 4, fm.stringWidth(text) + 4);
-			this.clockwise = clockwise;
-		}
-		
-		@Override
-		protected void drawText(String text, Font font, Graphics g, Component c, int x, int y) {
-			Graphics2D g2d = (Graphics2D) g.create();
-			g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			
-			if (clockwise) {
-				g2d.rotate(Math.PI / 2);
-			} else {
-				g2d.rotate(-Math.PI / 2);
-				g2d.translate(-c.getHeight(), c.getWidth());
-			}
-			
-			g2d.drawString(text, 4, -4);
-			g2d.dispose();
-		}
-	}
 }

@@ -18,8 +18,8 @@ import javax.swing.UIManager;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
-import org.baderlab.csplugins.enrichmentmap.view.util.TextIcon;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 
 import com.google.inject.Inject;
 
