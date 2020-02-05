@@ -1,8 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -10,7 +8,6 @@ import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Dialog;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.cluster.HierarchicalClusterTask;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
@@ -63,22 +60,22 @@ public class ClusterRankingOption implements RankingOption {
 	
 
 	@Override
-	public CompletableFuture<Optional<Map<Integer,RankValue>>> computeRanking(Collection<Integer> genes) {
+	public CompletableFuture<Optional<RankingResult>> computeRanking(Collection<Integer> genes) {
 		if(genes.size() < 2) {
 			// The HierarchicalClusterTask requires at least 2 genes
-			return CompletableFuture.completedFuture(Optional.of(Collections.emptyMap()));
+			return CompletableFuture.completedFuture(Optional.of(RankingResult.empty()));
 		}
 		
 		HierarchicalClusterTask task = new HierarchicalClusterTask(map, genes, distance.getMetric());
 		
-		CompletableFuture<Optional<Map<Integer,RankValue>>> future = new CompletableFuture<>();
+		CompletableFuture<Optional<RankingResult>> future = new CompletableFuture<>();
 		
 		taskManager.execute(new TaskIterator(task), new TaskObserver() {
 			@Override
 			public void taskFinished(ObservableTask task) {
 				if(task instanceof HierarchicalClusterTask) {
 					HierarchicalClusterTask clusterTask = (HierarchicalClusterTask) task;
-					Optional<Map<Integer,RankValue>> ranking = clusterTask.getActualResults();
+					Optional<RankingResult> ranking = clusterTask.getActualResults();
 					future.complete(ranking);
 				}
 			}

@@ -60,12 +60,12 @@ public class BasicRankingOption implements RankingOption {
 	}
 	
 	@Override
-	public CompletableFuture<Optional<Map<Integer, RankValue>>> computeRanking(Collection<Integer> genes) {
+	public CompletableFuture<Optional<RankingResult>> computeRanking(Collection<Integer> genes) {
 		Map<Integer,RankValue> result = new HashMap<>();
 		
 		for(Map.Entry<Integer,Rank> entry : ranking.getRanking().entrySet()) {
 			Rank rank = entry.getValue();
-			result.put(entry.getKey(), new RankValue(rank.getRank(), rank.getScore(), false));
+			result.put(entry.getKey(), new RankValue(rank, false));
 		}
 		
 		// Remove genes that we don't need
@@ -73,7 +73,7 @@ public class BasicRankingOption implements RankingOption {
 		
 		normalizeRanks(result);
 		
-		return CompletableFuture.completedFuture(Optional.of(result));
+		return CompletableFuture.completedFuture(Optional.of(new RankingResult(result, false)));
 	}
 	
 	

@@ -30,6 +30,7 @@ import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.task.BaseNetworkTest;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.RankingOption;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.RankingResult;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
 import org.jukito.JukitoRunner;
 import org.junit.After;
@@ -97,7 +98,8 @@ public class HeatMapRanksTest extends BaseNetworkTest {
 		Map<String,EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
 		GSEAResult result = (GSEAResult) results.get(geneSetName);
 		RankingOption rankingOption = new GSEALeadingEdgeRankingOption(dataset, result, Ranking.GSEARanking);
-		Map<Integer,RankValue> ranks = rankingOption.computeRanking(gs.getGenes()).get().get();
+		RankingResult rankingResult = rankingOption.computeRanking(gs.getGenes()).get().get();
+		Map<Integer,RankValue> ranks = rankingResult.getRanking();
 		assertEquals(454, ranks.size());
 		
 		// Convert to useful collections

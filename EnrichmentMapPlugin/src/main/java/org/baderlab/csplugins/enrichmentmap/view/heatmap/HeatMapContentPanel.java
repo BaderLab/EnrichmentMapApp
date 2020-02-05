@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel.RANK_COL;
 import static org.cytoscape.util.swing.IconManager.ICON_BARS;
 
 import java.awt.BorderLayout;
@@ -11,7 +12,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -43,6 +43,7 @@ import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.RankingResult.SortSuggestion;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankOptionRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderVerticalRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
@@ -125,7 +126,7 @@ public class HeatMapContentPanel extends JPanel {
 		JTableHeader header = getTable().getTableHeader();
 		TableColumnModel columnModel = getTable().getColumnModel();
 		if(columnModel.getColumnCount() > 0) {
-			TableColumn rankColumn = columnModel.getColumn(HeatMapTableModel.RANK_COL);
+			TableColumn rankColumn = columnModel.getColumn(RANK_COL);
 			TableCellRenderer existingRenderer = rankColumn.getHeaderRenderer();
 			if(existingRenderer instanceof ColumnHeaderRankOptionRenderer) {
 				((ColumnHeaderRankOptionRenderer)existingRenderer).dispose(header);
@@ -144,9 +145,9 @@ public class HeatMapContentPanel extends JPanel {
 		TableCellRenderer vertRendererPheno1 = new ColumnHeaderVerticalRenderer(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_1);
 		TableCellRenderer vertRendererPheno2 = new ColumnHeaderVerticalRenderer(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_2);
 		
-		TableColumn rankColumn = columnModel.getColumn(HeatMapTableModel.RANK_COL);
+		TableColumn rankColumn = columnModel.getColumn(RANK_COL);
 
-		rankColumn.setHeaderRenderer(columnHeaderRankOptionRendererFactory.create(this, HeatMapTableModel.RANK_COL));
+		rankColumn.setHeaderRenderer(columnHeaderRankOptionRendererFactory.create(this, RANK_COL));
 		rankColumn.setPreferredWidth(100);
 		
 		int colCount = tableModel.getColumnCount();
@@ -425,7 +426,7 @@ public class HeatMapContentPanel extends JPanel {
 		if (sortKeys == null)
 			sortKeys = getTable().getRowSorter().getSortKeys();
 		if (sortKeys.isEmpty())
-			sortKeys = Collections.singletonList(new SortKey(HeatMapTableModel.RANK_COL, SortOrder.ASCENDING));
+			sortKeys = Collections.singletonList(new SortKey(RANK_COL, SortOrder.ASCENDING));
 		
 		try {
 			getTable().getRowSorter().setSortKeys(sortKeys);
@@ -491,17 +492,26 @@ public class HeatMapContentPanel extends JPanel {
 		EnrichmentMap map = tableModel.getEnrichmentMap();
 		List<Integer> geneIds = genes.stream().map(map::getHashFromGene).collect(Collectors.toList());
 		
-		CompletableFuture<Optional<Map<Integer,RankValue>>> rankingFuture = newValue.computeRanking(geneIds);
+		CompletableFuture<Optional<RankingResult>> rankingFuture = newValue.computeRanking(geneIds);
 		
 		if (rankingFuture != null) {
-			rankingFuture.whenComplete((ranking, ex) -> {
-				if (ranking.isPresent()) {
-					tableModel.setRanking(newValue.getName(), ranking.get());
-					getTable().getColumnModel().getColumn(HeatMapTableModel.RANK_COL).setHeaderValue(newValue);
+			rankingFuture.whenComplete((opt, ex) -> {
+				TableColumn rankCol = getTable().getColumnModel().getColumn(RANK_COL);
+				if(opt.isPresent()) {
+					RankingResult result = opt.get();
+					tableModel.setRanking(newValue.getName(), result.getRanking());
+					rankCol.setHeaderValue(newValue);
+					
+					SortSuggestion sort = result.getSortSuggestion();
+					if(sort == SortSuggestion.ASC) {
+						getTable().getRowSorter().setSortKeys(Arrays.asList(new SortKey(RANK_COL, SortOrder.ASCENDING)));
+					} else if(sort == SortSuggestion.DESC) {
+						getTable().getRowSorter().setSortKeys(Arrays.asList(new SortKey(RANK_COL, SortOrder.DESCENDING)));
+					}
+					
 				} else {
 					tableModel.setRanking(newValue.getName(), null);
-					getTable().getColumnModel().getColumn(HeatMapTableModel.RANK_COL)
-							.setHeaderValue(new RankOptionErrorHeader(newValue));
+					rankCol.setHeaderValue(new RankOptionErrorHeader(newValue));
 				}
 				getTable().getTableHeader().repaint();
 			});

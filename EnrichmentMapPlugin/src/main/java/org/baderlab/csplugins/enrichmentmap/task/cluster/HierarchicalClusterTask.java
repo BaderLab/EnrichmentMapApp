@@ -15,6 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.RankingResult;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -28,7 +29,7 @@ public class HierarchicalClusterTask extends AbstractTask implements ObservableT
 	private final EnrichmentMap map;
 	private final DistanceMetric distanceMetric;
 
-	private Optional<Map<Integer, RankValue>> results;
+	private Optional<RankingResult> results;
 
 	public HierarchicalClusterTask(EnrichmentMap map, Collection<Integer> genes, DistanceMetric distanceMetric) {
 		this.map = map;
@@ -109,14 +110,15 @@ public class HierarchicalClusterTask extends AbstractTask implements ObservableT
 	@Override
 	public void run(TaskMonitor tm) {
 		try {
-			results = Optional.of(cluster(tm));
+			Map<Integer,RankValue> ranking = cluster(tm);
+			results = Optional.of(new RankingResult(ranking, false));
 		} catch (Exception e) {
 			e.printStackTrace();
 			results = Optional.empty();
 		}
 	}
 
-	public Optional<Map<Integer, RankValue>> getActualResults() {
+	public Optional<RankingResult> getActualResults() {
 		return results;
 	}
 

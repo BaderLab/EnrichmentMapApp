@@ -316,6 +316,8 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	private HeatMapParams getHeatMapParams(EnrichmentMap map, Long networkSUID, boolean onlyEdges) {
 		HeatMapParams params = emManager.getHeatMapParams(networkSUID, onlyEdges);
 		
+		// TODO determine if the selected nodes (including source/target of 
+		
 		if (params == null) {
 			HeatMapParams.Builder builder = new HeatMapParams.Builder();
 
