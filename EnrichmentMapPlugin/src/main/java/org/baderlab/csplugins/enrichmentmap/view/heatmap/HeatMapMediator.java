@@ -472,11 +472,11 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			EnrichmentMap map, CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
 		Set<Integer> union = new HashSet<>();
 		for(CyNode node : nodes) {
-			union.addAll(getGenes(geneSetToGenes, network, node, prefix));
+			union.addAll(getGenes(map, geneSetToGenes, network, node, prefix));
 		}
 		for(CyEdge edge : edges) {
-			union.addAll(getGenes(geneSetToGenes, network, edge.getSource(), prefix));
-			union.addAll(getGenes(geneSetToGenes, network, edge.getTarget(), prefix));
+			union.addAll(getGenes(map, geneSetToGenes, network, edge.getSource(), prefix));
+			union.addAll(getGenes(map, geneSetToGenes, network, edge.getTarget(), prefix));
 		}
 		return union.stream().map(map::getGeneFromHashKey).collect(Collectors.toSet());
 	}
@@ -485,28 +485,35 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			EnrichmentMap map, CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
 		Set<Integer> inter = null;
 		for(CyNode node : nodes) {
-			Collection<Integer> genes = getGenes(geneSetToGenes, network, node, prefix);
+			Collection<Integer> genes = getGenes(map, geneSetToGenes, network, node, prefix);
 			if(inter == null)
 				inter = new HashSet<>(genes);
 			else
 				inter.retainAll(genes);
 		}
 		for(CyEdge edge : edges) {
-			Collection<Integer> genes = getGenes(geneSetToGenes, network, edge.getSource(), prefix);
+			Collection<Integer> genes = getGenes(map, geneSetToGenes, network, edge.getSource(), prefix);
 			if(inter == null)
 				inter = new HashSet<>(genes);
 			else
 				inter.retainAll(genes);
-			inter.retainAll(getGenes(geneSetToGenes, network, edge.getTarget(), prefix));
+			inter.retainAll(getGenes(map, geneSetToGenes, network, edge.getTarget(), prefix));
 		}
 		return inter == null ? Collections.emptySet() : inter.stream().map(map::getGeneFromHashKey).collect(Collectors.toSet());
 	}
 	
-	public static Collection<Integer> getGenes(Map<String,Set<Integer>> geneSetToFilteredGenes, CyNetwork network, CyNode node, String prefix) {
+	public static Collection<Integer> getGenes(EnrichmentMap map, Map<String,Set<Integer>> geneSetToFilteredGenes, CyNetwork network, CyNode node, String prefix) {
 		CyRow row = network.getRow(node);
-		String gsName = EMStyleBuilder.Columns.NODE_NAME.get(row, prefix);
-		Set<Integer> set = geneSetToFilteredGenes.get(gsName);
-		return set == null ? Collections.emptyList() : set;
+		String gsType = EMStyleBuilder.Columns.NODE_GS_TYPE.get(row, prefix, null);
+		
+		if(EMStyleBuilder.Columns.NODE_GS_TYPE_SIGNATURE.equalsIgnoreCase(gsType)) {
+			List<String> genes = EMStyleBuilder.Columns.NODE_GENES.get(row, prefix, null);
+			return genes.stream().map(map::getHashFromGene).collect(Collectors.toList());
+		} else {
+			String gsName = EMStyleBuilder.Columns.NODE_NAME.get(row, prefix);
+			Set<Integer> set = geneSetToFilteredGenes.get(gsName);
+			return set == null ? Collections.emptyList() : set;
+		}
 	}
 	
 	
