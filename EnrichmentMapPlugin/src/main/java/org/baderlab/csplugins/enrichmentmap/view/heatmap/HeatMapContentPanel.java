@@ -36,6 +36,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.Compress;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -74,6 +75,7 @@ public class HeatMapContentPanel extends JPanel {
 	
 	@Inject private Provider<OptionsPopup> optionsPopupProvider;
 	@Inject private ColumnHeaderRankOptionRenderer.Factory columnHeaderRankOptionRendererFactory;
+	@Inject private PropertyManager propertyManager;
 	@Inject private IconManager iconManager;
 
 	private GradientLegendPanel gradientLegendPanel;
@@ -501,14 +503,14 @@ public class HeatMapContentPanel extends JPanel {
 					RankingResult result = opt.get();
 					tableModel.setRanking(newValue.getName(), result.getRanking());
 					rankCol.setHeaderValue(newValue);
-					
-					SortSuggestion sort = result.getSortSuggestion();
-					if(sort == SortSuggestion.ASC) {
-						getTable().getRowSorter().setSortKeys(Arrays.asList(new SortKey(RANK_COL, SortOrder.ASCENDING)));
-					} else if(sort == SortSuggestion.DESC) {
-						getTable().getRowSorter().setSortKeys(Arrays.asList(new SortKey(RANK_COL, SortOrder.DESCENDING)));
+					if(Boolean.TRUE.equals(propertyManager.getValue(PropertyManager.HEATMAP_AUTO_SORT))) {
+						SortSuggestion sort = result.getSortSuggestion();
+						if(sort == SortSuggestion.ASC) {
+							getTable().getRowSorter().setSortKeys(Arrays.asList(new SortKey(RANK_COL, SortOrder.ASCENDING)));
+						} else if(sort == SortSuggestion.DESC) {
+							getTable().getRowSorter().setSortKeys(Arrays.asList(new SortKey(RANK_COL, SortOrder.DESCENDING)));
+						}
 					}
-					
 				} else {
 					tableModel.setRanking(newValue.getName(), null);
 					rankCol.setHeaderValue(new RankOptionErrorHeader(newValue));

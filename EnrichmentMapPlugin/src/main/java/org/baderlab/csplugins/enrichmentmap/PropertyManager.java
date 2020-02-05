@@ -45,6 +45,7 @@ public class PropertyManager {
 	
 	public static final Property<Boolean> HEATMAP_AUTOFOCUS = new Property<>("heatmapAutofocus", false, Boolean::valueOf);
 	public static final Property<Boolean> HEATMAP_DATASET_SYNC = new Property<>("heatmapDatasetSync", true, Boolean::valueOf);
+	public static final Property<Boolean> HEATMAP_AUTO_SORT = new Property<>("heatmapAutoSort", true, Boolean::valueOf);
 	public static final Property<Double> P_VALUE = new Property<>("default.pvalue", 1.0, Double::valueOf);
 	public static final Property<Double> Q_VALUE = new Property<>("default.qvalue", 0.1, Double::valueOf);
 	public static final Property<Boolean> CREATE_WARN = new Property<>("create.warn", true, Boolean::valueOf);

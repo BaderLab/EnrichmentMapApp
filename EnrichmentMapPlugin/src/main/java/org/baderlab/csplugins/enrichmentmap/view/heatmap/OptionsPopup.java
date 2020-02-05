@@ -101,6 +101,12 @@ public class OptionsPopup extends JPopupMenu {
 			propertyManager.setValue(PropertyManager.HEATMAP_DATASET_SYNC, syncCheckbox.isSelected());
 		});
 		
+		JCheckBoxMenuItem autoSortCheckbox = new JCheckBoxMenuItem("Auto sort leading edge");
+		autoSortCheckbox.setSelected(propertyManager.getValue(PropertyManager.HEATMAP_AUTO_SORT));
+		autoSortCheckbox.addActionListener(e -> {
+			propertyManager.setValue(PropertyManager.HEATMAP_AUTO_SORT, autoSortCheckbox.isSelected());
+		});
+		
 		add(geneManiaButton);
 		add(stringButton);
 		add(pcButton);
@@ -112,6 +118,7 @@ public class OptionsPopup extends JPopupMenu {
 		add(distanceMenu);
 		add(autofocusCheckbox);
 		add(syncCheckbox);
+		add(autoSortCheckbox);
 	}
 	
 	private <T> ActionListener distanceListenerFor(Distance dm) {
