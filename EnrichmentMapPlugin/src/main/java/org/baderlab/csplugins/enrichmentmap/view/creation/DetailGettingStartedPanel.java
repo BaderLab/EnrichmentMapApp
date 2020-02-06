@@ -26,14 +26,14 @@ import com.google.inject.Inject;
 
 
 @SuppressWarnings("serial")
-public class DetailNullPanel extends JPanel {
+public class DetailGettingStartedPanel extends JPanel {
 
 	private @Inject IconManager iconManager;
 	private @Inject OpenBrowser openBrowser;
 	
 	private Runnable scanButtonCallback;
 	
-	public DetailNullPanel setScanButtonCallback(Runnable callback) {
+	public DetailGettingStartedPanel setScanButtonCallback(Runnable callback) {
 		this.scanButtonCallback = callback;
 		return this;
 	}

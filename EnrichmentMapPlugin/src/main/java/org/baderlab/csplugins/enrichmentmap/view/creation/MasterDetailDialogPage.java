@@ -92,7 +92,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Inject private LegacySupport legacySupport;
 	
 	@Inject private Provider<DetailCommonPanel> commonPanelProvider;
-	@Inject private Provider<DetailNullPanel> nullPanelProvider;
+	@Inject private Provider<DetailGettingStartedPanel> nullPanelProvider;
 	@Inject private DetailDataSetPanel.Factory dataSetPanelFactory;
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private ErrorMessageDialog.Factory errorMessageDialogFactory;
@@ -274,7 +274,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		dataSetDetailPanel.setLayout(cardLayout);
 		
 		// Blank page
-		DetailNullPanel nullPanel = nullPanelProvider.get();
+		DetailGettingStartedPanel nullPanel = nullPanelProvider.get();
 		nullPanel.setScanButtonCallback(this::scanButtonClicked);
 		dataSetDetailPanel.add(nullPanel, "nothing");
 		
