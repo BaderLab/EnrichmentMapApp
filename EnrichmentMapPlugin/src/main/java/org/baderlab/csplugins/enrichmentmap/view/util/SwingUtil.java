@@ -8,7 +8,6 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.font.FontRenderContext;
@@ -42,7 +41,6 @@ import javax.swing.event.ListDataListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.util.swing.OpenBrowser;
 
 import com.google.common.base.Strings;
 
@@ -122,9 +120,7 @@ public class SwingUtil {
 	public static JButton createOnlineHelpButton(String url, String toolTipText, CyServiceRegistrar serviceRegistrar) {
 		JButton btn = new JButton();
 		btn.setToolTipText(toolTipText);
-		btn.addActionListener((ActionEvent evt) -> {
-			serviceRegistrar.getService(OpenBrowser.class).openURL(url);
-		});
+		btn.addActionListener(e -> new OpenBrowser().openURL(url));
 		
 		if (LookAndFeelUtil.isAquaLAF()) {
 			btn.putClientProperty("JButton.buttonType", "help");

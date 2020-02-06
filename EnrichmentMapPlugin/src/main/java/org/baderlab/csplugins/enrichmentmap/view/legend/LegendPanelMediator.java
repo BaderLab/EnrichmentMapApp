@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.legend;
 
+import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.HELP_URL_LEGEND;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
 import java.awt.BorderLayout;
@@ -7,8 +8,6 @@ import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
@@ -25,6 +24,7 @@ import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.baderlab.csplugins.enrichmentmap.view.util.OpenPDFViewerTask;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -44,6 +44,7 @@ public class LegendPanelMediator {
 	@Inject private IconManager iconManager;
 	@Inject private DialogTaskManager dialogTaskManager;
 	@Inject private FileUtil fileUtil;
+	@Inject private CyServiceRegistrar serviceRegistrar;
 	
 	private JDialog dialog;
 	private JButton exportPdfButton;
@@ -79,15 +80,8 @@ public class LegendPanelMediator {
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setMinimumSize(new Dimension(440, 380));
 			
-			dialog.addComponentListener(new ComponentAdapter() {
-				public void componentHidden(ComponentEvent e) {
-					System.out.println("hidden");
-				}
-			});
-			
 			JButton closeButton = new JButton(new AbstractAction("Close") {
-				@Override
-				public void actionPerformed(ActionEvent e) {
+				@Override public void actionPerformed(ActionEvent e) {
 					dialog.dispose();
 				}
 			});
@@ -98,7 +92,8 @@ public class LegendPanelMediator {
 			exportPdfButton.setIcon(SwingUtil.iconFromString(IconManager.ICON_EXTERNAL_LINK, iconFont));
 			exportPdfButton.addActionListener(e -> exportPDF());
 			
-			JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, exportPdfButton);
+			JButton helpButton = SwingUtil.createOnlineHelpButton(HELP_URL_LEGEND, "Online manual...", serviceRegistrar);
+			JPanel bottomPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, exportPdfButton, helpButton);
 			
 			dialog.getContentPane().add(legendPanelProvider.get(), BorderLayout.CENTER);
 			dialog.getContentPane().add(bottomPanel, BorderLayout.SOUTH);

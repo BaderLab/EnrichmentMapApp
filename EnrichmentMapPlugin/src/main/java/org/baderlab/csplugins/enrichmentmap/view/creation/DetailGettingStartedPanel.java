@@ -50,7 +50,7 @@ public class DetailGettingStartedPanel extends JPanel {
 		});
 		
 		JButton link1 = createLinkButton("View online help", HELP_URL_CREATE);
-		JButton link2 = createLinkButton("Download sample data", HELP_URL_CREATE);
+		JButton link2 = createLinkButton("Sample data and tutorials", HELP_URL_CREATE);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);

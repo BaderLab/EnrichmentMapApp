@@ -16,6 +16,8 @@ public class EnrichmentMapBuildProperties {
 	public static final String HELP_URL_HOME    = "http://enrichmentmap.readthedocs.io/en/latest";
 	public static final String HELP_URL_CREATE  = "http://enrichmentmap.readthedocs.io/en/latest/CreatingNetwork.html#create-enrichmentmap-dialog";
 	public static final String HELP_URL_CONTROL = "http://enrichmentmap.readthedocs.io/en/latest/MainPanel.html";
+	public static final String HELP_URL_HEATMAP = "http://enrichmentmap.readthedocs.io/en/latest/HeatMapPanel.html";
+	public static final String HELP_URL_LEGEND  = "http://enrichmentmap.readthedocs.io/en/latest/LegendDialog.html";
 	
 
 	private EnrichmentMapBuildProperties() {}

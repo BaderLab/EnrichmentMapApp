@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.HELP_URL_HEATMAP;
 import static org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel.RANK_COL;
 import static org.cytoscape.util.swing.IconManager.ICON_BARS;
 
@@ -59,6 +60,7 @@ import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.Labels;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -77,6 +79,7 @@ public class HeatMapContentPanel extends JPanel {
 	@Inject private ColumnHeaderRankOptionRenderer.Factory columnHeaderRankOptionRendererFactory;
 	@Inject private PropertyManager propertyManager;
 	@Inject private IconManager iconManager;
+	@Inject private Provider<CyServiceRegistrar> registrarProvider;
 
 	private GradientLegendPanel gradientLegendPanel;
 	private OptionsPopup optionsPopup;
@@ -189,6 +192,8 @@ public class HeatMapContentPanel extends JPanel {
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
+		JButton helpButton = SwingUtil.createOnlineHelpButton(HELP_URL_HEATMAP, "Online Manual...", registrarProvider.get());
+		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addContainerGap()
 				.addComponent(gradientLegendPanel, 140, 160, 180)
@@ -204,6 +209,8 @@ public class HeatMapContentPanel extends JPanel {
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(getShowValuesCheck())
 				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(helpButton)
+				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(getOptionsButton())
 				.addContainerGap()
 		);
@@ -216,6 +223,7 @@ public class HeatMapContentPanel extends JPanel {
 				.addComponent(compressLabel)
 				.addComponent(getCompressCombo())
 				.addComponent(getShowValuesCheck())
+				.addComponent(helpButton)
 				.addComponent(getOptionsButton())
 		);
 		
