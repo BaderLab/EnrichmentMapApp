@@ -1,12 +1,19 @@
 package org.baderlab.csplugins.enrichmentmap.view.postanalysis;
 
+import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_PA;
+
 import java.awt.Dimension;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
+
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogParameters;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 
 import com.google.inject.Inject;
@@ -17,6 +24,7 @@ public class PADialogParameters implements CardDialogParameters {
 	public static final String TITLE = "EnrichmentMap: Add Signature Gene Sets (Post-Analysis)";
 	
 	@Inject private PADialogPage.Factory pageFactory;
+	@Inject private CyServiceRegistrar registrar;
 	
 	private final EnrichmentMap map;
 	private final CyNetworkView view;
@@ -51,5 +59,11 @@ public class PADialogParameters implements CardDialogParameters {
 	@Override
 	public Dimension getMinimumSize() {
 		return new Dimension(650, 550);
+	}
+	
+	@Override
+	public AbstractButton[] getAdditionalButtons() {
+		JButton helpButton = SwingUtil.createOnlineHelpButton(HELP_URL_PA, "View online help", registrar);
+		return new JButton[] { helpButton };
 	}
 }

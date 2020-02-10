@@ -23,6 +23,7 @@ public class EMBuildProps {
 	public static final String HELP_URL_CONTROL  = DOC_BASE_URL + "MainPanel.html";
 	public static final String HELP_URL_HEATMAP  = DOC_BASE_URL + "HeatMapPanel.html";
 	public static final String HELP_URL_LEGEND   = DOC_BASE_URL + "LegendDialog.html";
+	public static final String HELP_URL_PA       = DOC_BASE_URL + "PostAnalysis.html";
 	
 
 	private EMBuildProps() {}
