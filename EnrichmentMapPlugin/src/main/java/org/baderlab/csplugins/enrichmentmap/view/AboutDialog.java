@@ -43,8 +43,8 @@
 
 package org.baderlab.csplugins.enrichmentmap.view;
 
-import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.APP_URL;
-import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.APP_VERSION;
+import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.APP_URL;
+import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.APP_VERSION;
 
 import java.awt.Insets;
 import java.net.URL;

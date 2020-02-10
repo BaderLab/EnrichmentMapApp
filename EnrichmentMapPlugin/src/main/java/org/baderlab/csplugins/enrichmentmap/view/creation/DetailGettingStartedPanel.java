@@ -2,7 +2,9 @@ package org.baderlab.csplugins.enrichmentmap.view.creation;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.HELP_URL_CREATE;
+import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_HOME;
+import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_PROTOCOL;
+import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_TUTORIAL;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -49,8 +51,9 @@ public class DetailGettingStartedPanel extends JPanel {
 				scanButtonCallback.run();
 		});
 		
-		JButton link1 = createLinkButton("View online help", HELP_URL_CREATE);
-		JButton link2 = createLinkButton("Sample data and tutorials", HELP_URL_CREATE);
+		JButton link1 = createLinkButton("View online help", HELP_URL_HOME);
+		JButton link2 = createLinkButton("Tutorial and sample data", HELP_URL_TUTORIAL);
+		JButton link3 = createLinkButton("EnrichmentMap protocol", HELP_URL_PROTOCOL);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
@@ -65,6 +68,7 @@ public class DetailGettingStartedPanel extends JPanel {
 					.addComponent(scanButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(link1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(link2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(link3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addGap(0, 0, Short.MAX_VALUE)
 		);
@@ -75,6 +79,7 @@ public class DetailGettingStartedPanel extends JPanel {
 			.addComponent(scanButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			.addComponent(link1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			.addComponent(link2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addComponent(link3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			.addGap(0, 0, Short.MAX_VALUE)
 		);
 		

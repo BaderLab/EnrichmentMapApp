@@ -2,7 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.HELP_URL_HEATMAP;
+import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_HEATMAP;
 import static org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel.RANK_COL;
 import static org.cytoscape.util.swing.IconManager.ICON_BARS;
 

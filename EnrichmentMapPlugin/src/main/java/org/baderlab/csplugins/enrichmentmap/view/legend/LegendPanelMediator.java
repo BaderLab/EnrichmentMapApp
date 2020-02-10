@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.legend;
 
-import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.HELP_URL_LEGEND;
+import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_LEGEND;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
 import java.awt.BorderLayout;

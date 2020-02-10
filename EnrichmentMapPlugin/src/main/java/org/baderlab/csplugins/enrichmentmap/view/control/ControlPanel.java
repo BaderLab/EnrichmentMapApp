@@ -5,7 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
-import static org.baderlab.csplugins.enrichmentmap.EnrichmentMapBuildProperties.HELP_URL_CONTROL;
+import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_CONTROL;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.EM_ICON_COLORS;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.GENEMANIA_ICON;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.GENEMANIA_ICON_COLOR;

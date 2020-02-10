@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view.creation;
 
+import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_CREATE;
+
 import java.awt.Dimension;
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +11,8 @@ import javax.swing.JButton;
 
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogParameters;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -18,6 +22,7 @@ public class CreationDialogParameters implements CardDialogParameters {
 	static final String RESET_BUTTON_ACTION_COMMAND = "reset";
 	
 	@Inject private Provider<MasterDetailDialogPage> masterDetailDialogPage;
+	@Inject private CyServiceRegistrar registrar;
 	
 	
 	@Override
@@ -54,6 +59,7 @@ public class CreationDialogParameters implements CardDialogParameters {
 	public AbstractButton[] getAdditionalButtons() {
 		JButton resetButton = new JButton("Reset");
 		resetButton.setActionCommand(RESET_BUTTON_ACTION_COMMAND);
-		return new JButton[] { resetButton };
+		JButton helpButton = SwingUtil.createOnlineHelpButton(HELP_URL_CREATE, "View online help", registrar);
+		return new JButton[] { resetButton, helpButton };
 	}
 }
