@@ -3,7 +3,6 @@ package org.baderlab.csplugins.enrichmentmap.model;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,12 +32,9 @@ public class SetOfGeneSets {
 		//iterate through each geneset and filter each one
 		for (String geneSetName : geneSets.keySet()) {
 			GeneSet geneSet = geneSets.get(geneSetName);
-			Set<Integer> genesetGenes = geneSet.getGenes();
 			
-			Set<Integer> intersection = new HashSet<>(genesetGenes);
-			intersection.retainAll(expressionGenes);
+			GeneSet newGeneSet = geneSet.intersectionWith(expressionGenes);
 			
-			GeneSet newGeneSet = new GeneSet(geneSetName, geneSet.getDescription(), intersection);
 			filteredGenesets.put(geneSetName, newGeneSet);
 		}
 		

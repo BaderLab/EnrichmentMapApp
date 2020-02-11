@@ -45,7 +45,7 @@ public class ModelSharingTest extends BaseNetworkTest {
 		dataset2files.setRankedFile(PATH + "FakeRank2.rnk");
 
 		EMCreationParameters params = new EMCreationParameters("ExpressionSharing_", null, 0.1, 0.1, NESFilter.ALL,
-				Optional.empty(), true, SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
+				Optional.empty(), true, false, SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
 
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 		assertEquals(0, maps.size());

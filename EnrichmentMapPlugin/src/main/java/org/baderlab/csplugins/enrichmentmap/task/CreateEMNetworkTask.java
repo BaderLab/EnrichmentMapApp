@@ -14,6 +14,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
+import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
@@ -113,7 +114,6 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 	
 	private Map<String, CyNode> createNodes(CyNetwork network) {
 		Map<String,CyNode> nodes = new HashMap<>();
-		
 		Map<String,Set<Integer>> geneSets = map.unionAllGeneSetsOfInterest();
 		
 		for(String genesetName : geneSets.keySet()) {
@@ -125,7 +125,20 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 			row.set(CyNetwork.NAME, genesetName);
 			Columns.NODE_FORMATTED_NAME.set(row, prefix, null, formatLabel(genesetName));
 			Columns.NODE_NAME.set(row, prefix, null, genesetName); // MKTODO why is this column needed?
-			Columns.NODE_GS_DESCR.set(row, prefix, null, map.findGeneSetDescription(genesetName));
+			
+			GeneSet geneSet = map.getGeneSet(genesetName);
+			if(geneSet != null) {
+				Columns.NODE_GS_DESCR.set(row, prefix, null, geneSet.getLabel());
+				if(map.getParams().isParseBaderlabGeneSets()) {
+					if(geneSet.getSource().isPresent()) {
+						Columns.NODE_DATASOURCE.set(row, prefix, null, geneSet.getSource().get());
+					}
+					if(geneSet.getDatasourceId().isPresent()) {
+						Columns.NODE_DATASOURCEID.set(row, prefix, null, geneSet.getDatasourceId().get());
+					}
+				}
+			}
+			
 			Columns.NODE_GS_TYPE.set(row, prefix, null, Columns.NODE_GS_TYPE_ENRICHMENT);
 			Set<Integer> geneIds = geneSets.get(genesetName);
 			List<String> genes = geneIds.stream().map(map::getGeneFromHashKey).collect(Collectors.toList());
@@ -196,7 +209,9 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 	}
 	
 	private CyTable createNodeColumns(CyNetwork network) {
+		EMCreationParameters params = map.getParams();
 		CyTable table = network.getDefaultNodeTable();
+		
 		Columns.NODE_NAME.createColumn(table, prefix, null);// !
 		Columns.NODE_GS_DESCR.createColumn(table, prefix, null);// !
 		Columns.NODE_GS_TYPE.createColumn(table, prefix, null);// !
@@ -204,7 +219,10 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		Columns.NODE_GENES.createColumn(table, prefix, null); // Union of geneset genes across all datasets // !
 		Columns.NODE_GS_SIZE.createColumn(table, prefix, null); // Size of the union // !
 		
-		EMCreationParameters params = map.getParams();
+		if(params.isParseBaderlabGeneSets()) {
+			Columns.NODE_DATASOURCE.createColumn(table, prefix, null);
+			Columns.NODE_DATASOURCEID.createColumn(table, prefix, null);
+		}
 		
 		for (EMDataSet dataset : map.getDataSetList()) {
 			Columns.NODE_PVALUE.createColumn(table, prefix, dataset);

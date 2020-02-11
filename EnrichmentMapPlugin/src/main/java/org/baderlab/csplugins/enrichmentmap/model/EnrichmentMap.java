@@ -332,15 +332,16 @@ public class EnrichmentMap {
 		return names;
 	}
 	
-	public String findGeneSetDescription(String genesetName) {
+	public GeneSet getGeneSet(String genesetName) {
 		for(EMDataSet ds : dataSets.values()) {
 			GeneSet gs = ds.getGeneSetsOfInterest().getGeneSets().get(genesetName);
-			if(gs != null)
-				return gs.getDescription();
+			if(gs != null) {
+				return gs;
+			}
 		}
 		return null;
 	}
-
+	
 	
 	public Map<String, EMDataSet> getDataSets() {
 		// this must return a new HashMap or client code might break

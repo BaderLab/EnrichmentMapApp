@@ -50,6 +50,7 @@ import java.text.Normalizer;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -73,6 +74,7 @@ public class GMTFileReaderTask extends AbstractTask implements ObservableTask {
 	private final Supplier<String> fileNameSupplier;
 	private final Consumer<SetOfGeneSets> geneSetConsumer;
 
+	private Pattern baderlabPattern;
 
 	public GMTFileReaderTask(EMDataSet dataset) {
 		this.map = dataset.getMap();
@@ -95,6 +97,12 @@ public class GMTFileReaderTask extends AbstractTask implements ObservableTask {
 		this.geneSetConsumer = geneSetConsumer;
 	}
 	
+	private Pattern getBaderlabPattern() {
+		if(baderlabPattern == null) {
+			baderlabPattern = Pattern.compile("(.+)%(.+)%(.+)");
+		}
+		return baderlabPattern;
+	}
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
@@ -105,12 +113,21 @@ public class GMTFileReaderTask extends AbstractTask implements ObservableTask {
 	
 	public void parse() throws IOException, InterruptedException {
 		String fileName = fileNameSupplier.get();
+		boolean baderlab = map.getParams().isParseBaderlabGeneSets();
+		
 		try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
 			for (String line; (line = reader.readLine()) != null;) {
 				if (cancelled) {
 					throw new InterruptedException();
 				}
-				GeneSet gs = readGeneSet(map, line);
+				
+				GeneSet gs;
+				if(baderlab)
+					gs = readBaderlabGeneSet(map, line);
+				else 
+					gs = readGeneSet(map, line);
+				
+				
 				if (gs != null && setOfGeneSets != null) {
 					Map<String, GeneSet> genesets = setOfGeneSets.getGeneSets();
 					genesets.put(gs.getName(), gs);
@@ -142,6 +159,42 @@ public class GMTFileReaderTask extends AbstractTask implements ObservableTask {
 		return null;
 	}
 	
+	
+	private GeneSet readBaderlabGeneSet(EnrichmentMap map, String line) {
+		String[] tokens = line.split("\t");
+		if(tokens.length >= 2) {
+			final String name = tokens[0].toUpperCase().trim();
+			final String description = tokens[1].trim();
+			
+			Pattern pattern = getBaderlabPattern();
+			Matcher m = pattern.matcher(name);
+			
+			String simpleName = null;
+			String datasource = null;
+			String id = null;
+			
+			if(m.matches()) {
+				simpleName = m.group(1);
+				datasource = m.group(2);
+				id = m.group(3);
+				if(name.equals(id)) {
+					id = null;
+				}
+			}
+			
+			// set of genes keys
+			ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
+			
+			for(int i = 2; i < tokens.length; i++) {
+				Integer hash = map.addGene(tokens[i]);
+				if(hash != null)
+					builder.add(hash);
+			}
+			
+			return new GeneSet(name, description, builder.build(), simpleName, datasource, id);
+		}
+		return null;
+	}
 	
 	private String deAccent(String str) {
 		String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);

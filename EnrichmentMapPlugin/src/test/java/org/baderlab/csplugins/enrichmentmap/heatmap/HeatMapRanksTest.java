@@ -61,7 +61,7 @@ public class HeatMapRanksTest extends BaseNetworkTest {
 		files.setClassFile(PATH + "ES_NT.cls");
 		
 		EMCreationParameters params = 
-			new EMCreationParameters("HeatMapRanks_", null, 0.005, 0.1, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.OVERLAP, 0.5, 0.5, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("HeatMapRanks_", null, 0.005, 0.1, NESFilter.ALL, Optional.empty(), true, false, SimilarityMetric.OVERLAP, 0.5, 0.5, EdgeStrategy.AUTOMATIC);
 		
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 	    assertEquals(0, maps.size());

@@ -59,6 +59,10 @@ public class FilterTunables {
 			+ " but are not contained in the expression files will not be included in the network.")
 	public boolean filterByExpressions = true;
 	
+	@Tunable(description = "If true gene set names are parsed using the baderlab format: name%datasource%datasourceid. "
+			+ "Also creates datasource and datasource id columns.")
+	public boolean parseBaderlabNames = false;
+	
 	@Tunable(description = "The name of the EnrichmentMap network. If not provided then EnrichmentMap will automatically generate a name "
 			+ "for the network based on the name of the first data set.")
 	public String networkName = null;
@@ -86,7 +90,7 @@ public class FilterTunables {
 		String stylePrefix = legacySupport.getNextStylePrefix();
 		
 		return new EMCreationParameters(attPrefix, stylePrefix, pvalue, qvalue, getNesFilter(), 
-					Optional.ofNullable(minExperiments), filterByExpressions,
+					Optional.ofNullable(minExperiments), filterByExpressions, parseBaderlabNames,
 					getSimilarityMetric(), similaritycutoff, combinedConstant, 
 					getEdgeStrategy());
 	}

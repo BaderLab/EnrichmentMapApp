@@ -82,7 +82,7 @@ public class EMGseaCommandTask extends AbstractTask {
 		String stylePrefix = legacySupport.getNextStylePrefix();
 		
 		EMCreationParameters creationParams = 
-				new EMCreationParameters(attributePrefix, stylePrefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true,
+				new EMCreationParameters(attributePrefix, stylePrefix, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true, false,
 						metric, overlap, combinedconstant, EdgeStrategy.AUTOMATIC);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(creationParams, dataSets);

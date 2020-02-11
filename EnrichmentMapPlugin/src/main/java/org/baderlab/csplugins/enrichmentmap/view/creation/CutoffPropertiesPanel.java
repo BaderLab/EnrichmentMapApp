@@ -52,6 +52,8 @@ public class CutoffPropertiesPanel extends JPanel {
 	private JCheckBox shouldFilterMinCheckbox;
 	private JLabel minExperimentsLabel;
 	private JFormattedTextField minExperimentsText;
+	private JLabel parseBaderlabLabel;
+	private JCheckBox parseBaderlabCheckbox;
 	
 	// edge filtering
 	private JFormattedTextField similarityCutoffText;
@@ -151,8 +153,10 @@ public class CutoffPropertiesPanel extends JPanel {
 		nesFilterLabel = new JLabel("NES (GSEA only):");
 		shouldFilterMinLabel = new JLabel("Filter by minimum experiments:");
 		minExperimentsLabel = new JLabel("Minimum experiments:");
+		parseBaderlabLabel = new JLabel("Parse baderlab names in GMT file:");
 		
-		SwingUtil.makeSmall(filterGenesLabel, qvalueLabel, pvalueLabel, minExperimentsLabel, shouldFilterMinLabel, nesFilterLabel);
+		SwingUtil.makeSmall(filterGenesLabel, qvalueLabel, pvalueLabel, minExperimentsLabel, 
+				shouldFilterMinLabel, nesFilterLabel, parseBaderlabLabel);
 		
 		filterGenesCheckbox = new JCheckBox();
 		AbstractFormatterFactory formatterFactory = getFormatterFactory(false);
@@ -161,6 +165,7 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		shouldFilterMinCheckbox = new JCheckBox("");
 		minExperimentsText = new JFormattedTextField(NumberFormat.getIntegerInstance());
+		parseBaderlabCheckbox = new JCheckBox("");
 		
 		pvalueText.setValue(propertyManager.getValue(PropertyManager.P_VALUE));
 		qvalueText.setValue(propertyManager.getValue(PropertyManager.Q_VALUE));
@@ -181,7 +186,8 @@ public class CutoffPropertiesPanel extends JPanel {
 			minExperimentsText.setEnabled(enable);
 		});
 		
-		SwingUtil.makeSmall(filterGenesCheckbox, pvalueText, qvalueText, shouldFilterMinCheckbox, nesFilterCombo, minExperimentsText);
+		SwingUtil.makeSmall(filterGenesCheckbox, pvalueText, qvalueText, shouldFilterMinCheckbox, 
+				nesFilterCombo, minExperimentsText, parseBaderlabCheckbox);
 		
 		final GroupLayout layout = new GroupLayout(panel);
 		panel.setLayout(layout);
@@ -197,6 +203,7 @@ public class CutoffPropertiesPanel extends JPanel {
 					.addComponent(nesFilterLabel)
 					.addComponent(shouldFilterMinLabel)
 					.addComponent(minExperimentsLabel)
+					.addComponent(parseBaderlabLabel)
 				)
 				.addGroup(layout.createParallelGroup(Alignment.LEADING)
 					.addComponent(filterGenesCheckbox)
@@ -205,6 +212,7 @@ public class CutoffPropertiesPanel extends JPanel {
 					.addComponent(nesFilterCombo)
 					.addComponent(shouldFilterMinCheckbox)
 					.addComponent(minExperimentsText, PREFERRED_SIZE, 100, PREFERRED_SIZE)
+					.addComponent(parseBaderlabCheckbox)
 				)
 				.addGap(0, 0, Short.MAX_VALUE)
 		);
@@ -234,6 +242,10 @@ public class CutoffPropertiesPanel extends JPanel {
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
 					.addComponent(minExperimentsLabel)
 					.addComponent(minExperimentsText)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER)
+					.addComponent(parseBaderlabLabel)
+					.addComponent(parseBaderlabCheckbox)
 				)
 				.addGap(0, 0, Short.MAX_VALUE)
 		);
@@ -457,21 +469,23 @@ public class CutoffPropertiesPanel extends JPanel {
 	}
 	
 	
-	private void showAdvancedOptions(boolean showAdvanced) {
-		pvalueLabel.setVisible(showAdvanced);
-		pvalueText.setVisible(showAdvanced);
-		nesFilterLabel.setVisible(showAdvanced);
-		nesFilterCombo.setVisible(showAdvanced);
-		minExperimentsLabel.setVisible(showAdvanced);
-		minExperimentsText.setVisible(showAdvanced);
-		shouldFilterMinLabel.setVisible(showAdvanced);
-		shouldFilterMinCheckbox.setVisible(showAdvanced);
+	private void showAdvancedOptions(boolean show) {
+		pvalueLabel.setVisible(show);
+		pvalueText.setVisible(show);
+		nesFilterLabel.setVisible(show);
+		nesFilterCombo.setVisible(show);
+		minExperimentsLabel.setVisible(show);
+		minExperimentsText.setVisible(show);
+		shouldFilterMinLabel.setVisible(show);
+		shouldFilterMinCheckbox.setVisible(show);
+		parseBaderlabLabel.setVisible(show);
+		parseBaderlabCheckbox.setVisible(show);
 		
 		CardLayout cardLayout = (CardLayout)cardPanel.getLayout();
-		cardLayout.show(cardPanel, showAdvanced ? "advanced" : "simple");
+		cardLayout.show(cardPanel, show ? "advanced" : "simple");
 		
 		// If we are switching to the advanced panel make sure the combined slider is visible if it needs to be.
-		boolean showCombinedSlider = showAdvanced && getCutoffMetricComboValue() == SimilarityMetric.COMBINED;
+		boolean showCombinedSlider = show && getCutoffMetricComboValue() == SimilarityMetric.COMBINED;
 		combinedConstantSlider.setVisible(showCombinedSlider);
 	}
 	
@@ -554,5 +568,8 @@ public class CutoffPropertiesPanel extends JPanel {
 		return filterGenesCheckbox.isSelected();
 	}
 	
+	public boolean getParseBaderlabGeneSets() {
+		return parseBaderlabCheckbox.isSelected();
+	}
 	
 }

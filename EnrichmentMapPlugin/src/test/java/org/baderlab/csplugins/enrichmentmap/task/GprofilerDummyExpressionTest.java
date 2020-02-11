@@ -43,7 +43,7 @@ public class GprofilerDummyExpressionTest extends BaseNetworkTest {
 		files.setEnrichmentFileName1(PATH + "Supplementary_Table4_gprofiler_results.txt");
 
 		EMCreationParameters params = new EMCreationParameters("Gprofiler", null, 1.0, 0.1, NESFilter.ALL,
-				Optional.empty(), false, SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
+				Optional.empty(), false, false, SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
 
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
 		assertEquals(0, maps.size());

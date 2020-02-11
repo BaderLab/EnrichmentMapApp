@@ -199,10 +199,11 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
 		String networkName = networkNamePanel.getNameText();
 		EdgeStrategy edgeStrategy = cutoffPanel.getEdgeStrategy();
+		boolean parseBaderlab = cutoffPanel.getParseBaderlabGeneSets();
 		
 		EMCreationParameters params = 
 			new EMCreationParameters(attributePrefix, stylePrefix, pvalue, qvalue, nesFilter, minExperiments, filterByExpressions, 
-					similarityMetric, cutoff, combined, edgeStrategy);
+					parseBaderlab, similarityMetric, cutoff, combined, edgeStrategy);
 		
 		params.setNetworkName(networkName);
 		return params;

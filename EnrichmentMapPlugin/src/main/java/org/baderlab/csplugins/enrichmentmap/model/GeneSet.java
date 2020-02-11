@@ -43,6 +43,7 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -55,19 +56,42 @@ public class GeneSet {
 	private final String description;
 	// ImmutableSet uses less memory than a HashSet, also this forces GSON to deserialize using ImmutableSet.
 	private final ImmutableSet<Integer> genes;
+	private final Optional<String> simpleName;
 	private final Optional<String> source;
+	private final Optional<String> datasourceId;
+	
 	
 	public GeneSet(String name, String description, Set<Integer> genes) {
 		this.name = name;
 		this.description = description;
 		this.genes = ImmutableSet.copyOf(genes);
+		this.simpleName = Optional.empty();
+		this.datasourceId = Optional.empty();
 		
+		// Baderlab geneset names
 		String[] name_tokens = name.split("%");
 		if(name_tokens.length > 1)
 			this.source = Optional.of(name_tokens[1]);
 		else 
 			this.source = Optional.empty();
 	}
+	
+	
+	GeneSet intersectionWith(Set<Integer> expressionGenes) {
+		Set<Integer> intersection = new HashSet<>(genes);
+		intersection.retainAll(expressionGenes);
+		return new GeneSet(name, description, intersection, simpleName.orElse(null), source.orElse(null), datasourceId.orElse(null));
+	}
+	
+	public GeneSet(String name, String description, Set<Integer> genes, String simpleName, String datasource, String datasourceId) {
+		this.name = name;
+		this.description = description;
+		this.genes = ImmutableSet.copyOf(genes);
+		this.simpleName = Optional.ofNullable(simpleName);
+		this.source = Optional.ofNullable(datasource);
+		this.datasourceId = Optional.ofNullable(datasourceId);
+	}
+	
 	
 	public String getName() {
 		return name;
@@ -83,6 +107,20 @@ public class GeneSet {
 
 	public Optional<String> getSource() {
 		return source;
+	}
+	
+	public Optional<String> getDatasourceId() {
+		return datasourceId;
+	}
+	
+	public Optional<String> getSimpleName() {
+		return simpleName;
+	}
+	
+	public String getLabel() {
+		if(simpleName.isPresent())
+			return simpleName.get();
+		return description;
 	}
 	
 	public static GeneSet fromTokens(String[] tokens) {

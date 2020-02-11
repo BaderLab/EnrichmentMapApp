@@ -42,7 +42,7 @@ public class LoadGMTFileOnlyTest {
 		double pvalue = 1.0;
 		double qvalue = 1.0;
 		EMCreationParameters params = 
-			new EMCreationParameters("EM1_", null, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
+			new EMCreationParameters("EM1_", null, pvalue, qvalue, NESFilter.ALL, Optional.empty(), true, false, SimilarityMetric.JACCARD, similarityCutoff, 0.5, EdgeStrategy.AUTOMATIC);
 	
 		EnrichmentMap em = new EnrichmentMap(params, serviceRegistrar);
 		

@@ -28,6 +28,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	private Optional<Integer> minExperiments;
 	private NESFilter nesFilter;
 	private boolean filterByExpressions;
+	private boolean parseBaderlab;
 	
 	// Edge filtering (similarity)
 	private SimilarityMetric similarityMetric;
@@ -64,6 +65,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 			NESFilter nesFilter,
 			Optional<Integer> minExperiments,
 			boolean filterByExpressions,
+			boolean parseBaderlab,
 			SimilarityMetric similarityMetric,
 			double similarityCutoff,
 			double combinedConstant,
@@ -76,6 +78,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		this.qvalue = qvalue;
 		this.nesFilter = nesFilter;
 		this.minExperiments = minExperiments;
+		this.parseBaderlab = parseBaderlab;
 		this.filterByExpressions = filterByExpressions;
 		this.similarityCutoff = similarityCutoff;
 		this.combinedConstant = combinedConstant;
@@ -248,17 +251,25 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		return filterByExpressions;
 	}
 	
+	public boolean isParseBaderlabGeneSets() {
+		return parseBaderlab;
+	}
+
+
 	@Override
 	public String toString() {
-		return "EMCreationParameters [attributePrefix=" + attributePrefix + ", pvalue=" + pvalue + ", qvalue=" + qvalue
-				+ ", minExperiments=" + minExperiments + ", nesFilter=" + nesFilter + ", similarityMetric="
-				+ similarityMetric + ", similarityCutoff=" + similarityCutoff + ", combinedConstant=" + combinedConstant
-				+ ", greatFilter=" + greatFilter + ", fdr=" + fdr + ", emgmt=" + emgmt + ", qvalueMin=" + qvalueMin
-				+ ", pvalueMin=" + pvalueMin + ", edgeStrategy=" + edgeStrategy + ", createDistinctEdges="
-				+ createDistinctEdges + ", enrichmentEdgeType=" + enrichmentEdgeType + ", pValueColumnNames="
-				+ pValueColumnNames + ", qValueColumnNames=" + qValueColumnNames + ", similarityCutoffColumnNames="
+		return "EMCreationParameters [attributePrefix=" + attributePrefix + ", stylePrefix=" + stylePrefix + ", pvalue="
+				+ pvalue + ", qvalue=" + qvalue + ", minExperiments=" + minExperiments + ", nesFilter=" + nesFilter
+				+ ", filterByExpressions=" + filterByExpressions + ", parseBaderlab=" + parseBaderlab
+				+ ", similarityMetric=" + similarityMetric + ", similarityCutoff=" + similarityCutoff
+				+ ", combinedConstant=" + combinedConstant + ", greatFilter=" + greatFilter + ", fdr=" + fdr
+				+ ", emgmt=" + emgmt + ", qvalueMin=" + qvalueMin + ", pvalueMin=" + pvalueMin + ", networkName="
+				+ networkName + ", edgeStrategy=" + edgeStrategy + ", createDistinctEdges=" + createDistinctEdges
+				+ ", enrichmentEdgeType=" + enrichmentEdgeType + ", pValueColumnNames=" + pValueColumnNames
+				+ ", qValueColumnNames=" + qValueColumnNames + ", similarityCutoffColumnNames="
 				+ similarityCutoffColumnNames + "]";
 	}
+	
 	
 	
 }

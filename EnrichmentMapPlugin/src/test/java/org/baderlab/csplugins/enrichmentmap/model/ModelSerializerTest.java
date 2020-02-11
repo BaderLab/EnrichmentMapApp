@@ -39,7 +39,7 @@ public class ModelSerializerTest extends BaseNetworkTest {
 		dataset1files.setRankedFile(PATH + "FakeRank.rnk");  
 		
 		EMCreationParameters params = 
-			new EMCreationParameters("ModelSerializer_", null, 0.1, 0.1, NESFilter.ALL, Optional.empty(), true, 
+			new EMCreationParameters("ModelSerializer_", null, 0.1, 0.1, NESFilter.ALL, Optional.empty(), true, false,
 					SimilarityMetric.JACCARD, 0.1, 0.1, EdgeStrategy.AUTOMATIC);
 		
 		Map<Long, EnrichmentMap> maps = emManager.getAllEnrichmentMaps();
