@@ -23,6 +23,7 @@ import org.baderlab.csplugins.enrichmentmap.parsers.LoadEnrichmentsFromTableTask
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseBingoEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseDavidEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseEDBEnrichmentResults;
+import org.baderlab.csplugins.enrichmentmap.parsers.ParseEnrichrEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGREATEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGenericEnrichmentResults;
@@ -182,15 +183,16 @@ public class CreateEnrichmentMapTaskFactory {
 	private static AbstractTask readFile(EMDataSet dataset, String fileName) throws IOException {
 		if(fileName.endsWith(".edb")) {
 			return new ParseEDBEnrichmentResults(dataset);
-		}
-		else {
-			DataSetResolver.Type fileType = DataSetResolver.guessEnrichmentType(fileName);
-			switch(fileType) {
-				case ENRICHMENT_GSEA:  return new ParseGSEAEnrichmentResults(dataset);
-				case ENRICHMENT_BINGO: return new ParseBingoEnrichmentResults(dataset);
-				case ENRICHMENT_GREAT: return new ParseGREATEnrichmentResults(dataset);
-				case ENRICHMENT_DAVID: return new ParseDavidEnrichmentResults(dataset);
-				default:               return new ParseGenericEnrichmentResults(dataset);
+		} else {
+			DataSetResolver.Type type = DataSetResolver.guessEnrichmentType(fileName);
+			switch(type) {
+				default:
+				case ENRICHMENT_GENERIC: return new ParseGenericEnrichmentResults(dataset);
+				case ENRICHMENT_GSEA:    return new ParseGSEAEnrichmentResults(dataset);
+				case ENRICHMENT_BINGO:   return new ParseBingoEnrichmentResults(dataset);
+				case ENRICHMENT_GREAT:   return new ParseGREATEnrichmentResults(dataset);
+				case ENRICHMENT_DAVID:   return new ParseDavidEnrichmentResults(dataset);
+				case ENRICHMENT_ENRICHR: return new ParseEnrichrEnrichmentResults(dataset);
 			}
 		}
 	}

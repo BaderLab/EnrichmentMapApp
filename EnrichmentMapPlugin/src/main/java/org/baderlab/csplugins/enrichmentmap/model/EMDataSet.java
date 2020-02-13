@@ -18,7 +18,7 @@ public class EMDataSet extends AbstractDataSet {
 		public String getLabel() {
 			switch(this) {
 				case GSEA: default: return "GSEA";
-				case Generic:       return "Generic/gProfiler";
+				case Generic:       return "Generic/gProfiler/Enrichr";
 				case Specialized:   return "DAVID/BINGO/Great";
 			}
 		}

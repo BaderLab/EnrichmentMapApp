@@ -38,6 +38,7 @@ public class DataSetResolver {
 		ENRICHMENT_BINGO,
 		ENRICHMENT_DAVID,
 		ENRICHMENT_GENERIC,
+		ENRICHMENT_ENRICHR,
 		ENRICHMENT_GREAT,
 		ENRICHMENT_GSEA,
 		GSEA_FOLDER,
@@ -115,7 +116,11 @@ public class DataSetResolver {
 		List<Path> gmtFiles  = new ArrayList<>(types.get(Type.GENE_SETS));
 		
 		// MKTODO what about other enrichment types?
-		for(Path enrichment : types.get(Type.ENRICHMENT_GENERIC)) {
+		List<Path> enrichments = new ArrayList<>();
+		enrichments.addAll(types.get(Type.ENRICHMENT_GENERIC));
+		enrichments.addAll(types.get(Type.ENRICHMENT_ENRICHR));
+		
+		for(Path enrichment : enrichments) {
 			Optional<Path> closestExpr  = findClosestMatch(enrichment, exprFiles);
 			Optional<Path> closestRanks = findClosestMatch(enrichment, rankFiles);
 			Optional<Path> closestClass = findClosestMatch(enrichment, clasFiles);
@@ -386,6 +391,8 @@ public class DataSetResolver {
 				return Type.ENRICHMENT_BINGO;
 			} else if(firstLine.contains("GREAT version")) {
 				return Type.ENRICHMENT_GREAT;
+			} else if(tokens.length == 9 && firstLine.contains("Term") && firstLine.contains("Old P-value")) {
+				return Type.ENRICHMENT_ENRICHR;
 			} else {
 				return Type.ENRICHMENT_GENERIC;
 			}
