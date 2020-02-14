@@ -34,6 +34,9 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -49,6 +52,7 @@ public class CreatePANetworkTask extends AbstractTask implements ObservableTask 
 	
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyNetworkViewManager networkViewManager;
+	@Inject private RenderingEngineManager renderingEngineManager;
 	@Inject private CyEventHelper eventHelper;
 	@Inject private Provider<WidthFunction> widthFunctionProvider;
 	
@@ -117,7 +121,9 @@ public class CreatePANetworkTask extends AbstractTask implements ObservableTask 
 		
 		// Layout nodes
 		tm.setStatusMessage("Laying out Nodes");
+		eventHelper.flushPayloadEvents(); // make sure node views have been created
 		layoutHubNodes(networkView);
+		styleHubNodes(networkView);
 		tm.setProgress(0.4);
 		
 		// Create Signature Hub Edges
@@ -243,15 +249,28 @@ public class CreatePANetworkTask extends AbstractTask implements ObservableTask 
 	}
 	
 	private void layoutHubNodes(CyNetworkView networkView) {
-		eventHelper.flushPayloadEvents(); // make sure node views have been created
+		// make sure to call eventHelper.flushPayloadEvents() before calling this
 		double yOffset = 0;
-		
-		for (CyNode node : nodeCache.values()) {
+		for(CyNode node : nodeCache.values()) {
 			// add currentNodeY_offset to initial Y position of the Node and increase currentNodeY_offset for the next Node
 			View<CyNode> nodeView = networkView.getNodeView(node);
 			double nodeY = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 			nodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, nodeY + yOffset);
 			yOffset += HUB_NODE_Y_GAP;
+		}
+	}
+	
+	
+	@SuppressWarnings( {"rawtypes", "unchecked"} )
+	private void styleHubNodes(CyNetworkView networkView) {
+		// make sure PA nodes don't have a chart obscuring them
+		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
+		VisualProperty customPaint1 = lexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
+		Object nullCustomGraphics = customPaint1.getDefault();
+		
+		for(CyNode node : nodeCache.values()) {
+			View<CyNode> nodeView = networkView.getNodeView(node);
+			nodeView.setLockedValue(customPaint1, nullCustomGraphics);
 		}
 	}
 	
