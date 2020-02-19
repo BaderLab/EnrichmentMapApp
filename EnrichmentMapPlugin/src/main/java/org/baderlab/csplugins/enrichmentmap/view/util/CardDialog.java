@@ -41,6 +41,7 @@ public class CardDialog {
 	private CardDialogPage currentPage;
 
 	private JButton finishButton;
+	private AbstractButton[] extraButtons;
 
 	private final CardDialogParameters params;
 
@@ -212,16 +213,16 @@ public class CardDialog {
 			}
 		});
 
-		AbstractButton[] additional = params.getAdditionalButtons();
-		if (additional != null) {
-			for (AbstractButton button : additional) {
+		extraButtons = params.getExtraButtons();
+		if(extraButtons != null) {
+			for(AbstractButton button : extraButtons) {
 				button.addActionListener(e -> {
 					currentPage.extraButtonClicked(e.getActionCommand());
 				});
 			}
 		}
 
-		JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(finishButton, cancelButton, additional);
+		JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(finishButton, cancelButton, extraButtons);
 		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(dialog.getRootPane(), finishButton.getAction(), cancelButton.getAction());
 		dialog.getRootPane().setDefaultButton(finishButton);
 		return buttonPanel;
@@ -235,6 +236,18 @@ public class CardDialog {
 			finishButton.setEnabled(enabled);
 		}
 
+		@Override
+		public AbstractButton getExtraButton(String actionCommand) {
+			if(extraButtons != null && actionCommand != null) {
+				for(AbstractButton button : extraButtons) {
+					if(actionCommand.equals(button.getActionCommand())) {
+						return button;
+					}
+				}
+			}
+			return null;
+		}
+		
 		@Override
 		public JDialog getDialogFrame() {
 			return dialog;

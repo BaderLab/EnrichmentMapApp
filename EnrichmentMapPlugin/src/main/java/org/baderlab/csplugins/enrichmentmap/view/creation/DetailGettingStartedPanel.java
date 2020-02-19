@@ -7,7 +7,6 @@ import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_PROTOCO
 import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_TUTORIAL;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Font;
 
 import javax.swing.GroupLayout;
@@ -20,6 +19,7 @@ import javax.swing.UIManager;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 
@@ -51,9 +51,9 @@ public class DetailGettingStartedPanel extends JPanel {
 				scanButtonCallback.run();
 		});
 		
-		JButton link1 = createLinkButton("View online help", HELP_URL_HOME);
-		JButton link2 = createLinkButton("Tutorial and sample data", HELP_URL_TUTORIAL);
-		JButton link3 = createLinkButton("EnrichmentMap protocol", HELP_URL_PROTOCOL);
+		JButton link1 = SwingUtil.createLinkButton(openBrowser, "View online help", HELP_URL_HOME);
+		JButton link2 = SwingUtil.createLinkButton(openBrowser, "Tutorial and sample data", HELP_URL_TUTORIAL);
+		JButton link3 = SwingUtil.createLinkButton(openBrowser, "EnrichmentMap protocol", HELP_URL_PROTOCOL);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
@@ -94,19 +94,6 @@ public class DetailGettingStartedPanel extends JPanel {
 		TextIcon icon = new TextIcon(IconManager.ICON_FOLDER_O, iconFont, iconColor, iconSize, iconSize);
 		return icon;
 	}
-	
-	
-	private JButton createLinkButton(String text, String url) {
-		JButton button = new JButton();
-		button.setText("<html><font color=\"#000099\"><u>" + text + "</u></font></html>");
-		button.setBorderPainted(false);
-	    button.setOpaque(false);
-	    button.setToolTipText(url);
-	    button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-	    button.addActionListener(e -> {
-	    	openBrowser.openURL(url);
-	    });
-	    return button;
-	}
+
 	
 }

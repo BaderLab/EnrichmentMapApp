@@ -19,7 +19,8 @@ import com.google.inject.Provider;
 
 public class CreationDialogParameters implements CardDialogParameters {
 
-	static final String RESET_BUTTON_ACTION_COMMAND = "reset";
+	static final String RESET_BUTTON_ACTION = "reset";
+	static final String COMMAND_BUTTON_ACTION = "command";
 	
 	@Inject private Provider<MasterDetailDialogPage> masterDetailDialogPage;
 	@Inject private CyServiceRegistrar registrar;
@@ -56,10 +57,15 @@ public class CreationDialogParameters implements CardDialogParameters {
 	}
 	
 	@Override
-	public AbstractButton[] getAdditionalButtons() {
+	public AbstractButton[] getExtraButtons() {
 		JButton resetButton = new JButton("Reset");
-		resetButton.setActionCommand(RESET_BUTTON_ACTION_COMMAND);
+		resetButton.setActionCommand(RESET_BUTTON_ACTION);
+		
+		JButton commandButton = new JButton("Show Command");
+		commandButton.setActionCommand(COMMAND_BUTTON_ACTION);
+		
 		JButton helpButton = SwingUtil.createOnlineHelpButton(HELP_URL_CREATE, "View online help", registrar);
-		return new JButton[] { resetButton, helpButton };
+		
+		return new JButton[] { resetButton, commandButton, helpButton };
 	}
 }

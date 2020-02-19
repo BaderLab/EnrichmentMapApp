@@ -1,5 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -47,6 +51,23 @@ public class DataSetParameters {
 	
 	public Method getMethod() {
 		return method;
+	}
+	
+	public List<Path> getFilePaths() {
+		List<Path> paths = new ArrayList<>();
+		if(files.getGMTFileName() != null)
+			paths.add(Paths.get(files.getGMTFileName()));
+		if(files.getEnrichmentFileName1() != null)
+			paths.add(Paths.get(files.getEnrichmentFileName1()));
+		if(files.getEnrichmentFileName2() != null)
+			paths.add(Paths.get(files.getEnrichmentFileName2()));
+		if(files.getExpressionFileName() != null)
+			paths.add(Paths.get(files.getExpressionFileName()));
+		if(files.getRankedFile() != null)
+			paths.add(Paths.get(files.getRankedFile()));
+		if(files.getClassFile() != null)
+			paths.add(Paths.get(files.getClassFile()));
+		return paths;
 	}
 	
 	@Override

@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.util;
 
+import javax.swing.AbstractButton;
 import javax.swing.JDialog;
 
 import org.cytoscape.work.Task;
@@ -8,6 +9,8 @@ import org.cytoscape.work.TaskObserver;
 public interface CardDialogCallback {
 	
 	void setFinishButtonEnabled(boolean enabled);
+	
+	AbstractButton getExtraButton(String actionCommand);
 	
 	CardDialog getDialog();
 

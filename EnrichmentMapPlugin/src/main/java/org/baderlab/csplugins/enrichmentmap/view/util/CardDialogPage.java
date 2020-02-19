@@ -20,7 +20,7 @@ public interface CardDialogPage {
 	
 	/**
 	 * Called when one of the buttons returned by 
-	 * {@link CardDialogParameters#getAdditionalButtons()} is clicked.
+	 * {@link CardDialogParameters#getExtraButtons()} is clicked.
 	 * 
 	 * @see AbstractButton#setActionCommand(String)
 	 */

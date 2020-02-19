@@ -39,7 +39,7 @@ public interface CardDialogParameters {
 	 * 
 	 * @see AbstractButton#setActionCommand(String)
 	 */
-	default AbstractButton[] getAdditionalButtons() {
+	default AbstractButton[] getExtraButtons() {
 		return null;
 	}
 }

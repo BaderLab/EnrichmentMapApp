@@ -62,7 +62,7 @@ public class PADialogParameters implements CardDialogParameters {
 	}
 	
 	@Override
-	public AbstractButton[] getAdditionalButtons() {
+	public AbstractButton[] getExtraButtons() {
 		JButton helpButton = SwingUtil.createOnlineHelpButton(HELP_URL_PA, "View online help", registrar);
 		return new JButton[] { helpButton };
 	}

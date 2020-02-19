@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.view.util;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -273,5 +274,18 @@ public class SwingUtil {
 		int h = new JComboBox<>().getPreferredSize().height;
 		btn.setMinimumSize(new Dimension(h, h));
 		btn.setPreferredSize(new Dimension(h, h));
+	}
+	
+	public static JButton createLinkButton(OpenBrowser openBrowser, String text, String url) {
+		JButton button = new JButton();
+		button.setText("<html><font color=\"#000099\"><u>" + text + "</u></font></html>");
+		button.setBorderPainted(false);
+	    button.setOpaque(false);
+	    button.setToolTipText(url);
+	    button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	    button.addActionListener(e -> {
+	    	openBrowser.openURL(url);
+	    });
+	    return button;
 	}
 }

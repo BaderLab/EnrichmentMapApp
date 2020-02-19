@@ -1,5 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.view.creation;
 
+import static org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogParameters.COMMAND_BUTTON_ACTION;
+import static org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogParameters.RESET_BUTTON_ACTION;
+
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -34,6 +37,7 @@ import javax.swing.DropMode;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -93,6 +97,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	@Inject private Provider<DetailCommonPanel> commonPanelProvider;
 	@Inject private Provider<DetailGettingStartedPanel> nullPanelProvider;
+	@Inject private Provider<CommandDisplayMediator> commandDisplayProvider;
 	@Inject private DetailDataSetPanel.Factory dataSetPanelFactory;
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	@Inject private ErrorMessageDialog.Factory errorMessageDialogFactory;
@@ -217,8 +222,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			.collect(Collectors.toList());
 
 		// Overwrite all the expression files if the common file has been provided
-		if(commonPanel.hasExpressionFile()) {
-			String exprPath = commonPanel.getExpressionFile();
+		if(commonPanel.hasExprFile()) {
+			String exprPath = commonPanel.getExprFile();
 			dataSets.forEach(dsp -> dsp.getFiles().setExpressionFileName(exprPath));
 		}
 		// Overwrite all the gmt files if a common file has been provided
@@ -232,6 +237,23 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			dataSets.forEach(dsp -> dsp.getFiles().setClassFile(classPath));
 		}
 		return dataSets;
+	}
+	
+	
+	private void createCommand() {
+		EMCreationParameters params = getCreationParameters();
+		List<DataSetParameters> dataSets = getDataSetParameters();
+		
+		if(networkNamePanel.isAutomatic())
+			params.setNetworkName(null);
+		
+		String commonExprFile  = commonPanel.hasExprFile()  ? commonPanel.getExprFile()  : null;
+		String commonGMTFile   = commonPanel.hasGmtFile()   ? commonPanel.getGmtFile()   : null;
+		String commonClassFile = commonPanel.hasClassFile() ? commonPanel.getClassFile() : null;
+		
+		JDialog parent = callback.getDialogFrame();
+		CommandDisplayMediator commandDisplayMediator = commandDisplayProvider.get();
+		commandDisplayMediator.showCommand(parent, params, dataSets, commonExprFile, commonGMTFile, commonClassFile);
 	}
 	
 	
@@ -405,6 +427,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	private void updateButtonEnablement() {
 		deleteButton.setEnabled(dataSetListModel.getSize() > 0 && dataSetList.getSelectedIndex() > 0);
+		callback.getExtraButton(COMMAND_BUTTON_ACTION).setEnabled(dataSetListModel.size() > 1);
 		callback.setFinishButtonEnabled(dataSetListModel.size() > 1);
 	}
 	
@@ -417,8 +440,13 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	@Override
 	public void extraButtonClicked(String actionCommand) {
-		if(CreationDialogParameters.RESET_BUTTON_ACTION_COMMAND.equals(actionCommand)) {
+		switch(actionCommand) {
+		case RESET_BUTTON_ACTION:
 			reset();
+			break;
+		case COMMAND_BUTTON_ACTION:
+			createCommand();
+			break;
 		}
 	}
 	
@@ -482,7 +510,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		});
 	}
 	
-	
 	public DetailCommonPanel getCommonPanel() {
 		return commonPanel;
 	}
@@ -492,7 +519,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		ErrorMessageDialog dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
 		
 		// Check if the user provided a global expression file, warn if there are also per-dataset expression files.
-		if(commonPanel.hasExpressionFile() && editPanelStream().anyMatch(DetailDataSetPanel::hasExpressionFile)) {
+		if(commonPanel.hasExprFile() && editPanelStream().anyMatch(DetailDataSetPanel::hasExpressionFile)) {
 			addCommonWarnSection(dialog, commonPanel, "expression");
 		}
 		// Check if the user provided a global gmt file, warn if there are also per-dataset gmt files.
@@ -508,7 +535,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		// 1) Common GMT and Common Expression
 		// 2) Common GMT no filtering
 		if(commonPanel.hasGmtFile() && cutoffPanel.getEdgeStrategy() == EdgeStrategy.DISTINCT) { // and the user has explicitly specified distinct edges
-			if(commonPanel.hasExpressionFile()) {
+			if(commonPanel.hasExprFile()) {
 				String message = "<html>When providing a common GMT and common expression file 'Separate' edges will all be the same.<br>"
 						+ "It is recommended to select 'Combine Edges' or 'Automatic' in this case.</html>";
 				dialog.addSection(Message.warn(message), commonPanel.getDisplayName(), commonPanel.getIcon());

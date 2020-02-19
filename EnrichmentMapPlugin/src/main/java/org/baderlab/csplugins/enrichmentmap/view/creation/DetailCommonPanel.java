@@ -129,7 +129,7 @@ public class DetailCommonPanel extends JPanel implements DetailPanel {
 		return gmtText.getText();
 	}
 	
-	public String getExpressionFile() {
+	public String getExprFile() {
 		return expressionsText.getText();
 	}
 	
@@ -137,8 +137,8 @@ public class DetailCommonPanel extends JPanel implements DetailPanel {
 		return classText.getText();
 	}
 	
-	public boolean hasExpressionFile() {
-		return !isNullOrEmpty(getExpressionFile());
+	public boolean hasExprFile() {
+		return !isNullOrEmpty(getExprFile());
 	}
 	
 	public boolean hasGmtFile() {

@@ -37,6 +37,9 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 	@Tunable(description="Absolute path to an expression file that will be used for every data set. Overrides other expression files.")
 	public File commonExpressionFile;
 	
+	@Tunable(description="Absolute path to a class file that will be used for every data set. Overrides other class files.")
+	public File commonClassFile;
+	
 	@ContainsTunables
 	@Inject
 	public FilterTunables filterArgs;
@@ -95,6 +98,16 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 			}
 			for(DataSetParameters dsp : dataSets) {
 				dsp.getFiles().setGMTFileName(commonGMTFile.getAbsolutePath());
+			}
+		}
+		
+		// Overwrite all the gmt files if a common file has been provided
+		if(commonClassFile != null) {
+			if(!commonClassFile.canRead()) {
+				throw new IllegalArgumentException("Cannot read commonClassFile: " + commonClassFile);
+			}
+			for(DataSetParameters dsp : dataSets) {
+				dsp.getFiles().setClassFile(commonClassFile.getAbsolutePath());
 			}
 		}
 		
