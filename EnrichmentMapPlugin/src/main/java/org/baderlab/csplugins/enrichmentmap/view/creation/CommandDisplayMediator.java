@@ -6,6 +6,9 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -141,15 +144,18 @@ public class CommandDisplayMediator {
 	
 	private class CommandDisplayDialog extends JDialog {
 		
+		private final String command;
+		
 		public CommandDisplayDialog(JDialog parent, String command) {
 			super(parent);
+			this.command = command;
 			setResizable(true);
 			setTitle("EnrichmentMap: Command");
 			setMinimumSize(new Dimension(500, 300));
 			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			
 			JPanel messagePanel = createMessagePanel();
-			JPanel commandPanel = createCommandPanel(command);
+			JPanel commandPanel = createCommandPanel();
 			JPanel buttonPanel  = createButtonPanel();
 			
 			messagePanel.setBorder(BorderFactory.createEmptyBorder(8,8,8,8));
@@ -185,7 +191,7 @@ public class CommandDisplayMediator {
 		}
 		
 		
-		private JPanel createCommandPanel(String command) {
+		private JPanel createCommandPanel() {
 			JTextArea textArea = new JTextArea(command);
 			textArea.setEditable(false);
 			textArea.setLineWrap(true);
@@ -197,12 +203,20 @@ public class CommandDisplayMediator {
 			return panel;
 		}
 		
+		
 		private JPanel createButtonPanel() {
 			JButton okButton = new JButton("Close");
 			okButton.addActionListener(e -> dispose());
-			return LookAndFeelUtil.createOkCancelPanel(okButton, null);
+			
+			JButton clipboardButton = new JButton("Copy to Clipboard");
+			clipboardButton.addActionListener(e -> {
+				StringSelection stringSelection = new StringSelection(command);
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				clipboard.setContents(stringSelection, null);
+			});
+			
+			return LookAndFeelUtil.createOkCancelPanel(okButton, null, clipboardButton);
 		}
 	}
-	
 	
 }
