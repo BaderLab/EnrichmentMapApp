@@ -78,11 +78,14 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewCont
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
+import org.baderlab.csplugins.enrichmentmap.view.creation.genemania.GenemaniaDialogShowAction;
+import org.baderlab.csplugins.enrichmentmap.view.creation.string.StringDialogShowAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.baderlab.csplugins.enrichmentmap.view.legend.CreationParametersPanel;
 import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
+import org.baderlab.csplugins.enrichmentmap.view.util.IconUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -98,6 +101,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
@@ -123,6 +127,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	@Inject private Provider<EdgeWidthDialog> dialogProvider;
 	@Inject private Provider<HeatMapMediator> heatMapMediatorProvider;
 	@Inject private Provider<ShowAboutDialogAction> showAboutDialogActionProvider;
+	@Inject private GenemaniaDialogShowAction genemaniaAction;
+	@Inject private StringDialogShowAction stringAction;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private CreationDialogShowAction masterMapDialogAction;
 	@Inject private VisualMappingManager visualMappingManager;
@@ -902,6 +908,13 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				showCreationParamsDialog(netView);
 			});
 			menu.add(showParamsItem);
+		}
+		
+		menu.addSeparator();
+		{
+			int iconSize = 16;
+			menu.add(genemaniaAction).setIcon(new TextIcon(IconUtil.GENEMANIA_ICON, IconUtil.getIconFont(14.0f), IconUtil.GENEMANIA_ICON_COLOR, iconSize, iconSize));
+			menu.add(stringAction).setIcon(new TextIcon(IconUtil.LAYERED_STRING_ICON, IconUtil.getIconFont(16.0f), IconUtil.STRING_ICON_COLORS, iconSize, iconSize));
 		}
 		
 		menu.addSeparator();
