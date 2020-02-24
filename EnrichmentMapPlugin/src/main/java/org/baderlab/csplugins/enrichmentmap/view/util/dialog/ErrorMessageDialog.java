@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.creation;
+package org.baderlab.csplugins.enrichmentmap.view.util.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -18,6 +18,7 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.view.creation.DetailPanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;

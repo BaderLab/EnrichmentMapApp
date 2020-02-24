@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.creation.string;
 
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogShowAction;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogShowAction;
 
 import com.google.inject.Singleton;
 

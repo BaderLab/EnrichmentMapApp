@@ -21,10 +21,10 @@ import javax.swing.LayoutStyle;
 import javax.swing.SwingWorker;
 
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogPage;
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogCallback;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogPage;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 

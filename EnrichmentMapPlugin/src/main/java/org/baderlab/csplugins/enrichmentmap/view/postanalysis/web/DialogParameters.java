@@ -5,8 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogPage;
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogParameters;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogPage;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogParameters;
 
 public class DialogParameters implements CardDialogParameters {
 

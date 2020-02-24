@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.util;
+package org.baderlab.csplugins.enrichmentmap.view.util.dialog;
 
 import javax.swing.AbstractButton;
 import javax.swing.JPanel;

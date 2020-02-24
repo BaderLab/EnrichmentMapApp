@@ -1,9 +1,10 @@
-package org.baderlab.csplugins.enrichmentmap.view.util;
+package org.baderlab.csplugins.enrichmentmap.view.util.dialog;
 
 import java.awt.event.ActionEvent;
 
 import javax.swing.JFrame;
 
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.swing.AbstractCyAction;
 
 import com.google.inject.Inject;

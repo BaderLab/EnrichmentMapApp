@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.Message;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 

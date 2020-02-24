@@ -13,7 +13,7 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreatePANetworkTas
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.CreatePANetworkTaskResult;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.PATaskFactory;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialog;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialog;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;

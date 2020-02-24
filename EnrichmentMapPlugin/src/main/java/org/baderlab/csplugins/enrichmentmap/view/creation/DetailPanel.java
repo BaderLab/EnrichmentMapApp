@@ -5,6 +5,7 @@ import java.util.List;
 import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.Message;
 
 public interface DetailPanel {
 

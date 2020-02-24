@@ -28,6 +28,7 @@ import org.baderlab.csplugins.enrichmentmap.parsers.ClassFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.Message;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 

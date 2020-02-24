@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.util;
+package org.baderlab.csplugins.enrichmentmap.view.util.dialog;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
@@ -25,6 +25,8 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
+import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.FinishStatus;

@@ -24,7 +24,6 @@ import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDat
 import org.baderlab.csplugins.enrichmentmap.task.string.QueryStringTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.DataSetColorSelectorDialog;
 import org.baderlab.csplugins.enrichmentmap.view.creation.DetailDataSetPanel;
-import org.baderlab.csplugins.enrichmentmap.view.creation.ErrorMessageDialog;
 import org.baderlab.csplugins.enrichmentmap.view.creation.PathTextField;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.AddRanksDialog;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.ClusterRankingOption;
@@ -34,6 +33,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankO
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogParameters;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PAWeightPanel;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.ErrorMessageDialog;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.property.CyProperty;
 import org.osgi.framework.BundleContext;

@@ -1,4 +1,4 @@
-package org.baderlab.csplugins.enrichmentmap.view.creation;
+package org.baderlab.csplugins.enrichmentmap.view.util.dialog;
 
 import java.util.Objects;
 

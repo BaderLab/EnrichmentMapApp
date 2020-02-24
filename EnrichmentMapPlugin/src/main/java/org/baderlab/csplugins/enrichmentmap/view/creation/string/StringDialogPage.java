@@ -2,8 +2,8 @@ package org.baderlab.csplugins.enrichmentmap.view.creation.string;
 
 import javax.swing.JPanel;
 
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogCallback;
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogCallback;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogPage;
 
 public class StringDialogPage implements CardDialogPage {
 

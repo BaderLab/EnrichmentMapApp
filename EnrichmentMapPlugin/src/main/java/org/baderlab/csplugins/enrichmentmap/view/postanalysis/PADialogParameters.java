@@ -10,9 +10,9 @@ import javax.swing.AbstractButton;
 import javax.swing.JButton;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogPage;
-import org.baderlab.csplugins.enrichmentmap.view.util.CardDialogParameters;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogPage;
+import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogParameters;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 
