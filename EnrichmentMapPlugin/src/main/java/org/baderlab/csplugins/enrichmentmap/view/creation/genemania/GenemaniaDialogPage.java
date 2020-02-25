@@ -5,7 +5,6 @@ import java.awt.GridBagLayout;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -57,20 +56,17 @@ public class GenemaniaDialogPage implements CardDialogPage {
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
 		this.callback = callback;
+		cutoffPanel.setGeneMania();
 
 		// Assume GenemaniaDialogShowAction did its job of validating the current network.
 		genemaniaNetwork = applicationManager.getCurrentNetwork();
 		
 		networkNamePanel = new NamePanel("Network Name");
-		
-		String name = genemaniaNetwork.getRow(genemaniaNetwork).get(CyNetwork.NAME, String.class);
-		String text = "Create an EnrichmentMap network from the Genemania network '" + name + "'?";
-		JLabel label = new JLabel(text);
+		networkNamePanel.setAutomaticName(getOrganismName());
 		
 		JPanel panel = new JPanel(new GridBagLayout());
-		panel.add(label, GBCFactory.grid(0,0).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
-		panel.add(networkNamePanel, GBCFactory.grid(0,1).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
-		panel.add(cutoffPanel, GBCFactory.grid(0,2).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
+		panel.add(networkNamePanel, GBCFactory.grid(0,0).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
+		panel.add(cutoffPanel, GBCFactory.grid(0,1).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
 		return panel;
 	}
 

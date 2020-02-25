@@ -46,6 +46,7 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	// node filtering
 	private JCheckBox filterGenesCheckbox;
+	private JLabel filterGenesLabel;
 	private JFormattedTextField qvalueText;
 	private JLabel pvalueLabel;
 	private JFormattedTextField pvalueText;
@@ -61,6 +62,7 @@ public class CutoffPropertiesPanel extends JPanel {
 	// edge filtering
 	private JFormattedTextField similarityCutoffText;
 	private JComboBox<ComboItem<SimilarityMetric>> cutoffMetricCombo;
+	private JLabel edgeStrategyLabel;
 	private JComboBox<ComboItem<EdgeStrategy>> edgeStrategyCombo;
 	private CombinedConstantSlider combinedConstantSlider;
 	private SimilaritySlider similaritySlider;
@@ -69,6 +71,8 @@ public class CutoffPropertiesPanel extends JPanel {
 	// options
 	private JCheckBox notationCheckBox;
 	private JCheckBox advancedCheckBox;
+	
+	private boolean isGenemania;
 	
 	private final List<Pair<SimilarityMetric, Double>> sliderTicks = Arrays.asList(
 		Pair.of(SimilarityMetric.JACCARD, 0.35),
@@ -90,6 +94,11 @@ public class CutoffPropertiesPanel extends JPanel {
 		return values;
 	}
 	
+	public void setGeneMania() {
+		this.isGenemania = true;
+		updateVisibility();
+		similaritySlider.setTick(1);
+	}
 	
 	@AfterInjection
 	public void createContents() {
@@ -108,11 +117,9 @@ public class CutoffPropertiesPanel extends JPanel {
 		});
 		
 		advancedCheckBox = new JCheckBox("Show Advanced Options");
-		advancedCheckBox.addActionListener(e -> 
-			showAdvancedOptions(advancedCheckBox.isSelected())
-		);
+		advancedCheckBox.addActionListener(e -> updateVisibility());
 		
-		showAdvancedOptions(false);
+		updateVisibility();
 		
 		SwingUtil.makeSmall(notationCheckBox, advancedCheckBox);
 		
@@ -150,7 +157,7 @@ public class CutoffPropertiesPanel extends JPanel {
 		panel.setBorder(LookAndFeelUtil.createTitledBorder("Number of Nodes (gene-set filtering)"));
 		
 		
-		JLabel filterGenesLabel = new JLabel("Filter genes by expressions:");
+		filterGenesLabel = new JLabel("Filter genes by expressions:");
 		JLabel qvalueLabel = new JLabel("FDR q-value cutoff:");
 		pvalueLabel = new JLabel("p-value cutoff:");
 		nesFilterLabel = new JLabel("NES (GSEA only):");
@@ -309,12 +316,12 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	
 	private JPanel createFilterEdgesPanel_Top() {
-		JLabel edgesLabel = new JLabel("Data Set Edges:");
+		edgeStrategyLabel = new JLabel("Data Set Edges:");
 		edgeStrategyCombo = new JComboBox<>();
 		edgeStrategyCombo.addItem(new ComboItem<>(EdgeStrategy.AUTOMATIC, "Automatic"));
 		edgeStrategyCombo.addItem(new ComboItem<>(EdgeStrategy.DISTINCT, "Separate edge for each data set (denser)"));
 		edgeStrategyCombo.addItem(new ComboItem<>(EdgeStrategy.COMPOUND, "Combine edges across data sets (sparser)"));
-		SwingUtil.makeSmall(edgeStrategyCombo, edgesLabel);
+		SwingUtil.makeSmall(edgeStrategyCombo, edgeStrategyLabel);
 		
 		JPanel panel = new JPanel();
 		final GroupLayout layout = new GroupLayout(panel);
@@ -324,12 +331,12 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		layout.setHorizontalGroup(
 			layout.createSequentialGroup()
-				.addComponent(edgesLabel)
+				.addComponent(edgeStrategyLabel)
 				.addComponent(edgeStrategyCombo)
 		);
 		layout.setVerticalGroup(
 			layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(edgesLabel)
+				.addComponent(edgeStrategyLabel)
 				.addComponent(edgeStrategyCombo)
 		);
 		
@@ -472,17 +479,23 @@ public class CutoffPropertiesPanel extends JPanel {
 	}
 	
 	
-	private void showAdvancedOptions(boolean show) {
-		pvalueLabel.setVisible(show);
-		pvalueText.setVisible(show);
-		nesFilterLabel.setVisible(show);
-		nesFilterCombo.setVisible(show);
-		minExperimentsLabel.setVisible(show);
-		minExperimentsText.setVisible(show);
-		shouldFilterMinLabel.setVisible(show);
-		shouldFilterMinCheckbox.setVisible(show);
-		parseBaderlabLabel.setVisible(show);
-		parseBaderlabCheckbox.setVisible(show);
+	private void updateVisibility() {
+		boolean show = advancedCheckBox.isSelected();
+		pvalueLabel.setVisible(show && !isGenemania);
+		pvalueText.setVisible(show && !isGenemania);
+		nesFilterLabel.setVisible(show && !isGenemania);
+		nesFilterCombo.setVisible(show && !isGenemania);
+		minExperimentsLabel.setVisible(show && !isGenemania);
+		minExperimentsText.setVisible(show && !isGenemania);
+		shouldFilterMinLabel.setVisible(show && !isGenemania);
+		shouldFilterMinCheckbox.setVisible(show && !isGenemania);
+		parseBaderlabLabel.setVisible(show && !isGenemania);
+		parseBaderlabCheckbox.setVisible(show && !isGenemania);
+		
+		filterGenesCheckbox.setVisible(!isGenemania);
+		filterGenesLabel.setVisible(!isGenemania);
+		edgeStrategyLabel.setVisible(!isGenemania);
+		edgeStrategyCombo.setVisible(!isGenemania);
 		
 		CardLayout cardLayout = (CardLayout)cardPanel.getLayout();
 		cardLayout.show(cardPanel, show ? "advanced" : "simple");

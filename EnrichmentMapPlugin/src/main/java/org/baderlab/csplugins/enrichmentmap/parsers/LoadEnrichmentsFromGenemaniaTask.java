@@ -57,6 +57,7 @@ public class LoadEnrichmentsFromGenemaniaTask extends AbstractTask {
 		tm.setProgress(0.7);
 		
 		createDataSet(genemaniaNetwork, geneSets, annotations);
+		dataset.getMap().getParams().setFDR(true);
 		
 		tm.setProgress(1.0);
 	}

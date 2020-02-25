@@ -43,23 +43,9 @@ public class GenemaniaDialogShowAction extends CardDialogShowAction {
 			showNotGenemaniaNetworkError();
 			return;
 		}
-		
-//		String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
-//		boolean confirm = showConfirmDialog(networkName);
-//		if(confirm) {
-//			createEMNetworkFrom(network);
-//		}
 		super.showDialog();
 	}
 
-//	private boolean showConfirmDialog(String networkName) {
-//		int r = JOptionPane.showConfirmDialog(jframeProvider.get(), 
-//				"Create an EnrichmentMap network from the Genemania network '" + networkName + "'?", 
-//				"EnrichmentMap: Create from Genemania", 
-//				JOptionPane.OK_CANCEL_OPTION);
-//		return r == JOptionPane.OK_OPTION;
-//	}
-	
 	private void showNoNetworkError() {
 		JOptionPane.showMessageDialog(jframeProvider.get(), 
 				"Please select a network first.", 
@@ -73,11 +59,6 @@ public class GenemaniaDialogShowAction extends CardDialogShowAction {
 				"EnrichmentMap: Create from Genemania", 
 				JOptionPane.ERROR_MESSAGE);
 	}
-	
-//	private void createEMNetworkFrom(CyNetwork genemaniaNetwork) {
-//		
-//		
-//	}
 	
 	private boolean hasRequiredData(CyNetwork network) {
 		CyTable table = network.getDefaultNetworkTable();
@@ -100,8 +81,6 @@ public class GenemaniaDialogShowAction extends CardDialogShowAction {
 			List<GenemaniaAnnotation> fromJson = gson.fromJson(jsonString, listType);
 			if(fromJson == null || fromJson.isEmpty()) {
 				return false;
-			} else {
-				System.out.println("found it: " + fromJson.get(0));
 			}
 		} catch(JsonParseException e) {
 			return false;

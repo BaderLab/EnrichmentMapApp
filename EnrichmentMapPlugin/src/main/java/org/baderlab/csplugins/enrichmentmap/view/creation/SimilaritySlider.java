@@ -43,6 +43,9 @@ public class SimilaritySlider extends JPanel {
 		add(slider, BorderLayout.SOUTH);
 	}
 	
+	public void setTick(int tick) {
+		slider.setValue(tick);
+	}
 	
 	public Pair<SimilarityMetric,Double> getTickValue() {
 		return cutoffs.get(slider.getValue()-1);

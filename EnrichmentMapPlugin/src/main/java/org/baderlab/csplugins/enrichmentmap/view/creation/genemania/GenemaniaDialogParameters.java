@@ -31,12 +31,12 @@ public class GenemaniaDialogParameters implements CardDialogParameters {
 
 	@Override
 	public Dimension getPreferredSize() {
-		return new Dimension(820, 700);
+		return new Dimension(820, 320);
 	}
 	
 	@Override
 	public Dimension getMinimumSize() {
-		return new Dimension(650, 550);
+		return new Dimension(650, 320);
 	}
 	
 	@Override
