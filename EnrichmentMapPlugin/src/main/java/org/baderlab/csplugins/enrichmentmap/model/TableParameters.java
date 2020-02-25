@@ -2,7 +2,11 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 
 public class TableParameters {
@@ -13,12 +17,16 @@ public class TableParameters {
 	private final String pvalueColumn;
 	private final Optional<String> descriptionColumn;
 	
-	public TableParameters(CyTable table, String nameColumn, String genesColumn, String pvalueColumn, String descriptionColumn) {
+	private final @Nullable Predicate<CyRow> filter;
+	
+	
+	public TableParameters(CyTable table, String nameColumn, String genesColumn, String pvalueColumn, String descriptionColumn, Predicate<CyRow> filter) {
 		this.table = Objects.requireNonNull(table);
 		this.nameColumn = Objects.requireNonNull(nameColumn);
 		this.genesColumn = Objects.requireNonNull(genesColumn);
 		this.pvalueColumn = Objects.requireNonNull(pvalueColumn);
 		this.descriptionColumn = Optional.ofNullable(descriptionColumn);
+		this.filter = filter;
 	}
 
 	public CyTable getTable() {
@@ -39,6 +47,10 @@ public class TableParameters {
 
 	public Optional<String> getDescriptionColumn() {
 		return descriptionColumn;
+	}
+	
+	public Predicate<CyRow> getFilter() {
+		return filter;
 	}
 
 }

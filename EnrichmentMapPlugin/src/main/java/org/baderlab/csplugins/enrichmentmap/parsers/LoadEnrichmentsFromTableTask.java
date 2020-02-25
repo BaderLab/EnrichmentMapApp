@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -41,36 +42,39 @@ public class LoadEnrichmentsFromTableTask extends AbstractTask {
 		SetOfEnrichmentResults enrichments = dataset.getEnrichments();
 		Map<String,GeneSet> genesets = dataset.getSetOfGeneSets().getGeneSets();
 		
+		Predicate<CyRow> filter = tableParams.getFilter();
+		
 		for(CyRow row : table.getAllRows()) {
-			List<String> genes = row.getList(tableParams.getGenesColumn(), String.class);
-			String name = row.get(tableParams.getNameColumn(), String.class);
-			Double pvalue = row.get(tableParams.getPvalueColumn(), Double.class);
-			
-			// Skip row if data is invalid in any way
-			if(genes == null || genes.isEmpty() || name == null || name.isEmpty() || pvalue == null)
-				continue;
-			
-			String description = null;
-			if(tableParams.getDescriptionColumn().isPresent()) {
-				description = row.get(tableParams.getDescriptionColumn().get(), String.class);
+			if(filter == null || filter.test(row)) {
+				List<String> genes = row.getList(tableParams.getGenesColumn(), String.class);
+				String name = row.get(tableParams.getNameColumn(), String.class);
+				Double pvalue = row.get(tableParams.getPvalueColumn(), Double.class);
+				
+				// Skip row if data is invalid in any way
+				if(genes == null || genes.isEmpty() || name == null || name.isEmpty() || pvalue == null)
+					continue;
+				
+				String description = null;
+				if(tableParams.getDescriptionColumn().isPresent()) {
+					description = row.get(tableParams.getDescriptionColumn().get(), String.class);
+				}
+				
+				// Build the GeneSet object
+				ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
+				
+				for(String gene : genes) {
+					Integer hash = map.addGene(gene);
+					if(hash != null)
+						builder.add(hash);
+				}
+				
+				GeneSet gs = new GeneSet(name, description, builder.build());
+				int gsSize = gs.getGenes().size();
+				genesets.put(name, gs);
+				
+				GenericResult result = new GenericResult(name, description, pvalue, gsSize);
+				enrichments.getEnrichments().put(name, result);
 			}
-			
-			// Build the GeneSet object
-			ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
-			
-			for(String gene : genes) {
-				Integer hash = map.addGene(gene);
-				if(hash != null)
-					builder.add(hash);
-			}
-			
-			GeneSet gs = new GeneSet(name, description, builder.build());
-			int gsSize = gs.getGenes().size();
-			genesets.put(name, gs);
-			
-			GenericResult result = new GenericResult(name, description, pvalue, gsSize);
-			enrichments.getEnrichments().put(name, result);
-			
 			tm.inc();
 		}
 		

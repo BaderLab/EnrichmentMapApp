@@ -34,9 +34,9 @@ public class DataSetParameters {
 		this.genemaniaParameters = null;
 	}
 	
-	public DataSetParameters(String name, Method method, TableParameters tableParameters) {
+	public DataSetParameters(String name, TableParameters tableParameters) {
 		this.name = Objects.requireNonNull(name);
-		this.method = Objects.requireNonNull(method);
+		this.method = Method.Generic;
 		this.files = new DataSetFiles();
 		this.tableParameters = Objects.requireNonNull(tableParameters);
 		this.genemaniaParameters = null;

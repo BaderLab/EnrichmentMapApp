@@ -13,18 +13,18 @@ import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogParameter
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-public class GenemaniaDialogParameters implements CardDialogParameters {
+public class StringDialogParameters implements CardDialogParameters {
 
-	@Inject private Provider<GenemaniaDialogPage> genemaniaDialogPage;
+	@Inject private Provider<StringDialogPage> stringDialogPage;
 	
 	@Override
 	public String getTitle() {
-		return "Create Enrichment Map from Genemania Network";
+		return "Create Enrichment Map from STRING Network";
 	}
 
 	@Override
 	public List<CardDialogPage> getPages() {
-		return Arrays.asList(genemaniaDialogPage.get());
+		return Arrays.asList(stringDialogPage.get());
 	}
 
 	@Override
@@ -41,7 +41,6 @@ public class GenemaniaDialogParameters implements CardDialogParameters {
 	public AbstractButton[] getExtraButtons() {
 		JButton resetButton = new JButton("Reset");
 		resetButton.setActionCommand("reset");
-		
 		return new JButton[] { resetButton };
 	}
 }
