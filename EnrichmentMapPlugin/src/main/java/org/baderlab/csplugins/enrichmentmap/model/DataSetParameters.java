@@ -18,9 +18,12 @@ public class DataSetParameters {
 	private final String name;
 	private final Method method;
 	
-	// one or the other of the following must be provided
+	// one of the following must be provided
+	// This is a hack, there should really be different subclasses for different parameter
+	// types, but for the sake of compatibility with the session serialization this is easier.
 	private final @Nullable DataSetFiles files;
 	private final @Nullable transient TableParameters tableParameters;
+	private final @Nullable transient GenemaniaParameters genemaniaParameters;
 	
 	
 	public DataSetParameters(String name, Method method, DataSetFiles files) {
@@ -28,6 +31,7 @@ public class DataSetParameters {
 		this.method = Objects.requireNonNull(method);
 		this.files = Objects.requireNonNull(files);
 		this.tableParameters = null;
+		this.genemaniaParameters = null;
 	}
 	
 	public DataSetParameters(String name, Method method, TableParameters tableParameters) {
@@ -35,6 +39,15 @@ public class DataSetParameters {
 		this.method = Objects.requireNonNull(method);
 		this.files = new DataSetFiles();
 		this.tableParameters = Objects.requireNonNull(tableParameters);
+		this.genemaniaParameters = null;
+	}
+	
+	public DataSetParameters(String name, GenemaniaParameters genemaniaParameters) {
+		this.name = Objects.requireNonNull(name);
+		this.method = Method.Generic;
+		this.files = new DataSetFiles();
+		this.tableParameters = null;
+		this.genemaniaParameters = Objects.requireNonNull(genemaniaParameters);
 	}
 
 	public String getName() {
@@ -47,6 +60,10 @@ public class DataSetParameters {
 	
 	public Optional<TableParameters> getTableParams() {
 		return Optional.ofNullable(tableParameters);
+	}
+	
+	public Optional<GenemaniaParameters> getGenemaniaParams() {
+		return Optional.ofNullable(genemaniaParameters);
 	}
 	
 	public Method getMethod() {

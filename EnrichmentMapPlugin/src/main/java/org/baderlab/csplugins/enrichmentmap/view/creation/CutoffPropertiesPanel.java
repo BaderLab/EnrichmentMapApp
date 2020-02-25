@@ -26,10 +26,12 @@ import javax.swing.text.InternationalFormatter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -40,6 +42,7 @@ import com.google.inject.Inject;
 public class CutoffPropertiesPanel extends JPanel {
 
 	@Inject private PropertyManager propertyManager;
+	@Inject private LegacySupport legacySupport;
 	
 	// node filtering
 	private JCheckBox filterGenesCheckbox;
@@ -572,4 +575,24 @@ public class CutoffPropertiesPanel extends JPanel {
 		return parseBaderlabCheckbox.isSelected();
 	}
 	
+	public EMCreationParameters getCreationParameters() {
+		String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
+		String stylePrefix = legacySupport.getNextStylePrefix();
+		
+		SimilarityMetric similarityMetric = getSimilarityMetric();
+		double pvalue = getPValue();
+		double qvalue = getQValue();
+		NESFilter nesFilter = getNESFilter();
+		boolean filterByExpressions = getFilterGenesByExpressions();
+		double cutoff = getCutoff();
+		double combined = getCombinedConstant();
+		Optional<Integer> minExperiments = getMinimumExperiments();
+		EdgeStrategy edgeStrategy = getEdgeStrategy();
+		boolean parseBaderlab = getParseBaderlabGeneSets();
+		
+		EMCreationParameters params = 
+				new EMCreationParameters(attributePrefix, stylePrefix, pvalue, qvalue, nesFilter, minExperiments, filterByExpressions, 
+						parseBaderlab, similarityMetric, cutoff, combined, edgeStrategy);
+		return params;
+	}
 }

@@ -12,19 +12,21 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
-import org.baderlab.csplugins.enrichmentmap.view.creation.DetailPanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 @SuppressWarnings("serial")
 public class ErrorMessageDialog extends JDialog {
@@ -40,11 +42,29 @@ public class ErrorMessageDialog extends JDialog {
 	
 	public interface Factory {
 		ErrorMessageDialog create(JDialog parent);
+		ErrorMessageDialog create(JFrame parent);
+		ErrorMessageDialog create();
 	}
 	
-	@Inject
+	@AssistedInject
 	public ErrorMessageDialog(@Assisted JDialog parent) {
 		super(parent);
+		init();
+	}
+	
+	@AssistedInject
+	public ErrorMessageDialog(@Assisted JFrame parent) {
+		super(parent);
+		init();
+	}
+	
+	@AssistedInject
+	public ErrorMessageDialog(Provider<JFrame> jframeProvider) {
+		super(jframeProvider.get());
+		init();
+	}
+	
+	private void init() {
 		setResizable(true);
 		setTitle("Create Enrichment Map: Validation");
 		setMinimumSize(new Dimension(430, 100));
@@ -107,14 +127,6 @@ public class ErrorMessageDialog extends JDialog {
 	
 	public boolean isEmpty() {
 		return y == 0;
-	}
-	
-	public void addSection(Message message, DetailPanel panel) {
-		addSection(message, panel.getDisplayName(), panel.getIcon());
-	}
-
-	public void addSection(List<Message> messages, DetailPanel panel) {
-		addSection(messages, panel.getDisplayName(), panel.getIcon());
 	}
 	
 	public void addSection(Message message, String title, String icon) {

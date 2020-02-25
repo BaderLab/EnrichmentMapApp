@@ -11,6 +11,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.GenemaniaParameters;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
@@ -19,6 +20,7 @@ import org.baderlab.csplugins.enrichmentmap.parsers.ClassFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GREATWhichPvalueQuestionTask;
+import org.baderlab.csplugins.enrichmentmap.parsers.LoadEnrichmentsFromGenemaniaTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.LoadEnrichmentsFromTableTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseBingoEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseDavidEnrichmentResults;
@@ -96,6 +98,9 @@ public class CreateEnrichmentMapTaskFactory {
 			if(dataSetParameters.getTableParams().isPresent()) {
 				TableParameters tableParams = dataSetParameters.getTableParams().get();
 				tasks.append(new LoadEnrichmentsFromTableTask(tableParams, dataset));
+			} else if(dataSetParameters.getGenemaniaParams().isPresent()) {
+				GenemaniaParameters genemaniaParams = dataSetParameters.getGenemaniaParams().get();
+				tasks.append(new LoadEnrichmentsFromGenemaniaTask(genemaniaParams, dataset));
 			} else {
 				tasks.append(getEnrichmentParserTasks(dataset));
 			}

@@ -59,12 +59,8 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
-import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.SimilarityMetric;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResultFilterParams.NESFilter;
-import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
-import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask.MissingGenesetStrategy;
 import org.baderlab.csplugins.enrichmentmap.task.MissingGenesetsException;
@@ -95,7 +91,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Inject private Provider<JFrame> jframeProvider;
 	@Inject private FileBrowser fileBrowser;
 	@Inject private PropertyManager propertyManager;
-	@Inject private LegacySupport legacySupport;
 	
 	@Inject private Provider<DetailCommonPanel> commonPanelProvider;
 	@Inject private Provider<DetailGettingStartedPanel> nullPanelProvider;
@@ -193,28 +188,11 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	
 	private EMCreationParameters getCreationParameters() {
-		String attributePrefix = EMStyleBuilder.Columns.NAMESPACE_PREFIX;
-		String stylePrefix = legacySupport.getNextStylePrefix();
-		
-		SimilarityMetric similarityMetric = cutoffPanel.getSimilarityMetric();
-		double pvalue = cutoffPanel.getPValue();
-		double qvalue = cutoffPanel.getQValue();
-		NESFilter nesFilter = cutoffPanel.getNESFilter();
-		boolean filterByExpressions = cutoffPanel.getFilterGenesByExpressions();
-		double cutoff = cutoffPanel.getCutoff();
-		double combined = cutoffPanel.getCombinedConstant();
-		Optional<Integer> minExperiments = cutoffPanel.getMinimumExperiments();
-		String networkName = networkNamePanel.getNameText();
-		EdgeStrategy edgeStrategy = cutoffPanel.getEdgeStrategy();
-		boolean parseBaderlab = cutoffPanel.getParseBaderlabGeneSets();
-		
-		EMCreationParameters params = 
-			new EMCreationParameters(attributePrefix, stylePrefix, pvalue, qvalue, nesFilter, minExperiments, filterByExpressions, 
-					parseBaderlab, similarityMetric, cutoff, combined, edgeStrategy);
-		
-		params.setNetworkName(networkName);
+		EMCreationParameters params = cutoffPanel.getCreationParameters();
+		params.setNetworkName(networkNamePanel.getNameText());
 		return params;
 	}
+	
 	
 	private List<DataSetParameters> getDataSetParameters() {
 		List<DataSetParameters> dataSets = dataSetListModel.toList().stream()
