@@ -149,6 +149,9 @@ public class ComputeSimilarityTaskParallel extends CancellableParallelTask<Map<S
 
 		double coeffecient = computeSimilarityCoeffecient(params, intersection, union, geneset1, geneset2);
 		
+		if(!Double.isFinite(coeffecient))
+			return null;
+		
 		if(coeffecient < params.getSimilarityCutoff())
 			return null;
 			
