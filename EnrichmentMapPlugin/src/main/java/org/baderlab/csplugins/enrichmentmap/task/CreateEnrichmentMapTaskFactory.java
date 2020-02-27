@@ -48,6 +48,7 @@ public class CreateEnrichmentMapTaskFactory {
 	
 	@Inject private CreateEMNetworkTask.Factory createEMNetworkTaskFactory;
 	@Inject private CreateEMViewTask.Factory createEMViewTaskFactory;
+	@Inject private LoadEnrichmentsFromGenemaniaTask.Factory genemanaiaTaskFactory;
 	
 	private final EMCreationParameters params;
 	private final List<DataSetParameters> dataSets;
@@ -100,7 +101,7 @@ public class CreateEnrichmentMapTaskFactory {
 				tasks.append(new LoadEnrichmentsFromTableTask(tableParams, dataset));
 			} else if(dataSetParameters.getGenemaniaParams().isPresent()) {
 				GenemaniaParameters genemaniaParams = dataSetParameters.getGenemaniaParams().get();
-				tasks.append(new LoadEnrichmentsFromGenemaniaTask(genemaniaParams, dataset));
+				tasks.append(genemanaiaTaskFactory.create(genemaniaParams, dataset));
 			} else {
 				tasks.append(getEnrichmentParserTasks(dataset));
 			}

@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.creation.genemania;
 
 import javax.swing.JPanel;
 
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.GenemaniaParameters;
 import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogCallback;
@@ -13,21 +14,27 @@ import com.google.inject.Inject;
 public class GenemaniaDialogPage extends NetworkLoadDialogPage {
 
 	@Inject private CyApplicationManager applicationManager;
+	@Inject private PropertyManager propertyManager;
 	
 	private CyNetwork genemaniaNetwork;
 	
 	
 	private String getOrganismName() {
-		return genemaniaNetwork.getRow(genemaniaNetwork).get("organism", String.class);
+		final String ORGANISM_COLUMN = propertyManager.getValue(PropertyManager.GENEMANIA_COLUMN_ORGANISM);
+		return genemaniaNetwork.getRow(genemaniaNetwork).get(ORGANISM_COLUMN, String.class);
 	}
 
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
 		JPanel panel = super.createBodyPanel(callback);
-		networkNamePanel.setAutomaticName(getOrganismName());
-		// Assume GenemaniaDialogShowAction did its job of validating the current network.
-		genemaniaNetwork = applicationManager.getCurrentNetwork();
+		opened();
 		return panel;
+	}
+	
+	@Override
+	public void opened() {
+		genemaniaNetwork = applicationManager.getCurrentNetwork();
+		networkNamePanel.setAutomaticName(getOrganismName());
 	}
 
 	@Override

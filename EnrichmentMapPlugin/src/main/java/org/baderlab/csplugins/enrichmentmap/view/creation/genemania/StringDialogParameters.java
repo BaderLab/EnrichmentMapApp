@@ -15,6 +15,12 @@ import com.google.inject.Provider;
 
 public class StringDialogParameters implements CardDialogParameters {
 
+	public static final String NAME_COLUMN_DEF  = "term name";
+	public static final String FDR_COLUMN_DEF   = "FDR value";
+	public static final String GENES_COLUMN_DEF = "genes";
+	public static final String DESC_COLUMN_DEF  = "description";
+	public static final String SUID_COLUMN_DEF  = "network.SUID";
+	
 	@Inject private Provider<StringDialogPage> stringDialogPage;
 	
 	@Override

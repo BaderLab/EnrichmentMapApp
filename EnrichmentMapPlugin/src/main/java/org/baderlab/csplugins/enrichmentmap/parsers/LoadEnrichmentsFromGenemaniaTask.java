@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
@@ -26,17 +27,28 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 
 public class LoadEnrichmentsFromGenemaniaTask extends AbstractTask {
 
+	@Inject private PropertyManager propertyManager;
+	
 	private final GenemaniaParameters genemaniaParams;
 	private final EMDataSet dataset;
 	
-	public LoadEnrichmentsFromGenemaniaTask(GenemaniaParameters genemaniaParams, EMDataSet dataset) {
+	
+	public static interface Factory {
+		LoadEnrichmentsFromGenemaniaTask create(GenemaniaParameters genemaniaParams, EMDataSet dataset);
+	}
+	
+	@Inject
+	public LoadEnrichmentsFromGenemaniaTask(@Assisted GenemaniaParameters genemaniaParams, @Assisted EMDataSet dataset) {
 		this.genemaniaParams = genemaniaParams;
 		this.dataset = dataset;
 	}
 
+	
 	@Override
 	public void run(TaskMonitor tm) {
 		tm.setStatusMessage("Loading enrichment data from Genemania network.");
@@ -97,12 +109,15 @@ public class LoadEnrichmentsFromGenemaniaTask extends AbstractTask {
 	
 
 	private Map<String,Set<String>> computeGeneSets(CyNetwork genemaniaNetwork) {
+		final String GENE_NAME_COLUMN = propertyManager.getValue(PropertyManager.GENEMANIA_COLUMN_GENE_NAME);
+		final String ANN_NAME_COLUMN  = propertyManager.getValue(PropertyManager.GENEMANIA_COLUMN_ANN_NAME);
+		
 		CyTable nodeTable = genemaniaNetwork.getDefaultNodeTable();
 		Map<String,Set<String>> geneSets = new HashMap<>();
 		
 		for(CyRow row : nodeTable.getAllRows()) {
-			String gene = row.get("gene name", String.class);
-			List<String> annotations = row.getList("annotation name", String.class);
+			String gene = row.get(GENE_NAME_COLUMN, String.class);
+			List<String> annotations = row.getList(ANN_NAME_COLUMN, String.class);
 			
 			if(gene != null && annotations != null && !annotations.isEmpty()) {
 				for(String annotation : annotations) {
@@ -116,13 +131,15 @@ public class LoadEnrichmentsFromGenemaniaTask extends AbstractTask {
 	
 	
 	private Map<String,GenemaniaAnnotation> parseAnnotationJson(CyNetwork genemaniaNetwork) {
+		final String ANNOTATIONS_COLUMN = propertyManager.getValue(PropertyManager.GENEMANIA_COLUMN_ANNOTATIONS);
+		
 		CyTable table = genemaniaNetwork.getDefaultNetworkTable();
 		
 		CyRow row = table.getRow(genemaniaNetwork.getSUID());
 		if(row == null)
 			return null;
 		
-		String jsonString = row.get("annotations", String.class);
+		String jsonString = row.get(ANNOTATIONS_COLUMN, String.class);
 		if(jsonString == null)
 			return null;
 		

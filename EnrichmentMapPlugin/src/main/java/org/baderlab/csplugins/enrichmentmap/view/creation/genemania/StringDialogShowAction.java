@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.view.creation.genemania;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogShowAction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
@@ -19,16 +20,10 @@ public class StringDialogShowAction extends CardDialogShowAction {
 
 	private static final String TABLE_NAME = "STRING Enrichment: All";
 	
-	public static final String NAME_COLUMN  = "term name";
-	public static final String FDR_COLUMN   = "FDR value";
-	public static final String GENES_COLUMN = "genes";
-	public static final String DESC_COLUMN  = "description";
-	public static final String SUID_COLUMN  = "network.SUID";
-	
-	
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private CyTableManager tableManager;
 	@Inject private Provider<JFrame> jframeProvider;
+	@Inject private PropertyManager propertyManager;
 	
 	public StringDialogShowAction() {
 		super(StringDialogParameters.class, "Create from STRING...");
@@ -56,7 +51,8 @@ public class StringDialogShowAction extends CardDialogShowAction {
 	
 	private void showNotStringNetworkError() {
 		JOptionPane.showMessageDialog(jframeProvider.get(), 
-				"The current network does not contain STRING enrichment data.", 
+				"The current network does not contain STRING enrichment data.\n"
+				+ "Please run \"Functional enrichment\" on the STRING network first.", 
 				"EnrichmentMap: Create from STRING", 
 				JOptionPane.ERROR_MESSAGE);
 	}
@@ -70,8 +66,12 @@ public class StringDialogShowAction extends CardDialogShowAction {
 		return null;
 	}
 	
-	// enrichmentmap build-table table="STRING Enrichment: All" pValueColumn="FDR value" nameColumn="term name" genesColumn="genes"
 	private boolean hasRequiredData(CyNetwork network) {
+		final String FDR_COLUMN   = propertyManager.getValue(PropertyManager.STRING_COLUMN_FDR);
+		final String NAME_COLUMN  = propertyManager.getValue(PropertyManager.STRING_COLUMN_NAME);
+		final String GENES_COLUMN = propertyManager.getValue(PropertyManager.STRING_COLUMN_GENES);
+		final String SUID_COLUMN  = propertyManager.getValue(PropertyManager.STRING_COLUMN_SUID);
+		
 		CyTable table = getStringTable(tableManager);
 		if(table == null)
 			return false;

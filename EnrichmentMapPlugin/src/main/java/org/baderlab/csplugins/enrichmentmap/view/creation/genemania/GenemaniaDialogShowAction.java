@@ -7,6 +7,7 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogShowAction;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
@@ -28,6 +29,7 @@ public class GenemaniaDialogShowAction extends CardDialogShowAction {
 
 	@Inject private CyApplicationManager applicationManager;
 	@Inject private Provider<JFrame> jframeProvider;
+	@Inject private PropertyManager propertyManager;
 	
 	public GenemaniaDialogShowAction() {
 		super(GenemaniaDialogParameters.class, "Create from Genemania...");
@@ -61,9 +63,11 @@ public class GenemaniaDialogShowAction extends CardDialogShowAction {
 	}
 	
 	private boolean hasRequiredData(CyNetwork network) {
+		final String ANNOTATIONS_COLUMN = propertyManager.getValue(PropertyManager.GENEMANIA_COLUMN_ANNOTATIONS);
+		
 		CyTable table = network.getDefaultNetworkTable();
 		
-		CyColumn column = table.getColumn("annotations");
+		CyColumn column = table.getColumn(ANNOTATIONS_COLUMN);
 		if(column == null)
 			return false;
 		
@@ -71,7 +75,7 @@ public class GenemaniaDialogShowAction extends CardDialogShowAction {
 		if(row == null)
 			return false;
 		
-		String jsonString = row.get("annotations", String.class);
+		String jsonString = row.get(ANNOTATIONS_COLUMN, String.class);
 		if(jsonString == null)
 			return false;
 		

@@ -15,6 +15,11 @@ import com.google.inject.Provider;
 
 public class GenemaniaDialogParameters implements CardDialogParameters {
 
+	public static final String ORGANISM_COLUMN_DEF  ="organism";
+	public static final String ANNOTATIONS_COLUMN_DEF  = "annotations";
+	public static final String GENE_NAME_COLUMN_DEF  = "gene name";
+	public static final String ANNOTATION_NAME_COLUMN_DEF  = "annotation name";
+	
 	@Inject private Provider<GenemaniaDialogPage> genemaniaDialogPage;
 	
 	@Override

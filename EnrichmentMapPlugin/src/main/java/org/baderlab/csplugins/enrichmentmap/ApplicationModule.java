@@ -9,6 +9,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTask;
 import org.baderlab.csplugins.enrichmentmap.commands.DatasetShowCommandTask;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapParameters;
+import org.baderlab.csplugins.enrichmentmap.parsers.LoadEnrichmentsFromGenemaniaTask;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMViewTask;
@@ -112,6 +113,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(QueryStringTask.Factory.class);
 		installFactory(DatasetShowCommandTask.Factory.class);
 		installFactory(DataSetColorSelectorDialog.Factory.class);
+		installFactory(LoadEnrichmentsFromGenemaniaTask.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {
