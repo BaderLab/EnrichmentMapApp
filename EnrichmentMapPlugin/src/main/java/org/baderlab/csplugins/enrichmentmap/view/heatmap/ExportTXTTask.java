@@ -78,7 +78,7 @@ public class ExportTXTTask extends AbstractTask {
 		Object value = model.getValueAt(modelRow, HeatMapTableModel.DESC_COL);
 		String text = value == null ? "" : String.valueOf(value);
 		text = text.replaceAll("\t", " ");
-		return SwingUtil.abbreviate(text, 40);
+		return text;
 	}
 	
 	public static String getRankText(HeatMapTableModel model, int modelRow) {
