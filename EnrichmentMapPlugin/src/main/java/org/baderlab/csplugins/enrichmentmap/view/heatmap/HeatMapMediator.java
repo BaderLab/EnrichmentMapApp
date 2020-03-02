@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -104,6 +105,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@AfterInjection
 	public void setPropertyListeners() {
 		propertyManager.addListener(PropertyManager.HEATMAP_DATASET_SYNC, (prop, value) -> reset());
+		propertyManager.addListener(PropertyManager.HEATMAP_SELECT_SYNC,  (prop, value) -> reset());
 	}
 	
 	
@@ -235,20 +237,37 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		}
 	}
 	
-	private Collection<EMDataSet> getEnabledDataSets(CyNetworkView networkView, EnrichmentMap map) {
-		if(Boolean.TRUE.equals(propertyManager.getValue(PropertyManager.HEATMAP_DATASET_SYNC))) {
-			// sync with the data set list on the control panel
+	
+	private Collection<EMDataSet> getEnabledDataSets(
+			CyNetworkView networkView, EnrichmentMap map, 
+			List<CyNode> selectedNodes, List<CyEdge> selectedEdges
+	) {
+		// must maintain the order returned by map.getDataSetList() (issue #390)
+		List<EMDataSet> dataSets = new ArrayList<>(map.getDataSetList());
+		
+		// Remove Data Sets that are not selected in the control panel
+		if(propertyManager.isTrue(PropertyManager.HEATMAP_DATASET_SYNC)) {
 			ViewParams params = controlPanelMediatorProvider.get().getAllViewParams().get(networkView.getSUID());
 			if(params != null) {
-				// important to maintain the order returned by map.getDataSetList() (issue #390)
-				List<EMDataSet> dataSets = new ArrayList<>(map.getDataSetList());
 				Set<String> filter = params.getFilteredOutDataSets();
 				dataSets.removeIf(ds -> filter.contains(ds.getName()));
-				return dataSets;
 			}
 		}
-		return map.getDataSetList();
+		
+		// Remove Data Sets that are not part of the selected nodes/edges
+		if(propertyManager.isTrue(PropertyManager.HEATMAP_SELECT_SYNC)) {
+			Iterator<EMDataSet> iter = dataSets.iterator();
+			while(iter.hasNext()) {
+				EMDataSet ds = iter.next();
+				if(!ds.containsAnyNode(selectedNodes) && !ds.containsAnyEdge(selectedEdges)) {
+					iter.remove();
+				}
+			}
+		}
+		
+		return dataSets;
 	}
+	
 	
 	private void updateHeatMap(CyNetworkView networkView) {
 		if (!isHeatMapPanelRegistered())
@@ -271,7 +290,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		if (emManager.isEnrichmentMap(networkView)) {
 			String prefix = map.getParams().getAttributePrefix();
 			
-			dataSets = getEnabledDataSets(networkView, map);
+			dataSets = getEnabledDataSets(networkView, map, selectedNodes, selectedEdges);
 			Map<String,Set<Integer>> geneSetToGenes = map.unionGeneSetsOfInterest(dataSets);
 			
 			union = unionGenesets(geneSetToGenes, map, network, selectedNodes, selectedEdges, prefix);

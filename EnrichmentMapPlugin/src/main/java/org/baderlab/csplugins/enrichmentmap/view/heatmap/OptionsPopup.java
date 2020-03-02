@@ -95,10 +95,16 @@ public class OptionsPopup extends JPopupMenu {
 			propertyManager.setValue(PropertyManager.HEATMAP_AUTOFOCUS, autofocusCheckbox.isSelected());
 		});
 		
-		JCheckBoxMenuItem syncCheckbox = new JCheckBoxMenuItem("Sync with Control Panel");
+		JCheckBoxMenuItem syncCheckbox = new JCheckBoxMenuItem("Sync Data Sets with Control Panel");
 		syncCheckbox.setSelected(propertyManager.getValue(PropertyManager.HEATMAP_DATASET_SYNC));
 		syncCheckbox.addActionListener(e -> {
 			propertyManager.setValue(PropertyManager.HEATMAP_DATASET_SYNC, syncCheckbox.isSelected());
+		});
+		
+		JCheckBoxMenuItem selectedCheckbox = new JCheckBoxMenuItem("Display only selected Data Sets");
+		selectedCheckbox.setSelected(propertyManager.getValue(PropertyManager.HEATMAP_SELECT_SYNC));
+		selectedCheckbox.addActionListener(e -> {
+			propertyManager.setValue(PropertyManager.HEATMAP_SELECT_SYNC, selectedCheckbox.isSelected());
 		});
 		
 		JCheckBoxMenuItem autoSortCheckbox = new JCheckBoxMenuItem("Auto sort leading edge");
@@ -118,6 +124,7 @@ public class OptionsPopup extends JPopupMenu {
 		add(distanceMenu);
 		add(autofocusCheckbox);
 		add(syncCheckbox);
+		add(selectedCheckbox);
 		add(autoSortCheckbox);
 	}
 	

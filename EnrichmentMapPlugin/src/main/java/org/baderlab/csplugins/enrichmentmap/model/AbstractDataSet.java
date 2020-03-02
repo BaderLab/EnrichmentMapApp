@@ -1,9 +1,13 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.text.Collator;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
 
 public abstract class AbstractDataSet implements Comparable<AbstractDataSet> {
 
@@ -40,6 +44,24 @@ public abstract class AbstractDataSet implements Comparable<AbstractDataSet> {
 	
 	public EnrichmentMap getMap() {
 		return map;
+	}
+	
+	public boolean containsAnyNode(Collection<CyNode> nodes) {
+		for(CyNode node : nodes) {
+			if(nodeSuids.contains(node.getSUID())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean containsAnyEdge(Collection<CyEdge> edges) {
+		for(CyEdge edge : edges) {
+			if(edgeSuids.contains(edge.getSUID())) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public Set<Long> getNodeSuids() {

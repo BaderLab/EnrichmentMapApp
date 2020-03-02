@@ -36,6 +36,7 @@ public class PropertyManager {
 	public static final Property<Boolean>  HEATMAP_AUTOFOCUS    = Property.of("heatmapAutofocus", false);
 	public static final Property<Boolean>  HEATMAP_DATASET_SYNC = Property.of("heatmapDatasetSync", true);
 	public static final Property<Boolean>  HEATMAP_AUTO_SORT    = Property.of("heatmapAutoSort", true);
+	public static final Property<Boolean>  HEATMAP_SELECT_SYNC  = Property.of("heatmapSelectSync", true);
 	public static final Property<Double>   P_VALUE              = Property.of("default.pvalue", 1.0);
 	public static final Property<Double>   Q_VALUE              = Property.of("default.qvalue", 0.1);
 	public static final Property<Boolean>  CREATE_WARN          = Property.of("create.warn", true);
@@ -96,6 +97,10 @@ public class PropertyManager {
 		} catch(Exception e) {
 			return property.def;
 		}
+	}
+	
+	public boolean isTrue(Property<Boolean> property) {
+		return Boolean.TRUE.equals(getValue(property));
 	}
 	
 	@SuppressWarnings("rawtypes")
