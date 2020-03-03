@@ -48,10 +48,21 @@ public class LoadEnrichmentsFromTableTask extends AbstractTask {
 			if(filter == null || filter.test(row)) {
 				List<String> genes = row.getList(tableParams.getGenesColumn(), String.class);
 				String name = row.get(tableParams.getNameColumn(), String.class);
-				Double pvalue = row.get(tableParams.getPvalueColumn(), Double.class);
+				
+				Double pvalue = null;
+				if(tableParams.getPvalueColumn() != null)
+					pvalue = row.get(tableParams.getPvalueColumn(), Double.class);
+				if(pvalue == null)
+					pvalue = 1.0;
+				
+				Double qvalue = null;
+				if(tableParams.getQvalueColumn() != null)
+					qvalue = row.get(tableParams.getQvalueColumn(), Double.class);
+				if(qvalue == null)
+					qvalue = 1.0;
 				
 				// Skip row if data is invalid in any way
-				if(genes == null || genes.isEmpty() || name == null || name.isEmpty() || pvalue == null)
+				if(genes == null || genes.isEmpty() || name == null || name.isEmpty())
 					continue;
 				
 				String description = null;
@@ -72,11 +83,13 @@ public class LoadEnrichmentsFromTableTask extends AbstractTask {
 				int gsSize = gs.getGenes().size();
 				genesets.put(name, gs);
 				
-				GenericResult result = new GenericResult(name, description, pvalue, gsSize);
+				GenericResult result = new GenericResult(name, description, pvalue, gsSize, qvalue);
 				enrichments.getEnrichments().put(name, result);
 			}
 			tm.inc();
 		}
+		
+		map.getParams().setFDR(tableParams.getQvalueColumn() != null);
 		
 		// TODO if we add support for fdr q-value column then make sure to set the following...
 		// dataset.getMap().getParams().setFDR(FDR);

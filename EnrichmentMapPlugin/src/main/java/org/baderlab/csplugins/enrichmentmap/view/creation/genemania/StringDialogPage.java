@@ -58,7 +58,7 @@ public class StringDialogPage extends NetworkLoadDialogPage {
 		CyTable table = getStringTable(tableManager);
 		
 		TableParameters tableParams = 
-				new TableParameters(table, NAME_COLUMN, GENES_COLUMN, FDR_COLUMN, DESC_COLUMN, filter);
+				new TableParameters(table, NAME_COLUMN, GENES_COLUMN, null, FDR_COLUMN, DESC_COLUMN, filter);
 		
 		return new DataSetParameters(dataSetName, tableParams);
 	}

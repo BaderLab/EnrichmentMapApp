@@ -58,7 +58,7 @@ public class TableTunables {
 		validateColumn(table, pvalueColumn, false, Double.class, true);
 		validateColumn(table, descriptionColumn, false, String.class, false);
 		
-		return new TableParameters(table, nameColumn, genesColumn, pvalueColumn, descriptionColumn, null);
+		return new TableParameters(table, nameColumn, genesColumn, pvalueColumn, null, descriptionColumn, null);
 	}
 	
 	
