@@ -265,12 +265,16 @@ public class CreatePANetworkTask extends AbstractTask implements ObservableTask 
 	private void styleHubNodes(CyNetworkView networkView) {
 		// make sure PA nodes don't have a chart obscuring them
 		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
-		VisualProperty customPaint1 = lexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
-		Object nullCustomGraphics = customPaint1.getDefault();
-		
-		for(CyNode node : nodeCache.values()) {
-			View<CyNode> nodeView = networkView.getNodeView(node);
-			nodeView.setLockedValue(customPaint1, nullCustomGraphics);
+		if(lexicon != null) {
+			VisualProperty customPaint1 = lexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
+			if(customPaint1 != null) {
+				Object nullCustomGraphics = customPaint1.getDefault();
+				
+				for(CyNode node : nodeCache.values()) {
+					View<CyNode> nodeView = networkView.getNodeView(node);
+					nodeView.setLockedValue(customPaint1, nullCustomGraphics);
+				}
+			}
 		}
 	}
 	
