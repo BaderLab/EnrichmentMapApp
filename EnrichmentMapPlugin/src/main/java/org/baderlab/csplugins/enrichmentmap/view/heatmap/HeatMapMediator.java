@@ -256,10 +256,21 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		// Remove Data Sets that are not part of the selected nodes/edges
 		if(propertyManager.isTrue(PropertyManager.HEATMAP_SELECT_SYNC)) {
+			boolean distinctEdges = map.getParams().getCreateDistinctEdges();
+			
 			Iterator<EMDataSet> iter = dataSets.iterator();
 			while(iter.hasNext()) {
 				EMDataSet ds = iter.next();
-				if(!ds.containsAnyNode(selectedNodes) && !ds.containsAnyEdge(selectedEdges)) {
+				
+				boolean remove = true;
+				if(ds.containsAnyNode(selectedNodes))
+					remove = false;
+				else if(!distinctEdges && !selectedEdges.isEmpty())
+					remove = false;
+				else if(distinctEdges && ds.containsAnyEdge(selectedEdges))
+					remove = false;
+				
+				if(remove) {
 					iter.remove();
 				}
 			}
