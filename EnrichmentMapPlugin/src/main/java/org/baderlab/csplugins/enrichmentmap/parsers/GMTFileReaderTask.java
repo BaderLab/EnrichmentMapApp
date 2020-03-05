@@ -191,7 +191,7 @@ public class GMTFileReaderTask extends AbstractTask implements ObservableTask {
 					builder.add(hash);
 			}
 			
-			return new GeneSet(name, description, builder.build(), simpleName, datasource, id);
+			return GeneSet.createBaderLab(name, description, builder.build(), simpleName, datasource, id);
 		}
 		return null;
 	}

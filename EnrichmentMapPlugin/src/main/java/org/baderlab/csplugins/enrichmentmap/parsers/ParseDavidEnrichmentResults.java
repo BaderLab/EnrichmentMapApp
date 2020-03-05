@@ -76,13 +76,13 @@ public class ParseDavidEnrichmentResults extends AbstractTask {
 			double FDRqvalue = 1.0;
 			GenericResult result;
 			int gs_size = 0;
-			double NES = 1.0;
 
 			//The second column of the file is the name of the geneset
-			final String name = tokens[1].toUpperCase().trim();
+			String description = tokens[1].trim();
+			String name = tokens[1].toUpperCase().trim();
 
-			//the first column of the file is the description
-			final String description = tokens[0].toUpperCase();
+			//the first column of the file is the category
+			final String category = tokens[0].toUpperCase();
 
 			//when there are two different species it is possible that the gene set could
 			//already exist in the set of genesets.  if it does exist then add the genes
@@ -102,7 +102,7 @@ public class ParseDavidEnrichmentResults extends AbstractTask {
 
 			//finished parsing that geneset
 			//add the current geneset to the hashmap of genesets
-			GeneSet gs = new GeneSet(name, description, builder.build());
+			GeneSet gs = GeneSet.createDavid(name, description, builder.build(), category);
 			genesets.put(name, gs);
 
 			//The 5th column is the nominal p-value
@@ -148,8 +148,11 @@ public class ParseDavidEnrichmentResults extends AbstractTask {
 			}
 
 		}
-		if(FDR)
+		
+		dataset.getMap().getParams().setDavid(true);
+		if(FDR) {
 			dataset.getMap().getParams().setFDR(FDR);
+		}
 	}
 
 }

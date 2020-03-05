@@ -37,6 +37,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	
 	private GreatFilter greatFilter = GreatFilter.HYPER;
 	private boolean fdr = false;
+	private boolean david = false;
 	private boolean emgmt = false;
 	private double qvalueMin = 1.0;
 	private double pvalueMin = 1.0;
@@ -171,6 +172,14 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		this.fdr = fdr;
 	}
 	
+	public void setDavid(boolean david) {
+		this.david = david;
+	}
+	
+	public boolean isDavid() {
+		return david;
+	}
+	
 	public boolean isEMgmt() {
 		return emgmt;
 	}
@@ -269,7 +278,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 				+ ", qValueColumnNames=" + qValueColumnNames + ", similarityCutoffColumnNames="
 				+ similarityCutoffColumnNames + "]";
 	}
-	
-	
+
+
 	
 }

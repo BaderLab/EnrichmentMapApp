@@ -59,6 +59,7 @@ public class GeneSet {
 	private final Optional<String> simpleName;
 	private final Optional<String> source;
 	private final Optional<String> datasourceId;
+	private final Optional<String> davidCategory;
 	
 	
 	public GeneSet(String name, String description, Set<Integer> genes) {
@@ -67,6 +68,7 @@ public class GeneSet {
 		this.genes = ImmutableSet.copyOf(genes);
 		this.simpleName = Optional.empty();
 		this.datasourceId = Optional.empty();
+		this.davidCategory = Optional.empty();
 		
 		// Baderlab geneset names
 		String[] name_tokens = name.split("%");
@@ -76,20 +78,33 @@ public class GeneSet {
 			this.source = Optional.empty();
 	}
 	
-	
-	GeneSet intersectionWith(Set<Integer> expressionGenes) {
-		Set<Integer> intersection = new HashSet<>(genes);
-		intersection.retainAll(expressionGenes);
-		return new GeneSet(name, description, intersection, simpleName.orElse(null), source.orElse(null), datasourceId.orElse(null));
-	}
-	
-	public GeneSet(String name, String description, Set<Integer> genes, String simpleName, String datasource, String datasourceId) {
+	private GeneSet(String name, String description, Set<Integer> genes, 
+			String simpleName, String datasource, String datasourceId, String davidCategory
+	) {
 		this.name = name;
 		this.description = description;
 		this.genes = ImmutableSet.copyOf(genes);
 		this.simpleName = Optional.ofNullable(simpleName);
 		this.source = Optional.ofNullable(datasource);
 		this.datasourceId = Optional.ofNullable(datasourceId);
+		this.davidCategory = Optional.ofNullable(davidCategory);
+	}
+	
+	
+	public static GeneSet createBaderLab(String name, String description, Set<Integer> genes, String simpleName, String datasource, String datasourceId) {
+		return new GeneSet(name, description, genes, simpleName, datasource, datasourceId, null);
+	}
+	
+	public static GeneSet createDavid(String name, String description, Set<Integer> genes, String davidCategory) {
+		return new GeneSet(name, description, genes, null, null, null, davidCategory);
+	}
+	
+	
+	protected GeneSet intersectionWith(Set<Integer> expressionGenes) {
+		Set<Integer> intersection = new HashSet<>(genes);
+		intersection.retainAll(expressionGenes);
+		return new GeneSet(name, description, intersection, 
+				simpleName.orElse(null), source.orElse(null), datasourceId.orElse(null), davidCategory.orElse(null));
 	}
 	
 	
@@ -115,6 +130,10 @@ public class GeneSet {
 	
 	public Optional<String> getSimpleName() {
 		return simpleName;
+	}
+	
+	public Optional<String> getDavidCategory() {
+		return davidCategory;
 	}
 	
 	public String getLabel() {

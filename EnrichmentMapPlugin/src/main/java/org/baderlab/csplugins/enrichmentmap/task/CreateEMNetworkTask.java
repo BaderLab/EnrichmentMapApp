@@ -137,6 +137,11 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 						Columns.NODE_DATASOURCEID.set(row, prefix, null, geneSet.getDatasourceId().get());
 					}
 				}
+				if(map.getParams().isDavid()) {
+					if(geneSet.getDavidCategory().isPresent()) {
+						Columns.NODE_DAVID_CATEGORY.set(row, prefix, null, geneSet.getDavidCategory().get());
+					}
+				}
 			}
 			
 			Columns.NODE_GS_TYPE.set(row, prefix, null, Columns.NODE_GS_TYPE_ENRICHMENT);
@@ -222,6 +227,9 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		if(params.isParseBaderlabGeneSets()) {
 			Columns.NODE_DATASOURCE.createColumn(table, prefix, null);
 			Columns.NODE_DATASOURCEID.createColumn(table, prefix, null);
+		}
+		if(params.isDavid()) {
+			Columns.NODE_DAVID_CATEGORY.createColumn(table, prefix, null);
 		}
 		
 		for (EMDataSet dataset : map.getDataSetList()) {
