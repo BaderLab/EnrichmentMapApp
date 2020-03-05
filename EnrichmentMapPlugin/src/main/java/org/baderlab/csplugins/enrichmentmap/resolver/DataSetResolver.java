@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -103,22 +104,34 @@ public class DataSetResolver {
 		
 		// All GSEA results are fine
 		for(Path gseaFolder : types.get(Type.GSEA_FOLDER)) {
-			Optional<DataSetParameters> gseaDataSet = GSEAResolver.resolveGSEAResultsFolder(gseaFolder);
-			if(gseaDataSet.isPresent())
-				dataSets.add(gseaDataSet.get());
+			GSEAResolver.resolveGSEAResultsFolder(gseaFolder).ifPresent(dataSets::add);
 		}
 		
-		// Now, iterate over Enrichments, and try to pair up with Ranks and Expressions
-		// MKTODO add other enrichment types
+		// Now, process Enrichments, and try to pair up with Ranks and Expressions
 		List<Path> exprFiles = new ArrayList<>(types.get(Type.EXPRESSION));
 		List<Path> rankFiles = new ArrayList<>(types.get(Type.RANKS));
 		List<Path> clasFiles = new ArrayList<>(types.get(Type.CLASS));
 		List<Path> gmtFiles  = new ArrayList<>(types.get(Type.GENE_SETS));
 		
-		// MKTODO what about other enrichment types?
-		List<Path> enrichments = new ArrayList<>();
-		enrichments.addAll(types.get(Type.ENRICHMENT_GENERIC));
-		enrichments.addAll(types.get(Type.ENRICHMENT_ENRICHR));
+		dataSets.addAll(processEnrichments(types.get(Type.ENRICHMENT_GENERIC), Method.Generic, exprFiles, rankFiles, clasFiles, gmtFiles));
+		dataSets.addAll(processEnrichments(types.get(Type.ENRICHMENT_ENRICHR), Method.Generic, exprFiles, rankFiles, clasFiles, gmtFiles));
+		dataSets.addAll(processEnrichments(types.get(Type.ENRICHMENT_DAVID), Method.Specialized, exprFiles, rankFiles, clasFiles, gmtFiles));
+		dataSets.addAll(processEnrichments(types.get(Type.ENRICHMENT_BINGO), Method.Specialized, exprFiles, rankFiles, clasFiles, gmtFiles));
+		dataSets.addAll(processEnrichments(types.get(Type.ENRICHMENT_GREAT), Method.Specialized, exprFiles, rankFiles, clasFiles, gmtFiles));
+		
+		return dataSets;
+	}
+	
+	
+	private static List<DataSetParameters> processEnrichments(
+			Collection<Path> enrichments, 
+			Method method,
+			List<Path> exprFiles,
+			List<Path> rankFiles,
+			List<Path> clasFiles,
+			List<Path> gmtFiles
+	) {
+		List<DataSetParameters> dataSets = new ArrayList<>();
 		
 		for(Path enrichment : enrichments) {
 			Optional<Path> closestExpr  = findClosestMatch(enrichment, exprFiles);
@@ -151,7 +164,7 @@ public class DataSetResolver {
 			});
 			
 			String name = getDatasetNameGeneric(enrichment.getFileName());
-			dataSets.add(new DataSetParameters(name, Method.Generic, files));
+			dataSets.add(new DataSetParameters(name, method, files));
 		}
 		
 		return dataSets;
