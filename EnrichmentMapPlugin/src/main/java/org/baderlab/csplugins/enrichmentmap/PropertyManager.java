@@ -15,23 +15,24 @@ import org.baderlab.csplugins.enrichmentmap.view.creation.genemania.GenemaniaDia
 import org.baderlab.csplugins.enrichmentmap.view.creation.genemania.StringDialogParameters;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.PropertyUpdatedEvent;
+import org.cytoscape.property.PropertyUpdatedListener;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
  * Manages the CyProperties for EnrichmentMap.
+ * The CyProperty API is very limited, and it doesn't fire events when you programmatically
+ * update a property. This manager provides a nicer interface for managing properties and it 
+ * actually fires events when you expect it to.
  */
 @Singleton
-public class PropertyManager {
+public class PropertyManager implements PropertyUpdatedListener {
 	
-	@FunctionalInterface
-	public interface PropertyListener<T> {
-		void propertyChanged(Property<T> prop, T value);
-	}
+	@Inject private CyProperty<Properties> emCyProps;
 	
-	private final Map<Property<?>,List<PropertyListener<?>>> listeners = new HashMap<>();
-	
+	// To add a new property just add a declaration below, reflection is used to read these static fields...
 	
 	public static final Property<Boolean>  HEATMAP_AUTOFOCUS    = Property.of("heatmapAutofocus", false);
 	public static final Property<Boolean>  HEATMAP_DATASET_SYNC = Property.of("heatmapDatasetSync", true);
@@ -55,27 +56,47 @@ public class PropertyManager {
 	public static final Property<String> GENEMANIA_COLUMN_ANN_NAME     = Property.of("genemania.column.annname",     GenemaniaDialogParameters.ANNOTATION_NAME_COLUMN_DEF);
 	
 	
+	@FunctionalInterface
+	public interface PropertyListener<T> {
+		void propertyChanged(Property<T> prop, T value);
+	}
 	
-	@Inject private CyProperty<Properties> cyProps;
+	private final Map<Property<?>,List<PropertyListener<?>>> listeners = new HashMap<>();
+	
 	
 	@AfterInjection
 	private void initializeProperties() {
 		getAllProperties()
 			.stream()
-			.filter(prop -> !cyProps.getProperties().containsKey(prop.key))
+			.filter(prop -> !emCyProps.getProperties().containsKey(prop.key))
 			.forEach(this::setDefault);
+	}
+	
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public void handleEvent(PropertyUpdatedEvent e) {
+		// This only fires when the user updates a property using the Edit > Preferences > Properties dialog. 
+		// The API for this doesn't give enough information, we don't know which property actually changed,
+		// so need to update all of them.
+		if(e.getSource() == emCyProps) {
+			for(Property p : getAllProperties()) {
+				fire(p, getValue(p));
+			}
+		}
 	}
 	
 	public <T> void addListener(Property<T> property, PropertyListener<T> listener) {
 		listeners.computeIfAbsent(property, k -> new ArrayList<>()).add(listener);
 	}
 	
+	public <T> void removeListener(Property<T> property, PropertyListener<T> listener) {
+		listeners.get(property).remove(listener);
+	}
+	
 	public <T> void setValue(Property<T> property, T value) {
-		cyProps.getProperties().setProperty(property.key, String.valueOf(value));
-		
-		for(PropertyListener<?> listener : listeners.getOrDefault(property, Collections.emptyList())) {
-			((PropertyListener<T>)listener).propertyChanged(property, value);
-		}
+		emCyProps.getProperties().setProperty(property.key, String.valueOf(value));
+		fire(property, value);
 	}
 	
 	public <T> void setDefault(Property<T> property) {
@@ -83,9 +104,9 @@ public class PropertyManager {
 	}
 	
 	public <T> T getValue(Property<T> property) {
-		if(cyProps == null) // happens in JUnits
+		if(emCyProps == null) // happens in JUnits
 			return property.def;
-		Properties properties = cyProps.getProperties();
+		Properties properties = emCyProps.getProperties();
 		if(properties == null)
 			return property.def;
 		String string = properties.getProperty(property.key);
@@ -119,6 +140,13 @@ public class PropertyManager {
 	}
 	
 	
+	@SuppressWarnings("unchecked")
+	private <T> void fire(Property<T> property, T value) {
+		for(PropertyListener<?> listener : listeners.getOrDefault(property, Collections.emptyList())) {
+			((PropertyListener<T>)listener).propertyChanged(property, value);
+		}
+	}
+	
 	public static class Property<T> {
 		private final String key;
 		public final T def;
@@ -143,4 +171,5 @@ public class PropertyManager {
 			return new Property<>(key, defaultValue, Double::valueOf);
 		}
 	}
+	
 }

@@ -32,6 +32,7 @@ import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.CyColumnPresentation;
 import org.cytoscape.command.StringTunableHandlerFactory;
 import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.work.ServiceProperties;
@@ -78,6 +79,8 @@ public class CyActivator extends AbstractCyActivator {
 		// CyProperty
 		CyProperty<Properties> cyProperty = injector.getInstance(Key.get(new TypeLiteral<CyProperty<Properties>>(){}));
 		registerAllServices(bc, cyProperty, PropsReader.getServiceProps());
+		PropertyManager propertyManager = injector.getInstance(PropertyManager.class);
+		registerService(bc, propertyManager, PropertyUpdatedListener.class);
 				
 		boolean headless = injector.getInstance(Key.get(Boolean.class, Headless.class));
 		
