@@ -789,7 +789,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		boolean showLabels = viewPanel.getShowChartLabelsCheck().isSelected();
 		ChartOptions chartOptions = new ChartOptions(data, type, colorScheme, showLabels);
 
-		return new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets::contains, chartOptions, postAnalysis, publicationReady);
+		return new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets, chartOptions, postAnalysis, publicationReady);
 	}
 	
 	private AssociatedStyleOptions createAssociatedStyleOptions(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {

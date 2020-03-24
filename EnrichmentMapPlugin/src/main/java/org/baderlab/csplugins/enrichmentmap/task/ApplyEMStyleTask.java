@@ -4,9 +4,9 @@ import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
@@ -74,7 +74,7 @@ public class ApplyEMStyleTask extends AbstractTask {
 		
 		if (chartOptions != null && chartOptions.getData() == ChartData.DATA_SET) {
 			tm.setStatusMessage("Updating Data Columns...");
-			createDataSetColumn();
+			createOrUpdateDataSetColumn();
 		}
 		
 		tm.setStatusMessage("Updating Style...");
@@ -83,34 +83,38 @@ public class ApplyEMStyleTask extends AbstractTask {
 		applyVisualStyle();
 	}
 
-	private void createDataSetColumn() {
+	private void createOrUpdateDataSetColumn() {
 		EnrichmentMap map = options.getEnrichmentMap();
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		CyTable nodeTable = network.getDefaultNodeTable();
+		Collection<? extends AbstractDataSet> dataSets = options.getDataSets();
 		
 		String prefix = map.getParams().getAttributePrefix();
 		
-		if (!Columns.DATASET_CHART.hasColumn(nodeTable, prefix)) {
+		if(!Columns.DATASET_CHART.hasColumn(nodeTable, prefix)) {
 			Columns.DATASET_CHART.createColumn(nodeTable, prefix);
-
-			Map<Long, int[]> columnData = new HashMap<>();
-			List<EMDataSet> dataSets = map.getDataSetList();
-			int n = dataSets.size();
-
-			for (CyNode node : network.getNodeList())
-				columnData.put(node.getSUID(), new int[n]);
-
-			for (int i = 0; i < n; i++) {
-				EMDataSet dataSet = dataSets.get(i);
-				
-				for (Long suid : dataSet.getNodeSuids())
-					columnData.get(suid)[i] = 1;
-			}
-
-			columnData.forEach((suid, data) ->
-				Columns.DATASET_CHART.set(nodeTable.getRow(suid), prefix, Ints.asList(data))
-			);
 		}
+
+		Map<Long, int[]> columnData = new HashMap<>();
+		int n = dataSets.size();
+
+		for(CyNode node : network.getNodeList()) {
+			columnData.put(node.getSUID(), new int[n]);
+		}
+
+		Iterator<? extends AbstractDataSet> iter = dataSets.iterator();
+		int i = 0;
+		while(iter.hasNext()) {
+			AbstractDataSet ds = iter.next();
+			for(Long suid : ds.getNodeSuids()) {
+				columnData.get(suid)[i] = 1;
+			}
+			i++;
+		}
+
+		columnData.forEach((suid, data) ->
+			Columns.DATASET_CHART.set(nodeTable.getRow(suid), prefix, Ints.asList(data))
+		);
 	}
 	
 	private void applyVisualStyle() {
@@ -161,8 +165,7 @@ public class ApplyEMStyleTask extends AbstractTask {
 		ChartData data = chartOptions != null ? chartOptions.getData() : null;
 		
 		if (data != null && data != ChartData.NONE) {
-			// Ignore Signature Data Sets in charts
-			Set<EMDataSet> dataSets = filterEMDataSets(options.getDataSets());
+			List<EMDataSet> dataSets = filterEMDataSets(options.getDataSets()); // Ignore Signature Data Sets in charts
 			
 			if (!dataSets.isEmpty()) {
 				ChartType type = chartOptions.getType();
@@ -173,7 +176,7 @@ public class ApplyEMStyleTask extends AbstractTask {
 				
 				if (data == ChartData.DATA_SET) {
 					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.with(prefix)));
-					List<Color> colors = options.getEnrichmentMap().getDataSetColors();
+					List<Color> colors = getColors(dataSets);
 					props.put("cy_dataColumns", columns);
 					props.put("cy_colors", colors);
 					props.put("cy_showItemLabels", chartOptions.isShowLabels());
@@ -216,12 +219,17 @@ public class ApplyEMStyleTask extends AbstractTask {
 		return chart;
 	}
 	
+	
+	public static List<Color> getColors(Collection<EMDataSet> dataSets) {
+		return dataSets.stream().map(EMDataSet::getColor).collect(Collectors.toList());
+	}
+	
 	@SuppressWarnings("unchecked")
-	private static Set<EMDataSet> filterEMDataSets(Collection<AbstractDataSet> abstractDataSets) {
-		Set<?> set = abstractDataSets.stream()
+	public static List<EMDataSet> filterEMDataSets(Collection<? extends AbstractDataSet> abstractDataSets) {
+		Collection<?> set = abstractDataSets.stream()
 				.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets
-				.collect(Collectors.toSet());
+				.collect(Collectors.toList());
 		
-		return (Set<EMDataSet>) set;
+		return (List<EMDataSet>) set;
 	}
 }

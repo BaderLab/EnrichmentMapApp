@@ -2,8 +2,6 @@ package org.baderlab.csplugins.enrichmentmap.style;
 
 import java.util.Collection;
 import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -13,34 +11,34 @@ public class EMStyleOptions {
 	
 	private final CyNetworkView networkView;
 	private final EnrichmentMap map;
-	private final Predicate<AbstractDataSet> filter;
 	private final ChartOptions chartOptions;
 	private boolean postAnalysis;
 	private final boolean publicationReady;
+	private final Collection<? extends AbstractDataSet> dataSets;
 	
 	/**
 	 * It is assumed that all the given DataSets come from the same EnrichmentMap.
 	 */
-	public EMStyleOptions(CyNetworkView networkView, EnrichmentMap map, Predicate<AbstractDataSet> filter,
+	public EMStyleOptions(CyNetworkView networkView, EnrichmentMap map, Collection<? extends AbstractDataSet> dataSets,
 			ChartOptions chartOptions, boolean postAnalysis, boolean publicationReady) {
 		this.networkView = Objects.requireNonNull(networkView);
 		this.map = Objects.requireNonNull(map);
-		this.filter = Objects.requireNonNull(filter);
+		this.dataSets = Objects.requireNonNull(dataSets);
 		this.chartOptions = chartOptions;
 		this.postAnalysis = postAnalysis;
 		this.publicationReady = publicationReady;
 	}
 	
 	public EMStyleOptions(CyNetworkView networkView, EnrichmentMap map) {
-		this(networkView, map, x -> true, null, false, false);
+		this(networkView, map, map.getDataSetList(), null, false, false);
 	}
 	
 	public CyNetworkView getNetworkView() {
 		return networkView;
 	}
 	
-	public Collection<AbstractDataSet> getDataSets() {
-		return map.getDataSetList().stream().filter(filter).collect(Collectors.toList());
+	public Collection<? extends AbstractDataSet> getDataSets() {
+		return dataSets;
 	}
 	
 	public EnrichmentMap getEnrichmentMap() {

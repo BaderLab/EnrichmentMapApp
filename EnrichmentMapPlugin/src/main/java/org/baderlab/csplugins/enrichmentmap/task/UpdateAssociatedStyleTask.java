@@ -207,7 +207,7 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 		
 		if (data != null && data != ChartData.NONE) {
 			ChartType type = chartOptions.getType();
-			List<AbstractDataSet> dataSets = options.getDataSets(); // Ignore Signature Data Sets in charts
+			List<EMDataSet> dataSets = ApplyEMStyleTask.filterEMDataSets(options.getDataSets());
 			
 			if (type != null && !dataSets.isEmpty()) {
 				Map<String,Object> props = new HashMap<>(type.getProperties());
@@ -217,7 +217,7 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 				
 				if (data == ChartData.DATA_SET) {
 					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.with(prefix)));
-					List<Color> colors = options.getEnrichmentMap().getDataSetColors();
+					List<Color> colors = ApplyEMStyleTask.getColors(dataSets);
 					
 					props.put("cy_dataColumns", columns);
 					props.put("cy_colors", colors);
