@@ -87,7 +87,7 @@ public class ApplyEMStyleTask extends AbstractTask {
 		EnrichmentMap map = options.getEnrichmentMap();
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		CyTable nodeTable = network.getDefaultNodeTable();
-		Collection<? extends AbstractDataSet> dataSets = options.getDataSets();
+		Collection<? extends AbstractDataSet> dataSets = filterEMDataSets(options.getDataSets());
 		
 		String prefix = map.getParams().getAttributePrefix();
 		
@@ -130,6 +130,8 @@ public class ApplyEMStyleTask extends AbstractTask {
 			styleBuilderProvider.get().updateNodeChart(vs, options, chart);
 		else
 			styleBuilderProvider.get().updateProperties(vs, options, chart);
+		
+		
 	}
 
 	private VisualStyle getVisualStyle(EnrichmentMap map) {
