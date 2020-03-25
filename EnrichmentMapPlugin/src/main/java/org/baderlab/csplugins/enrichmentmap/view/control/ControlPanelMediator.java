@@ -1025,7 +1025,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				return;
 			
 			// Run Task
-			task = filterNodesEdgesTaskFactory.create(netView, filteredInNodes, filteredInEdges, filterMode);
+			task = filterNodesEdgesTaskFactory.create(map, netView, filteredInNodes, filteredInEdges, filterMode);
 			dialogTaskManager.execute(new TaskIterator(task), TaskUtil.allFinished(finishStatus -> {
 					task = null;
 					if (!cancelled)

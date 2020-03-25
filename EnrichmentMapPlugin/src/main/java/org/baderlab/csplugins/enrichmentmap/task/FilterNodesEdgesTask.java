@@ -2,6 +2,8 @@ package org.baderlab.csplugins.enrichmentmap.task;
 
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.FILTERED_OUT_EDGE_TRANSPARENCY;
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.FILTERED_OUT_NODE_TRANSPARENCY;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE_SIGNATURE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
@@ -13,10 +15,12 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_V
 import java.util.List;
 import java.util.Set;
 
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.style.NullCustomGraphics;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
@@ -48,19 +52,21 @@ public class FilterNodesEdgesTask extends AbstractTask {
 	
 	@Inject private RenderingEngineManager renderingEngineManager;
 	
+	private final EnrichmentMap map;
 	private final CyNetworkView networkView;
 	private final Set<CyNode> nodes;
 	private final Set<CyEdge> edges;
 	private final FilterMode filterMode;
 
 	public interface Factory {
-		FilterNodesEdgesTask create(CyNetworkView networkView, Set<CyNode> nodes, Set<CyEdge> filteredEdges,
-				FilterMode filterMode);
+		FilterNodesEdgesTask create(EnrichmentMap map, CyNetworkView networkView, 
+				Set<CyNode> nodes, Set<CyEdge> filteredEdges, FilterMode filterMode);
 	}
 	
 	@Inject
-	public FilterNodesEdgesTask(@Assisted CyNetworkView networkView, @Assisted Set<CyNode> nodes,
+	public FilterNodesEdgesTask(@Assisted EnrichmentMap map, @Assisted CyNetworkView networkView, @Assisted Set<CyNode> nodes,
 			@Assisted Set<CyEdge> edges, @Assisted FilterMode filterMode) {
+		this.map = map;
 		this.networkView = networkView;
 		this.nodes = nodes;
 		this.edges = edges;
@@ -125,6 +131,13 @@ public class FilterNodesEdgesTask extends AbstractTask {
 						if (customGraphics1 != null)
 							nv.setLockedValue(customGraphics1, NullCustomGraphics.getNullObject());
 						break;
+				}
+			} else {
+				// Signature (PA) nodes must have their chart-hiding bypass restored
+				String prefix = map.getParams().getAttributePrefix();
+				CyRow row = net.getRow(n);
+				if(NODE_GS_TYPE_SIGNATURE.equals(NODE_GS_TYPE.get(row,prefix))) {
+					nv.setLockedValue(customGraphics1, NullCustomGraphics.getNullObject());
 				}
 			}
 		}
