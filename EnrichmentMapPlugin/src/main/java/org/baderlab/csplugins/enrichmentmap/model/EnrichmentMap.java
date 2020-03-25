@@ -285,7 +285,7 @@ public class EnrichmentMap {
 		return unionGeneSetsOfInterest(x -> true);
 	}
 	
-	public Map<String, Set<Integer>> unionGeneSetsOfInterest(Collection<EMDataSet> dataSets) {
+	public Map<String, Set<Integer>> unionGeneSetsOfInterest(Collection<? extends AbstractDataSet> dataSets) {
 		return unionGeneSetsOfInterest(dataSets::contains);
 	}
 	

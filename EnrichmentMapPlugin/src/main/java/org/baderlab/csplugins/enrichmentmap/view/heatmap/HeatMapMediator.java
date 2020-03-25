@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTask;
+import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.Compress;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -26,9 +28,11 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
+import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GeneManiaMediator;
 import org.baderlab.csplugins.enrichmentmap.task.string.StringAppMediator;
 import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
@@ -238,48 +242,6 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	}
 	
 	
-	private Collection<EMDataSet> getEnabledDataSets(
-			CyNetworkView networkView, EnrichmentMap map, 
-			List<CyNode> selectedNodes, List<CyEdge> selectedEdges
-	) {
-		// must maintain the order returned by map.getDataSetList() (issue #390)
-		List<EMDataSet> dataSets = new ArrayList<>(map.getDataSetList());
-		
-		// Remove Data Sets that are not selected in the control panel
-		if(propertyManager.isTrue(PropertyManager.HEATMAP_DATASET_SYNC)) {
-			ViewParams params = controlPanelMediatorProvider.get().getAllViewParams().get(networkView.getSUID());
-			if(params != null) {
-				Set<String> filter = params.getFilteredOutDataSets();
-				dataSets.removeIf(ds -> filter.contains(ds.getName()));
-			}
-		}
-		
-		// Remove Data Sets that are not part of the selected nodes/edges
-		if(propertyManager.isTrue(PropertyManager.HEATMAP_SELECT_SYNC)) {
-			boolean distinctEdges = map.getParams().getCreateDistinctEdges();
-			
-			Iterator<EMDataSet> iter = dataSets.iterator();
-			while(iter.hasNext()) {
-				EMDataSet ds = iter.next();
-				
-				boolean remove = true;
-				if(ds.containsAnyNode(selectedNodes))
-					remove = false;
-				else if(!distinctEdges && !selectedEdges.isEmpty())
-					remove = false;
-				else if(distinctEdges && ds.containsAnyEdge(selectedEdges))
-					remove = false;
-				
-				if(remove) {
-					iter.remove();
-				}
-			}
-		}
-		
-		return dataSets;
-	}
-	
-	
 	private void updateHeatMap(CyNetworkView networkView) {
 		if (!isHeatMapPanelRegistered())
 			return;
@@ -298,14 +260,23 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		final Set<String> inter;
 		final Collection<EMDataSet> dataSets;
 		
-		if (emManager.isEnrichmentMap(networkView)) {
+		if(emManager.isEnrichmentMap(networkView)) {
+			// Need to add nodes that are adjacent to signature edges, because signature edges are not in any of the normal data sets.
+			Set<CyNode> allNodesToUse = new HashSet<>(selectedNodes);
+			List<CyNode> extraNodes = getNodesAdjacentToSignatureEdges(network, selectedEdges);
+			if(extraNodes != null) {
+				allNodesToUse.addAll(extraNodes);
+			}
+			
+			Collection<AbstractDataSet> dataSetsToUse = getEnabledDataSets(networkView, map, allNodesToUse, selectedEdges);
+			Map<String,Set<Integer>> geneSetToGenes = map.unionGeneSetsOfInterest(dataSetsToUse);
+			
 			String prefix = map.getParams().getAttributePrefix();
+			union = unionGenesets(geneSetToGenes, map, network, allNodesToUse, selectedEdges, prefix);
+			inter = interGenesets(geneSetToGenes, map, network, allNodesToUse, selectedEdges, prefix);
 			
-			dataSets = getEnabledDataSets(networkView, map, selectedNodes, selectedEdges);
-			Map<String,Set<Integer>> geneSetToGenes = map.unionGeneSetsOfInterest(dataSets);
-			
-			union = unionGenesets(geneSetToGenes, map, network, selectedNodes, selectedEdges, prefix);
-			inter = interGenesets(geneSetToGenes, map, network, selectedNodes, selectedEdges, prefix);
+			// remove signature data sets at this point, they don't contain expression data
+			dataSets = ApplyEMStyleTask.filterEMDataSets(dataSetsToUse);
 		} else {
 			AssociatedApp app = NetworkUtil.getAssociatedApp(network);
 			if (app != null) {
@@ -341,6 +312,72 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			if (propertyManager.getValue(PropertyManager.HEATMAP_AUTOFOCUS))
 				bringToFront();
 		});
+	}
+	
+	
+	
+	private List<AbstractDataSet> getEnabledDataSets(
+			CyNetworkView networkView, EnrichmentMap map, 
+			Collection<CyNode> selectedNodes, Collection<CyEdge> selectedEdges
+	) {
+		if(selectedNodes.isEmpty() && selectedEdges.isEmpty())
+			return Collections.emptyList();
+		
+		// must maintain the order returned by map.getDataSetList() (issue #390)
+		List<AbstractDataSet> dataSets = new ArrayList<>(map.getDataSetList());
+		dataSets.addAll(map.getSignatureSetList());
+		
+		// Remove Data Sets that are not selected in the control panel
+		if(propertyManager.isTrue(PropertyManager.HEATMAP_DATASET_SYNC)) {
+			ViewParams params = controlPanelMediatorProvider.get().getAllViewParams().get(networkView.getSUID());
+			if(params != null) {
+				Set<String> filter = params.getFilteredOutDataSets();
+				dataSets.removeIf(ds -> filter.contains(ds.getName()));
+			}
+		}
+		
+		// Remove Data Sets that are not part of the selected nodes/edges
+		if(propertyManager.isTrue(PropertyManager.HEATMAP_SELECT_SYNC)) {
+			boolean distinctEdges = map.getParams().getCreateDistinctEdges();
+			
+			Iterator<AbstractDataSet> iter = dataSets.iterator();
+			while(iter.hasNext()) {
+				AbstractDataSet ds = iter.next();
+				
+				boolean remove = true;
+				if(ds.containsAnyNode(selectedNodes))
+					remove = false;
+				else if(!distinctEdges && !selectedEdges.isEmpty())
+					remove = false;
+				else if(distinctEdges && ds.containsAnyEdge(selectedEdges))
+					remove = false;
+				
+				if(remove) {
+					iter.remove();
+				}
+			}
+		}
+		
+		return dataSets;
+	}
+	
+	
+	private List<CyNode> getNodesAdjacentToSignatureEdges(CyNetwork network, Collection<CyEdge> edges) {
+		// Iterating over edges doesn't scale, if there are thousands of edges then just forget it
+		if(edges.size() > 10000)
+			return null;
+		
+		List<CyNode> nodes = null;
+		for(CyEdge edge : edges) {
+			String interaction = network.getRow(edge).get(CyEdge.INTERACTION, String.class);
+			if(Objects.equals(interaction, PostAnalysisParameters.SIGNATURE_INTERACTION_TYPE)) {
+				if(nodes == null)
+					nodes = new ArrayList<>();
+				nodes.add(edge.getSource());
+				nodes.add(edge.getTarget());
+			}
+		}
+		return nodes;
 	}
 	
 	private HeatMapParams getHeatMapParams(EnrichmentMap map, Long networkSUID, boolean onlyEdges) {
@@ -501,7 +538,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	}
 
 	public static Set<String> unionGenesets(Map<String,Set<Integer>> geneSetToGenes, 
-			EnrichmentMap map, CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
+			EnrichmentMap map, CyNetwork network, Collection<CyNode> nodes, Collection<CyEdge> edges, String prefix) {
 		Set<Integer> union = new HashSet<>();
 		for(CyNode node : nodes) {
 			union.addAll(getGenes(map, geneSetToGenes, network, node, prefix));
@@ -514,7 +551,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	}
 	
 	public static Set<String> interGenesets(Map<String,Set<Integer>> geneSetToGenes, 
-			EnrichmentMap map, CyNetwork network, List<CyNode> nodes, List<CyEdge> edges, String prefix) {
+			EnrichmentMap map, CyNetwork network, Collection<CyNode> nodes, Collection<CyEdge> edges, String prefix) {
 		Set<Integer> inter = null;
 		for(CyNode node : nodes) {
 			Collection<Integer> genes = getGenes(map, geneSetToGenes, network, node, prefix);
