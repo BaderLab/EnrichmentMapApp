@@ -113,17 +113,22 @@ public class DataSetResolver {
 		List<Path> clasFiles = new ArrayList<>(types.get(Type.CLASS));
 		List<Path> gmtFiles  = new ArrayList<>(types.get(Type.GENE_SETS));
 		
-		dataSets.addAll(processEnrichments(types.get(Type.ENRICHMENT_GENERIC), Method.Generic, exprFiles, rankFiles, clasFiles, gmtFiles));
-		dataSets.addAll(processEnrichments(types.get(Type.ENRICHMENT_ENRICHR), Method.Generic, exprFiles, rankFiles, clasFiles, gmtFiles));
-		dataSets.addAll(processEnrichments(types.get(Type.ENRICHMENT_DAVID), Method.Specialized, exprFiles, rankFiles, clasFiles, gmtFiles));
-		dataSets.addAll(processEnrichments(types.get(Type.ENRICHMENT_BINGO), Method.Specialized, exprFiles, rankFiles, clasFiles, gmtFiles));
-		dataSets.addAll(processEnrichments(types.get(Type.ENRICHMENT_GREAT), Method.Specialized, exprFiles, rankFiles, clasFiles, gmtFiles));
+		dataSets.addAll(createDataSetsFromEnrichments(types.get(Type.ENRICHMENT_GENERIC), Method.Generic, exprFiles, rankFiles, clasFiles, gmtFiles));
+		dataSets.addAll(createDataSetsFromEnrichments(types.get(Type.ENRICHMENT_ENRICHR), Method.Generic, exprFiles, rankFiles, clasFiles, gmtFiles));
+		dataSets.addAll(createDataSetsFromEnrichments(types.get(Type.ENRICHMENT_DAVID), Method.Specialized, exprFiles, rankFiles, clasFiles, gmtFiles));
+		dataSets.addAll(createDataSetsFromEnrichments(types.get(Type.ENRICHMENT_BINGO), Method.Specialized, exprFiles, rankFiles, clasFiles, gmtFiles));
+		dataSets.addAll(createDataSetsFromEnrichments(types.get(Type.ENRICHMENT_GREAT), Method.Specialized, exprFiles, rankFiles, clasFiles, gmtFiles));
+		
+		// If there are no enrichments but there are GMT files then create datasets from the GMT files.
+		if(dataSets.isEmpty() && !types.get(Type.GENE_SETS).isEmpty()) {
+			dataSets.addAll(createDataSetsFromGeneSets(types.get(Type.GENE_SETS)));
+		}
 		
 		return dataSets;
 	}
 	
 	
-	private static List<DataSetParameters> processEnrichments(
+	private static List<DataSetParameters> createDataSetsFromEnrichments(
 			Collection<Path> enrichments, 
 			Method method,
 			List<Path> exprFiles,
@@ -167,6 +172,18 @@ public class DataSetResolver {
 			dataSets.add(new DataSetParameters(name, method, files));
 		}
 		
+		return dataSets;
+	}
+	
+	
+	private static List<DataSetParameters> createDataSetsFromGeneSets(List<Path> gmtFiles) {
+		List<DataSetParameters> dataSets = new ArrayList<>();
+		for(Path gmt : gmtFiles) {
+			DataSetFiles files = new DataSetFiles();
+			files.setGMTFileName(gmt.toAbsolutePath().toString());
+			String name = getDatasetNameGeneric(gmt.getFileName());
+			dataSets.add(new DataSetParameters(name, Method.Generic, files));
+		}
 		return dataSets;
 	}
 	
