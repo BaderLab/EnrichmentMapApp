@@ -60,7 +60,7 @@ import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.EdgeStrategy;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
-import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolverTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask.MissingGenesetStrategy;
 import org.baderlab.csplugins.enrichmentmap.task.MissingGenesetsException;
@@ -461,7 +461,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	private void runResolverTask(List<File> files) {
 		scanButton.setEnabled(false);
-		ResolverTask task = new ResolverTask(files);
+		DataSetResolverTask task = new DataSetResolverTask(files);
 		
 		dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
 			

@@ -12,7 +12,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class ResolverTask extends AbstractTask implements ObservableTask {
+public class DataSetResolverTask extends AbstractTask implements ObservableTask {
 
 	private final List<Path> paths = new ArrayList<>();
 	private final List<DataSetParameters> results = new ArrayList<>();
@@ -20,15 +20,15 @@ public class ResolverTask extends AbstractTask implements ObservableTask {
 	private PathMatcher matcher = null;
 	
 	
-	public ResolverTask(Path root) {
+	public DataSetResolverTask(Path root) {
 		paths.add(root);
 	}
 	
-	public ResolverTask(File root) {
+	public DataSetResolverTask(File root) {
 		this(root.toPath());
 	}
 	
-	public ResolverTask(List<File> files) {
+	public DataSetResolverTask(List<File> files) {
 		for(File file : files) 
 			paths.add(file.toPath());
 	}

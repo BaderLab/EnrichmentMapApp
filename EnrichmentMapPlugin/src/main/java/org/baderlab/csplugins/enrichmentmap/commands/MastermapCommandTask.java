@@ -9,7 +9,7 @@ import java.util.List;
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.FilterTunables;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
-import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolverTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
@@ -65,7 +65,7 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 		}
 		
 		// Scan root folder (note: throws exception if no data sets were found)
-		ResolverTask resolverTask = new ResolverTask(rootFolder);
+		DataSetResolverTask resolverTask = new DataSetResolverTask(rootFolder);
 		
 		if(pattern != null) {
 			PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);

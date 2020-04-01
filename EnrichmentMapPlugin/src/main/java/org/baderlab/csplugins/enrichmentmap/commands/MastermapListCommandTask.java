@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSetFiles;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
-import org.baderlab.csplugins.enrichmentmap.resolver.ResolverTask;
+import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolverTask;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -45,7 +45,7 @@ public class MastermapListCommandTask extends AbstractTask implements Observable
 			throw new IllegalArgumentException("rootFolder is invalid: " + rootFolder);
 		}
 		
-		ResolverTask resolverTask = new ResolverTask(rootFolder);
+		DataSetResolverTask resolverTask = new DataSetResolverTask(rootFolder);
 		
 		if(pattern != null) {
 			PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
