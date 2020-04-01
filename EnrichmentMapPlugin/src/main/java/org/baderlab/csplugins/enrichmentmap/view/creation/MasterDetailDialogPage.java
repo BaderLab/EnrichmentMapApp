@@ -75,6 +75,7 @@ import org.baderlab.csplugins.enrichmentmap.view.util.dialog.ErrorMessageDialog;
 import org.baderlab.csplugins.enrichmentmap.view.util.dialog.Message;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.FinishStatus.Type;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskObserver;
@@ -483,7 +484,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			public void allFinished(FinishStatus finishStatus) {
 				scanButton.setEnabled(true);
 				updateButtonEnablement();
-				if(!foundDatasets) {
+				if(!foundDatasets && finishStatus.getType() != Type.CANCELLED) {
 					JOptionPane.showMessageDialog(callback.getDialogFrame(), "No data sets found", "EnrichmentMap", JOptionPane.WARNING_MESSAGE);
 				}
 			}
