@@ -49,8 +49,10 @@ public class DataSetResolverTask extends AbstractTask implements ObservableTask 
 			if(Files.isDirectory(path)) {
 				for(File subdirectory : path.toFile().listFiles(File::isDirectory)) {
 					Path subDirPath = subdirectory.toPath();
-					if(matcher == null || matcher.matches(subDirPath.getFileName())) {
-						paths.add(subDirPath);
+					if(!subDirPath.endsWith("edb")) {
+						if(matcher == null || matcher.matches(subDirPath.getFileName())) {
+							paths.add(subDirPath);
+						}
 					}
 				}
 			}
