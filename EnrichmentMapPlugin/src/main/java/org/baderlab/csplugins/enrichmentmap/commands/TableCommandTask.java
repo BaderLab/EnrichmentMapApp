@@ -12,6 +12,7 @@ import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
 import com.google.inject.Inject;
 
@@ -25,6 +26,8 @@ public class TableCommandTask extends AbstractTask {
 	@Inject
 	public TableTunables tableArgs;
 	
+	@Tunable(description="Name of the data set (optional).")
+	public String dataSetName = null;
 	
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	
@@ -34,7 +37,10 @@ public class TableCommandTask extends AbstractTask {
 		EMCreationParameters creationParams = filterArgs.getCreationParameters();
 		TableParameters tableParams = tableArgs.getTableParameters();
 		
-		String dataSetName = filterArgs.networkName == null ? "Data Set 1" : filterArgs.networkName;
+		if(filterArgs.networkName != null && !filterArgs.networkName.trim().isEmpty())
+			creationParams.setNetworkName(filterArgs.networkName);
+		
+		String dataSetName = this.dataSetName == null ? "Data Set 1" : this.dataSetName;
 		DataSetParameters dsParams = new DataSetParameters(dataSetName, tableParams);
 		List<DataSetParameters> dataSets = Collections.singletonList(dsParams);
 		
