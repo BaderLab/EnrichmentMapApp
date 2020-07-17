@@ -20,8 +20,11 @@ public class TableTunables {
 	@Tunable(required=true, description="Name of column that contains the list of genes.")
 	public String genesColumn;
 	
-	@Tunable(required=true, description="Name of column that contains p values.")
+	@Tunable(description="Name of column that contains p values. At least one of 'pvalueColumn' or 'qvalueColumn' must be provided.")
 	public String pvalueColumn;
+	
+	@Tunable(description="Name of column that contains q values. At least one of 'pvalueColumn' or 'qvalueColumn' must be provided.")
+	public String qvalueColumn;
 	
 	@Tunable(description="Name of column that contains the gene set description (optional).")
 	public String descriptionColumn;
@@ -51,14 +54,18 @@ public class TableTunables {
 	public TableParameters getTableParameters() throws IllegalArgumentException {
 		CyTable table = getTable();
 		if(table == null)
-			throw new IllegalArgumentException("Table '" + table + "' is invalid.");
+			throw new IllegalArgumentException("Table '" + this.table + "' is invalid.");
 		
+		if(pvalueColumn == null && qvalueColumn == null)
+			throw new IllegalArgumentException("At least one of 'pvalueColumn' or 'qvalueColumn' must be provided.");
+			
 		validateColumn(table, nameColumn, false, String.class, true);
 		validateColumn(table, genesColumn, true, String.class, true);
-		validateColumn(table, pvalueColumn, false, Double.class, true);
 		validateColumn(table, descriptionColumn, false, String.class, false);
+		validateColumn(table, pvalueColumn, false, Double.class, false);
+		validateColumn(table, qvalueColumn, false, Double.class, false);
 		
-		return new TableParameters(table, nameColumn, genesColumn, pvalueColumn, null, descriptionColumn, null);
+		return new TableParameters(table, nameColumn, genesColumn, pvalueColumn, qvalueColumn, descriptionColumn, null);
 	}
 	
 	
@@ -69,10 +76,8 @@ public class TableTunables {
 			return;
 		
 		CyColumn column = table.getColumn(name);
-		if(column == null && required)
-			throw new IllegalArgumentException("Column '" + name + "' is invalid.");
 		if(column == null)
-			return;
+			throw new IllegalArgumentException("Column '" + name + "' is invalid.");
 		
 		// if the column exists it must still be of the required type
 		if((isList && !column.getListElementType().equals(type)) || (!isList && !column.getType().equals(type)))
