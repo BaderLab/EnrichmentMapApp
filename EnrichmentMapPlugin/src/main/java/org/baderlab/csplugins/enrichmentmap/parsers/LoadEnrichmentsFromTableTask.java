@@ -62,29 +62,28 @@ public class LoadEnrichmentsFromTableTask extends AbstractTask {
 					qvalue = 1.0;
 				
 				// Skip row if data is invalid in any way
-				if(genes == null || genes.isEmpty() || name == null || name.isEmpty())
-					continue;
-				
-				String description = null;
-				if(tableParams.getDescriptionColumn().isPresent()) {
-					description = row.get(tableParams.getDescriptionColumn().get(), String.class);
+				if(!(genes == null || genes.isEmpty() || name == null || name.isEmpty())) {
+					String description = null;
+					if(tableParams.getDescriptionColumn() != null) {
+						description = row.get(tableParams.getDescriptionColumn(), String.class);
+					}
+					
+					// Build the GeneSet object
+					ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
+					
+					for(String gene : genes) {
+						Integer hash = map.addGene(gene);
+						if(hash != null)
+							builder.add(hash);
+					}
+					
+					GeneSet gs = new GeneSet(name, description, builder.build());
+					int gsSize = gs.getGenes().size();
+					genesets.put(name, gs);
+					
+					GenericResult result = new GenericResult(name, description, pvalue, gsSize, qvalue);
+					enrichments.getEnrichments().put(name, result);
 				}
-				
-				// Build the GeneSet object
-				ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
-				
-				for(String gene : genes) {
-					Integer hash = map.addGene(gene);
-					if(hash != null)
-						builder.add(hash);
-				}
-				
-				GeneSet gs = new GeneSet(name, description, builder.build());
-				int gsSize = gs.getGenes().size();
-				genesets.put(name, gs);
-				
-				GenericResult result = new GenericResult(name, description, pvalue, gsSize, qvalue);
-				enrichments.getEnrichments().put(name, result);
 			}
 			tm.inc();
 		}

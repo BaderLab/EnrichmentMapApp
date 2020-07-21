@@ -95,6 +95,7 @@ public class GeneExpression {
 		}
 	}
 	
+	
 	private float parseAndRound(String exp) {
 		float f = Float.parseFloat(exp);
 		float r = Precision.round(f, 4);

@@ -23,6 +23,7 @@ public class DataSetParameters {
 	// types, but for the sake of compatibility with the session serialization this is easier.
 	private final @Nullable DataSetFiles files;
 	private final @Nullable transient TableParameters tableParameters;
+	private final @Nullable transient TableExpressionParameters tableExpressionParameters;
 	private final @Nullable transient GenemaniaParameters genemaniaParameters;
 	
 	
@@ -31,14 +32,16 @@ public class DataSetParameters {
 		this.method = Objects.requireNonNull(method);
 		this.files = Objects.requireNonNull(files);
 		this.tableParameters = null;
+		this.tableExpressionParameters = null;
 		this.genemaniaParameters = null;
 	}
 	
-	public DataSetParameters(String name, TableParameters tableParameters) {
+	public DataSetParameters(String name, TableParameters tableParameters, TableExpressionParameters tableExpressionParameters) {
 		this.name = Objects.requireNonNull(name);
 		this.method = Method.Generic;
 		this.files = new DataSetFiles();
 		this.tableParameters = Objects.requireNonNull(tableParameters);
+		this.tableExpressionParameters = tableExpressionParameters;
 		this.genemaniaParameters = null;
 	}
 	
@@ -47,6 +50,7 @@ public class DataSetParameters {
 		this.method = Method.Generic;
 		this.files = new DataSetFiles();
 		this.tableParameters = null;
+		this.tableExpressionParameters = null;
 		this.genemaniaParameters = Objects.requireNonNull(genemaniaParameters);
 	}
 
@@ -60,6 +64,10 @@ public class DataSetParameters {
 	
 	public Optional<TableParameters> getTableParams() {
 		return Optional.ofNullable(tableParameters);
+	}
+	
+	public Optional<TableExpressionParameters> getTableExpressionParams() {
+		return Optional.ofNullable(tableExpressionParameters);
 	}
 	
 	public Optional<GenemaniaParameters> getGenemaniaParams() {

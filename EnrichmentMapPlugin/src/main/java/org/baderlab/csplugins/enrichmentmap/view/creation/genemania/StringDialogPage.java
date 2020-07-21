@@ -60,7 +60,7 @@ public class StringDialogPage extends NetworkLoadDialogPage {
 		TableParameters tableParams = 
 				new TableParameters(table, NAME_COLUMN, GENES_COLUMN, null, FDR_COLUMN, DESC_COLUMN, filter);
 		
-		return new DataSetParameters(dataSetName, tableParams);
+		return new DataSetParameters(dataSetName, tableParams, null);
 	}
 	
 }

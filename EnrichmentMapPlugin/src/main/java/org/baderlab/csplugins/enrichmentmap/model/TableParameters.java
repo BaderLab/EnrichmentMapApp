@@ -1,7 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
@@ -16,7 +15,7 @@ public class TableParameters {
 	private final String genesColumn;
 	private final String pvalueColumn;
 	private final String qvalueColumn;
-	private final Optional<String> descriptionColumn;
+	private final String descriptionColumn;
 	
 	private final @Nullable Predicate<CyRow> filter;
 	
@@ -35,7 +34,7 @@ public class TableParameters {
 		this.genesColumn = Objects.requireNonNull(genesColumn);
 		this.pvalueColumn = pvalueColumn;
 		this.qvalueColumn = qvalueColumn;
-		this.descriptionColumn = Optional.ofNullable(descriptionColumn);
+		this.descriptionColumn = descriptionColumn;
 		this.filter = filter;
 	}
 
@@ -59,7 +58,7 @@ public class TableParameters {
 		return qvalueColumn;
 	}
 
-	public Optional<String> getDescriptionColumn() {
+	public String getDescriptionColumn() {
 		return descriptionColumn;
 	}
 	

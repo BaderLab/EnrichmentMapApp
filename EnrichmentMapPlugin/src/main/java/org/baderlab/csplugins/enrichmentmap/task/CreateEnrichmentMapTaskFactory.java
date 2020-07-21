@@ -15,6 +15,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GenemaniaParameters;
 import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
+import org.baderlab.csplugins.enrichmentmap.model.TableExpressionParameters;
 import org.baderlab.csplugins.enrichmentmap.model.TableParameters;
 import org.baderlab.csplugins.enrichmentmap.parsers.ClassFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
@@ -22,6 +23,7 @@ import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GREATWhichPvalueQuestionTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.LoadEnrichmentsFromGenemaniaTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.LoadEnrichmentsFromTableTask;
+import org.baderlab.csplugins.enrichmentmap.parsers.LoadExpressionsFromTableTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseBingoEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseDavidEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseEDBEnrichmentResults;
@@ -85,44 +87,54 @@ public class CreateEnrichmentMapTaskFactory {
 		for(DataSetParameters dataSetParameters : dataSets) {
 			String datasetName = dataSetParameters.getName();
 			Method method = dataSetParameters.getMethod();
+			DataSetFiles files = dataSetParameters.getFiles(); // files is empty for table or genemania loading
 			
-			// Standard approach, load data from files
-			DataSetFiles files = dataSetParameters.getFiles();
+			// Create Data Set
 			EMDataSet dataset = map.createDataSet(datasetName, method, files);
 			
-			// Load GMT File
-			if(!Strings.isNullOrEmpty(dataset.getDataSetFiles().getGMTFileName())) {
-				tasks.append(new GMTFileReaderTask(dataset));
-			}
-			
-			// Load the enrichments 
-			if(dataSetParameters.getTableParams().isPresent()) {
+			// Load data
+			if(dataSetParameters.getTableParams().isPresent()) { 
+				// load from table
 				TableParameters tableParams = dataSetParameters.getTableParams().get();
 				tasks.append(new LoadEnrichmentsFromTableTask(tableParams, dataset));
-			} else if(dataSetParameters.getGenemaniaParams().isPresent()) {
+				
+				if(dataSetParameters.getTableExpressionParams().isPresent()) {
+					TableExpressionParameters expressionParams = dataSetParameters.getTableExpressionParams().get();
+					tasks.append(new LoadExpressionsFromTableTask(expressionParams, dataset));
+				} else {
+					tasks.append(new CreateDummyExpressionTask(dataset));
+				}
+				
+			} else if(dataSetParameters.getGenemaniaParams().isPresent()) { 
+				// load from a genemania network
 				GenemaniaParameters genemaniaParams = dataSetParameters.getGenemaniaParams().get();
 				tasks.append(genemanaiaTaskFactory.create(genemaniaParams, dataset));
-			} else {
-				tasks.append(getEnrichmentParserTasks(dataset));
-			}
-
-			// Load expression file if specified in the dataset.
-			// If there is no expression file then create a dummy file to associate with this dataset so we can still use the expression viewer (heat map)
-			if(Strings.isNullOrEmpty(dataset.getDataSetFiles().getExpressionFileName())) {
 				tasks.append(new CreateDummyExpressionTask(dataset));
-			} else {
-				tasks.append(new ExpressionFileReaderTask(dataset));
-			}
-			
-			// Load ranks if present
-			String ranksName = dataset.getMethod() == Method.GSEA ? Ranking.GSEARanking : datasetName;
-			if(dataset.getRanksByName(ranksName) != null) {
-				String filename = files.getRankedFile();
-				tasks.append(new RanksFileReaderTask(filename, dataset, ranksName, false));
-			}
-			
-			if(!Strings.isNullOrEmpty(dataset.getDataSetFiles().getClassFile())) {
-				tasks.append(new ClassFileReaderTask(dataset));
+				
+			} else { 
+				// load from files
+				
+				// Load GMT File
+				if(!Strings.isNullOrEmpty(dataset.getDataSetFiles().getGMTFileName()))
+					tasks.append(new GMTFileReaderTask(dataset));
+				
+				// Load the enrichments 
+				tasks.append(getEnrichmentParserTasks(dataset));
+
+				// Load expression file if specified in the dataset.
+				// If there is no expression file then create a dummy file to associate with this dataset so we can still use the expression viewer (heat map)
+				if(Strings.isNullOrEmpty(dataset.getDataSetFiles().getExpressionFileName()))
+					tasks.append(new CreateDummyExpressionTask(dataset));
+				else
+					tasks.append(new ExpressionFileReaderTask(dataset));
+				
+				// Load ranks if present
+				String ranksName = dataset.getMethod() == Method.GSEA ? Ranking.GSEARanking : datasetName;
+				if(dataset.getRanksByName(ranksName) != null)
+					tasks.append(new RanksFileReaderTask(files.getRankedFile(), dataset, ranksName, false));
+				
+				if(!Strings.isNullOrEmpty(dataset.getDataSetFiles().getClassFile()))
+					tasks.append(new ClassFileReaderTask(dataset));
 			}
 		}
 		
