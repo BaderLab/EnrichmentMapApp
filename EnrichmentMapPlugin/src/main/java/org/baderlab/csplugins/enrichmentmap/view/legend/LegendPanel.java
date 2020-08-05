@@ -319,7 +319,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 			List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
 					dataSets, columnDescriptor, columnIdFactory);
 	
-			List<Color> colors = ChartUtil.getChartColors(chartOptions);
+			List<Color> colors = ChartUtil.getChartColors(chartOptions, false);
 			List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
 			double min = range.get(0) ;
 			double max = range.get(1);

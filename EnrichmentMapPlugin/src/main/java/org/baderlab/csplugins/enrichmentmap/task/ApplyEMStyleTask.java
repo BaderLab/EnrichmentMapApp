@@ -188,7 +188,7 @@ public class ApplyEMStyleTask extends AbstractTask {
 					List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(prefix,
 							dataSets, columnDescriptor, columnIdFactory);
 	
-					List<Color> colors = ChartUtil.getChartColors(chartOptions);
+					List<Color> colors = ChartUtil.getChartColors(chartOptions, true);
 					List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
 					
 					props.put("cy_dataColumns", columns);
