@@ -61,6 +61,13 @@ public class LoadEnrichmentsFromTableTask extends AbstractTask {
 				if(qvalue == null)
 					qvalue = 1.0;
 				
+				Double nes = null;
+				if(tableParams.getNesColumn() != null)
+					nes = row.get(tableParams.getNesColumn(), Double.class);
+				if(nes == null)
+					nes = 1.0;
+				
+				
 				// Skip row if data is invalid in any way
 				if(!(genes == null || genes.isEmpty() || name == null || name.isEmpty())) {
 					String description = null;
@@ -81,7 +88,7 @@ public class LoadEnrichmentsFromTableTask extends AbstractTask {
 					int gsSize = gs.getGenes().size();
 					genesets.put(name, gs);
 					
-					GenericResult result = new GenericResult(name, description, pvalue, gsSize, qvalue);
+					GenericResult result = new GenericResult(name, description, pvalue, gsSize, qvalue, nes);
 					enrichments.getEnrichments().put(name, result);
 				}
 			}

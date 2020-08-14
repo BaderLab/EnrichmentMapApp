@@ -27,6 +27,9 @@ public class TableTunables {
 	@Tunable(description="Name of column that contains q values. At least one of 'pvalueColumn' or 'qvalueColumn' must be provided.")
 	public String qvalueColumn;
 	
+	@Tunable(description="Name of column that contains NES values (optional).")
+	public String nesColumn;
+	
 	@Tunable(description="Name of column that contains the gene set description (optional).")
 	public String descriptionColumn;
 
@@ -79,8 +82,9 @@ public class TableTunables {
 		validateColumn(table, "descriptionColumn", descriptionColumn, false, String.class, false);
 		validateColumn(table, "pvalueColumn", pvalueColumn, false, Double.class, false);
 		validateColumn(table, "qvalueColumn", qvalueColumn, false, Double.class, false);
+		validateColumn(table, "nesColumn", nesColumn, false, Double.class, false);
 		
-		return new TableParameters(table, nameColumn, genesColumn, pvalueColumn, qvalueColumn, descriptionColumn, null);
+		return new TableParameters(table, nameColumn, genesColumn, pvalueColumn, qvalueColumn, nesColumn, descriptionColumn, null);
 	}
 	
 	
