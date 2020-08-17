@@ -64,7 +64,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -392,24 +391,21 @@ public class SliderBarPanel extends JPanel {
 	private static String getFormatPattern(double... numbers) {
 		StringBuilder sb = new StringBuilder("0.0"); // At least one decimal.
 		int p = precision(numbers);
-		
-		if (p > 0)
-			IntStream.range(0, p).forEach(v -> sb.append("#")); // Optional decimal digits
-		
+		for (int i = 0; i < p; i++) {
+			sb.append('#');
+		}
 		return sb.toString();
 	}
 	
 	private static int precision(double... numbers) {
-		DecimalFormat df = new DecimalFormat("0.##############################");
 		int p = 0;
-		
 		for (double n : numbers) {
-			String text = df.format(n);
-			
-			if (text.indexOf('.') >= 0)
-				p = Math.max(p, text.substring(text.indexOf('.')).length() - 1);
+			String text = Double.toString(n);
+			int i = text.indexOf('.');
+			if (i >= 0) {
+				p = Math.max(p, text.substring(i).length() - 1);
+			}
 		}
-		
 		return p;
 	}
 }

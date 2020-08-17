@@ -12,6 +12,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +67,9 @@ public class PAWeightPanel extends JPanel {
 	private static final String LABEL_TEST   = "Test:";
 
 	private static final double HYPERGOM_DEFAULT = 0.25;
+	
+	private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
+	
 	
 	@Inject private IconManager iconManager;
 	
@@ -212,19 +216,18 @@ public class PAWeightPanel extends JPanel {
 		JLabel cuttofLabel = new JLabel(LABEL_CUTOFF);
 		JLabel dataSetLabel = new JLabel("Data Set:");
 
-		DecimalFormat decFormat = new DecimalFormat();
-		decFormat.setParseIntegerOnly(false);
-		rankTestTextField = new JFormattedTextField(decFormat);
+		DECIMAL_FORMAT.setParseIntegerOnly(false);
+		rankTestTextField = new JFormattedTextField(DECIMAL_FORMAT);
 		rankTestTextField.setColumns(6);
 		rankTestTextField.setHorizontalAlignment(JTextField.RIGHT);
 		rankTestTextField.addPropertyChangeListener("value", e -> {
 			String text = rankTestTextField.getText();
 			try {
-				double val = Double.parseDouble(text);
+				double val = DECIMAL_FORMAT.parse(text).doubleValue();
 				PostAnalysisFilterType filterType = getFilterType();
 				savedFilterValues.put(filterType, val);
 				showWarning(filterType.isValid(val) ? null : filterType.getErrorMessage());
-			} catch(NumberFormatException ex) {
+			} catch(ParseException ex) {
 				showWarning("Not a number");
 			}
 			
@@ -648,7 +651,13 @@ public class PAWeightPanel extends JPanel {
 	
 	public FilterMetric createFilterMetric(String datasetName) {
 		String text = rankTestTextField.getText();
-		double value = Double.parseDouble(text);
+		double value;
+		try {
+			value = DECIMAL_FORMAT.parse(text).doubleValue();
+		} catch (ParseException e) {
+			return null;
+		}
+		
 		PostAnalysisFilterType type = getFilterType();
 		
 		switch(type) {
