@@ -576,8 +576,9 @@ public class EMStyleBuilder {
 				columnName += "_dataset1";
 			}
 			
-			int val0 = 10;
-			int val1 = 474;
+			// These values used to be 10 and 474 and were changed in EM 3.3.1
+			// See GitHub issue  https://github.com/BaderLab/EnrichmentMapApp/issues/422
+			int val0 = 2, val1 = 500;
 			
 			VisualMappingFunction<?, Double> oldMapping = vs.getVisualMappingFunction(NODE_SIZE);
 			
@@ -600,7 +601,7 @@ public class EMStyleBuilder {
 						
 						if (!update) // Finally test the boundary ranges
 							update = MIN_NODE_SIZE != (Double) pt0.getRange().equalValue
-									|| MAX_NODE_SIZE != (Double) pt1.getRange().equalValue;
+								  || MAX_NODE_SIZE != (Double) pt1.getRange().equalValue;
 					}
 				} catch (NullPointerException | ClassCastException e) {
 					update = true;
