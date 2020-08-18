@@ -4,12 +4,13 @@ import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
@@ -22,10 +23,14 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.charts.AbstractChart;
+import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.control.FilterUtil;
+import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
+import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
 import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
@@ -47,10 +52,10 @@ public class ApplyEMStyleTask extends AbstractTask {
 
 	@Inject private VisualMappingManager visualMappingManager;
 	@Inject private VisualStyleFactory visualStyleFactory;
-	@Inject private CyNetworkManager networkManager;
 	@Inject private ChartFactoryManager chartFactoryManager;
 	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private Provider<EMStyleBuilder> styleBuilderProvider;
+	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 
 	private final EMStyleOptions options;
 	private final boolean updateChartOnly;
@@ -85,9 +90,9 @@ public class ApplyEMStyleTask extends AbstractTask {
 
 	private void createOrUpdateDataSetColumn() {
 		EnrichmentMap map = options.getEnrichmentMap();
-		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
+		CyNetworkView netView = options.getNetworkView();
+		CyNetwork network = netView.getModel();
 		CyTable nodeTable = network.getDefaultNodeTable();
-		Collection<? extends AbstractDataSet> dataSets = filterEMDataSets(options.getDataSets());
 		
 		String prefix = map.getParams().getAttributePrefix();
 		
@@ -95,6 +100,22 @@ public class ApplyEMStyleTask extends AbstractTask {
 			Columns.DATASET_CHART.createColumn(nodeTable, prefix);
 		}
 
+		Map<Long,int[]> columnData = getDatasetChartColumnData();
+		
+		columnData.forEach((suid, data) ->
+			Columns.DATASET_CHART.set(nodeTable.getRow(suid), prefix, Ints.asList(data))
+		);
+	}
+	
+	
+	private Map<Long, int[]> getDatasetChartColumnData() {
+		EnrichmentMap map = options.getEnrichmentMap();
+		CyNetworkView netView = options.getNetworkView();
+		CyNetwork network = netView.getModel();
+		CyTable nodeTable = network.getDefaultNodeTable();
+		
+		Collection<? extends AbstractDataSet> dataSets = filterEMDataSets(options.getDataSets());
+		
 		Map<Long, int[]> columnData = new HashMap<>();
 		int n = dataSets.size();
 
@@ -102,19 +123,48 @@ public class ApplyEMStyleTask extends AbstractTask {
 			columnData.put(node.getSUID(), new int[n]);
 		}
 
-		Iterator<? extends AbstractDataSet> iter = dataSets.iterator();
-		int i = 0;
-		while(iter.hasNext()) {
-			AbstractDataSet ds = iter.next();
-			for(Long suid : ds.getNodeSuids()) {
-				columnData.get(suid)[i] = 1;
-			}
-			i++;
+		// Don't show pie slices that are filtered out by the p-value or q-value sliders :)
+		ViewParams viewParams = controlPanelMediatorProvider.get().getViewParams(netView.getSUID());
+		CutoffParam cutoffParam = viewParams.getNodeCutoffParam();
+		EMCreationParameters params = map.getParams();
+		
+		Set<String> columns;
+		double[] values;
+		
+		if(cutoffParam == CutoffParam.P_VALUE) {
+			columns = params.getPValueColumnNames();
+			values = controlPanelMediatorProvider.get().getPValueSliderValues(netView.getSUID());
+		} else {
+			columns = params.getQValueColumnNames();
+			values = controlPanelMediatorProvider.get().getQValueSliderValues(netView.getSUID());
 		}
-
-		columnData.forEach((suid, data) ->
-			Columns.DATASET_CHART.set(nodeTable.getRow(suid), prefix, Ints.asList(data))
-		);
+		
+		if(values == null) {
+			int dataSetIndex = 0;
+			for(AbstractDataSet ds : dataSets) {
+				for(Long nodeSuid : ds.getNodeSuids()) {
+					columnData.get(nodeSuid)[dataSetIndex] = 1;
+				}
+				dataSetIndex++;
+			}
+		} else {
+			Double maxCutoff = values[1];
+			Double minCutoff = values[0];
+			
+			int dataSetIndex = 0;
+			for(AbstractDataSet ds : dataSets) {
+				String column = FilterUtil.getColumnName(columns, ds);
+				for(Long nodeSuid : ds.getNodeSuids()) {
+					CyRow row = nodeTable.getRow(nodeSuid);
+					if(column == null || FilterUtil.passesFilter(column, nodeTable, row, maxCutoff, minCutoff)) {
+						columnData.get(nodeSuid)[dataSetIndex] = 1;
+					}
+				}
+				dataSetIndex++;
+			}
+		}
+		
+		return columnData;
 	}
 	
 	private void applyVisualStyle() {

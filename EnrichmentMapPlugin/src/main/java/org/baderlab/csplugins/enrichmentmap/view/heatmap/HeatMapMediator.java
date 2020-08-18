@@ -329,7 +329,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		// Remove Data Sets that are not selected in the control panel
 		if(propertyManager.isTrue(PropertyManager.HEATMAP_DATASET_SYNC)) {
-			ViewParams params = controlPanelMediatorProvider.get().getAllViewParams().get(networkView.getSUID());
+			ViewParams params = controlPanelMediatorProvider.get().getViewParams(networkView.getSUID());
 			if(params != null) {
 				Set<String> filter = params.getFilteredOutDataSets();
 				dataSets.removeIf(ds -> filter.contains(ds.getName()));

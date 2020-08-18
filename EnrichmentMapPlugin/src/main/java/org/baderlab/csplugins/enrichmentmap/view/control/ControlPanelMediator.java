@@ -53,7 +53,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.ExpressionCache;
 import org.baderlab.csplugins.enrichmentmap.model.ExpressionData;
-import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.model.Uncompressed;
 import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleOptions;
@@ -292,25 +291,51 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		Map<Long, ViewParams> map = new HashMap<>();
 		
 		getControlPanel().getAllControlPanels().forEach((suid, panel) -> {
-			CutoffParam cuttofParam = panel.getPValueRadio().isSelected() ? CutoffParam.P_VALUE : CutoffParam.Q_VALUE;
-			Double pVal = panel.getPValueSliderPanel() != null ? panel.getPValueSliderPanel().getValue() : null;
-			Double qVal = panel.getQValueSliderPanel() != null ? panel.getQValueSliderPanel().getValue() : null;
-			Double sCoeff = panel.getSimilaritySliderPanel() != null ? panel.getSimilaritySliderPanel().getValue() : null;
-			
-			Set<AbstractDataSet> uncheckedDataSets = panel.getUncheckedDataSets();
-			Set<String> filteredDataSets = uncheckedDataSets.stream()
-					.map(AbstractDataSet::getName)
-					.collect(Collectors.toSet());
-			
-			EMStyleOptions options = createStyleOptions(panel.getNetworkView());
-			ChartOptions chartOptions = options != null ? options.getChartOptions() : null;
-			boolean pubReady = panel.getPublicationReadyCheck().isSelected();
-			ViewParams params = new ViewParams(suid, cuttofParam, pVal, qVal, sCoeff, filteredDataSets, chartOptions, pubReady);
-			
+			ViewParams params = createViewParams(suid, panel);
 			map.put(suid, params);
 		});
 		
 		return map;
+	}
+	
+	public ViewParams getViewParams(Long networkViewSuid) {
+		EMViewControlPanel panel = getControlPanel().getAllControlPanels().get(networkViewSuid);
+		return createViewParams(networkViewSuid, panel);
+	}
+	
+	private ViewParams createViewParams(Long networkViewSuid, EMViewControlPanel panel) {
+		CutoffParam cuttofParam = panel.getPValueRadio().isSelected() ? CutoffParam.P_VALUE : CutoffParam.Q_VALUE;
+		Double pVal = panel.getPValueSliderPanel() != null ? panel.getPValueSliderPanel().getValue() : null;
+		Double qVal = panel.getQValueSliderPanel() != null ? panel.getQValueSliderPanel().getValue() : null;
+		Double sCoeff = panel.getSimilaritySliderPanel() != null ? panel.getSimilaritySliderPanel().getValue() : null;
+		
+		Set<AbstractDataSet> uncheckedDataSets = panel.getUncheckedDataSets();
+		Set<String> filteredDataSets = uncheckedDataSets.stream()
+				.map(AbstractDataSet::getName)
+				.collect(Collectors.toSet());
+		
+		EMStyleOptions options = createStyleOptions(panel.getNetworkView());
+		ChartOptions chartOptions = options != null ? options.getChartOptions() : null;
+		boolean pubReady = panel.getPublicationReadyCheck().isSelected();
+		ViewParams params = new ViewParams(networkViewSuid, cuttofParam, pVal, qVal, sCoeff, filteredDataSets, chartOptions, pubReady);
+		
+		return params;
+	}
+	
+	public double[] getPValueSliderValues(Long networkSuid) {
+		EMViewControlPanel panel = getControlPanel().getAllControlPanels().get(networkSuid);
+		SliderBarPanel sliderPanel = panel.getPValueSliderPanel();
+		if(sliderPanel == null)
+			return null;
+		return new double[] { sliderPanel.getMin(), sliderPanel.getValue(), sliderPanel.getMax() };
+	}
+	
+	public double[] getQValueSliderValues(Long networkSuid) {
+		EMViewControlPanel panel = getControlPanel().getAllControlPanels().get(networkSuid);
+		SliderBarPanel sliderPanel = panel.getQValueSliderPanel();
+		if(sliderPanel == null)
+			return null;
+		return new double[] { sliderPanel.getMin(), sliderPanel.getValue(), sliderPanel.getMax() };
 	}
 	
 	public void updateDataSetList(CyNetworkView netView) {
@@ -412,38 +437,36 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	private void addListeners(EMViewControlPanel viewPanel, EnrichmentMap map) {
 		CyNetworkView netView = viewPanel.getNetworkView();
 		
+		Runnable updateFilters = () -> {
+			if (!updating) {
+				filterNodesAndEdges(viewPanel, map);
+				ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
+				if(data == ChartData.DATA_SET) {
+					updateVisualStyle(map, viewPanel, true);
+				}
+			}
+		};
+		
 		viewPanel.getQValueRadio().addActionListener(evt -> {
 			viewPanel.updateFilterPanel();
-			
-			if (!updating)
-				filterNodesAndEdges(viewPanel, map);
+			updateFilters.run();
 		});
 		viewPanel.getPValueRadio().addActionListener(evt -> {
 			viewPanel.updateFilterPanel();
-			
-			if (!updating)
-				filterNodesAndEdges(viewPanel, map);
+			updateFilters.run();
 		});
 		
 		SliderBarPanel pvSliderPanel = viewPanel.getPValueSliderPanel();
 		SliderBarPanel qvSliderPanel = viewPanel.getQValueSliderPanel();
 		SliderBarPanel sSliderPanel = viewPanel.getSimilaritySliderPanel();
 		
+		
 		if (pvSliderPanel != null)
-			pvSliderPanel.addChangeListener(evt -> {
-				if (!updating)
-					filterNodesAndEdges(viewPanel, map);
-			});
+			pvSliderPanel.addChangeListener(e -> updateFilters.run());
 		if (qvSliderPanel != null)
-			qvSliderPanel.addChangeListener(evt -> {
-				if (!updating)
-					filterNodesAndEdges(viewPanel, map);
-			});
+			qvSliderPanel.addChangeListener(e -> updateFilters.run());
 		if (sSliderPanel != null)
-			sSliderPanel.addChangeListener(evt -> {
-				if (!updating)
-					filterNodesAndEdges(viewPanel, map);
-			});
+			sSliderPanel.addChangeListener(e -> updateFilters.run());
 
 		viewPanel.getDataSetSelector().addPropertyChangeListener("checkedData", evt -> {
 			if (!updating) {
@@ -878,7 +901,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			timer.stop();
 		}
 		
-		timer.setInitialDelay(350);
+		timer.setInitialDelay(400);
 		timer.start();
 	}
 	
@@ -1050,14 +1073,12 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			
 			// Only p or q value, but not both!
 			if (viewPanel.getPValueSliderPanel() != null && viewPanel.getPValueSliderPanel().isVisible()) {
-				Set<String> columnNames = getFilteredColumnNames(params.getPValueColumnNames(), selectedDataSets);
-				
+				Set<String> columnNames = FilterUtil.getColumnNames(params.getPValueColumnNames(), selectedDataSets);
 				return getFilteredInNodes(viewPanel.getPValueSliderPanel(), map, netView, columnNames, dataSetNodes);
 			}
 			
 			if (viewPanel.getQValueSliderPanel() != null && viewPanel.getQValueSliderPanel().isVisible()) {
-				Set<String> columnNames = getFilteredColumnNames(params.getQValueColumnNames(), selectedDataSets);
-				
+				Set<String> columnNames = FilterUtil.getColumnNames(params.getQValueColumnNames(), selectedDataSets);
 				return getFilteredInNodes(viewPanel.getQValueSliderPanel(), map, netView, columnNames, dataSetNodes);
 			}
 			
@@ -1123,7 +1144,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					show = false;
 				} else if (table.getColumn(prefix + NODE_GS_TYPE) != null
 						&& NODE_GS_TYPE_ENRICHMENT.equalsIgnoreCase(row.get(prefix + NODE_GS_TYPE, String.class))) {
-					show = showElement(columnNames, table, row, maxCutoff, minCutoff);
+					show = FilterUtil.passesFilter(columnNames, table, row, maxCutoff, minCutoff);
 				}
 				
 				if (show)
@@ -1153,7 +1174,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				
 				boolean show;
 				if(EDGE_DATASET_VALUE_COMPOUND.equals(dataset)) { // compound edge
-					show = showElement(columnNames, table, row, maxCutoff, minCutoff);
+					show = FilterUtil.passesFilter(columnNames, table, row, maxCutoff, minCutoff);
 				}
 				else { // discrete edge
 					if (dataSetEdges != null && !dataSetEdges.contains(e.getSUID())) {
@@ -1163,7 +1184,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 						if (EDGE_INTERACTION_VALUE_SIG.equals(interaction)) { 
 							show = true;
 						} else {
-							show = showElement(columnNames, table, row, maxCutoff, minCutoff);
+							show = FilterUtil.passesFilter(columnNames, table, row, maxCutoff, minCutoff);
 						}
 					}
 				}
@@ -1173,53 +1194,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			}
 			
 			return edges;
-		}
-
-		private boolean showElement(Set<String> columnNames, CyTable table, CyRow row, Double maxCutoff, Double minCutoff) {
-			boolean show = true;
-			for (String colName : columnNames) {
-				if (table.getColumn(colName) == null)
-					continue; // Ignore this column name (maybe the user deleted it)
-
-				Double value = row.get(colName, Double.class);
-
-				// Possible that there isn't value for this interaction
-				if (value == null)
-					continue;
-
-				if (value >= minCutoff && value <= maxCutoff) {
-					show = true;
-					break;
-				} else {
-					show = false;
-				}
-			}
-			return show;
-		}
-
-		private Set<String> getFilteredColumnNames(Set<String> columnNames, Collection<AbstractDataSet> dataSets) {
-			Set<String> filteredNames = new HashSet<>();
-			
-			for (String name : columnNames) {
-				for (AbstractDataSet ds : dataSets) {
-					if (ds.getMap().isLegacy()) {
-						if(LegacySupport.DATASET1.equals(ds.getName()) && name.endsWith("dataset1")) {
-							filteredNames.add(name);
-							break;
-						}
-						if(LegacySupport.DATASET2.equals(ds.getName()) && name.endsWith("dataset2")) {
-							filteredNames.add(name);
-							break;
-						}
-					} 
-					if (name.endsWith(" (" + ds.getName() + ")")) {
-						filteredNames.add(name);
-						break;
-					}
-				}
-			}
-			
-			return filteredNames;
 		}
 	}
 }
