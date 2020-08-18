@@ -45,6 +45,8 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	private String networkName;
 	private EdgeStrategy edgeStrategy;
 	
+	private transient boolean forceNES = false;
+	
 	/**
 	 * This is calculated based on the edge strategy, number of data sets and expressions. 
 	 * See FilterGenesetsByDatasetGenes and ComputeSimilarityTaskParallel.
@@ -264,6 +266,13 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 		return parseBaderlab;
 	}
 
+	public void setForceNES(boolean forceNES) {
+		this.forceNES = forceNES;
+	}
+	
+	public boolean isForceNES() {
+		return forceNES;
+	}
 
 	@Override
 	public String toString() {

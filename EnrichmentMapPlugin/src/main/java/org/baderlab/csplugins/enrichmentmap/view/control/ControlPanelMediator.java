@@ -654,7 +654,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			if(map.isTwoPhenotypeGeneric()) {
 				chartData = ChartData.PHENOTYPES;
 			} else if(params != null && map.hasNonGSEADataSet()) {
-				if(params.isFDR()) 
+				if(params.isForceNES())
+					chartData = ChartData.NES_VALUE;
+				else if(params.isFDR()) 
 					chartData = ChartData.FDR_VALUE;
 				else
 					chartData = ChartData.P_VALUE;

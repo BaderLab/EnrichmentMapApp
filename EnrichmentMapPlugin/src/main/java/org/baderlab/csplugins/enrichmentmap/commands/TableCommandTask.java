@@ -15,6 +15,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
 public class TableCommandTask extends AbstractTask {
@@ -41,6 +42,10 @@ public class TableCommandTask extends AbstractTask {
 		
 		if(filterArgs.networkName != null && !filterArgs.networkName.trim().isEmpty())
 			creationParams.setNetworkName(filterArgs.networkName);
+		
+		// https://github.com/BaderLab/EnrichmentMapApp/issues/421#issuecomment-675400000
+		if(!Strings.isNullOrEmpty(tableParams.getNesColumn()))
+			creationParams.setForceNES(true);
 		
 		String dataSetName = this.dataSetName == null ? "Data Set 1" : this.dataSetName;
 		DataSetParameters dsParams = new DataSetParameters(dataSetName, tableParams, tableExpressionParams);
