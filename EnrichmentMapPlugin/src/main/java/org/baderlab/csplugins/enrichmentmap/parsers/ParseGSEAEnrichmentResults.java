@@ -19,6 +19,10 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 	
 	public static final Double DefaultScoreAtMax = -1000000.0;
 	
+	public static enum ParsingErrorStrategy {
+		FAIL_IMMEDIATELY,
+		REPLACE_WITH_1;
+	}
 	
 	public final EMDataSet dataset;
 	
