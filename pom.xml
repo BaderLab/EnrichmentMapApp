@@ -4,9 +4,9 @@
 	
 	<groupId>org.baderlab.csplugins</groupId>
 	<artifactId>enrichmentmap-parent</artifactId>
-	<version>3.3.1</version>
+	<version>3.3.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
-
+ 
 	<properties>
 		<bundle.namespace>org.baderlab.csplugins</bundle.namespace>
 	    <project.name>EnrichmentMap</project.name>
