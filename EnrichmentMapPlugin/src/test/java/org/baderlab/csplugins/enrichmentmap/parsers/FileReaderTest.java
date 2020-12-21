@@ -207,7 +207,7 @@ public class FileReaderTest {
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/ExpressionTestFile_edbrnk.rnk";
 
-      //create a new instance of the parameters
+        //create a new instance of the parameters
         EnrichmentMapParameters params = empFactory.get();
         //set gmt file name 
         params.getFiles().get(LegacySupport.DATASET1).setExpressionFileName(testDataFileName);
@@ -237,8 +237,7 @@ public class FileReaderTest {
         task.run(taskMonitor);
 
 
-        //There was one more gene in the expression file that wasn't in the set of genes
-        //make sure it was was added
+        //There was one more gene in the expression file that wasn't in the set of genes, make sure it was not added
         assertEquals(4, map.getNumberOfGenes());
 
         assertEquals(4, map.getDataSet(LegacySupport.DATASET1).getExpressionSets().getNumGenes());
@@ -253,7 +252,7 @@ public class FileReaderTest {
         //load the test expression file
         String testDataFileName = "src/test/resources/org/baderlab/csplugins/enrichmentmap/generic_enr_5col.txt";
         
-      //create a new instance of the parameters
+        //create a new instance of the parameters
         EnrichmentMapParameters params = empFactory.get();
         //set enrichment results file name
         params.getFiles().get(LegacySupport.DATASET1).setEnrichmentFileName1(testDataFileName);

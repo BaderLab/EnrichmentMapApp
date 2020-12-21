@@ -63,11 +63,13 @@ public class GSEAResolver {
 		String[] phenotypes     = getRptPhenotypes(params);
 		Optional<Path> classes  = getRptClassFile(gseaFolder, params);
 		
-		String results1FileName = "gsea_report_for_" + phenotypes[0] + "_" + timestamp + ".xls";
-		String results2FileName = "gsea_report_for_" + phenotypes[1] + "_" + timestamp + ".xls";
+		String[] extns = { ".xls", ".tsv" }; // .xls was changed to .tsv in GSEA 4.1
 		
-		Optional<Path> results1 = getRptResultsFile(gseaFolder, results1FileName, params);
-		Optional<Path> results2 = getRptResultsFile(gseaFolder, results2FileName, params);
+		String results1BaseName = "gsea_report_for_" + phenotypes[0] + "_" + timestamp;
+		String results2BaseName = "gsea_report_for_" + phenotypes[1] + "_" + timestamp;
+		
+		Optional<Path> results1 = getRptResultsFile(gseaFolder, results1BaseName, extns, params);
+		Optional<Path> results2 = getRptResultsFile(gseaFolder, results2BaseName, extns, params);
 		
 		
 		if((!results1.isPresent() || !results2.isPresent()) && classes.isPresent()) {
@@ -76,16 +78,16 @@ public class GSEAResolver {
 			if(phenotypesFromClassFile.isPresent()) {
 				phenotypes = phenotypesFromClassFile.get();
 				
-				results1FileName = "gsea_report_for_" + phenotypes[0] + "_" + timestamp + ".xls";
-				results2FileName = "gsea_report_for_" + phenotypes[1] + "_" + timestamp + ".xls";
+				results1BaseName = "gsea_report_for_" + phenotypes[0] + "_" + timestamp;
+				results2BaseName = "gsea_report_for_" + phenotypes[1] + "_" + timestamp;
 				
-				results1 = getRptResultsFile(gseaFolder, results1FileName, params);
-				results2 = getRptResultsFile(gseaFolder, results2FileName, params);
+				results1 = getRptResultsFile(gseaFolder, results1BaseName, extns, params);
+				results2 = getRptResultsFile(gseaFolder, results2BaseName, extns, params);
 			}
 		}
 		
-		String rnkFileName  = "ranked_gene_list_" + phenotypes[0] + "_versus_" + phenotypes[1] +"_" + timestamp + ".xls";
-		Optional<Path> rnk  = getRptResultsFile(gseaFolder, rnkFileName, params);
+		String rnkBaseName  = "ranked_gene_list_" + phenotypes[0] + "_versus_" + phenotypes[1] +"_" + timestamp;
+		Optional<Path> rnk  = getRptResultsFile(gseaFolder, rnkBaseName, extns, params);
 		Optional<Path> expr = getRptExpressionFile(gseaFolder, params);
 		
 		
@@ -158,7 +160,7 @@ public class GSEAResolver {
 	}
 	
 	
-	private static Optional<Path> getRptResultsFile(Path root, String fileName, Map<String,String> params) {
+	private static Optional<Path> getRptResultsFile(Path root, String baseName, String[] extensions, Map<String,String> params) {
 		// RPT files contain absolute paths from the machine where the GSEA analysis was run.
 		// If the user moves the GSEA folder somewhere else then the paths won't resolve.
 		// We can still attempt to find the files in the same folder where the RPT file is located.
@@ -170,23 +172,26 @@ public class GSEAResolver {
 		String job_dir_name = label + "." + method + "." + timestamp;
 		
 		// attempt to find the file using the path in the RPT file
-		try {
-			Path abs = Paths.get(out_dir, job_dir_name, fileName);
-			if(Files.exists(abs)) {
-				return Optional.of(abs);
+		for(String ext : extensions) {
+			String fileName = baseName + ext;
+			try {
+				Path abs = Paths.get(out_dir, job_dir_name, fileName);
+				if(Files.exists(abs)) {
+					return Optional.of(abs);
+				}
+			} catch(InvalidPathException e) {
+				e.printStackTrace();
 			}
-		} catch(InvalidPathException e) {
-			e.printStackTrace();
-		}
 		
-		try {
-			// attempt to find the file under the folder containing the RPT file
-			Path rel = root.resolve(fileName);
-			if(Files.exists(rel)) {
-				return Optional.of(rel);
+			try {
+				// attempt to find the file under the folder containing the RPT file
+				Path rel = root.resolve(fileName);
+				if(Files.exists(rel)) {
+					return Optional.of(rel);
+				}
+			} catch(InvalidPathException e) {
+				e.printStackTrace();
 			}
-		} catch(InvalidPathException e) {
-			e.printStackTrace();
 		}
 		
 		return Optional.empty();

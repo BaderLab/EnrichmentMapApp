@@ -141,7 +141,7 @@ public class RanksFileReaderTask extends AbstractTask {
 
 		boolean gseaDefinedRanks = false;
 
-		Map<Integer, Rank> ranks = new HashMap<>();
+		Map<Integer,Rank> ranks = new HashMap<>();
 
 		/*
 		 * there are two possible Rank files: If loaded through the rpt file the
@@ -173,25 +173,12 @@ public class RanksFileReaderTask extends AbstractTask {
 			String name = tokens[0].toUpperCase();
 			double score = 0;
 
-			//if there are 5 columns in the data then the rank is the last column
-			if(tokens.length == 5) {
+			//if there are 2, 3 or 5 columns in the data then the rank is the last column
+			if(tokens.length == 2 || tokens.length == 3 || tokens.length == 5) {
 				//ignore rows where the expected rank value is not a valid double
 				try {
 					//gseaDefinedRanks = true;
-					score = Double.parseDouble(tokens[4]);
-				} catch(NumberFormatException nfe) {
-					if(lineNumber == 0) {
-						lineNumber++;
-						continue;
-					} else
-						throw new IllegalThreadStateException("rank value for" + tokens[0] + "is not a valid number");
-				}
-				nScores++;
-			}
-			//if there are 2 columns in the data then the rank is the 2 column
-			else if(tokens.length == 2) {
-				try {
-					score = Double.parseDouble(tokens[1]);
+					score = Double.parseDouble(tokens[tokens.length-1]);
 				} catch(NumberFormatException nfe) {
 					if(lineNumber == 0) {
 						lineNumber++;
@@ -206,7 +193,7 @@ public class RanksFileReaderTask extends AbstractTask {
 				continue;
 			}
 
-			if((tokens.length == 5) || (dataset.getMethod() == Method.GSEA && !loadFromHeatmap))
+			if((tokens.length == 5 || tokens.length == 3) || (dataset.getMethod() == Method.GSEA && !loadFromHeatmap))
 				gseaDefinedRanks = true;
 
 			//add score to array of scores
@@ -226,7 +213,7 @@ public class RanksFileReaderTask extends AbstractTask {
 				// based on the order of the scores.
 				// Making the assumption that all rank files loaded for GSEA results from EM input panel are leading
 				// edge compatible files.
-				if((tokens.length == 5) || (dataset.getMethod() == Method.GSEA && !loadFromHeatmap)) {
+				if((tokens.length == 5 || tokens.length == 3) || (dataset.getMethod() == Method.GSEA && !loadFromHeatmap)) {
 					current_ranking = new Rank(name, score, nScores);
 				} else {
 					current_ranking = new Rank(name, score);
