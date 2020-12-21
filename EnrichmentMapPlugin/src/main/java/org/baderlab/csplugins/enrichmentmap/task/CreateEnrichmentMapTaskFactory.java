@@ -30,6 +30,7 @@ import org.baderlab.csplugins.enrichmentmap.parsers.ParseEDBEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseEnrichrEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGREATEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults;
+import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults.ParseGSEAEnrichmentStrategy;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGenericEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolver;
@@ -67,23 +68,23 @@ public class CreateEnrichmentMapTaskFactory {
 	
 	
 	public TaskIterator createTaskIterator() {
-		return createTaskIterator(MissingGenesetStrategy.FAIL_IMMEDIATELY);
+		return createTaskIterator(MissingGenesetStrategy.FAIL_IMMEDIATELY, ParseGSEAEnrichmentStrategy.FAIL_IMMEDIATELY);
 	}
 	
-	public TaskIterator createTaskIterator(MissingGenesetStrategy strategy) {
+	public TaskIterator createTaskIterator(MissingGenesetStrategy genesetStrategy, ParseGSEAEnrichmentStrategy gseaStrategy) {
 		TaskIterator tasks = new TaskIterator();
 		if(dataSets.isEmpty())
 			return tasks;
 		tasks.append(new TitleTask("Building EnrichmentMap"));
 		
 		EnrichmentMap map = new EnrichmentMap(params, serviceRegistrar);
-		createTasks(map, tasks, strategy);
+		createTasks(map, tasks, genesetStrategy, gseaStrategy);
 		
 		return tasks;
 	}
 	
 	
-	private void createTasks(EnrichmentMap map, TaskIterator tasks, MissingGenesetStrategy strategy) {
+	private void createTasks(EnrichmentMap map, TaskIterator tasks, MissingGenesetStrategy genesetStrategy, ParseGSEAEnrichmentStrategy gseaStrategy) {
 		for(DataSetParameters dataSetParameters : dataSets) {
 			String datasetName = dataSetParameters.getName();
 			Method method = dataSetParameters.getMethod();
@@ -119,7 +120,7 @@ public class CreateEnrichmentMapTaskFactory {
 					tasks.append(new GMTFileReaderTask(dataset));
 				
 				// Load the enrichments 
-				tasks.append(getEnrichmentParserTasks(dataset));
+				tasks.append(getEnrichmentParserTasks(dataset, gseaStrategy));
 
 				// Load expression file if specified in the dataset.
 				// If there is no expression file then create a dummy file to associate with this dataset so we can still use the expression viewer (heat map)
@@ -139,7 +140,7 @@ public class CreateEnrichmentMapTaskFactory {
 		}
 		
 		// Filter out genesets that don't pass the p-value and q-value thresholds
-		InitializeGenesetsOfInterestTask genesetsTask = new InitializeGenesetsOfInterestTask(map, strategy);
+		InitializeGenesetsOfInterestTask genesetsTask = new InitializeGenesetsOfInterestTask(map, genesetStrategy);
 		tasks.append(genesetsTask);
 		
 		// Trim the genesets to only contain the genes that are in the data file.
@@ -167,7 +168,7 @@ public class CreateEnrichmentMapTaskFactory {
 	/**
 	 * Parse Enrichment results file
 	 */
-	private static TaskIterator getEnrichmentParserTasks(EMDataSet dataset) {
+	private static TaskIterator getEnrichmentParserTasks(EMDataSet dataset, ParseGSEAEnrichmentStrategy gseaStrategy) {
 		String enrichmentsFileName1 = dataset.getDataSetFiles().getEnrichmentFileName1();
 		String enrichmentsFileName2 = dataset.getDataSetFiles().getEnrichmentFileName2();
 		
@@ -175,14 +176,14 @@ public class CreateEnrichmentMapTaskFactory {
 		
 		try {
 			if(!Strings.isNullOrEmpty(enrichmentsFileName1)) {
-				AbstractTask current = readFile(dataset, enrichmentsFileName1);
+				AbstractTask current = readFile(dataset, enrichmentsFileName1, gseaStrategy);
 				if(current instanceof ParseGREATEnrichmentResults)
 					parserTasks.append(new GREATWhichPvalueQuestionTask(dataset.getMap()));
 				parserTasks.append(current);
 			}
 			
 			if(!Strings.isNullOrEmpty(enrichmentsFileName2)) {
-				parserTasks.append(readFile(dataset, enrichmentsFileName2));
+				parserTasks.append(readFile(dataset, enrichmentsFileName2, gseaStrategy));
 			}
 			
 			//If both of the enrichment files are null then we want to default to building a gmt file only build
@@ -198,7 +199,7 @@ public class CreateEnrichmentMapTaskFactory {
 	}
 
 
-	private static AbstractTask readFile(EMDataSet dataset, String fileName) throws IOException {
+	private static AbstractTask readFile(EMDataSet dataset, String fileName, ParseGSEAEnrichmentStrategy gseaStrategy) throws IOException {
 		if(fileName.endsWith(".edb")) {
 			return new ParseEDBEnrichmentResults(dataset);
 		} else {
@@ -206,7 +207,7 @@ public class CreateEnrichmentMapTaskFactory {
 			switch(type) {
 				default:
 				case ENRICHMENT_GENERIC: return new ParseGenericEnrichmentResults(dataset);
-				case ENRICHMENT_GSEA:    return new ParseGSEAEnrichmentResults(dataset);
+				case ENRICHMENT_GSEA:    return new ParseGSEAEnrichmentResults(dataset, gseaStrategy);
 				case ENRICHMENT_BINGO:   return new ParseBingoEnrichmentResults(dataset);
 				case ENRICHMENT_GREAT:   return new ParseGREATEnrichmentResults(dataset);
 				case ENRICHMENT_DAVID:   return new ParseDavidEnrichmentResults(dataset);

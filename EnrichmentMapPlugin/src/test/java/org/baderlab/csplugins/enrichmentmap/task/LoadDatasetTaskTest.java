@@ -18,6 +18,7 @@ import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.parsers.ExpressionFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.GMTFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults;
+import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults.ParseGSEAEnrichmentStrategy;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.junit.Test;
@@ -54,7 +55,7 @@ public class LoadDatasetTaskTest {
 		GMTFileReaderTask task = new GMTFileReaderTask(dataset);
 	    task.run(taskMonitor);
 	    
-	    ParseGSEAEnrichmentResults enrichmentResultsFilesTask = new ParseGSEAEnrichmentResults(dataset);
+	    ParseGSEAEnrichmentResults enrichmentResultsFilesTask = new ParseGSEAEnrichmentResults(dataset, ParseGSEAEnrichmentStrategy.FAIL_IMMEDIATELY);
         enrichmentResultsFilesTask.run(taskMonitor); 
         
         //load expression file

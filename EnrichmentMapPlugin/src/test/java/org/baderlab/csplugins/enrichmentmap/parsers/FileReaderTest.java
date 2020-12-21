@@ -16,6 +16,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
+import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults.ParseGSEAEnrichmentStrategy;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.jukito.JukitoRunner;
@@ -319,7 +320,7 @@ public class FileReaderTest {
         DataSetFiles files = params.getFiles().get(LegacySupport.DATASET1);
         EMDataSet dataset = map.createDataSet(LegacySupport.DATASET1, method, files);
         
-        ParseGSEAEnrichmentResults task = new ParseGSEAEnrichmentResults(dataset);
+        ParseGSEAEnrichmentResults task = new ParseGSEAEnrichmentResults(dataset, ParseGSEAEnrichmentStrategy.FAIL_IMMEDIATELY);
         task.run(taskMonitor);
         
         //Get the enrichment

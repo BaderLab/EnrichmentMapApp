@@ -19,15 +19,17 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 	
 	public static final Double DefaultScoreAtMax = -1000000.0;
 	
-	public static enum ParsingErrorStrategy {
+	public static enum ParseGSEAEnrichmentStrategy {
 		FAIL_IMMEDIATELY,
 		REPLACE_WITH_1;
 	}
 	
 	public final EMDataSet dataset;
+	private final ParseGSEAEnrichmentStrategy strategy;
 	
-	public ParseGSEAEnrichmentResults(EMDataSet dataset) {
+	public ParseGSEAEnrichmentResults(EMDataSet dataset, ParseGSEAEnrichmentStrategy strategy) {
 		this.dataset = dataset;
+		this.strategy = strategy;
 	}
 	
 	@Override
@@ -94,35 +96,35 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 
 			//The fourth column is the size of the geneset
 			if(!tokens[3].isEmpty()) {
-				size = Integer.parseInt(tokens[3]);
+				size = parseInt(tokens[3]);
 			}
 
 			//The fifth column is the Enrichment score (ES)
 			if(!tokens[4].isEmpty()) {
-				ES = Double.parseDouble(tokens[4]);
+				ES = parseDouble(tokens[4]);
 			}
 
 			//The sixth column is the Normalize Enrichment Score (NES)
 			if(!tokens[5].isEmpty()) {
-				NES = Double.parseDouble(tokens[5]);
+				NES = parseDouble(tokens[5]);
 			}
 
 			//The seventh column is the nominal p-value
 			if(!tokens[6].isEmpty()) {
-				pvalue = Double.parseDouble(tokens[6]);
+				pvalue = parseDouble(tokens[6]);
 			}
 
 			//the eighth column is the FDR q-value
 			if(!tokens[7].isEmpty()) {
-				FDRqvalue = Double.parseDouble(tokens[7]);
+				FDRqvalue = parseDouble(tokens[7]);
 			}
 			//the ninth column is the FWER q-value
 			if(!tokens[8].isEmpty()) {
-				FWERqvalue = Double.parseDouble(tokens[8]);
+				FWERqvalue = parseDouble(tokens[8]);
 			}
 			//the tenth column is the rankatmax
 			if(!tokens[9].isEmpty()) {
-				rankAtMax = Integer.parseInt(tokens[9]);
+				rankAtMax = parseInt(tokens[9]);
 			}
 			
 			// Values in EDB files are rounded to 4 decimal places. 
@@ -142,6 +144,28 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 			currentProgress++;
 
 			results.put(Name, result);
+		}
+	}
+	
+	private double parseDouble(String token) {
+		try {
+			return Double.parseDouble(token);
+		} catch(NumberFormatException e) {
+			if(strategy == ParseGSEAEnrichmentStrategy.REPLACE_WITH_1 && token.trim().equals("---")) {
+				return 1;
+			}
+			throw new ParseGSEAEnrichmentException(e);
+		}
+	}
+	
+	private int parseInt(String token) {
+		try {
+			return Integer.parseInt(token);
+		} catch(NumberFormatException e) {
+			if(strategy == ParseGSEAEnrichmentStrategy.REPLACE_WITH_1 && token.trim().equals("---")) {
+				return 1;
+			}
+			throw new ParseGSEAEnrichmentException(e);
 		}
 	}
 

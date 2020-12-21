@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults.ParseGSEAEnrichmentStrategy;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask.MissingGenesetStrategy;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CutoffPropertiesPanel;
@@ -87,7 +88,7 @@ public abstract class NetworkLoadDialogPage implements CardDialogPage {
 		List<DataSetParameters> dataSets = Collections.singletonList(dsParams);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
-		TaskIterator tasks = taskFactory.createTaskIterator(MissingGenesetStrategy.IGNORE);
+		TaskIterator tasks = taskFactory.createTaskIterator(MissingGenesetStrategy.IGNORE, ParseGSEAEnrichmentStrategy.FAIL_IMMEDIATELY);
 		
 		dialogTaskManager.execute(tasks);
 		
