@@ -8,7 +8,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -17,6 +16,7 @@ import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
@@ -26,14 +26,13 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.work.swing.DialogTaskManager;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-public class StringAppMediator {
+public class StringAppTaskFactory {
 
 	@Inject private QueryStringTask.Factory queryStringTaskFactory;
 	
@@ -43,16 +42,9 @@ public class StringAppMediator {
 	@Inject private AvailableCommands availableCommands;
 	@Inject private Provider<JFrame> jFrameProvider;
 	@Inject private OpenBrowser openBrowser;
-	@Inject private DialogTaskManager taskManager;
 
 	
-	public void runString(EnrichmentMap map, List<String> genes, Set<String> leadingEdgeGenes) {
-		TaskIterator ti = createTaskIterator(map, genes, leadingEdgeGenes);
-		taskManager.execute(ti);
-	}
-	
-	
-	public TaskIterator createTaskIterator(EnrichmentMap map, List<String> genes, Set<String> leadingEdgeGenes) {
+	public TaskIterator createTaskIterator(EnrichmentMap map, List<String> genes, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
 		// Show message to user if STRING App not installed
 		List<String> commands = availableCommands.getCommands(STRING_NAMESPACE);
 		
@@ -70,7 +62,7 @@ public class StringAppMediator {
 			return null;
 		}
 		
-		QueryStringTask queryTask = queryStringTaskFactory.create(genes, leadingEdgeGenes);
+		QueryStringTask queryTask = queryStringTaskFactory.create(map, genes, leadingEdgeRanks);
 		
 		// Get list of organisms from STRING App
 		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(

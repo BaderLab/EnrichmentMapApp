@@ -3,12 +3,13 @@ package org.baderlab.csplugins.enrichmentmap.task.tunables;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.GroupLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -43,10 +44,12 @@ public class GeneListGUITunableHandler extends AbstractGUITunableHandler {
 	private JPanel createGeneListPanel() {
 		JLabel title = new JLabel(getDescription());
 		
-		List<String> genes = getGeneListTunable().getGenes();
-		Set<String> leadingEdgeGenes = getGeneListTunable().getLeadingEdgeGenes();
+		GeneListTunable geneListTunable = getGeneListTunable();
+		EnrichmentMap map = geneListTunable.getEnrichmentMap();
+		List<String> genes = geneListTunable.getGenes();
+		List<GSEALeadingEdgeRankingOption> leadingEdgeRanks = geneListTunable.getLeadingEdgeRanks();
 		
-		checkboxPanel = new GeneListPanel(genes, leadingEdgeGenes);
+		checkboxPanel = new GeneListPanel(map, genes, leadingEdgeRanks);
 		
 		JPanel panel = new JPanel();
 		
@@ -73,7 +76,7 @@ public class GeneListGUITunableHandler extends AbstractGUITunableHandler {
 			panel.setOpaque(false);
 		return panel;
 	}
-	
+	 
 	@Override
 	public JPanel getJPanel() {
 		return panel;

@@ -1,11 +1,12 @@
 package org.baderlab.csplugins.enrichmentmap.task.string;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.RankingOptionFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -18,9 +19,9 @@ import com.google.inject.Inject;
 
 public class QueryStringNodeViewTaskFactory implements NodeViewTaskFactory {
 
-	@Inject private StringAppMediator stringAppMediator;
+	@Inject private StringAppTaskFactory stringAppFactory;
 	@Inject private EnrichmentMapManager emManager;
-	
+	@Inject private RankingOptionFactory rankingOptionFactory;
 	
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
@@ -31,7 +32,9 @@ public class QueryStringNodeViewTaskFactory implements NodeViewTaskFactory {
 		CyRow row = network.getRow(node);
 		List<String> genes = Columns.NODE_GENES.get(row, map.getParams().getAttributePrefix());
 		
-		return stringAppMediator.createTaskIterator(map, genes, Collections.emptySet());
+		List<GSEALeadingEdgeRankingOption> rankOptions = rankingOptionFactory.getGSEADataSetSetRankOptions(map);
+		
+		return stringAppFactory.createTaskIterator(map, genes, rankOptions);
 	}
 
 	@Override

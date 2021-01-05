@@ -23,18 +23,14 @@ import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.Compress;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
-import org.baderlab.csplugins.enrichmentmap.model.GSEAResult;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
-import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
-import org.baderlab.csplugins.enrichmentmap.task.genemania.GeneManiaMediator;
-import org.baderlab.csplugins.enrichmentmap.task.string.StringAppMediator;
+import org.baderlab.csplugins.enrichmentmap.task.genemania.GeneManiaTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.string.StringAppTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
@@ -81,9 +77,10 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
-	@Inject private GeneManiaMediator geneManiaMediator;
-	@Inject private StringAppMediator stringAppMediator;
+	@Inject private GeneManiaTaskFactory geneManiaTaskFactory;
+	@Inject private StringAppTaskFactory stringAppTaskFactoy;
 	@Inject private PropertyManager propertyManager;
+	@Inject private RankingOptionFactory rankingOptionFactory;
 	@Inject private ClusterRankingOption.Factory clusterRankOptionFactory;
 	@Inject private AddRanksDialog.Factory ranksDialogFactory;
 	@Inject private ExportTXTAction.Factory txtActionFactory;
@@ -297,7 +294,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			dataSets = map.getDataSetList();
 		}
 		
-		List<RankingOption> rankOptions = getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
+		List<RankingOption> rankOptions = rankingOptionFactory.getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
 		HeatMapParams params = getHeatMapParams(map, network.getSUID(), onlyEdges);
 		ClusterRankingOption clusterRankingOption = clusterRankOptionFactory.create(map, params.getDistanceMetric());
 		
@@ -431,7 +428,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		List<EMDataSet> datasets = tableModel.getDataSets();
 		EnrichmentMap map = tableModel.getEnrichmentMap();
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
-		List<RankingOption> rankOptions = getDataSetRankOptions(map);
+		List<RankingOption> rankOptions = rankingOptionFactory.getDataSetRankOptions(map);
 		ClusterRankingOption clusterRankingOption = clusterRankOptionFactory.create(map, params.getDistanceMetric());
 
 		resetWithoutListeners(() -> {
@@ -486,57 +483,18 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			heatMapParamsChanged(params);
 		}
 	}
-	
-	public List<RankingOption> getDataSetRankOptions(EnrichmentMap map) {
-		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
-		
-		if (network == null)
-			return Collections.emptyList();
-		
-		List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
-		List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
-		
-		return getDataSetRankOptions(map, network, selectedNodes, selectedEdges);
-	}
-	
+
 	private void addRankings() {
 		EnrichmentMap map = getContentPanel().getEnrichmentMap();
 		AddRanksDialog dialog = ranksDialogFactory.create(map);
 		Optional<String> ranksName = dialog.open();
 		
-		if (ranksName.isPresent())
-			getContentPanel().setMoreRankOptions(getDataSetRankOptions(map));
+		if (ranksName.isPresent()) {
+			List<RankingOption> rankingOptions = rankingOptionFactory.getDataSetRankOptions(map);
+			getContentPanel().setMoreRankOptions(rankingOptions);
+		}
 	}
 	
-	private List<RankingOption> getDataSetRankOptions(EnrichmentMap map, CyNetwork network, List<CyNode> nodes, List<CyEdge> edges) {
-		List<RankingOption> options = new ArrayList<>();
-		for(EMDataSet dataset : map.getDataSetList()) {
-			if(nodes.size() == 1 && edges.isEmpty() && dataset.getMethod() == Method.GSEA) {
-				String geneSetName = network.getRow(nodes.get(0)).get(CyNetwork.NAME, String.class);
-				Map<String,EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
-				EnrichmentResult result = results.get(geneSetName);
-				if(result instanceof GSEAResult) {
-					GSEAResult gseaResult = (GSEAResult) result; 
-					Map<String,Ranking> ranks = dataset.getRanks();
-					ranks.forEach((name, ranking) -> {
-						options.add(new GSEALeadingEdgeRankingOption(dataset, gseaResult, name));
-					});
-				} else {
-					Map<String,Ranking> ranks = dataset.getRanks();
-					ranks.forEach((name, ranking) -> {
-						options.add(new BasicRankingOption(ranking, dataset, name));
-					});
-				}
-			} else {
-				Map<String,Ranking> ranks = dataset.getRanks();
-				ranks.forEach((name, ranking) -> {
-					options.add(new BasicRankingOption(ranking, dataset, name));
-				});
-			}
-		}
-		return options;
-	}
-
 	public static Set<String> unionGenesets(Map<String,Set<Integer>> geneSetToGenes, 
 			EnrichmentMap map, CyNetwork network, Collection<CyNode> nodes, Collection<CyEdge> edges, String prefix) {
 		Set<Integer> union = new HashSet<>();
@@ -589,15 +547,17 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	private void runGeneMANIA() {
 		EnrichmentMap map = getContentPanel().getEnrichmentMap();
 		List<String> genes = getContentPanel().getGenes();
-		Set<String> leadingEdgeGenes = getContentPanel().getLeadingEdgeGenes();
-		geneManiaMediator.runGeneMANIA(map, genes, leadingEdgeGenes);
+		List<GSEALeadingEdgeRankingOption> gseaOptions = rankingOptionFactory.getGSEADataSetSetRankOptions(map);
+		TaskIterator tasks = geneManiaTaskFactory.createTaskIterator(map, genes, gseaOptions);
+		taskManager.execute(tasks);
 	}
 	
 	private void runString() {
 		EnrichmentMap map = getContentPanel().getEnrichmentMap();
 		List<String> genes = getContentPanel().getGenes();
-		Set<String> leadingEdgeGenes = getContentPanel().getLeadingEdgeGenes();
-		stringAppMediator.runString(map, genes, leadingEdgeGenes);
+		List<GSEALeadingEdgeRankingOption> gseaOptions = rankingOptionFactory.getGSEADataSetSetRankOptions(map);
+		TaskIterator tasks = stringAppTaskFactoy.createTaskIterator(map, genes, gseaOptions);
+		taskManager.execute(tasks);
 	}
 	
 	

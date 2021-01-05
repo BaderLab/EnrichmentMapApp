@@ -3,27 +3,27 @@ package org.baderlab.csplugins.enrichmentmap.task.tunables;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 
 public class GeneListTunable {
 	
+	private final EnrichmentMap map;
 	private List<String> genes;
 	private List<String> selectedGenes;
-	private Set<String> leadingEdgeGenes;
+	private List<GSEALeadingEdgeRankingOption> leadingEdgeRanks;
 	
 	
-	public GeneListTunable(List<String> genes, Set<String> leadingEdge) {
+	public GeneListTunable(EnrichmentMap map, List<String> genes, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
+		this.map = map;
 		this.genes = Objects.requireNonNull(genes);
-		this.leadingEdgeGenes = leadingEdge == null ? Collections.emptySet() : leadingEdge;
+		this.leadingEdgeRanks = leadingEdgeRanks == null ? Collections.emptyList() : leadingEdgeRanks;
 		this.selectedGenes = genes;
 	}
 	
-	public void setLeadingEdgeGenes(Set<String> genes) {
-		this.leadingEdgeGenes = genes;
-	}
-	
-	public Set<String> getLeadingEdgeGenes() {
-		return leadingEdgeGenes;
+	public List<GSEALeadingEdgeRankingOption> getLeadingEdgeRanks() {
+		return leadingEdgeRanks;
 	}
 	
 	public void setSelectedGenes(List<String> selectedGenes) {
@@ -36,6 +36,10 @@ public class GeneListTunable {
 
 	public List<String> getGenes() {
 		return genes;
+	}
+	
+	public EnrichmentMap getEnrichmentMap() {
+		return map;
 	}
 
 }

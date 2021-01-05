@@ -4,20 +4,27 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.RankValue;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxData;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxList;
 import org.baderlab.csplugins.enrichmentmap.view.util.CheckboxListModel;
@@ -27,6 +34,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 @SuppressWarnings("serial")
 public class GeneListPanel extends JPanel {
 
+	private EnrichmentMap map;
 	private CheckboxList<String> checkboxList;
 	private CheckboxListModel<String> checkboxListModel;
 	
@@ -34,7 +42,9 @@ public class GeneListPanel extends JPanel {
 	private JButton selectNoneButton;
 	private JButton selectEdgeButton;
 	
-	public GeneListPanel(List<String> genes, Set<String> leadingEdge) {
+	public GeneListPanel(EnrichmentMap map, List<String> genes, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
+		this.map = map;
+		
 		checkboxListModel = new CheckboxListModel<>();
 		genes.stream().sorted().forEach(gene -> {
 			checkboxListModel.addElement(new CheckboxData<>(gene, gene, true));
@@ -51,12 +61,12 @@ public class GeneListPanel extends JPanel {
 		
 		selectAllButton .addActionListener(selectionListener(cb -> cb.setSelected(true)));
 		selectNoneButton.addActionListener(selectionListener(cb -> cb.setSelected(false)));
-		selectEdgeButton.addActionListener(selectionListener(cb -> cb.setSelected(leadingEdge.contains(cb.getData()))));
+		selectEdgeButton.addActionListener(e -> selectLeadingEdge(genes, leadingEdgeRanks));
 		
 		selectAllButton.setEnabled(false);
 		selectNoneButton.setEnabled(false);
 		selectEdgeButton.setEnabled(true);
-		selectEdgeButton.setVisible(!leadingEdge.isEmpty());
+		selectEdgeButton.setVisible(!leadingEdgeRanks.isEmpty());
 		
 		checkboxListModel.addListDataListener(new ListDataListener() {
 			@Override
@@ -113,15 +123,57 @@ public class GeneListPanel extends JPanel {
 	}
 	
 	
+	private void selectLeadingEdge(List<String> genes, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
+		if(leadingEdgeRanks.size() == 1) {
+			selectLeadingEdge(genes, leadingEdgeRanks.get(0));
+		} 
+		else if(leadingEdgeRanks.size() > 1) {
+			JPopupMenu popup = new JPopupMenu();
+			
+			for(GSEALeadingEdgeRankingOption option : leadingEdgeRanks) {
+				popup.add(new JMenuItem(new AbstractAction(option.getName()) {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						selectLeadingEdge(genes, option);
+					}
+				}));
+			}
+			
+			popup.show(selectEdgeButton, 0, selectEdgeButton.getHeight());
+		}
+	}
+	
+	
+	private void selectLeadingEdge(List<String> genes, GSEALeadingEdgeRankingOption ranks) {
+		List<CheckboxData<String>> oldValue = getSelectedData();
+		List<Integer> geneKeys = genes.stream().map(map::getHashFromGene).collect(Collectors.toList());
+		Map<Integer,RankValue> ranking = ranks.getRanking(geneKeys);
+		
+		checkboxListModel.forEach(checkBox -> {
+			String geneName = checkBox.getData();
+			Integer geneKey = map.getHashFromGene(geneName);
+			RankValue rank = ranking.get(geneKey);
+			boolean selected = rank != null && rank.isSignificant();
+			checkBox.setSelected(selected);
+		});
+		
+		fireCheckboxListUpdated(oldValue);
+	}
+	
+	
 	private ActionListener selectionListener(Consumer<CheckboxData<String>> action) {
 		return e -> {
 			List<CheckboxData<String>> oldValue = getSelectedData();
 			checkboxListModel.forEach(action);
-			checkboxList.invalidate();
-			checkboxList.repaint();
-			updateSelectionButtons();
-			firePropertyChange("selectedData", oldValue, getSelectedData());
+			fireCheckboxListUpdated(oldValue);
 		};
+	}
+	
+	private void fireCheckboxListUpdated(List<CheckboxData<String>> oldValue) {
+		checkboxList.invalidate();
+		checkboxList.repaint();
+		updateSelectionButtons();
+		firePropertyChange("selectedData", oldValue, getSelectedData());
 	}
 	
 	private void updateSelectionButtons() {

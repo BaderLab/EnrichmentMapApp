@@ -69,6 +69,12 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 	
 	@Override
 	public CompletableFuture<Optional<RankingResult>> computeRanking(Collection<Integer> genes) {
+		Map<Integer,RankValue> ranks = getRanking(genes);
+		return CompletableFuture.completedFuture(Optional.of(new RankingResult(ranks, true)));
+	}
+	
+	
+	public Map<Integer,RankValue> getRanking(Collection<Integer> genes) {
 		initializeLeadingEdge();
 		
 		int topRank = getTopRank();
@@ -125,7 +131,7 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 		
 		BasicRankingOption.normalizeRanks(result);
 		
-		return CompletableFuture.completedFuture(Optional.of(new RankingResult(result, true)));
+		return result;
 	}
 	
 	
