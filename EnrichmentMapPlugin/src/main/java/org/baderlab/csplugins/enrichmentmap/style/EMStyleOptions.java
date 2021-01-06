@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
@@ -14,12 +14,12 @@ public class EMStyleOptions {
 	private final ChartOptions chartOptions;
 	private boolean postAnalysis;
 	private final boolean publicationReady;
-	private final Collection<? extends AbstractDataSet> dataSets;
+	private final List<? extends AbstractDataSet> dataSets;
 	
 	/**
 	 * It is assumed that all the given DataSets come from the same EnrichmentMap.
 	 */
-	public EMStyleOptions(CyNetworkView networkView, EnrichmentMap map, Collection<? extends AbstractDataSet> dataSets,
+	public EMStyleOptions(CyNetworkView networkView, EnrichmentMap map, List<? extends AbstractDataSet> dataSets,
 			ChartOptions chartOptions, boolean postAnalysis, boolean publicationReady) {
 		this.networkView = Objects.requireNonNull(networkView);
 		this.map = Objects.requireNonNull(map);
@@ -37,7 +37,7 @@ public class EMStyleOptions {
 		return networkView;
 	}
 	
-	public Collection<? extends AbstractDataSet> getDataSets() {
+	public List<? extends AbstractDataSet> getDataSets() {
 		return dataSets;
 	}
 	

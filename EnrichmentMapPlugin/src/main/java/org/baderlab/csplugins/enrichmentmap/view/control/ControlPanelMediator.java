@@ -15,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -795,7 +796,16 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		if (map == null || viewPanel == null)
 			return null;
 		
-		Set<AbstractDataSet> dataSets = viewPanel.getDataSetSelector().getCheckedItems();
+		Set<AbstractDataSet> checkedDataSets = viewPanel.getDataSetSelector().getCheckedItems();
+		
+		// Need to maintain the correct order
+		List<AbstractDataSet> dataSetList = new ArrayList<>();
+		for(AbstractDataSet ds : map.getDataSetList()) { // Need to maintain the same order that's in the EnrichmentMap object
+			if(checkedDataSets.contains(ds)) {
+				dataSetList.add(ds);
+			}
+		}
+		
 		boolean publicationReady = viewPanel.getPublicationReadyCheck().isSelected();
 		boolean postAnalysis = map.hasSignatureDataSets();
 		
@@ -814,7 +824,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		boolean showLabels = viewPanel.getShowChartLabelsCheck().isSelected();
 		ChartOptions chartOptions = new ChartOptions(data, type, colorScheme, showLabels);
 
-		return new EMStyleOptions(viewPanel.getNetworkView(), map, dataSets, chartOptions, postAnalysis, publicationReady);
+		return new EMStyleOptions(viewPanel.getNetworkView(), map, dataSetList, chartOptions, postAnalysis, publicationReady);
 	}
 	
 	private AssociatedStyleOptions createAssociatedStyleOptions(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {
