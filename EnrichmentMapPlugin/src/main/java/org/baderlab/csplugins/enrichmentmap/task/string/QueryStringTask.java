@@ -24,6 +24,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 public class QueryStringTask extends AbstractTask {
 	
@@ -50,12 +51,21 @@ public class QueryStringTask extends AbstractTask {
 	@Inject private CommandExecutorTaskFactory commandExecutorTaskFactory;
 	
 	public static interface Factory {
-		QueryStringTask create(EnrichmentMap map, List<String> geneList, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks);
+		QueryStringTask create(
+				EnrichmentMap map, 
+				@Assisted("geneList") List<String> geneList,
+				@Assisted("selectedGenes") List<String> selectedGenes,
+				List<GSEALeadingEdgeRankingOption> leadingEdgeRanks);
 	}
 	
-	@Inject
-	public QueryStringTask(@Assisted EnrichmentMap map, @Assisted List<String> geneList, @Assisted List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {		
-		this.geneList = new GeneListTunable(map, geneList, leadingEdgeRanks);
+	@AssistedInject
+	public QueryStringTask(
+			@Assisted EnrichmentMap map, 
+			@Assisted("geneList") List<String> geneList,
+			@Assisted("selectedGenes") List<String> selectedGenes,
+			@Assisted List<GSEALeadingEdgeRankingOption> leadingEdgeRanks)
+	{		
+		this.geneList = new GeneListTunable(map, geneList, selectedGenes, leadingEdgeRanks);
 		this.organisms = new ListSingleSelection<>();
 	}
 	

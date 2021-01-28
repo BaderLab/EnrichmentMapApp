@@ -47,9 +47,10 @@ public class GeneListGUITunableHandler extends AbstractGUITunableHandler {
 		GeneListTunable geneListTunable = getGeneListTunable();
 		EnrichmentMap map = geneListTunable.getEnrichmentMap();
 		List<String> genes = geneListTunable.getGenes();
+		List<String> selectedGenes = geneListTunable.getSelectedGenes();
 		List<GSEALeadingEdgeRankingOption> leadingEdgeRanks = geneListTunable.getLeadingEdgeRanks();
 		
-		checkboxPanel = new GeneListPanel(map, genes, leadingEdgeRanks);
+		checkboxPanel = new GeneListPanel(map, genes, selectedGenes, leadingEdgeRanks);
 		
 		JPanel panel = new JPanel();
 		

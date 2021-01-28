@@ -288,7 +288,7 @@ public class HeatMapContentPanel extends JPanel {
 			table.setFillsViewportHeight(true);
 			table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			table.setCellSelectionEnabled(true);
-			table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			table.setDefaultRenderer(Double.class, new HeatMapCellRenderer());
 			table.setDefaultRenderer(RankValue.class, new RankValueRenderer());
 			table.setRowSorter(new HeatMapRowSorter(model));
@@ -343,6 +343,28 @@ public class HeatMapContentPanel extends JPanel {
 	
 	public List<String> getGenes() {
 		return ((HeatMapTableModel) getTable().getModel()).getGenes();
+	}
+	
+	public List<String> getSelectedGenes() {
+		JTable table = getTable();
+		
+		int[] selectedCols = table.getSelectedColumns();
+		if(selectedCols == null || selectedCols.length == 0)
+			return Collections.emptyList();
+		Arrays.sort(selectedCols);
+		if(Arrays.binarySearch(selectedCols, HeatMapTableModel.GENE_COL) < 0)
+			return Collections.emptyList(); // Genes column not selected
+		
+		List<String> selectedGenes = new ArrayList<>();
+		for(int row : table.getSelectedRows()) {
+			Object value = table.getValueAt(row, HeatMapTableModel.GENE_COL);
+			if(value != null) {
+				String gene = value.toString();
+				selectedGenes.add(gene);
+			}
+			
+		}
+		return selectedGenes;
 	}
 	
 	public Set<String> getLeadingEdgeGenes() {

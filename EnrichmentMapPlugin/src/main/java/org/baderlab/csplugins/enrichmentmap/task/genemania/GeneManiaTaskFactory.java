@@ -47,7 +47,7 @@ public class GeneManiaTaskFactory {
 	@Inject private OpenBrowser openBrowser;
 	
 	
-	public TaskIterator createTaskIterator(EnrichmentMap map, List<String> genes, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
+	public TaskIterator createTaskIterator(EnrichmentMap map, List<String> genes, List<String> selectedGenes, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
 		// Show message to user if genemania not installed
 		List<String> commands = availableCommands.getCommands(GENEMANIA_NAMESPACE);
 		
@@ -67,7 +67,7 @@ public class GeneManiaTaskFactory {
 		
 		
 		
-		QueryGeneManiaTask queryTask = queryGeneManiaTaskFactory.create(map, genes, leadingEdgeRanks);
+		QueryGeneManiaTask queryTask = queryGeneManiaTaskFactory.create(map, genes, selectedGenes, leadingEdgeRanks);
 		
 		// Get list of organisms from GeneMANIA
 		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(

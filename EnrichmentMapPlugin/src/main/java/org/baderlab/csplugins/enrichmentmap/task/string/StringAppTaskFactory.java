@@ -44,7 +44,7 @@ public class StringAppTaskFactory {
 	@Inject private OpenBrowser openBrowser;
 
 	
-	public TaskIterator createTaskIterator(EnrichmentMap map, List<String> genes, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
+	public TaskIterator createTaskIterator(EnrichmentMap map, List<String> genes, List<String> selectedGenes, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
 		// Show message to user if STRING App not installed
 		List<String> commands = availableCommands.getCommands(STRING_NAMESPACE);
 		
@@ -62,7 +62,7 @@ public class StringAppTaskFactory {
 			return null;
 		}
 		
-		QueryStringTask queryTask = queryStringTaskFactory.create(map, genes, leadingEdgeRanks);
+		QueryStringTask queryTask = queryStringTaskFactory.create(map, genes, selectedGenes, leadingEdgeRanks);
 		
 		// Get list of organisms from STRING App
 		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(

@@ -34,7 +34,7 @@ public class QueryStringNodeViewTaskFactory implements NodeViewTaskFactory {
 		
 		List<GSEALeadingEdgeRankingOption> rankOptions = rankingOptionFactory.getGSEADataSetSetRankOptions(map);
 		
-		return stringAppFactory.createTaskIterator(map, genes, rankOptions);
+		return stringAppFactory.createTaskIterator(map, genes, null, rankOptions);
 	}
 
 	@Override

@@ -547,16 +547,18 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	private void runGeneMANIA() {
 		EnrichmentMap map = getContentPanel().getEnrichmentMap();
 		List<String> genes = getContentPanel().getGenes();
+		List<String> selectedGenes = getContentPanel().getSelectedGenes();
 		List<GSEALeadingEdgeRankingOption> gseaOptions = rankingOptionFactory.getGSEADataSetSetRankOptions(map);
-		TaskIterator tasks = geneManiaTaskFactory.createTaskIterator(map, genes, gseaOptions);
+		TaskIterator tasks = geneManiaTaskFactory.createTaskIterator(map, genes, selectedGenes, gseaOptions);
 		taskManager.execute(tasks);
 	}
 	
 	private void runString() {
 		EnrichmentMap map = getContentPanel().getEnrichmentMap();
 		List<String> genes = getContentPanel().getGenes();
+		List<String> selectedGenes = getContentPanel().getSelectedGenes();
 		List<GSEALeadingEdgeRankingOption> gseaOptions = rankingOptionFactory.getGSEADataSetSetRankOptions(map);
-		TaskIterator tasks = stringAppTaskFactoy.createTaskIterator(map, genes, gseaOptions);
+		TaskIterator tasks = stringAppTaskFactoy.createTaskIterator(map, genes, selectedGenes, gseaOptions);
 		taskManager.execute(tasks);
 	}
 	

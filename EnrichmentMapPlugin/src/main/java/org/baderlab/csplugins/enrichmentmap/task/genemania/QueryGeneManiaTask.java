@@ -24,6 +24,7 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 public class QueryGeneManiaTask extends AbstractTask {
 	
@@ -43,6 +44,9 @@ public class QueryGeneManiaTask extends AbstractTask {
 	@Tunable(description = "Network Weighting:")
 	public ListSingleSelection<GMWeightingMethod> weightingMethods;
 	
+	// not a tunable, used just for the UI
+	public List<String> selectedGenes;
+	
 	private GMSearchResult result;
 	
 	private static long lastTaxonomyId = 9606; // H.sapiens
@@ -51,12 +55,21 @@ public class QueryGeneManiaTask extends AbstractTask {
 	@Inject private SynchronousTaskManager<?> syncTaskManager;
 	
 	public static interface Factory {
-		QueryGeneManiaTask create(EnrichmentMap map, List<String> geneList, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks);
+		QueryGeneManiaTask create(
+				EnrichmentMap map, 
+				@Assisted("geneList") List<String> geneList, 
+				@Assisted("selectedGenes") List<String> selectedGenes, 
+				List<GSEALeadingEdgeRankingOption> leadingEdgeRanks);
 	}
 	
-	@Inject
-	public QueryGeneManiaTask(@Assisted EnrichmentMap map, @Assisted List<String> geneList, @Assisted List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
-		this.geneList = new GeneListTunable(map, geneList, leadingEdgeRanks);
+	@AssistedInject
+	public QueryGeneManiaTask(
+			@Assisted EnrichmentMap map, 
+			@Assisted("geneList") List<String> geneList, 
+			@Assisted("selectedGenes") List<String> selectedGenes, 
+			@Assisted List<GSEALeadingEdgeRankingOption> leadingEdgeRanks)
+	{
+		this.geneList = new GeneListTunable(map, geneList, selectedGenes, leadingEdgeRanks);
 		this.organisms = new ListSingleSelection<>();
 		this.weightingMethods = new ListSingleSelection<>(GMWeightingMethod.values());
 		this.weightingMethods.setSelectedValue(weightingMethods.getPossibleValues().get(0));

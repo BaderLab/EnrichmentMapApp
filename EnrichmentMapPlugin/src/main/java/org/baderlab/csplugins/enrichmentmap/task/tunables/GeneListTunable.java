@@ -15,11 +15,16 @@ public class GeneListTunable {
 	private List<GSEALeadingEdgeRankingOption> leadingEdgeRanks;
 	
 	
-	public GeneListTunable(EnrichmentMap map, List<String> genes, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
+	public GeneListTunable(
+			EnrichmentMap map, 
+			List<String> genes, 
+			List<String> selectedGenes, 
+			List<GSEALeadingEdgeRankingOption> leadingEdgeRanks)
+	{
 		this.map = map;
 		this.genes = Objects.requireNonNull(genes);
 		this.leadingEdgeRanks = leadingEdgeRanks == null ? Collections.emptyList() : leadingEdgeRanks;
-		this.selectedGenes = genes;
+		this.selectedGenes = selectedGenes == null ? Collections.emptyList() : selectedGenes;
 	}
 	
 	public List<GSEALeadingEdgeRankingOption> getLeadingEdgeRanks() {

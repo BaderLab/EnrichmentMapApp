@@ -34,7 +34,7 @@ public class QueryGeneManiaNodeViewTaskFactory implements NodeViewTaskFactory {
 		
 		List<GSEALeadingEdgeRankingOption> rankOptions = rankingOptionFactory.getGSEADataSetSetRankOptions(map);
 		
-		TaskIterator tasks = geneManiaTaskFactory.createTaskIterator(map, genes, rankOptions);
+		TaskIterator tasks = geneManiaTaskFactory.createTaskIterator(map, genes, null, rankOptions);
 		return tasks;
 	}
 

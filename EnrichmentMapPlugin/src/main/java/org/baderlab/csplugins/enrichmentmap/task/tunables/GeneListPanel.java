@@ -7,8 +7,11 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -42,12 +45,21 @@ public class GeneListPanel extends JPanel {
 	private JButton selectNoneButton;
 	private JButton selectEdgeButton;
 	
-	public GeneListPanel(EnrichmentMap map, List<String> genes, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
+	public GeneListPanel(
+			EnrichmentMap map, 
+			List<String> genes, 
+			List<String> selectedGenes, 
+			List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) 
+	{
 		this.map = map;
+		
+		
+		Set<String> selected = selectedGenes == null ? Collections.emptySet() : new HashSet<>(selectedGenes);
 		
 		checkboxListModel = new CheckboxListModel<>();
 		genes.stream().sorted().forEach(gene -> {
-			checkboxListModel.addElement(new CheckboxData<>(gene, gene, true));
+			boolean sel = selected.isEmpty() || selected.contains(gene);
+			checkboxListModel.addElement(new CheckboxData<>(gene, gene, sel));
 		});
 		
 		checkboxList = new CheckboxList<>(checkboxListModel);
