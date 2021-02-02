@@ -141,13 +141,13 @@ public final class ChartUtil {
 		ChartData data = options != null ? options.getData() : null;
 		
 		if (colors == null || colors.size() < 3) // UP, ZERO, DOWN:
-			colors = Arrays.asList(new Color[] { Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY });
+			colors = Arrays.asList(Color.LIGHT_GRAY, Color.WHITE, Color.DARK_GRAY);
 		
 		if(forStyle) {
 			// The 3-color schemes need to be swapped when the chart only includes positive numbers.
 			// Swap UP and ZERO colors if q or p-value (it should not have negative values!)
 			if ((data == ChartData.FDR_VALUE || data == ChartData.P_VALUE) && colors.size() == 3)
-				colors = Arrays.asList(new Color[] { colors.get(1), colors.get(0), colors.get(1) });
+				colors = Arrays.asList(colors.get(1), colors.get(0), colors.get(1));
 		}
 				
 		return colors;

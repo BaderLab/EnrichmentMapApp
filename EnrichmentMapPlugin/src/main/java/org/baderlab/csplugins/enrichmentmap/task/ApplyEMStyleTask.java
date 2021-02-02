@@ -23,6 +23,7 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.charts.AbstractChart;
+import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChart;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.control.FilterUtil;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
@@ -235,8 +236,7 @@ public class ApplyEMStyleTask extends AbstractTask {
 					props.put("cy_rotation", "CLOCKWISE");
 					
 				} else {
-					List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(prefix,
-							dataSets, columnDescriptor, columnIdFactory);
+					List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(prefix, dataSets, columnDescriptor, columnIdFactory);
 	
 					List<Color> colors = ChartUtil.getChartColors(chartOptions, true);
 					List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
@@ -247,6 +247,21 @@ public class ApplyEMStyleTask extends AbstractTask {
 					props.put("cy_globalRange", true);
 					props.put("cy_showItemLabels", chartOptions.isShowLabels());
 					props.put("cy_colors", colors);
+					
+					if(data == ChartData.NES_SIG) {
+						EnrichmentMap map = options.getEnrichmentMap();
+						EMCreationParameters params = map.getParams();
+						
+						props.put(RadialHeatMapChart.P_VALUE, params.getPvalue());
+						List<CyColumnIdentifier> pValueCols = ChartUtil.getSortedColumnIdentifiers(prefix, dataSets, Columns.NODE_PVALUE, columnIdFactory);
+						props.put(RadialHeatMapChart.P_VALUE_COLS, pValueCols);
+						
+						if(params.isFDR()) {
+							props.put(RadialHeatMapChart.Q_VALUE, params.getQvalue());
+							List<CyColumnIdentifier> qValueCols = ChartUtil.getSortedColumnIdentifiers(prefix, dataSets, Columns.NODE_FDR_QVALUE, columnIdFactory);
+							props.put(RadialHeatMapChart.Q_VALUE_COLS, qValueCols);
+						}
+					}
 					
 					ColorScheme colorScheme = chartOptions != null ? chartOptions.getColorScheme() : null;
 					

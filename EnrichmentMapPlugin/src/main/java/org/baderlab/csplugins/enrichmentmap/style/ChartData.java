@@ -6,6 +6,7 @@ import org.baderlab.csplugins.enrichmentmap.view.util.Labels;
 public enum ChartData {
 	NONE(Labels.NONE, null),
 	NES_VALUE("NES Columns", Columns.NODE_NES),
+	NES_SIG("NES Columns (significant)", Columns.NODE_NES),
 	P_VALUE("P-value Columns", Columns.NODE_PVALUE),
 	FDR_VALUE("Q-value (FDR) Columns", Columns.NODE_FDR_QVALUE),
 	PHENOTYPES("Phenotypes", Columns.NODE_COLOURING),

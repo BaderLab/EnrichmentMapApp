@@ -345,7 +345,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 				);
 	
 			
-			if(data == ChartData.NES_VALUE) { // need to show negative range
+			if(data == ChartData.NES_VALUE || data == ChartData.NES_SIG) { // need to show negative range
 				String negMinLabel = min < 0 ? String.format("%.2f", min) : "N/A";
 				Color negMaxColor = colors.get(colors.size()-1);
 				Color negMinColor = colors.get(colors.size()/2);
