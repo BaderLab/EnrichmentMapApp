@@ -15,8 +15,8 @@ import javax.swing.JOptionPane;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
 import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
@@ -44,7 +44,7 @@ public class StringAppTaskFactory {
 	@Inject private OpenBrowser openBrowser;
 
 	
-	public TaskIterator createTaskIterator(EnrichmentMap map, List<String> genes, List<String> selectedGenes, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
+	public TaskIterator createTaskIterator(GeneListTunable geneListTunable) {
 		// Show message to user if STRING App not installed
 		List<String> commands = availableCommands.getCommands(STRING_NAMESPACE);
 		
@@ -62,7 +62,7 @@ public class StringAppTaskFactory {
 			return null;
 		}
 		
-		QueryStringTask queryTask = queryStringTaskFactory.create(map, genes, selectedGenes, leadingEdgeRanks);
+		QueryStringTask queryTask = queryStringTaskFactory.create(geneListTunable);
 		
 		// Get list of organisms from STRING App
 		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
@@ -89,7 +89,7 @@ public class StringAppTaskFactory {
 		ti.append(new AbstractTask() {
 			@Override
 			public void run(TaskMonitor taskMonitor) throws Exception {
-				onStringQueryFinished(queryTask.getResult(), map);
+				onStringQueryFinished(queryTask.getResult(), geneListTunable.getEnrichmentMap());
 			}
 		});
 		

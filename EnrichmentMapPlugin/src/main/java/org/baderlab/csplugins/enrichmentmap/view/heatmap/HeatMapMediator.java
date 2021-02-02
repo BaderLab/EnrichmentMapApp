@@ -31,6 +31,7 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.genemania.GeneManiaTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.string.StringAppTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
 import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
@@ -543,25 +544,25 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		}
 	}
 	
-	
-	private void runGeneMANIA() {
+	private GeneListTunable createGeneListTaskParams() {
 		EnrichmentMap map = getContentPanel().getEnrichmentMap();
 		List<String> genes = getContentPanel().getGenes();
 		List<String> selectedGenes = getContentPanel().getSelectedGenes();
 		List<GSEALeadingEdgeRankingOption> gseaOptions = rankingOptionFactory.getGSEADataSetSetRankOptions(map);
-		TaskIterator tasks = geneManiaTaskFactory.createTaskIterator(map, genes, selectedGenes, gseaOptions);
+		return new GeneListTunable(map, genes, selectedGenes, gseaOptions);
+	}
+	
+	private void runGeneMANIA() {
+		GeneListTunable geneListTaskParams = createGeneListTaskParams();
+		TaskIterator tasks = geneManiaTaskFactory.createTaskIterator(geneListTaskParams);
 		taskManager.execute(tasks);
 	}
 	
 	private void runString() {
-		EnrichmentMap map = getContentPanel().getEnrichmentMap();
-		List<String> genes = getContentPanel().getGenes();
-		List<String> selectedGenes = getContentPanel().getSelectedGenes();
-		List<GSEALeadingEdgeRankingOption> gseaOptions = rankingOptionFactory.getGSEADataSetSetRankOptions(map);
-		TaskIterator tasks = stringAppTaskFactoy.createTaskIterator(map, genes, selectedGenes, gseaOptions);
+		GeneListTunable geneListTaskParams = createGeneListTaskParams();
+		TaskIterator tasks = stringAppTaskFactoy.createTaskIterator(geneListTaskParams);
 		taskManager.execute(tasks);
 	}
-	
 	
 	private void runPathwayCommons() {
 		long uuid = getEnrichmentMap().getNetworkID();

@@ -3,7 +3,9 @@ package org.baderlab.csplugins.enrichmentmap.task.tunables;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 
@@ -13,6 +15,8 @@ public class GeneListTunable {
 	private List<String> genes;
 	private List<String> selectedGenes;
 	private List<GSEALeadingEdgeRankingOption> leadingEdgeRanks;
+	
+	private List<String> expressionGenes;
 	
 	
 	public GeneListTunable(
@@ -47,4 +51,20 @@ public class GeneListTunable {
 		return map;
 	}
 
+	public List<String> getExpressionGenes() {
+		if(expressionGenes == null) {
+			expressionGenes = genes.stream().filter(gene -> hasExpressions(map, gene)).collect(Collectors.toList());
+		}
+		return expressionGenes;
+	}
+	
+	private static boolean hasExpressions(EnrichmentMap map, String gene) {
+		int geneId = map.getHashFromGene(gene);
+		for(EMDataSet ds : map.getDataSetList()) {
+			if(ds.getExpressionGenes().contains(geneId)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

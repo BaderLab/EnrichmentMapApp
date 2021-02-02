@@ -8,8 +8,6 @@ import javax.swing.GroupLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -45,12 +43,7 @@ public class GeneListGUITunableHandler extends AbstractGUITunableHandler {
 		JLabel title = new JLabel(getDescription());
 		
 		GeneListTunable geneListTunable = getGeneListTunable();
-		EnrichmentMap map = geneListTunable.getEnrichmentMap();
-		List<String> genes = geneListTunable.getGenes();
-		List<String> selectedGenes = geneListTunable.getSelectedGenes();
-		List<GSEALeadingEdgeRankingOption> leadingEdgeRanks = geneListTunable.getLeadingEdgeRanks();
-		
-		checkboxPanel = new GeneListPanel(map, genes, selectedGenes, leadingEdgeRanks);
+		checkboxPanel = new GeneListPanel(geneListTunable);
 		
 		JPanel panel = new JPanel();
 		

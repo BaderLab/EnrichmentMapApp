@@ -4,10 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
 import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.AbstractTask;
@@ -51,21 +49,12 @@ public class QueryStringTask extends AbstractTask {
 	@Inject private CommandExecutorTaskFactory commandExecutorTaskFactory;
 	
 	public static interface Factory {
-		QueryStringTask create(
-				EnrichmentMap map, 
-				@Assisted("geneList") List<String> geneList,
-				@Assisted("selectedGenes") List<String> selectedGenes,
-				List<GSEALeadingEdgeRankingOption> leadingEdgeRanks);
+		QueryStringTask create(GeneListTunable geneListTunable);
 	}
 	
 	@AssistedInject
-	public QueryStringTask(
-			@Assisted EnrichmentMap map, 
-			@Assisted("geneList") List<String> geneList,
-			@Assisted("selectedGenes") List<String> selectedGenes,
-			@Assisted List<GSEALeadingEdgeRankingOption> leadingEdgeRanks)
-	{		
-		this.geneList = new GeneListTunable(map, geneList, selectedGenes, leadingEdgeRanks);
+	public QueryStringTask(@Assisted GeneListTunable geneListTunable) {		
+		this.geneList = geneListTunable;
 		this.organisms = new ListSingleSelection<>();
 	}
 	

@@ -5,6 +5,7 @@ import java.util.List;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
+import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.RankingOptionFactory;
 import org.cytoscape.model.CyNetwork;
@@ -34,7 +35,8 @@ public class QueryStringNodeViewTaskFactory implements NodeViewTaskFactory {
 		
 		List<GSEALeadingEdgeRankingOption> rankOptions = rankingOptionFactory.getGSEADataSetSetRankOptions(map);
 		
-		return stringAppFactory.createTaskIterator(map, genes, null, rankOptions);
+		GeneListTunable geneListTunable = new GeneListTunable(map, genes, null, rankOptions);
+		return stringAppFactory.createTaskIterator(geneListTunable);
 	}
 
 	@Override

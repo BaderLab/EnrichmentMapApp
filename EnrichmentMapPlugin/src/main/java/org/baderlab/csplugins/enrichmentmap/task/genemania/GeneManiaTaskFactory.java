@@ -15,8 +15,8 @@ import javax.swing.JOptionPane;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
 import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
@@ -47,7 +47,7 @@ public class GeneManiaTaskFactory {
 	@Inject private OpenBrowser openBrowser;
 	
 	
-	public TaskIterator createTaskIterator(EnrichmentMap map, List<String> genes, List<String> selectedGenes, List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) {
+	public TaskIterator createTaskIterator(GeneListTunable geneListTaskParams) {
 		// Show message to user if genemania not installed
 		List<String> commands = availableCommands.getCommands(GENEMANIA_NAMESPACE);
 		
@@ -67,7 +67,7 @@ public class GeneManiaTaskFactory {
 		
 		
 		
-		QueryGeneManiaTask queryTask = queryGeneManiaTaskFactory.create(map, genes, selectedGenes, leadingEdgeRanks);
+		QueryGeneManiaTask queryTask = queryGeneManiaTaskFactory.create(geneListTaskParams);
 		
 		// Get list of organisms from GeneMANIA
 		TaskIterator ti = commandExecutorTaskFactory.createTaskIterator(
@@ -95,7 +95,7 @@ public class GeneManiaTaskFactory {
 		ti.append(new AbstractTask() {
 			@Override
 			public void run(TaskMonitor taskMonitor) throws Exception {
-				onGeneManiaQueryFinished(queryTask.getResult(), map);
+				onGeneManiaQueryFinished(queryTask.getResult(), geneListTaskParams.getEnrichmentMap());
 			}
 		});
 		

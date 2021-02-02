@@ -5,10 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.task.tunables.GeneListTunable;
 import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.GSEALeadingEdgeRankingOption;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
@@ -55,21 +53,12 @@ public class QueryGeneManiaTask extends AbstractTask {
 	@Inject private SynchronousTaskManager<?> syncTaskManager;
 	
 	public static interface Factory {
-		QueryGeneManiaTask create(
-				EnrichmentMap map, 
-				@Assisted("geneList") List<String> geneList, 
-				@Assisted("selectedGenes") List<String> selectedGenes, 
-				List<GSEALeadingEdgeRankingOption> leadingEdgeRanks);
+		QueryGeneManiaTask create(GeneListTunable geneListTaskParams);
 	}
 	
 	@AssistedInject
-	public QueryGeneManiaTask(
-			@Assisted EnrichmentMap map, 
-			@Assisted("geneList") List<String> geneList, 
-			@Assisted("selectedGenes") List<String> selectedGenes, 
-			@Assisted List<GSEALeadingEdgeRankingOption> leadingEdgeRanks)
-	{
-		this.geneList = new GeneListTunable(map, geneList, selectedGenes, leadingEdgeRanks);
+	public QueryGeneManiaTask(@Assisted GeneListTunable geneListTaskParams) {
+		this.geneList = geneListTaskParams;
 		this.organisms = new ListSingleSelection<>();
 		this.weightingMethods = new ListSingleSelection<>(GMWeightingMethod.values());
 		this.weightingMethods.setSelectedValue(weightingMethods.getPossibleValues().get(0));

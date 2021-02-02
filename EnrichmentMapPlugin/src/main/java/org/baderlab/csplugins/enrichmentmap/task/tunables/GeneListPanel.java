@@ -7,7 +7,6 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,17 +43,14 @@ public class GeneListPanel extends JPanel {
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
 	private JButton selectEdgeButton;
+	private JButton selectExprButton;
 	
-	public GeneListPanel(
-			EnrichmentMap map, 
-			List<String> genes, 
-			List<String> selectedGenes, 
-			List<GSEALeadingEdgeRankingOption> leadingEdgeRanks) 
-	{
-		this.map = map;
-		
-		
-		Set<String> selected = selectedGenes == null ? Collections.emptySet() : new HashSet<>(selectedGenes);
+	public GeneListPanel(GeneListTunable geneListTunable) {
+		this.map = geneListTunable.getEnrichmentMap();
+		List<String> genes = geneListTunable.getGenes();
+		List<String> selected = geneListTunable.getSelectedGenes();
+		List<String> expressionGenes = geneListTunable.getExpressionGenes();
+		List<GSEALeadingEdgeRankingOption> leadingEdgeRanks = geneListTunable.getLeadingEdgeRanks();
 		
 		checkboxListModel = new CheckboxListModel<>();
 		genes.stream().sorted().forEach(gene -> {
@@ -70,15 +66,18 @@ public class GeneListPanel extends JPanel {
 		selectAllButton  = new JButton("Select All");
 		selectNoneButton = new JButton("Select None");
 		selectEdgeButton = new JButton("Select Leading Edge");
+		selectExprButton = new JButton("Select Genes With Expressions");
 		
 		selectAllButton .addActionListener(selectionListener(cb -> cb.setSelected(true)));
 		selectNoneButton.addActionListener(selectionListener(cb -> cb.setSelected(false)));
 		selectEdgeButton.addActionListener(e -> selectLeadingEdge(genes, leadingEdgeRanks));
+		selectExprButton.addActionListener(e -> selectGenesWithExpressions(expressionGenes));
 		
 		selectAllButton.setEnabled(false);
 		selectNoneButton.setEnabled(false);
 		selectEdgeButton.setEnabled(true);
 		selectEdgeButton.setVisible(!leadingEdgeRanks.isEmpty());
+		selectExprButton.setVisible(!expressionGenes.isEmpty());
 		
 		checkboxListModel.addListDataListener(new ListDataListener() {
 			@Override
@@ -102,8 +101,8 @@ public class GeneListPanel extends JPanel {
 			}
 		});
 		
-		SwingUtil.makeSmall(selectAllButton, selectEdgeButton, selectNoneButton);		
-		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton, selectEdgeButton);
+		SwingUtil.makeSmall(selectAllButton, selectEdgeButton, selectNoneButton, selectExprButton);		
+		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton, selectEdgeButton, selectExprButton);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -116,6 +115,7 @@ public class GeneListPanel extends JPanel {
 						.addComponent(selectAllButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(selectNoneButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(selectEdgeButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(selectExprButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    		);
    		layout.setVerticalGroup(layout.createParallelGroup()
@@ -125,6 +125,7 @@ public class GeneListPanel extends JPanel {
 						.addComponent(selectNoneButton)
 						.addGap(20)
 						.addComponent(selectEdgeButton)
+						.addComponent(selectExprButton)
    				)
    		);
 		
@@ -155,7 +156,6 @@ public class GeneListPanel extends JPanel {
 		}
 	}
 	
-	
 	private void selectLeadingEdge(List<String> genes, GSEALeadingEdgeRankingOption ranks) {
 		List<CheckboxData<String>> oldValue = getSelectedData();
 		List<Integer> geneKeys = genes.stream().map(map::getHashFromGene).collect(Collectors.toList());
@@ -172,7 +172,19 @@ public class GeneListPanel extends JPanel {
 		fireCheckboxListUpdated(oldValue);
 	}
 	
-	
+	private void selectGenesWithExpressions(List<String> expressionGenes) {
+		Set<String> exgSet = new HashSet<>(expressionGenes);
+		List<CheckboxData<String>> oldValue = getSelectedData();
+		
+		checkboxListModel.forEach(checkBox -> {
+			String geneName = checkBox.getData();
+			boolean selected = exgSet.contains(geneName);
+			checkBox.setSelected(selected);
+		});
+		
+		fireCheckboxListUpdated(oldValue);
+	}
+
 	private ActionListener selectionListener(Consumer<CheckboxData<String>> action) {
 		return e -> {
 			List<CheckboxData<String>> oldValue = getSelectedData();
