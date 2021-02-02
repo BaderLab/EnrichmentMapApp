@@ -123,7 +123,6 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 			// Set common attributes
 			CyRow row = network.getRow(node);
 			row.set(CyNetwork.NAME, genesetName);
-			Columns.NODE_FORMATTED_NAME.set(row, prefix, null, formatLabel(genesetName));
 			Columns.NODE_NAME.set(row, prefix, null, genesetName); // MKTODO why is this column needed?
 			
 			GeneSet geneSet = map.getGeneSet(genesetName);
@@ -220,7 +219,6 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		Columns.NODE_NAME.createColumn(table, prefix, null);// !
 		Columns.NODE_GS_DESCR.createColumn(table, prefix, null);// !
 		Columns.NODE_GS_TYPE.createColumn(table, prefix, null);// !
-		Columns.NODE_FORMATTED_NAME.createColumn(table, prefix, null); // !
 		Columns.NODE_GENES.createColumn(table, prefix, null); // Union of geneset genes across all datasets // !
 		Columns.NODE_GS_SIZE.createColumn(table, prefix, null); // Size of the union // !
 		
@@ -295,66 +293,4 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 			return (-1) * (1 - result.getPvalue());
 	}
 	
-	
-	/**
-	 * Wrap label
-	 *
-	 * @param label - current one line representation of label
-	 * @return formatted, wrapped label
-	 */
-	public static String formatLabel(String label) {
-		final int maxNodeLabelLength = 15;
-		String formattedLabel = "";
-
-		int i = 0;
-		int k = 1;
-
-		//only wrap at spaces
-		String[] tokens = label.split(" ");
-		//first try and wrap label based on spacing
-		if(tokens.length > 1) {
-			int current_count = 0;
-			for(int j = 0; j < tokens.length; j++) {
-				if(current_count + tokens[j].length() <= maxNodeLabelLength) {
-					formattedLabel = formattedLabel + tokens[j] + " ";
-					current_count = current_count + tokens[j].length();
-				} else if(current_count + tokens[j].length() > maxNodeLabelLength) {
-					formattedLabel = formattedLabel + "\n" + tokens[j] + " ";
-					current_count = tokens[j].length();
-				}
-			}
-		} else {
-			tokens = label.split("_");
-
-			if(tokens.length > 1) {
-				int current_count = 0;
-				for(int j = 0; j < tokens.length; j++) {
-					if(j != 0)
-						formattedLabel = formattedLabel + "_";
-					if(current_count + tokens[j].length() <= maxNodeLabelLength) {
-						formattedLabel = formattedLabel + tokens[j];
-						current_count = current_count + tokens[j].length();
-					} else if(current_count + tokens[j].length() > maxNodeLabelLength) {
-						formattedLabel = formattedLabel + "\n" + tokens[j];
-						current_count = tokens[j].length();
-					}
-				}
-			}
-
-			//if there is only one token wrap it anyways.
-			else if(tokens.length == 1) {
-				while(i <= label.length()) {
-
-					if(i + maxNodeLabelLength > label.length())
-						formattedLabel = formattedLabel + label.substring(i, label.length()) + "\n";
-					else
-						formattedLabel = formattedLabel + label.substring(i, k * maxNodeLabelLength) + "\n";
-					i = (k * maxNodeLabelLength);
-					k++;
-				}
-			}
-		}
-
-		return formattedLabel;
-	}
 }

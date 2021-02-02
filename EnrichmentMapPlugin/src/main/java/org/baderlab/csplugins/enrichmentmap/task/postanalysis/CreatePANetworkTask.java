@@ -20,7 +20,6 @@ import org.baderlab.csplugins.enrichmentmap.model.SignatureGenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
-import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.cytoscape.event.CyEventHelper;
@@ -214,9 +213,7 @@ public class CreatePANetworkTask extends AbstractTask implements ObservableTask 
 		
 		network.getRow(hubNode).set(CyNetwork.NAME, hubName);
 
-		String formattedLabel = CreateEMNetworkTask.formatLabel(hubName);
 		CyRow row = nodeTable.getRow(hubNode.getSUID());
-		Columns.NODE_FORMATTED_NAME.set(row, prefix, null, formattedLabel);
 
 		List<String> geneList = sigGeneSet.getGenes().stream()
 				.map(map::getGeneFromHashKey)

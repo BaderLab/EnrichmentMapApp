@@ -80,7 +80,6 @@ public class EMStyleBuilder {
 		public static final ColumnDescriptor<String> NODE_GS_TYPE  = new ColumnDescriptor<>("GS_Type", String.class);
 		public static final String NODE_GS_TYPE_ENRICHMENT = "ENR";
 		public static final String NODE_GS_TYPE_SIGNATURE  = "SIG";
-		public static final ColumnDescriptor<String> NODE_FORMATTED_NAME = new ColumnDescriptor<>("Formatted_name", String.class);
 		public static final ColumnListDescriptor<String> NODE_GENES = new ColumnListDescriptor<>("Genes", String.class);
 		public static final ColumnDescriptor<Integer> NODE_GS_SIZE  = new ColumnDescriptor<>("gs_size", Integer.class);
 		
