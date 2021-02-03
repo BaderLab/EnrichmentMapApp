@@ -71,7 +71,7 @@ public class FilterTunables {
 	public String attributePrefix = null;
 	
 	
-	@Inject private LegacySupport legacySupport;
+	private LegacySupport legacySupport;
 	
 	
 	public FilterTunables() {
@@ -82,6 +82,11 @@ public class FilterTunables {
 		
 		nesFilter = enumNames(NESFilter.values());
 		nesFilter.setSelectedValue(NESFilter.ALL.name());
+	}
+	
+	@Inject
+	public void setLegacySupport(LegacySupport legacySupport) {
+		this.legacySupport = legacySupport;
 	}
 
 	

@@ -14,6 +14,7 @@ import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTaskFactor
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.MannWhitRanksTunableHandlerFactory;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.io.SessionListener;
+import org.baderlab.csplugins.enrichmentmap.rest.BuildResource;
 import org.baderlab.csplugins.enrichmentmap.rest.ExpressionsResource;
 import org.baderlab.csplugins.enrichmentmap.rest.ModelResource;
 import org.baderlab.csplugins.enrichmentmap.style.ChartFactoryManager;
@@ -72,9 +73,10 @@ public class CyActivator extends AbstractCyActivator {
 		// commands
 		initializeCommands(bc);
 		
-		// jax-rs resources
+		// jax-rs (CyREST) resources
 		registerService(bc, injector.getInstance(ExpressionsResource.class), ExpressionsResource.class);
 		registerService(bc, injector.getInstance(ModelResource.class), ModelResource.class);
+		registerService(bc, injector.getInstance(BuildResource.class), BuildResource.class);
 		
 		// CyProperty
 		CyProperty<Properties> cyProperty = injector.getInstance(Key.get(new TypeLiteral<CyProperty<Properties>>(){}));
