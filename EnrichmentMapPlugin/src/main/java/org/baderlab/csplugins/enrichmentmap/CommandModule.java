@@ -6,6 +6,7 @@ import org.baderlab.csplugins.enrichmentmap.commands.DatasetShowCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.EMBuildCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.EMGseaCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.ExportModelJsonCommandTask;
+import org.baderlab.csplugins.enrichmentmap.commands.ExportNetworkImageCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.ExportPDFCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.MastermapCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.MastermapListCommandTask;
@@ -100,6 +101,12 @@ public class CommandModule extends AbstractModule {
 	public CommandTaskFactory provideExportPDF(Provider<ExportPDFCommandTask> taskProvider) {
 		String desc = "Exports the contents of the Heat Map panel to a PDF file.";
 		return CommandTaskFactory.create("export pdf", desc, null, taskProvider);
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideExportImage(Provider<ExportNetworkImageCommandTask> taskProvider) {
+		String desc = "Exports the network view to an image file in the users home directory.";
+		return CommandTaskFactory.create("export png", desc, null, taskProvider);
 	}
 
 }
