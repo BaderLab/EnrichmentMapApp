@@ -1,8 +1,11 @@
 package org.baderlab.csplugins.enrichmentmap.rest;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -10,6 +13,7 @@ import java.nio.file.attribute.FileAttribute;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -20,7 +24,7 @@ import io.swagger.annotations.ApiOperation;
 
 
 @Api(tags="Apps: EnrichmentMap")
-@javax.ws.rs.Path("/enrichmentmap/fileupload")
+@javax.ws.rs.Path("/enrichmentmap/textfileupload")
 public class UploadFileResource {
 	
 	private Path tempDir = null;
@@ -33,7 +37,10 @@ public class UploadFileResource {
 	@ApiOperation(value="Upload a file.",
 		notes=""
 	)
-	public Response uploadFile(@FormDataParam("file") InputStream in) {
+	public Response uploadFile(
+		@QueryParam("fileName") String fileName,
+		@FormDataParam("file") InputStream in
+	) {
 		try {
 			synchronized(this) {
 				if(tempDir == null) {
@@ -41,18 +48,36 @@ public class UploadFileResource {
 				}
 			}
 			
-			File tempFile = Files.createTempFile(tempDir, "em_", "", new FileAttribute<?>[0]).toFile();
+			File tempFile = Files.createTempFile(tempDir, "em_", "_" + fileName, new FileAttribute<?>[0]).toFile();
 			tempFile.deleteOnExit();
-			
-			try(FileOutputStream out = new FileOutputStream(tempFile)) {
-				int read = 0;
-				byte[] bytes = new byte[1024];
-				while((read = in.read(bytes)) != -1) {
-					out.write(bytes, 0, read);
+
+			try (
+				FileWriter fileWriter = new FileWriter(tempFile);
+				BufferedWriter buffWriter = new BufferedWriter(fileWriter);
+				InputStreamReader reader = new InputStreamReader(in);
+				BufferedReader buffReader = new BufferedReader(reader)
+			) {
+				String firstLine = buffReader.readLine();
+				// Skip 3 lines
+				buffReader.readLine();
+				buffReader.readLine();
+				buffReader.readLine();
+
+				String line = buffReader.readLine();
+				if(!line.startsWith(firstLine)) {
+					while(line != null) {
+						buffWriter.write(line);
+	
+						line = buffReader.readLine();
+						if(line.startsWith(firstLine)) {
+							break;
+						} else {
+							buffWriter.newLine();
+						}
+					}
 				}
-				out.flush();
 			}
-			
+
 			String absPath = tempFile.getAbsolutePath();
 			String response = String.format("{\"path\" : \"%s\"}", absPath);
 			return Response.status(200).entity(response).build();
