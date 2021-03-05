@@ -109,9 +109,9 @@
 			<version>5.5.12</version>
 		</dependency>
 		<dependency>
-		     <groupId>com.google.guava</groupId> <!-- required by freebuilder -->
+		     <groupId>com.google.guava</groupId>
 		     <artifactId>guava</artifactId>
-	     	<version>18.0</version>
+	     	<version>30.1-jre</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.findbugs</groupId> <!-- required by guava -->
@@ -164,17 +164,17 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-			<version>4.0</version>
+			<version>4.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.inject.extensions</groupId>
 			<artifactId>guice-multibindings</artifactId>
-			<version>4.0</version>
+			<version>4.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.inject.extensions</groupId>
 			<artifactId>guice-assistedinject</artifactId>
-			<version>4.0</version>
+			<version>4.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ops4j</groupId>
@@ -209,6 +209,11 @@
 			<artifactId>jukito</artifactId>
 			<version>1.5</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>net.bytebuddy</groupId>
+		    <artifactId>byte-buddy</artifactId>
+		    <version>1.10.21</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -263,8 +268,11 @@
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Bundle-Activator>${bundle.namespace}.enrichmentmap.CyActivator</Bundle-Activator>
 						<Embed-Dependency>
-							colt,commons-math3,commons-lang3,httpclient,httpcore,itextpdf,guava,gson,jsr305,guice,peaberry,javax.inject,
-							aopalliance,guice-multibindings,guice-assistedinject,jatl,jcolorbrewer,jfreechart,jcommon
+							colt,commons-math3,commons-lang3,
+							httpclient,httpcore,itextpdf,guava,failureaccess,
+							gson,jsr305,guice,peaberry,javax.inject,
+							aopalliance,guice-multibindings,guice-assistedinject,
+							jatl,jcolorbrewer,jfreechart,jcommon
 						</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
 						<Export-Package>${export.package}</Export-Package>
