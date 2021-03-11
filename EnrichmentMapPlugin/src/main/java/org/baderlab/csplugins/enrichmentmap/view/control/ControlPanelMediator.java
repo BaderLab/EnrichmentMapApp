@@ -250,8 +250,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				return;
 			
 			try {
-				updating = true;
-				
 				// Update Filters
 				if (params.getPValue() != null && viewPanel.getPValueSliderPanel() != null)
 					viewPanel.getPValueSliderPanel().setValue(params.getPValue());
