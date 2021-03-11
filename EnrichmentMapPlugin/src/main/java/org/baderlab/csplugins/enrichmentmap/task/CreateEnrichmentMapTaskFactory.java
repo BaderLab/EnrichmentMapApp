@@ -203,7 +203,7 @@ public class CreateEnrichmentMapTaskFactory {
 		if(fileName.endsWith(".edb")) {
 			return new ParseEDBEnrichmentResults(dataset);
 		} else {
-			DataSetResolver.Type type = DataSetResolver.guessEnrichmentType(fileName);
+			DataSetResolver.Type type = DataSetResolver.guessEnrichmentTypeFromPath(fileName);
 			switch(type) {
 				default:
 				case ENRICHMENT_GENERIC: return new ParseGenericEnrichmentResults(dataset);

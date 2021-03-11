@@ -1,8 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.resolver;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,6 +51,16 @@ public class DataSetResolver {
 		
 		public boolean isEnrichmentFile() {
 			return this.name().startsWith("ENRICHMENT");
+		}
+	}
+	
+	
+	private static class DataLines {
+		final String firstLine;
+		final String firstDataLine;
+		public DataLines(String firstLine, String firstDataLine) {
+			this.firstLine = firstLine;
+			this.firstDataLine = firstDataLine;
 		}
 	}
 	
@@ -225,45 +235,45 @@ public class DataSetResolver {
 		Map<Type,Integer> scores = new EnumMap<>(Type.class);
 		
 		String fileName = path.getFileName().toString();
-		Optional<String> firstLine = getFirstDataLine(path);
+		DataLines lines = getFirstDataLines(path);
 		
-		if(firstLine.isPresent() && isTabSeparated(firstLine.get())) {
-			// Guess based on extension and/or first line of file
-			if(hasExtension(path, "gct")) {
-				addScore(scores, Type.RANKS, 1);
-			}
-			if(hasExtension(path, "gmt")) {
-				addScore(scores, Type.GENE_SETS, 1);
-			}
-			if(hasExtension(path, "rnk")) {
-				addScore(scores, Type.RANKS, 1);
-				addScore(scores, Type.EXPRESSION, 1);
-			}
-			if(hasExtension(path, "xls", "bgo", "tsv", "txt")) {
-				Type type = guessEnrichmentType(path);
-				if(type == Type.IGNORE) {
-					addScore(scores, Type.ENRICHMENT_GENERIC, 1);
+		if(lines != null) {
+			if(isTabSeparated(lines.firstDataLine)) {
+				// Guess based on extension and/or first line of file
+				if(hasExtension(path, "gct")) {
+					addScore(scores, Type.RANKS, 1);
+				}
+				if(hasExtension(path, "gmt")) {
+					addScore(scores, Type.GENE_SETS, 1);
+				}
+				if(hasExtension(path, "rnk")) {
+					addScore(scores, Type.RANKS, 1);
 					addScore(scores, Type.EXPRESSION, 1);
-				} else {
+				}
+				if(hasExtension(path, "xls", "tsv", "txt")) {
+					Type type = guessEnrichmentType(lines.firstLine);
 					addScore(scores, type, 2); // this is a lot of evidence
 				}
-			}
+				
+				// Test first line
+				if(!isRankLine(lines.firstDataLine)) {
+					addScore(scores, Type.RANKS, -1);
+				}
+				if(!isExpressionLine(lines.firstDataLine)) {
+					addScore(scores, Type.EXPRESSION, -1);
+				}
+				
+				// Guess based on file name	
+				if(matches(fileName, ".*expr(ession)?.*")) {
+					addScore(scores, Type.EXPRESSION, 3);
+				}
+				if(matches(fileName, ".*rank.*")) {
+					addScore(scores, Type.RANKS, 3);
+				}
+			} 
 			
-			// Test first line
-			if(!isRankLine(firstLine.get())) {
-				addScore(scores, Type.RANKS, -1);
-			}
-			if(!isExpressionLine(firstLine.get())) {
-				addScore(scores, Type.EXPRESSION, -1);
-			}
-			
-			// Guess based on file name	
-			
-			if(matches(fileName, ".*expr(ession)?.*")) {
-				addScore(scores, Type.EXPRESSION, 3);
-			}
-			if(matches(fileName, ".*rank.*")) {
-				addScore(scores, Type.RANKS, 3);
+			if(hasExtension(path, "bgo") || isBingoHeader(lines.firstLine)) {
+				addScore(scores, Type.ENRICHMENT_BINGO, 2);
 			}
 		}
 		
@@ -346,15 +356,29 @@ public class DataSetResolver {
 	}
 	
 	
-	private static Optional<String> getFirstDataLine(Path path) {
-		try(Stream<String> lines = Files.lines(path)) {
-			return lines
-					.filter(l -> !l.startsWith("#")) // filter out comment lines
-					.skip(1)                         // skip header line
-					.findFirst();
-		} catch(IOException | UncheckedIOException e) {
-			return Optional.empty();
+	private static DataLines getFirstDataLines(Path path) {
+		try(FileReader fileReader = new FileReader(path.toFile());
+			BufferedReader reader = new BufferedReader(fileReader)) 
+		{
+			String firstLine = null;
+			String firstDataLine = null;
+			
+			String line = null;
+			while((line = reader.readLine()) != null) {
+				if(firstLine == null) {
+					firstLine = line;
+				} else if(!line.startsWith("#")) {
+					firstDataLine = line;
+					break;
+				}
+			}
+			
+			if(firstLine != null && firstDataLine != null) {
+				return new DataLines(firstLine, firstDataLine);
+			}
+		} catch(IOException e) {
 		}
+		return null;
 	}
 	
 	private static boolean isExpressionLine(String line) {
@@ -384,54 +408,51 @@ public class DataSetResolver {
 	}
 	
 	
-	public static Type guessEnrichmentType(String path) {
-		return guessEnrichmentType(Paths.get(path));
+	public static Type guessEnrichmentTypeFromPath(String path) {
+		Path p = Paths.get(path);
+		DataLines lines = getFirstDataLines(p);
+		return guessEnrichmentType(lines.firstLine);
 	}
 	
 	/*
 	 * This logic was moved here from {@link DetermineEnrichmentResultFileReader}
 	 */
-	public static Type guessEnrichmentType(Path path) {
-		try {
-			String firstLine = com.google.common.io.Files.readFirstLine(path.toFile(), Charset.defaultCharset());
-			
-			String[] tokens = firstLine.split("\t");
+	public static Type guessEnrichmentType(String firstLine) {
+		String[] tokens = firstLine.split("\t");
 
-			//check to see if there are exactly 11 columns - = GSEA results
-			if(tokens.length == 11) {
-				//check to see if the ES is the 5th column and that NES is the 6th column
-				if((tokens[4].equalsIgnoreCase("ES")) && (tokens[5].equalsIgnoreCase("NES")))
-					return Type.ENRICHMENT_GSEA;
-				//it is possible that the file can have 11 columns but that it is still a generic file
-				//if it doesn't specify ES and NES in the 5 and 6th columns
-				else
-					return Type.ENRICHMENT_GENERIC;
-			}
-			//check to see if there are exactly 13 columns - = DAVID results
-			else if(tokens.length == 13) {
-				//check to see that the 6th column is called Genes and that the 12th column is called "Benjamini"
-				if((tokens[5].equalsIgnoreCase("Genes")) && tokens[11].equalsIgnoreCase("Benjamini"))
-					return Type.ENRICHMENT_DAVID;
-				else
-					return Type.ENRICHMENT_GENERIC;
-
-			}
-			//fix bug with new version of bingo plugin change the case of the header file.
-			else if(firstLine.toLowerCase().contains("File created with BiNGO".toLowerCase())) {
-				return Type.ENRICHMENT_BINGO;
-			} else if(firstLine.contains("GREAT version")) {
-				return Type.ENRICHMENT_GREAT;
-			} else if(tokens.length == 9 && firstLine.contains("Term") && firstLine.contains("Old P-value")) {
-				return Type.ENRICHMENT_ENRICHR;
-			} else {
+		//check to see if there are exactly 11 columns - = GSEA results
+		if(tokens.length == 11) {
+			//check to see if the ES is the 5th column and that NES is the 6th column
+			if((tokens[4].equalsIgnoreCase("ES")) && (tokens[5].equalsIgnoreCase("NES")))
+				return Type.ENRICHMENT_GSEA;
+			//it is possible that the file can have 11 columns but that it is still a generic file
+			//if it doesn't specify ES and NES in the 5 and 6th columns
+			else
 				return Type.ENRICHMENT_GENERIC;
-			}
 		}
-		catch(IOException e) {
-			// MKTODO log the exception
+		//check to see if there are exactly 13 columns - = DAVID results
+		else if(tokens.length == 13) {
+			//check to see that the 6th column is called Genes and that the 12th column is called "Benjamini"
+			if((tokens[5].equalsIgnoreCase("Genes")) && tokens[11].equalsIgnoreCase("Benjamini"))
+				return Type.ENRICHMENT_DAVID;
+			else
+				return Type.ENRICHMENT_GENERIC;
+
 		}
-		
-		return Type.IGNORE;
+		else if(isBingoHeader(firstLine)) {
+			return Type.ENRICHMENT_BINGO;
+		} else if(firstLine.contains("GREAT version")) {
+			return Type.ENRICHMENT_GREAT;
+		} else if(tokens.length == 9 && firstLine.contains("Term") && firstLine.contains("Old P-value")) {
+			return Type.ENRICHMENT_ENRICHR;
+		} else {
+			return Type.ENRICHMENT_GENERIC;
+		}
+	}
+	
+	
+	private static boolean isBingoHeader(String firstLine) {
+		return firstLine.toLowerCase().contains("File created with BiNGO".toLowerCase());
 	}
 	
 	
