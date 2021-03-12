@@ -86,7 +86,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 
 		if(map != null && map.isCommonExpressionValues()) {
 			this.datasets = map.getDataSetList().subList(0, 1);
-		} else if(map != null && datasets == null) {
+		} else if(map != null && (datasets == null || datasets.isEmpty())) { // datasets can be empty for signature nodes
 			this.datasets = map.getDataSetList();
 		} else if(datasets != null) {
 			this.datasets = new ArrayList<>(datasets);
