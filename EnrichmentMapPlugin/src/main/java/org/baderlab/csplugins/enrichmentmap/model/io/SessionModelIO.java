@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ForkJoinPool;
 
 import org.baderlab.csplugins.enrichmentmap.ApplicationModule.Headless;
 import org.baderlab.csplugins.enrichmentmap.CyActivator;
@@ -29,6 +30,7 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -101,7 +103,7 @@ public class SessionModelIO {
 		
 		emManager.reset();
 		
-		boolean sessionHasEM = false;
+		boolean sessionHasEM;
 		if(session != null && LegacySessionLoader.isLegacy(session)) {
 			sessionHasEM = true;
 			legacySessionLoaderProvider.get().loadSession(session);
@@ -112,12 +114,14 @@ public class SessionModelIO {
 		if(!headless) {
 			ControlPanelMediator controlPanelMediator = controlPanelMediatorProvider.get();
 			HeatMapMediator heatMapMediator = heatMapMediatorProvider.get();
-			controlPanelMediator.reset();
-			heatMapMediator.reset();
-			if(sessionHasEM) {
-				controlPanelMediator.showControlPanel();
-				heatMapMediator.showHeatMapPanel();
-			}
+			ListenableFuture<Void> future = controlPanelMediator.reset();
+			future.addListener(() -> {
+				heatMapMediator.reset();
+				if(sessionHasEM) {
+					controlPanelMediator.showControlPanel();
+					heatMapMediator.showHeatMapPanel();
+				}
+			}, ForkJoinPool.commonPool());
 		}
 		
 		if(debug) {

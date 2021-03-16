@@ -17,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
+import java.util.concurrent.Callable;
 
 import javax.annotation.Nullable;
 import javax.swing.AbstractButton;
@@ -44,6 +45,8 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 import com.google.common.base.Strings;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListenableFutureTask;
 
 
 public class SwingUtil {
@@ -158,6 +161,20 @@ public class SwingUtil {
 			runnable.run();
 		else
 			SwingUtilities.invokeLater(runnable);
+	}
+	
+	
+	public static <T> ListenableFuture<T> invokeOnEDTFuture(Callable<T> callable) {
+		ListenableFutureTask<T> future = ListenableFutureTask.create(callable);
+		invokeOnEDT(future);
+		return future;
+	}
+	
+	public static ListenableFuture<Void> invokeOnEDTFuture(Runnable runnable) {
+		return invokeOnEDTFuture(() -> {
+			runnable.run();
+			return null;
+		});
 	}
 	
 	public static void invokeOnEDTAndWait(final Runnable runnable) {
