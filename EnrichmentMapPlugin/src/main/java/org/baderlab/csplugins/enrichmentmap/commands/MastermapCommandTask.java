@@ -75,11 +75,6 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 		taskManager.execute(new TaskIterator(resolverTask)); // blocks
 		List<DataSetParameters> dataSets = resolverTask.getDataSetResults();
 		
-		tm.setStatusMessage("resolved " + dataSets.size() + " data sets");
-		for(DataSetParameters params : dataSets) {
-			tm.setStatusMessage(params.toString());
-		}
-		
 		// Common gmt and expression files
 		// Overwrite all the expression files if the common file has been provided
 		if(commonExpressionFile != null) {
@@ -109,6 +104,11 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 			for(DataSetParameters dsp : dataSets) {
 				dsp.getFiles().setClassFile(commonClassFile.getAbsolutePath());
 			}
+		}
+
+		tm.setStatusMessage("resolved " + dataSets.size() + " data sets");
+		for(DataSetParameters params : dataSets) {
+			tm.setStatusMessage(params.toString());
 		}
 		
 		tm.setStatusMessage(filterArgs.toString());
