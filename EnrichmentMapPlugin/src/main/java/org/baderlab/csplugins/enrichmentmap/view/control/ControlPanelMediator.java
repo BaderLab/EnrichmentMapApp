@@ -169,7 +169,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			
 			if (firstTime && emManager.getAllEnrichmentMaps().isEmpty()) {
 				firstTime = false;
-				controlPanelProvider.get().getCreateEmButton().doClick();
 			} else {
 				setCurrentNetworkView(applicationManager.getCurrentNetworkView());
 			}
@@ -178,7 +177,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		// Select the panel
 		CytoPanel cytoPanel = swingApplication.getCytoPanel(panel.getCytoPanelName());
 		int index = cytoPanel.indexOfComponent(ControlPanel.ID);
-		
 		if (index >= 0)
 			cytoPanel.setSelectedIndex(index);
 	}

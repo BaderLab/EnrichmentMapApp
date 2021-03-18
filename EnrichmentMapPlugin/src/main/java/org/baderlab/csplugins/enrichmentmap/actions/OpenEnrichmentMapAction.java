@@ -3,6 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.actions;
 import java.awt.event.ActionEvent;
 
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.work.Task;
@@ -20,6 +21,7 @@ public class OpenEnrichmentMapAction extends AbstractCyAction implements Task {
 
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 	@Inject private Provider<HeatMapMediator> heatMapMediatorProvider;
+	@Inject private CreationDialogShowAction masterMapDialogAction;
 
 	public OpenEnrichmentMapAction() {
 		super(NAME);
@@ -29,6 +31,7 @@ public class OpenEnrichmentMapAction extends AbstractCyAction implements Task {
 	public synchronized void showPanels() {
 		controlPanelMediatorProvider.get().showControlPanel();
 		heatMapMediatorProvider.get().showHeatMapPanel();
+		masterMapDialogAction.showDialog();
 	}
 	
 	@Override
