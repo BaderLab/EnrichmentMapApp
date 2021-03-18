@@ -231,6 +231,10 @@ public class EMStyleBuilder {
 			}
 			else if(scope == ONLY_DATASETS) {
 				setEdgePaint(vs, options);
+				setNodeChartDefaults(vs, chartType);
+				setNodeShapes(vs, options, chartType);
+				setNodeSize(vs, options, chartType);
+				setNodeChart(vs, chart);
 				setNodeColors(vs, options);
 			}
 			else if(scope == PUBLICATION_READY) {

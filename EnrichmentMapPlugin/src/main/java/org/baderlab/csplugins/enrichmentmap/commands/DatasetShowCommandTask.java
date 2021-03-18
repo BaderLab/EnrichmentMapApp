@@ -7,6 +7,7 @@ import java.util.Set;
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.DatasetListTunable;
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.NetworkTunable;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.cytoscape.view.model.CyNetworkView;
@@ -61,7 +62,7 @@ public class DatasetShowCommandTask extends AbstractTask {
 		}
 		
 		params.setFilteredOutDataSets(filteredOutNames);
-		controlPanelMediator.reset(params);
+		controlPanelMediator.reset(params, StyleUpdateScope.ONLY_DATASETS);
 	}
 
 }

@@ -284,6 +284,12 @@ public class ApplyStyleTest {
 		DiscreteMapping<String,Paint> nodeColorMapping = mock(DiscreteMapping.class);
 		when(dmFactory.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix), String.class, NODE_FILL_COLOR)).thenReturn(nodeColorMapping);
 		
+		DiscreteMapping<String,NodeShape> nodeShapeMapping = mock(DiscreteMapping.class);
+		when(dmFactory.createVisualMappingFunction(Columns.NODE_GS_TYPE.with(prefix), String.class, NODE_SHAPE)).thenReturn(nodeShapeMapping);
+		
+		ContinuousMapping<Integer,Double> nodeSizeMapping = mock(ContinuousMapping.class);
+		when(cmFactory.createVisualMappingFunction(Columns.NODE_GS_SIZE.with(prefix), Integer.class, NODE_SIZE)).thenReturn(nodeSizeMapping);
+		
 		// Create the style
 		VisualStyle vs = mock(VisualStyle.class);
 		CyNetworkView netView = mock(CyNetworkView.class);
@@ -298,12 +304,20 @@ public class ApplyStyleTest {
 		verify(edgeStrokeUnselectedPaintMapping).putMapValue("DataSet1", Color.BLUE);
 		verify(edgeStrokeUnselectedPaintMapping).putMapValue("DataSet2", Color.RED);
 		
+		// setNodeShapes()
+		verify(nodeShapeMapping).putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, NodeShapeVisualProperty.ELLIPSE);
+		verify(nodeShapeMapping).putMapValue(Columns.NODE_GS_TYPE_SIGNATURE,  NodeShapeVisualProperty.DIAMOND);
+		
+		// setNodeSize()
+		verify(nodeSizeMapping).addPoint(2,   new BoundaryRangeValues<>(20.0, 20.0, 20.0));
+		verify(nodeSizeMapping).addPoint(500, new BoundaryRangeValues<>(60.0, 60.0, 60.0));
+				
 		// setNodeColors()
 		verify(nodeColorMapping).putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_COLOR);
 		verify(nodeColorMapping).putMapValue(Columns.NODE_GS_TYPE_SIGNATURE,  Colors.SIG_NODE_COLOR);
 		
 		// Verify that nothing else was updated
-		verify(vs, times(3)).addVisualMappingFunction(any());
+		verify(vs, times(5)).addVisualMappingFunction(any());
 		verify(vs).addVisualMappingFunction(edgeUnselectedPaintMapping);
 		verify(vs).addVisualMappingFunction(edgeStrokeUnselectedPaintMapping);
 		verify(vs).addVisualMappingFunction(nodeColorMapping);

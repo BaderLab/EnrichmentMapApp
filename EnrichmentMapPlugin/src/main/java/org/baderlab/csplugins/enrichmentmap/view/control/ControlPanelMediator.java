@@ -237,7 +237,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		return future;
 	}
 	
-	public void reset(ViewParams params) {
+	public void reset(ViewParams params, StyleUpdateScope updateScope) {
 		long netViewID = params.getNetworkViewID();
 		
 		invokeOnEDT(() -> {
@@ -252,6 +252,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				return;
 			
 			try {
+				updating = true;
+				
 				// Update Filters
 				if (params.getPValue() != null && viewPanel.getPValueSliderPanel() != null)
 					viewPanel.getPValueSliderPanel().setValue(params.getPValue());
@@ -275,18 +277,21 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				// Update Style options
 				ChartOptions chartOptions = params.getChartOptions();
 				viewPanel.getChartDataCombo().setSelectedItem(chartOptions != null ? chartOptions.getData() : null);
+				viewPanel.updateChartCombos();
 				viewPanel.getChartTypeCombo().setSelectedItem(chartOptions != null ? chartOptions.getType() : null);
 				viewPanel.getChartColorsCombo().setSelectedItem(chartOptions != null ? chartOptions.getColorScheme() : null);
 				viewPanel.getShowChartLabelsCheck().setSelected(chartOptions != null && chartOptions.isShowLabels());
 				viewPanel.getPublicationReadyCheck().setSelected(params.isPublicationReady());
-				
 				viewPanel.updateChartDataCombo();
-				
-				updateVisualStyle(map, viewPanel, StyleUpdateScope.ALL);
-				filterNodesAndEdges(viewPanel, map);
 			} finally {
 				updating = false;
 			}
+			
+			if(updateScope != null) {
+				updateVisualStyle(map, viewPanel, updateScope);
+				filterNodesAndEdges(viewPanel, map);
+			}
+			
 		});
 	}
 	
@@ -492,7 +497,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				updateStyle = updateStyle || oldSize > 0 && newSize == 0;
 				
 				if (updateStyle) {
-					updateVisualStyle(map, viewPanel, StyleUpdateScope.ALL);
+					updateVisualStyle(map, viewPanel, StyleUpdateScope.ONLY_DATASETS);
 					heatMapMediatorProvider.get().reset();
 				} else {
 					netView.updateView();
@@ -785,7 +790,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		applyVisualStyle(options, scope);
 	}
 
-	private void applyVisualStyle(EMStyleOptions options, StyleUpdateScope scope) {
+	public void applyVisualStyle(EMStyleOptions options, StyleUpdateScope scope) {
 		ApplyEMStyleTask task = applyStyleTaskFactory.create(options, scope);
 		dialogTaskManager.execute(new TaskIterator(task), TaskUtil.allFinished(finishStatus -> {
 				EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(options.getNetworkView());

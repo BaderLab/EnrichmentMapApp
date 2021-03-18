@@ -81,7 +81,7 @@ public class SessionViewIO {
 							
 							if (params != null) {
 								params.setNetworkViewID(netView.getSUID());
-								controlPanelMediatorProvider.get().reset(params);
+								controlPanelMediatorProvider.get().reset(params, null);
 							}
 						}
 					}
