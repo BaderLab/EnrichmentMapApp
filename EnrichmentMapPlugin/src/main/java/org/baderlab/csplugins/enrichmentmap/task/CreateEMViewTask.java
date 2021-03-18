@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -53,7 +54,7 @@ public class CreateEMViewTask extends AbstractTask {
 		// This should probably get fixed so that the task only runs once...
 		
 		EMStyleOptions options = new EMStyleOptions(view, map);
-		ApplyEMStyleTask styleTask = applyStyleTaskFactory.create(options, false);
+		ApplyEMStyleTask styleTask = applyStyleTaskFactory.create(options, StyleUpdateScope.ALL);
 		
 		//apply force directed layout
 		CyLayoutAlgorithm layout = layoutManager.getLayout("force-directed");

@@ -21,6 +21,7 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.charts.AbstractChart;
 import org.baderlab.csplugins.enrichmentmap.style.charts.radialheatmap.RadialHeatMapChart;
@@ -59,16 +60,16 @@ public class ApplyEMStyleTask extends AbstractTask {
 	@Inject private Provider<ControlPanelMediator> controlPanelMediatorProvider;
 
 	private final EMStyleOptions options;
-	private final boolean updateChartOnly;
+	private final StyleUpdateScope scope;
 
 	public interface Factory {
-		ApplyEMStyleTask create(EMStyleOptions options, boolean updateChartOnly);
+		ApplyEMStyleTask create(EMStyleOptions options, StyleUpdateScope scope);
 	}
 
 	@Inject
-	public ApplyEMStyleTask(@Assisted EMStyleOptions options, @Assisted boolean updateChartOnly) {
+	public ApplyEMStyleTask(@Assisted EMStyleOptions options, @Assisted StyleUpdateScope scope) {
 		this.options = options;
-		this.updateChartOnly = updateChartOnly;
+		this.scope = scope;
 	}
 
 	@Override
@@ -177,12 +178,7 @@ public class ApplyEMStyleTask extends AbstractTask {
 		
 		CyCustomGraphics2<?> chart = createChart();
 		
-		if (updateChartOnly)
-			styleBuilderProvider.get().updateNodeChart(vs, options, chart);
-		else
-			styleBuilderProvider.get().updateProperties(vs, options, chart);
-		
-		
+		styleBuilderProvider.get().updateStyle(vs, options, chart, scope);
 	}
 
 	private VisualStyle getVisualStyle(EnrichmentMap map) {

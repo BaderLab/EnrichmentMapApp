@@ -7,6 +7,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.model.PostAnalysisParameters;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
@@ -68,7 +69,7 @@ public class PATaskFactory extends AbstractTaskFactory {
 			
 			TaskIterator tasks = new TaskIterator();
 			tasks.append(signatureTaskFactory.create(params, map, dataSetList));
-			tasks.append(applyStyleTaskFactory.create(options, false));
+			tasks.append(applyStyleTaskFactory.create(options, StyleUpdateScope.ONLY_EDGE_WIDTH));
 			
 			return tasks;
 		} else {

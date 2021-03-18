@@ -1,9 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.style;
 
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope.*;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
-import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.DIAMOND;
-import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.ELLIPSE;
-import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.RECTANGLE;
+import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.*;
 
 import java.awt.Color;
 import java.awt.Paint;
@@ -44,10 +43,12 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.jcolorbrewer.ColorBrewer;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 /**
  * Responsible for updating the EnrichmentMap styles.
  */
+@Singleton
 public class EMStyleBuilder {
 	
 	public final static String DEFAULT_NAME_SUFFIX = "Visual_Style"; // TEMPORARY probably won't be called 'MasterMap' in the final version
@@ -158,12 +159,25 @@ public class EMStyleBuilder {
 		private static final Color BG_COLOR = Color.WHITE;
 	}
 	
+	
+	public static enum StyleUpdateScope {
+		ALL,
+		ONLY_CHARTS,
+		ONLY_DATASETS,
+		ONLY_EDGE_WIDTH, // Need to update edge width when Post Analysis is run.
+		PUBLICATION_READY
+	}
+	
+	
 	@Inject private @Continuous  VisualMappingFunctionFactory cmFactory;
 	@Inject private @Discrete    VisualMappingFunctionFactory dmFactory;
 	@Inject private @Passthrough VisualMappingFunctionFactory pmFactory;
 	
 	@Inject private RenderingEngineManager renderingEngineManager;
 	@Inject private CyEventHelper eventHelper;
+	
+	private VisualMappingFunction<?, ?> nonPublicationReadyLabelMapping;
+	
 	
 	public static String getStyleName(EnrichmentMap map) {
 		String prefix = map.getParams().getStylePrefix();
@@ -182,37 +196,57 @@ public class EMStyleBuilder {
 		return chartType == null || chartType == ChartType.RADIAL_HEAT_MAP ? ELLIPSE : RECTANGLE;
 	}
 	
-	/**
-	 * Updates the whole EM style.
-	 */
-	public void updateProperties(VisualStyle vs, EMStyleOptions options, CyCustomGraphics2<?> chart) {
+	
+	public void updateStyle(VisualStyle vs, EMStyleOptions options, CyCustomGraphics2<?> chart, StyleUpdateScope scope) {
+		System.out.println("EMStyleBuilder.updateStyle(): " + scope);
+		String chartName = chart != null ? chart.getDisplayName() : null;
+		ChartType chartType = ChartType.toChartType(chartName);
+		
 		eventHelper.silenceEventSource(vs);
 		
 		try {
-			// Network Properties
-			vs.setDefaultValue(NETWORK_BACKGROUND_PAINT, Colors.BG_COLOR);    	        
-	    	
-			setEdgeDefaults(vs, options);
-			setEdgePaint(vs, options);
-			setEdgeWidth(vs, options);
-			setEdgeLineType(vs, options);
-	 		
-			String chartName = chart != null ? chart.getDisplayName() : null;
-			ChartType chartType = ChartType.toChartType(chartName);
-			
-			setNodeDefaults(vs, options, chartType);
-			setNodeShapes(vs, options, chartType);
-			setNodeSize(vs, options, chartType);
-			setNodeBorderColors(vs, options);
-			setNodeColors(vs, options);
-			setNodeLabels(vs, options);
-			setNodeTooltip(vs, options);
-			setNodeChart(vs, chart);
-			
-			if (options.isPublicationReady()) {
-				vs.removeVisualMappingFunction(BasicVisualLexicon.NODE_LABEL);
-				vs.setDefaultValue(BasicVisualLexicon.NODE_LABEL, "");
-				vs.setDefaultValue(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT, Color.WHITE);
+			if(scope == ALL) {
+				vs.setDefaultValue(NETWORK_BACKGROUND_PAINT, Colors.BG_COLOR);
+				setEdgeDefaults(vs, options);
+				setEdgePaint(vs, options);
+				setEdgeLineType(vs, options);
+				setEdgeWidth(vs, options);
+				setNodeShapes(vs, options, chartType);
+				setNodeSize(vs, options, chartType);
+				setNodeChart(vs, chart);
+				setNodeColors(vs, options);
+				setNodeDefaults(vs, options, chartType);
+				setNodeBorderColors(vs, options);
+				setNodeLabels(vs, options);
+				setNodeTooltip(vs, options);
+			}
+			else if(scope == ONLY_EDGE_WIDTH) {
+				setEdgeWidth(vs, options);
+			}
+			else if(scope == ONLY_CHARTS) {
+				setNodeChartDefaults(vs, chartType);
+				setNodeShapes(vs, options, chartType);
+				setNodeSize(vs, options, chartType);
+				setNodeChart(vs, chart);
+			}
+			else if(scope == ONLY_DATASETS) {
+				setEdgePaint(vs, options);
+				setNodeColors(vs, options);
+			}
+			else if(scope == PUBLICATION_READY) {
+				if (options.isPublicationReady()) {
+					nonPublicationReadyLabelMapping = vs.getVisualMappingFunction(NODE_LABEL);
+					vs.removeVisualMappingFunction(NODE_LABEL);
+					vs.setDefaultValue(NODE_LABEL, "");
+					vs.setDefaultValue(NETWORK_BACKGROUND_PAINT, Color.WHITE);
+				} else {
+					if(nonPublicationReadyLabelMapping != null) {
+						vs.addVisualMappingFunction(nonPublicationReadyLabelMapping);
+					} else {
+						setNodeLabels(vs, options);
+					}
+					vs.setDefaultValue(NETWORK_BACKGROUND_PAINT, Colors.BG_COLOR);
+				}
 			}
 		} finally {
 			eventHelper.unsilenceEventSource(vs);
@@ -220,28 +254,11 @@ public class EMStyleBuilder {
 		}
 	}
 	
-	public void updateNodeChart(VisualStyle vs, EMStyleOptions options, CyCustomGraphics2<?> chart) {
-		eventHelper.silenceEventSource(vs);
-		
-		try {
-			String chartName = chart != null ? chart.getDisplayName() : null;
-			ChartType chartType = ChartType.toChartType(chartName);
-			
-			setNodeChartDefaults(vs, chartType);
-			setNodeShapes(vs, options, chartType);
-			setNodeSize(vs, options, chartType);
-			setNodeChart(vs, chart);
-		} finally {
-			eventHelper.unsilenceEventSource(vs);
-			eventHelper.addEventPayload(vs, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
-		}
-	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void setNodeChart(VisualStyle vs, CyCustomGraphics2<?> chart) {
 		VisualLexicon lexicon = renderingEngineManager.getDefaultVisualLexicon();
 		VisualProperty customPaint1 = lexicon.lookup(CyNode.class, "NODE_CUSTOMGRAPHICS_1");
-		
 		if (customPaint1 != null)
 			vs.setDefaultValue(customPaint1, chart);
 	}
@@ -452,7 +469,7 @@ public class EMStyleBuilder {
 		
 		try {
 			dm.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_BORDER_COLOR);
-			dm.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, Colors.SIG_NODE_BORDER_COLOR);
+			dm.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE,  Colors.SIG_NODE_BORDER_COLOR);
 		} finally {
 			eventHelper.unsilenceEventSource(dm);
 		}

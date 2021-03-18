@@ -1,9 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.control;
 
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_DATASET_VALUE_COMPOUND;
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_INTERACTION_VALUE_SIG;
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE;
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE_ENRICHMENT;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.*;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
 import java.awt.BorderLayout;
@@ -62,6 +59,7 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
@@ -87,6 +85,7 @@ import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.IconUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
@@ -113,6 +112,7 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -183,7 +183,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			cytoPanel.setSelectedIndex(index);
 	}
 	
-	public void reset() {
+	public ListenableFuture<Void> reset() {
 		// Listen to events from EM Manager
 		emManager.addPropertyChangeListener("associatedEnrichmentMaps", evt -> {
 			// A GeneMANIA network (created from EM nodes) has been added...
@@ -202,7 +202,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			});
 		});
 		
-		invokeOnEDT(() -> {
+		ListenableFuture<Void> future = SwingUtil.invokeOnEDTFuture(() -> {
 			updating = true;
 			
 			try {
@@ -233,6 +233,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 
 			setCurrentNetworkView(applicationManager.getCurrentNetworkView());
 		});
+		
+		return future;
 	}
 	
 	public void reset(ViewParams params) {
@@ -280,7 +282,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				
 				viewPanel.updateChartDataCombo();
 				
-				updateVisualStyle(map, viewPanel);
+				updateVisualStyle(map, viewPanel, StyleUpdateScope.ALL);
 				filterNodesAndEdges(viewPanel, map);
 			} finally {
 				updating = false;
@@ -443,7 +445,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				filterNodesAndEdges(viewPanel, map);
 				ChartData data = (ChartData) viewPanel.getChartDataCombo().getSelectedItem();
 				if(data == ChartData.DATA_SET) {
-					updateVisualStyle(map, viewPanel, true);
+					updateVisualStyle(map, viewPanel, StyleUpdateScope.ONLY_CHARTS);
 				}
 			}
 		};
@@ -490,7 +492,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 				updateStyle = updateStyle || oldSize > 0 && newSize == 0;
 				
 				if (updateStyle) {
-					updateVisualStyle(map, viewPanel);
+					updateVisualStyle(map, viewPanel, StyleUpdateScope.ALL);
 					heatMapMediatorProvider.get().reset();
 				} else {
 					netView.updateView();
@@ -502,12 +504,12 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			paDialogMediatorProvider.get().showDialog(netView);
 		});
 		
-		viewPanel.getDataSetSelector().getColorButton().addActionListener(evt -> {
+		viewPanel.getDataSetSelector().getDataSetColorButton().addActionListener(evt -> {
 			boolean colorsChanged = showColorDialog(map);
 			if(colorsChanged) {
 				viewPanel.getDataSetSelector().update();
 				heatMapMediatorProvider.get().reset();
-				updateVisualStyle(map, viewPanel);
+				updateVisualStyle(map, viewPanel, StyleUpdateScope.ONLY_DATASETS);
 			}
 		});
 		
@@ -564,7 +566,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					updating = false;
 				}
 				
-				updateVisualStyle(map, viewPanel, true);
+				updateVisualStyle(map, viewPanel, StyleUpdateScope.ONLY_CHARTS);
 			}
 		});
 		viewPanel.getChartTypeCombo().addItemListener(evt -> {
@@ -578,23 +580,24 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					updating = false;
 				}
 				
-				updateVisualStyle(map, viewPanel, true);
+				updateVisualStyle(map, viewPanel, StyleUpdateScope.ONLY_CHARTS);
 			}
 		});
 		viewPanel.getChartColorsCombo().addItemListener(evt -> {
 			if (!updating && evt.getStateChange() == ItemEvent.SELECTED)
-				updateVisualStyle(map, viewPanel, true);
+				updateVisualStyle(map, viewPanel, StyleUpdateScope.ONLY_CHARTS);
 		});
 		viewPanel.getShowChartLabelsCheck().addActionListener(evt -> {
 			if (!updating)
-				updateVisualStyle(map, viewPanel, true);
+				updateVisualStyle(map, viewPanel, StyleUpdateScope.ONLY_CHARTS);
 		});
 		viewPanel.getPublicationReadyCheck().addActionListener(evt -> {
 			if (!updating)
-				updateVisualStyle(map, viewPanel);
+				updateVisualStyle(map, viewPanel, StyleUpdateScope.PUBLICATION_READY);
 		});
 		
-		viewPanel.getResetStyleButton().addActionListener(evt -> updateVisualStyle(map, viewPanel));
+		// MKTODO we should have a warning dialog when resetting the entire style
+		viewPanel.getResetStyleButton().addActionListener(evt -> resetStyle(map, viewPanel));
 		viewPanel.getSetEdgeWidthButton().addActionListener(evt -> showEdgeWidthDialog());
 		viewPanel.getShowLegendButton().addActionListener(evt -> showLegendDialog());
 		
@@ -765,17 +768,25 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 		);
 	}
 	
-	private void updateVisualStyle(EnrichmentMap map, EMViewControlPanel viewPanel) {
-		updateVisualStyle(map, viewPanel, false);
+	private void resetStyle(EnrichmentMap map, EMViewControlPanel viewPanel) {
+		int result = JOptionPane.showConfirmDialog(
+						viewPanel, 
+						"Reset all style mappings for this network to their EnrichmentMap defaults?",
+						"EnrichmentMap: Reset Style",
+						JOptionPane.OK_CANCEL_OPTION);
+		
+		if(result == JOptionPane.OK_OPTION) {
+			updateVisualStyle(map, viewPanel, StyleUpdateScope.ALL);
+		}
 	}
 	
-	private void updateVisualStyle(EnrichmentMap map, EMViewControlPanel viewPanel, boolean updateChartOnly) {
+	private void updateVisualStyle(EnrichmentMap map, EMViewControlPanel viewPanel, StyleUpdateScope scope) {
 		EMStyleOptions options = createStyleOptions(map, viewPanel);
-		applyVisualStyle(options, updateChartOnly);
+		applyVisualStyle(options, scope);
 	}
 
-	private void applyVisualStyle(EMStyleOptions options, boolean updateChartOnly) {
-		ApplyEMStyleTask task = applyStyleTaskFactory.create(options, updateChartOnly);
+	private void applyVisualStyle(EMStyleOptions options, StyleUpdateScope scope) {
+		ApplyEMStyleTask task = applyStyleTaskFactory.create(options, scope);
 		dialogTaskManager.execute(new TaskIterator(task), TaskUtil.allFinished(finishStatus -> {
 				EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(options.getNetworkView());
 				updateLegends(viewPanel);

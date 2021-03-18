@@ -173,7 +173,7 @@ public class DataSetSelector extends JPanel {
    				)
 				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
-						.addComponent(getColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getDataSetColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
    		);
@@ -185,7 +185,7 @@ public class DataSetSelector extends JPanel {
    				)
    				.addComponent(getTableScrollPane(), rh * 2, rh * 3, Short.MAX_VALUE)
    				.addGroup(layout.createParallelGroup(CENTER, false)
-   						.addComponent(getColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+   						.addComponent(getDataSetColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    		);
@@ -344,7 +344,7 @@ public class DataSetSelector extends JPanel {
 		return addButton;
 	}
 	
-	JButton getColorButton() {
+	JButton getDataSetColorButton() {
 		if (colorButton == null) {
 			colorButton = new JButton("Change Colors...");
 			colorButton.setToolTipText("Change data set colors");
