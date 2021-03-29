@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap;
 
 import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
 import org.baderlab.csplugins.enrichmentmap.commands.ChartCommandTask;
+import org.baderlab.csplugins.enrichmentmap.commands.DatasetColorCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.DatasetShowCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.EMBuildCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.EMGseaCommandTask;
@@ -88,6 +89,12 @@ public class CommandModule extends AbstractModule {
 		String desc = "Allows to de-select the data sets to show in an EnrichmentMap network.";
 		String longDesc = "This command is basically the same as clicking the checkboxes next to the data sets in the main EnrichmentMap panel.";
 		return CommandTaskFactory.create("dataset hide", desc, longDesc, () -> taskFactory.create(false));
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideDatasetColor(Provider<DatasetColorCommandTask> taskProvider) {
+		String desc = "Allows to change the colors assigned to data sets.";
+		return CommandTaskFactory.create("dataset color", desc, null, taskProvider);
 	}
 	
 	@ProvidesIntoSet

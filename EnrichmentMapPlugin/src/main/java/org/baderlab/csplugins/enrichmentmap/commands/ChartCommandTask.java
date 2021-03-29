@@ -10,7 +10,6 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope;
-import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.cytoscape.view.model.CyNetworkView;
@@ -23,7 +22,6 @@ import com.google.inject.Inject;
 public class ChartCommandTask extends AbstractTask {
 
 	@Inject private ControlPanelMediator controlPanelMediator;
-	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
 	
 	@ContainsTunables @Inject
 	public NetworkTunable networkTunable;
