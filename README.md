@@ -1,6 +1,9 @@
 EnrichmentMapApp
 ================
 
-Enrichment Map Cytoscape App
+EnrichmentMap Cytoscape App
 
-http://baderlab.org/Software/EnrichmentMap
+
+https://apps.cytoscape.org/apps/enrichmentmap
+
+https://enrichmentmap.readthedocs.io/en/latest/
