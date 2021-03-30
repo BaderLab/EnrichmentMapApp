@@ -261,16 +261,13 @@ public class ApplyEMStyleTask extends AbstractTask {
 					
 					ColorScheme colorScheme = chartOptions != null ? chartOptions.getColorScheme() : null;
 					
-					if (colorScheme != null && colorScheme.getPoints() != null) {
-						List<Double> points = colorScheme.getPoints();
-						
-						if (!points.isEmpty())
-							props.put(AbstractChart.COLOR_POINTS, points);
-					}
+					if (colorScheme != null && !colorScheme.getPoints().isEmpty()) {
+						props.put(AbstractChart.COLOR_POINTS, colorScheme.getPoints());
+					} 
 				}
+				
 				try {
 					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
-					
 					if (factory != null)
 						chart = factory.getInstance(props);
 				} catch (Exception e) {

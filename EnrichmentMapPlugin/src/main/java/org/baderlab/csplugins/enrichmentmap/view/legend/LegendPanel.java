@@ -325,8 +325,16 @@ public class LegendPanel extends JPanel implements LegendContent {
 			double max = range.get(1);
 			
 			String posMaxLabel = max > 0 ? String.format("%.2f", max) : "N/A";
-			Color posMaxColor = colors.get(0);
-			Color posMinColor = colors.get(colors.size()/2);
+			Color posMaxColor;
+			Color posMinColor;
+			if(data == ChartData.NES_VALUE) {
+				posMaxColor = colors.get(0);
+				posMinColor = colors.get(colors.size()/2);
+			} else {
+				posMaxColor = colors.get(colors.size()/2);
+				posMinColor = colors.get(0);
+			}
+			
 			chartPosLegend = new ColorLegendPanel(posMaxColor, posMinColor, posMaxLabel, "0", false);
 			JLabel posLabel = new JLabel("Positive");
 			SwingUtil.makeSmall(posLabel);

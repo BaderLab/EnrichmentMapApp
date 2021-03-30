@@ -198,7 +198,6 @@ public class EMStyleBuilder {
 	
 	
 	public void updateStyle(VisualStyle vs, EMStyleOptions options, CyCustomGraphics2<?> chart, StyleUpdateScope scope) {
-		System.out.println("EMStyleBuilder.updateStyle(): " + scope);
 		String chartName = chart != null ? chart.getDisplayName() : null;
 		ChartType chartType = ChartType.toChartType(chartName);
 		
