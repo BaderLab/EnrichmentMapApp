@@ -79,6 +79,7 @@ public class UploadFileResource {
 			}
 
 			String absPath = tempFile.getAbsolutePath();
+			absPath = absPath.replace("\\", "\\\\");
 			String response = String.format("{\"path\" : \"%s\"}", absPath);
 			return Response.status(200).entity(response).build();
 			
