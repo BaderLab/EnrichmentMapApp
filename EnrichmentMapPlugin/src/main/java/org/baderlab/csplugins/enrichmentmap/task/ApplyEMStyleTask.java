@@ -145,7 +145,9 @@ public class ApplyEMStyleTask extends AbstractTask {
 			int dataSetIndex = 0;
 			for(AbstractDataSet ds : dataSets) {
 				for(Long nodeSuid : ds.getNodeSuids()) {
-					columnData.get(nodeSuid)[dataSetIndex] = 1;
+					if(columnData.containsKey(nodeSuid)) {
+						columnData.get(nodeSuid)[dataSetIndex] = 1;
+					}
 				}
 				dataSetIndex++;
 			}
@@ -159,7 +161,9 @@ public class ApplyEMStyleTask extends AbstractTask {
 				for(Long nodeSuid : ds.getNodeSuids()) {
 					CyRow row = nodeTable.getRow(nodeSuid);
 					if(column == null || FilterUtil.passesFilter(column, nodeTable, row, maxCutoff, minCutoff)) {
-						columnData.get(nodeSuid)[dataSetIndex] = 1;
+						if(columnData.containsKey(nodeSuid)) {
+							columnData.get(nodeSuid)[dataSetIndex] = 1;
+						}
 					}
 				}
 				dataSetIndex++;

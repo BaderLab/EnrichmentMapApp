@@ -543,12 +543,11 @@ public class EMStyleBuilder {
 			for (EMSignatureDataSet sds : signatureDataSets) {
 				for (Long suid : sds.getNodeSuids()) {
 					CyNode node = net.getNode(suid);
-					
 					if (node != null) {
 						View<CyNode> nv = netView.getNodeView(node);
-						
-						if (nv != null)
+						if (nv != null) {
 							nv.setLockedValue(NODE_FILL_COLOR, Colors.SIG_NODE_COLOR);
+						}
 					}
 				}
 			}

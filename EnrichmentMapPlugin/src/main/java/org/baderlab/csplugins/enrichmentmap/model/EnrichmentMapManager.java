@@ -43,17 +43,26 @@
 
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.baderlab.csplugins.enrichmentmap.model.event.AssociatedEnrichmentMapsChangedEvent;
+import org.baderlab.csplugins.enrichmentmap.model.event.EnrichmentMapAddedEvent;
+import org.baderlab.csplugins.enrichmentmap.model.io.ModelSerializer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.events.NetworkViewAddedEvent;
+import org.cytoscape.view.model.events.NetworkViewAddedListener;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -61,7 +70,7 @@ import com.google.inject.Singleton;
 
 
 @Singleton
-public class EnrichmentMapManager {
+public class EnrichmentMapManager implements NetworkAboutToBeDestroyedListener, NetworkViewAddedListener {
 	
 	private Map<Long, EnrichmentMap> enrichmentMaps = new LinkedHashMap<>();
 	private Map<Long, EnrichmentMap> associatedEnrichmentMaps = new LinkedHashMap<>();
@@ -69,41 +78,83 @@ public class EnrichmentMapManager {
 	private Map<Long, HeatMapParams> heatMapParamsEdges = new HashMap<>();
 	
 	@Inject private Provider<PADialogMediator> postAnalysisMediatorProvider;
+	
+	@Inject private CyEventHelper eventHelper;
+	@Inject private CyNetworkManager networkManager;
+	@Inject private CyRootNetworkManager rootNetworkManager;
+	
 
-	private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+	/**
+	 * If the user creates a new network under the same network collection, we can just reuse the model.
+	 */
+	@Override
+	public void handleEvent(NetworkViewAddedEvent e) {
+		if(isEnrichmentMap(e.getNetworkView())) 
+			return;
+		
+		CyNetwork newNetwork = e.getNetworkView().getModel();
+		CyRootNetwork newNetworkRoot = rootNetworkManager.getRootNetwork(newNetwork);
+		
+		for(Long networkSuid : enrichmentMaps.keySet()) {
+			CyNetwork network = networkManager.getNetwork(networkSuid);
+			CyRootNetwork root = rootNetworkManager.getRootNetwork(network);
+			if(root == newNetworkRoot) {
+				System.out.println("Copying EnrichmentMap model");
+				// newly created network is under an enrichmentmap network
+				EnrichmentMap map = getEnrichmentMap(network.getSUID());
+				if(map != null) {
+					EnrichmentMap newMap = ModelSerializer.deepCopy(map);
+					newMap.setNetworkID(newNetwork.getSUID());
+					registerEnrichmentMap(newMap);
+				}
+				return;
+			}
+		}
+	}
+	
+	@Override
+	public void handleEvent(NetworkAboutToBeDestroyedEvent e) {
+		removeEnrichmentMap(e.getNetwork().getSUID());
+	}
+	
 	
 	/**
 	 * Registers a newly created Network.
 	 */
 	public void registerEnrichmentMap(EnrichmentMap map) {
-		enrichmentMaps.put(map.getNetworkID(), map);
+		if(enrichmentMaps.containsKey(map.getNetworkID()))
+			return;
 		
+		enrichmentMaps.put(map.getNetworkID(), map);
 		for (Long id : map.getAssociatedNetworkIDs())
 			associatedEnrichmentMaps.put(id, map);
+		
+		// This event is reentrant (fires on the same thread that called registerEnrichmentMap). But that is safe 
+		// because the only listeners are inside this App so we can control what code is actually being run here.
+		eventHelper.fireEvent(new EnrichmentMapAddedEvent(this, map));
 	}
 
+	
 	public Map<Long, EnrichmentMap> getAllEnrichmentMaps() {
 		return new LinkedHashMap<>(enrichmentMaps);
 	}
 
+	
 	public EnrichmentMap getEnrichmentMap(Long networkId) {
 		EnrichmentMap map = enrichmentMaps.get(networkId);
-		
 		return map != null ? map : associatedEnrichmentMaps.get(networkId);
 	}
 	
+	
 	public EnrichmentMap removeEnrichmentMap(Long networkId) {
 		EnrichmentMap map = enrichmentMaps.remove(networkId);
-		
 		if (map != null)
 			postAnalysisMediatorProvider.get().removeEnrichmentMap(map);
 		
 		// Update our internal genemania map and fire an event if it changed
-		Map<Long, EnrichmentMap> oldValue = getAssociatedEnrichmentMaps();
-		
-		if (associatedEnrichmentMaps.remove(networkId) != null)
-			pcs.firePropertyChange("associatedEnrichmentMaps", oldValue, getAssociatedEnrichmentMaps());
-		
+		if (associatedEnrichmentMaps.remove(networkId) != null) {
+			eventHelper.fireEvent(new AssociatedEnrichmentMapsChangedEvent(this, map, getAssociatedEnrichmentMaps()));
+		}
 		return map;
 	}
 	
@@ -127,10 +178,9 @@ public class EnrichmentMapManager {
 		Columns.EM_ASSOCIATED_APP.set(table.getRow(network.getSUID()), app.name());
 		
 		// Update our internal map and fire an event if it changed
-		Map<Long, EnrichmentMap> oldValue = getAssociatedEnrichmentMaps();
-		
-		if (associatedEnrichmentMaps.put(network.getSUID(), map) == null)
-			pcs.firePropertyChange("associatedEnrichmentMaps", oldValue, getAssociatedEnrichmentMaps());
+		if (associatedEnrichmentMaps.put(network.getSUID(), map) == null) {
+			eventHelper.fireEvent(new AssociatedEnrichmentMapsChangedEvent(this, map, getAssociatedEnrichmentMaps()));
+		}
 	}
 	
 	public boolean isAssociatedEnrichmentMap(Long networkId) {
@@ -160,27 +210,9 @@ public class EnrichmentMapManager {
 	}
 	
 	public void reset() {
-		for (PropertyChangeListener listener : pcs.getPropertyChangeListeners())
-			pcs.removePropertyChangeListener(listener);
-		
 		enrichmentMaps.clear();
 		associatedEnrichmentMaps.clear();
 		heatMapParams.clear();
 	}
-	
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		pcs.addPropertyChangeListener(listener);
-	}
 
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		pcs.removePropertyChangeListener(listener);
-	}
-
-	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-		pcs.addPropertyChangeListener(propertyName, listener);
-	}
-
-	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-		pcs.removePropertyChangeListener(propertyName, listener);
-	}
 }

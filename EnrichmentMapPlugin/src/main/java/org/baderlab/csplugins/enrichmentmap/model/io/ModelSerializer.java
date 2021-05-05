@@ -34,10 +34,16 @@ public class ModelSerializer {
 
 	private static final Logger logger = LoggerFactory.getLogger(ModelSerializer.class);
 
+	
+	public static EnrichmentMap deepCopy(EnrichmentMap map) {
+		// This could be done with less memory probably.
+		return deserialize(serialize(map));
+	}
+	
 	public static String serialize(EnrichmentMap map) {
 		return serialize(map, false);
 	}
-
+	
 	public static String serialize(EnrichmentMap map, boolean pretty) {
 		// When saving to the session file DO NOT enable pretty printing, the Cytoscape
 		// CSV parser is very slow for multi-line text

@@ -53,6 +53,12 @@ import org.baderlab.csplugins.enrichmentmap.model.ExpressionCache;
 import org.baderlab.csplugins.enrichmentmap.model.ExpressionData;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.model.Uncompressed;
+import org.baderlab.csplugins.enrichmentmap.model.event.AssociatedEnrichmentMapsChangedEvent;
+import org.baderlab.csplugins.enrichmentmap.model.event.AssociatedEnrichmentMapsChangedListener;
+import org.baderlab.csplugins.enrichmentmap.model.event.EnrichmentMapAboutToBeRemovedEvent;
+import org.baderlab.csplugins.enrichmentmap.model.event.EnrichmentMapAboutToBeRemovedListener;
+import org.baderlab.csplugins.enrichmentmap.model.event.EnrichmentMapAddedEvent;
+import org.baderlab.csplugins.enrichmentmap.model.event.EnrichmentMapAddedListener;
 import org.baderlab.csplugins.enrichmentmap.style.AssociatedStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
@@ -103,10 +109,6 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
-import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
-import org.cytoscape.view.model.events.NetworkViewAddedEvent;
-import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskIterator;
@@ -118,7 +120,7 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
-public class ControlPanelMediator implements SetCurrentNetworkViewListener, NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener {
+public class ControlPanelMediator implements SetCurrentNetworkViewListener, EnrichmentMapAddedListener, EnrichmentMapAboutToBeRemovedListener, AssociatedEnrichmentMapsChangedListener {
 
 	@Inject private Provider<ControlPanel> controlPanelProvider;
 	@Inject private Provider<LegendPanelMediator> legendPanelMediatorProvider;
@@ -181,28 +183,28 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 			cytoPanel.setSelectedIndex(index);
 	}
 	
-	public ListenableFuture<Void> reset() {
-		// Listen to events from EM Manager
-		emManager.addPropertyChangeListener("associatedEnrichmentMaps", evt -> {
-			// A GeneMANIA network (created from EM nodes) has been added...
-			invokeOnEDT(() -> {
-				updating = true;
-			
-				try {
-					getControlPanel().updateEmViewCombo();
-					CyNetworkView netView = applicationManager.getCurrentNetworkView();
-					
-					if (netView != null && emManager.isAssociatedEnrichmentMap(netView))
-						setCurrentNetworkView(netView);
-				} finally {
-					updating = false;
+	
+	@Override
+	public void handleEvent(AssociatedEnrichmentMapsChangedEvent e) {
+		// A GeneMANIA network (created from EM nodes) has been added...
+		invokeOnEDT(() -> {
+			updating = true;
+			try {
+				getControlPanel().updateEmViewCombo();
+				CyNetworkView netView = applicationManager.getCurrentNetworkView();
+				if (netView != null && emManager.isAssociatedEnrichmentMap(netView)) {
+					setCurrentNetworkView(netView);
 				}
-			});
+			} finally {
+				updating = false;
+			}
 		});
-		
+	}
+	
+	
+	public ListenableFuture<Void> reset() {
 		ListenableFuture<Void> future = SwingUtil.invokeOnEDTFuture(() -> {
 			updating = true;
-			
 			try {
 				for (CyNetworkView view : networkViewManager.getNetworkViewSet())
 					getControlPanel().removeEnrichmentMapView(view);
@@ -220,7 +222,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 					
 					if (network != null) {
 						Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
-						
 						for (CyNetworkView netView : networkViews)
 							addNetworkView(netView);
 					}
@@ -368,27 +369,22 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Netw
 	}
 
 	@Override
-	public void handleEvent(NetworkViewAddedEvent e) {
-		CyNetworkView netView = e.getNetworkView();
-		
-		if (netView != null && emManager.getEnrichmentMap(netView.getModel().getSUID()) != null) {
-			invokeOnEDT(() -> {
-				updating = true;
-			
-				try {
-					getControlPanel().updateEmViewCombo();
-				} finally {
-					updating = false;
-				}
-			});
-		}
+	public void handleEvent(EnrichmentMapAddedEvent e) {
+		invokeOnEDT(() -> {
+			updating = true;
+			try {
+				getControlPanel().updateEmViewCombo();
+			} finally {
+				updating = false;
+			}
+		});
 	}
 	
 	@Override
-	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
+	public void handleEvent(EnrichmentMapAboutToBeRemovedEvent e) {
 		final CyNetworkView netView = e.getNetworkView();
-		Timer timer = filterTimers.remove(netView);
 		
+		Timer timer = filterTimers.remove(netView);
 		if (timer != null)
 			timer.stop();
 		
