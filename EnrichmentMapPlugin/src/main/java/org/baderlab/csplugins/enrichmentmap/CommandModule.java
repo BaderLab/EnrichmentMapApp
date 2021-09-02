@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap;
 
-import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapAction;
+import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapPanelsAction;
 import org.baderlab.csplugins.enrichmentmap.commands.ChartCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.DatasetColorCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.DatasetShowCommandTask;
@@ -28,19 +28,19 @@ public class CommandModule extends AbstractModule {
 	
 	
 	@ProvidesIntoSet
-	public CommandTaskFactory provideBuild(Provider<EMBuildCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+	public CommandTaskFactory provideBuild(Provider<EMBuildCommandTask> taskProvider, OpenEnrichmentMapPanelsAction showTask) {
 		String desc = "Creates an EnrichmentMap network containing one or two data sets.";
 		return CommandTaskFactory.create("build", desc, null, taskProvider, showTask);
 	}
 	
 	@ProvidesIntoSet
-	public CommandTaskFactory provideGSEA(Provider<EMGseaCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+	public CommandTaskFactory provideGSEA(Provider<EMGseaCommandTask> taskProvider, OpenEnrichmentMapPanelsAction showTask) {
 		String desc = "Creates an EnrichmetMap network from one or two GSEA results. (Deprecated, use 'build' or 'mastermap' command instead.)";
 		return CommandTaskFactory.create("gseabuild", desc, null, taskProvider, showTask);
 	}
 	
 	@ProvidesIntoSet
-	public CommandTaskFactory provideMastermap(Provider<MastermapCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+	public CommandTaskFactory provideMastermap(Provider<MastermapCommandTask> taskProvider, OpenEnrichmentMapPanelsAction showTask) {
 		String desc = "Creates an EnrichmentMap network containing any number of data sets by scanning files in a folder.";
 		String longDesc = "Uses the same algorithm as the Create EnrichmentMap Dialog to scan the files in a folder and "
 				+ "automatically group them into data sets. Sub-folders will be scanned up to one level deep, allowing you to "
@@ -71,7 +71,7 @@ public class CommandModule extends AbstractModule {
 	}
 	
 	@ProvidesIntoSet
-	public CommandTaskFactory provideBuildTable(Provider<TableCommandTask> taskProvider, OpenEnrichmentMapAction showTask) {
+	public CommandTaskFactory provideBuildTable(Provider<TableCommandTask> taskProvider, OpenEnrichmentMapPanelsAction showTask) {
 		String desc = "Creates an EnrichmentMap network from values in a table.";
 		String longDesc = "Intended mainly for other Apps to programatically create an EnrichmentMap network.";
 		return CommandTaskFactory.create("build-table", desc, longDesc, taskProvider, showTask);
