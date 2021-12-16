@@ -21,6 +21,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
 /**
@@ -43,17 +44,17 @@ public class EMGseaCommandTask extends AbstractTask {
 	@Tunable(description="overlap", groups={"User Input","Parameters"}, gravity = 19.0, tooltip="coeffecient between 0 and 1.")
 	public Double overlap = 0.25;
 	
-	@Tunable(description="similaritymetric", groups={"User Input","Parameters"}, gravity = 20.0, tooltip="coeffecient between 0 and 1.")
+	@Tunable(description="similaritymetric", groups={"User Input","Parameters"}, gravity = 20.0, tooltip="JACCARD, OVERLAP or COMBINED. Default is OVERLAP.")
 	public ListSingleSelection<String> similaritymetric;
 	
 	@Tunable(description="expressionfile")
-	public String expressionfile = "expressionfile";
+	public String expressionfile = "";
 	
 	@Tunable(description="expressionfile2")
-	public String expressionfile2 = "expressionfile2";
+	public String expressionfile2 = "";
 
-	@Tunable(description="combinedconstant ", groups={"User Input","Parameters"}, gravity = 19.0, tooltip="coeffecient between 0 and 1.")
-	public Double combinedconstant ;
+	@Tunable(description="combinedconstant ", groups={"User Input","Parameters"}, gravity = 19.0, tooltip="Value between 0 and 1, only used when the similaritymetric is OVERLAP, default is 0.5.")
+	public Double combinedconstant = 0.5;
 
 	
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
@@ -64,8 +65,8 @@ public class EMGseaCommandTask extends AbstractTask {
 		similaritymetric = new ListSingleSelection<String>(EnrichmentMapParameters.SM_OVERLAP, EnrichmentMapParameters.SM_JACCARD, EnrichmentMapParameters.SM_COMBINED);
 	}
 
-	
-	private void buildEnrichmentMap(){
+	@Override
+	public void run(TaskMonitor taskMonitor) throws Exception {
 		//set all files as extracted from the edb directory
 		List<DataSetParameters> dataSets = new ArrayList<>(2);
 		DataSetFiles files1 = initializeFiles(edbdir, expressionfile);
@@ -111,17 +112,15 @@ public class EMGseaCommandTask extends AbstractTask {
 		DataSetFiles files = new DataSetFiles();		
 		files.setEnrichmentFileName1(testEdbResultsFileName);
 		files.setGMTFileName(testgmtFileName);
-		if(!testrnkFileName.equals(""))
+		
+		if(!Strings.isNullOrEmpty(testrnkFileName)) {
 			files.setRankedFile(testrnkFileName);
-		if(!exp.equals("")){
+		}
+		if(!Strings.isNullOrEmpty(exp)){
 			files.setExpressionFileName(exp);
 		}
+		
 		return files;
-	}
-
-	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		buildEnrichmentMap();
 	}
 
 }
