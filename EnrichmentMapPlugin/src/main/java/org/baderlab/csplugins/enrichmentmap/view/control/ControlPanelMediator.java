@@ -1,6 +1,9 @@
 package org.baderlab.csplugins.enrichmentmap.view.control;
 
-import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.*;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_DATASET_VALUE_COMPOUND;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_INTERACTION_VALUE_SIG;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE;
+import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE_ENRICHMENT;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.invokeOnEDT;
 
 import java.awt.BorderLayout;
@@ -10,7 +13,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -470,7 +472,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 		if (sSliderPanel != null)
 			sSliderPanel.addChangeListener(e -> updateFilters.run());
 
-		viewPanel.getDataSetSelector().addPropertyChangeListener("checkedData", evt -> {
+		viewPanel.getDataSetSelector().addPropertyChangeListener(DataSetSelector.PROP_CHECKED_DATA_SETS, evt -> {
 			if (!updating) {
 				viewPanel.updateChartDataCombo();
 				
@@ -499,11 +501,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 			}
 		});
 		
-		viewPanel.getDataSetSelector().getAddButton().addActionListener(evt -> {
+		viewPanel.getDataSetSelector().getAddMenuItem().addActionListener(evt -> {
 			paDialogMediatorProvider.get().showDialog(netView);
 		});
 		
-		viewPanel.getDataSetSelector().getDataSetColorButton().addActionListener(evt -> {
+		viewPanel.getDataSetSelector().getDataSetColorMenuItem().addActionListener(evt -> {
 			boolean colorsChanged = showColorDialog(map);
 			if(colorsChanged) {
 				viewPanel.getDataSetSelector().update();
@@ -512,73 +514,38 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 			}
 		});
 		
-		viewPanel.getDataSetSelector().getTable().addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(final MouseEvent e) {
-				maybeShowContextMenu(e);
-			}
-			@Override
-			public void mouseReleased(final MouseEvent e) {
-				maybeShowContextMenu(e);
-			}
-			private void maybeShowContextMenu(final MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					final JPopupMenu contextMenu = new JPopupMenu();
-					{
-						JMenuItem mi = new JMenuItem("Select nodes and edges from selected data sets");
-						mi.addActionListener(evt -> selectNodesEdges(
-								viewPanel.getNetworkView(),
-								viewPanel.getDataSetSelector().getSelectedItems(),
-								map.getParams().getCreateDistinctEdges()
-						));
-						contextMenu.add(mi);
-					}
-					contextMenu.addSeparator();
-					{
-						Set<AbstractDataSet> selected = viewPanel.getDataSetSelector().getSelectedItems();
-						boolean onlySignatureSelected = !selected.isEmpty();
-						
-						for (AbstractDataSet ds : selected) {
-							if (ds instanceof EMSignatureDataSet == false) {
-								onlySignatureSelected = false;
-								break;
-							}
-						}
-						
-						JMenuItem mi = new JMenuItem("Remove selected signature gene sets");
-						mi.addActionListener(evt -> removeSignatureDataSets(map, viewPanel));
-						mi.setEnabled(onlySignatureSelected);
-						contextMenu.add(mi);
-					}
-					showContextMenu(contextMenu, e);
-				}
-			}
+		viewPanel.getDataSetSelector().getDeleteSignatureMenuItem().addActionListener(evt -> {
+			removeSignatureDataSets(map, viewPanel);
+		});
+		
+		viewPanel.getDataSetSelector().getSelectNodesMenuItem().addActionListener(evt -> {
+			selectNodesEdges(
+				viewPanel.getNetworkView(),
+				viewPanel.getDataSetSelector().getSelectedItems(),
+				map.getParams().getCreateDistinctEdges()
+			);
 		});
 		
 		viewPanel.getChartDataCombo().addItemListener(evt -> {
 			if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
 				updating = true;
-				
 				try {
 					viewPanel.updateChartCombos();
 				} finally {
 					updating = false;
 				}
-				
 				updateVisualStyle(map, viewPanel, StyleUpdateScope.ONLY_CHARTS);
 			}
 		});
 		viewPanel.getChartTypeCombo().addItemListener(evt -> {
 			if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
 				updating = true;
-				
 				try {
 					viewPanel.updateChartColorsCombo();
 					viewPanel.updateChartLabelsCheck();
 				} finally {
 					updating = false;
 				}
-				
 				updateVisualStyle(map, viewPanel, StyleUpdateScope.ONLY_CHARTS);
 			}
 		});

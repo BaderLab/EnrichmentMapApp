@@ -26,7 +26,9 @@ import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -47,9 +49,12 @@ import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-
+ 
 @SuppressWarnings("serial")
 public class DataSetSelector extends JPanel {
+	
+	public static final String PROP_CHECKED_DATA_SETS  = "checkedData";
+	
 	
 	private static final String[] HEARDER_NAMES = new String[]{ "", "", "Name", "" };
 	
@@ -62,10 +67,17 @@ public class DataSetSelector extends JPanel {
 	
 	private JTable table;
 	private JScrollPane tableScrollPane;
-	private JButton addButton;
-	private JButton colorButton;
-	private JButton selectAllButton;
-	private JButton selectNoneButton;
+	private JMenuItem addMenuItem;
+	private JMenuItem colorMenuItem;
+	private JMenuItem selectAllMenuItem;
+	private JMenuItem selectNoneMenuItem;
+	private JMenuItem selectNodesMenuItem;
+	private JMenuItem deleteSignatureMenuItem;
+//	private JButton addButton;
+//	private JButton colorButton;
+//	private JButton selectAllButton;
+//	private JButton selectNoneButton;
+	private JButton optionButton;
 	
 	private final EnrichmentMap map;
 	
@@ -137,7 +149,7 @@ public class DataSetSelector extends JPanel {
 		
 		getTable().repaint();
 		updateSelectionButtons();
-		firePropertyChange("checkedData", oldValue, getCheckedItems());
+		firePropertyChange(PROP_CHECKED_DATA_SETS, oldValue, getCheckedItems());
 	}
 	
 	public Set<AbstractDataSet> getSelectedItems() {
@@ -156,8 +168,6 @@ public class DataSetSelector extends JPanel {
 		JLabel titleLabel = new JLabel("Data Sets:");
 		makeSmall(titleLabel);
 		
-		LookAndFeelUtil.equalizeSize(getSelectAllButton(), getSelectNoneButton());
-		
 		final int rh = getTable().getRowHeight() + 2;
 		
 		final GroupLayout layout = new GroupLayout(this);
@@ -168,26 +178,16 @@ public class DataSetSelector extends JPanel {
    		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
    				.addGroup(layout.createSequentialGroup()
 						.addComponent(titleLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
 				.addComponent(getTableScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addGroup(layout.createSequentialGroup()
-						.addComponent(getDataSetColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				)
    		);
    		layout.setVerticalGroup(layout.createSequentialGroup()
    				.addGroup(layout.createParallelGroup(CENTER, false)
 						.addComponent(titleLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)
    				.addComponent(getTableScrollPane(), rh * 2, rh * 3, Short.MAX_VALUE)
-   				.addGroup(layout.createParallelGroup(CENTER, false)
-   						.addComponent(getDataSetColorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   						.addComponent(getAddButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   				)
    		);
 		
 		if (isAquaLAF())
@@ -243,8 +243,8 @@ public class DataSetSelector extends JPanel {
 				break;
 		}
 		
-		getSelectAllButton().setEnabled(hasUnchecked);
-		getSelectNoneButton().setEnabled(hasChecked);
+		getSelectAllMenuItem().setEnabled(hasUnchecked);
+		getSelectNoneMenuItem().setEnabled(hasChecked);
 	}
 	
 	JTable getTable() {
@@ -276,6 +276,7 @@ public class DataSetSelector extends JPanel {
 						previousSelectedRows = Arrays.stream(table.getSelectedRows()).boxed().collect(Collectors.toList());
 				}
 			});
+			
 			table.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent e) {
@@ -333,52 +334,94 @@ public class DataSetSelector extends JPanel {
 		return tableScrollPane;
 	}
 	
-	JButton getAddButton() {
-		if (addButton == null) {
-			addButton = new JButton(PADialogMediator.NAME);
-			addButton.setToolTipText("Post Analysis");
-			makeSmall(addButton);
-			if (isAquaLAF())
-				addButton.putClientProperty("JButton.buttonType", "gradient");
+	JMenuItem getAddMenuItem() {
+		if (addMenuItem == null) {
+			addMenuItem = new JMenuItem(PADialogMediator.NAME);
 		}
-		return addButton;
+		return addMenuItem;
 	}
 	
-	JButton getDataSetColorButton() {
-		if (colorButton == null) {
-			colorButton = new JButton("Change Colors...");
-			colorButton.setToolTipText("Change data set colors");
-			makeSmall(colorButton);
-			if (isAquaLAF())
-				colorButton.putClientProperty("JButton.buttonType", "gradient");
+	JMenuItem getDataSetColorMenuItem() {
+		if (colorMenuItem == null) {
+			colorMenuItem = new JMenuItem("Change data set colors...");
 		}
-		return colorButton;
+		return colorMenuItem;
 	}
 	
-	JButton getSelectAllButton() {
-		if (selectAllButton == null) {
-			selectAllButton = new JButton("Select All");
-			selectAllButton.addActionListener(evt -> {
+	JMenuItem getSelectAllMenuItem() {
+		if (selectAllMenuItem == null) {
+			selectAllMenuItem = new JMenuItem("Select All");
+			selectAllMenuItem.addActionListener(evt -> {
 				setCheckedToAllRows(true);
 			});
-			makeSmall(selectAllButton);
-			if (isAquaLAF())
-				selectAllButton.putClientProperty("JButton.buttonType", "gradient");
 		}
-		return selectAllButton;
+		return selectAllMenuItem;
 	}
 	
-	JButton getSelectNoneButton() {
-		if (selectNoneButton == null) {
-			selectNoneButton = new JButton("Select None");
-			selectNoneButton.addActionListener(evt -> {
+	JMenuItem getSelectNoneMenuItem() {
+		if (selectNoneMenuItem == null) {
+			selectNoneMenuItem = new JMenuItem("Select None");
+			selectNoneMenuItem.addActionListener(evt -> {
 				setCheckedToAllRows(false);
 			});
-			makeSmall(selectNoneButton);
-			if (isAquaLAF())
-				selectNoneButton.putClientProperty("JButton.buttonType", "gradient");
 		}
-		return selectNoneButton;
+		return selectNoneMenuItem;
+	}
+	
+	JMenuItem getSelectNodesMenuItem() {
+		if (selectNodesMenuItem == null) {
+			selectNodesMenuItem = new JMenuItem("Select nodes and edges from selected data sets");
+		}
+		return selectNodesMenuItem;
+	}
+	
+	JMenuItem getDeleteSignatureMenuItem() {
+		if (deleteSignatureMenuItem == null) {
+			deleteSignatureMenuItem = new JMenuItem("Remove selected signature gene sets");
+		}
+		return deleteSignatureMenuItem;
+	}
+	
+	JButton getOptionsButton() {
+		if (optionButton == null) {
+			optionButton = new JButton("Options...");
+			makeSmall(optionButton);
+			if (isAquaLAF())
+				optionButton.putClientProperty("JButton.buttonType", "gradient");
+			
+			optionButton.addActionListener(e -> {
+				getOptionsMenu().show(optionButton, 0, optionButton.getHeight());
+			});
+		}
+		return optionButton;
+	}
+	
+	private JPopupMenu getOptionsMenu() {
+		JPopupMenu menu = new JPopupMenu();
+		menu.add(getAddMenuItem());
+		menu.add(getDataSetColorMenuItem());
+		menu.addSeparator();
+		menu.add(getSelectAllMenuItem());
+		menu.add(getSelectNoneMenuItem());
+		menu.addSeparator();
+		menu.add(getSelectNodesMenuItem());
+		menu.add(getDeleteSignatureMenuItem());
+		
+		getDeleteSignatureMenuItem().setEnabled(isOnlySignatureSelected());
+		
+		return menu;
+	}
+		
+	private boolean isOnlySignatureSelected() {
+		Set<AbstractDataSet> selected = getSelectedItems();
+		boolean onlySignatureSelected = !selected.isEmpty();
+		for (AbstractDataSet ds : selected) {
+			if (ds instanceof EMSignatureDataSet == false) {
+				onlySignatureSelected = false;
+				break;
+			}
+		}
+		return onlySignatureSelected;
 	}
 	
 	private void setCheckedToAllRows(final boolean checked) {
@@ -393,7 +436,7 @@ public class DataSetSelector extends JPanel {
 		
 		getTable().repaint();
 		updateSelectionButtons();
-		firePropertyChange("checkedData", oldValue, getCheckedItems());
+		firePropertyChange(PROP_CHECKED_DATA_SETS, oldValue, getCheckedItems());
 	}
 	
 	private void toggleChecked(final int row) {
@@ -410,7 +453,7 @@ public class DataSetSelector extends JPanel {
 			
 			getTable().repaint();
 			updateSelectionButtons();
-			firePropertyChange("checkedData", oldValue, getCheckedItems());
+			firePropertyChange(PROP_CHECKED_DATA_SETS, oldValue, getCheckedItems());
 		}
 	}
 	
