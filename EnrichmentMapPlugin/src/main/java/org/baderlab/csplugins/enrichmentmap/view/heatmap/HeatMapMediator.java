@@ -336,27 +336,39 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		
 		// Remove Data Sets that are not part of the selected nodes/edges
 		if(propertyManager.isTrue(PropertyManager.HEATMAP_SELECT_SYNC)) {
-			boolean distinctEdges = map.getParams().getCreateDistinctEdges();
-			
-			Iterator<AbstractDataSet> iter = dataSets.iterator();
-			while(iter.hasNext()) {
-				AbstractDataSet ds = iter.next();
-				
-				boolean remove = true;
-				if(ds.containsAnyNode(selectedNodes))
-					remove = false;
-				else if(!distinctEdges && !selectedEdges.isEmpty())
-					remove = false;
-				else if(distinctEdges && ds.containsAnyEdge(selectedEdges))
-					remove = false;
-				
-				if(remove) {
-					iter.remove();
-				}
-			}
+			dataSets = filterDataSetsForSelection(dataSets, map, selectedNodes, selectedEdges);
 		}
 		
 		return dataSets;
+	}
+	
+	/**
+	 * Removes data sets from the dataSets List parameter that are not included by any of the selected nodes or edges.
+	 */
+	public static List<AbstractDataSet> filterDataSetsForSelection(
+			List<AbstractDataSet> dataSets, EnrichmentMap map, 
+			Collection<CyNode> selectedNodes, Collection<CyEdge> selectedEdges
+	) {
+		boolean distinctEdges = map.getParams().getCreateDistinctEdges();
+		List<AbstractDataSet> filteredDataSets = new ArrayList<>(dataSets);
+		
+		Iterator<AbstractDataSet> iter = filteredDataSets.iterator();
+		while(iter.hasNext()) {
+			AbstractDataSet ds = iter.next();
+			boolean remove = true;
+			if(ds.containsAnyNode(selectedNodes))
+				remove = false;
+			else if(!distinctEdges && !selectedEdges.isEmpty())
+				remove = false;
+			else if(distinctEdges && ds.containsAnyEdge(selectedEdges))
+				remove = false;
+			
+			if(remove) {
+				iter.remove();
+			}
+		}
+		
+		return filteredDataSets;
 	}
 	
 	

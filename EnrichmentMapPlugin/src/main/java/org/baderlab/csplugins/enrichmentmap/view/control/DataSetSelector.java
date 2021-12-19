@@ -14,6 +14,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -32,6 +33,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -73,10 +75,6 @@ public class DataSetSelector extends JPanel {
 	private JMenuItem selectNoneMenuItem;
 	private JMenuItem selectNodesMenuItem;
 	private JMenuItem deleteSignatureMenuItem;
-//	private JButton addButton;
-//	private JButton colorButton;
-//	private JButton selectAllButton;
-//	private JButton selectNoneButton;
 	private JButton optionButton;
 	
 	private final EnrichmentMap map;
@@ -150,6 +148,19 @@ public class DataSetSelector extends JPanel {
 		getTable().repaint();
 		updateSelectionButtons();
 		firePropertyChange(PROP_CHECKED_DATA_SETS, oldValue, getCheckedItems());
+	}
+	
+	public void setHighlightedDataSets(Collection<AbstractDataSet> dataSets) {
+		ListSelectionModel selectionModel = getTable().getSelectionModel();
+		selectionModel.clearSelection();
+		
+		final int rowCount = getTable().getRowCount();
+		for (int i = 0; i < rowCount; i++) {
+			AbstractDataSet ds = (AbstractDataSet) getTable().getValueAt(i, NAME_COL_IDX);
+			if(dataSets != null && dataSets.contains(ds)) {
+				selectionModel.addSelectionInterval(i, i);
+			}
+		}
 	}
 	
 	public Set<AbstractDataSet> getSelectedItems() {

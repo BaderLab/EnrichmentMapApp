@@ -76,6 +76,7 @@ import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask.FilterMode
 import org.baderlab.csplugins.enrichmentmap.task.SelectNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.UpdateAssociatedStyleTask;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.RemoveSignatureDataSetsTask;
+import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.AbstractViewControlPanel;
@@ -106,6 +107,9 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
@@ -122,7 +126,8 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
-public class ControlPanelMediator implements SetCurrentNetworkViewListener, EnrichmentMapAddedListener, EnrichmentMapAboutToBeRemovedListener, AssociatedEnrichmentMapsChangedListener {
+public class ControlPanelMediator implements SetCurrentNetworkViewListener, EnrichmentMapAddedListener,
+	EnrichmentMapAboutToBeRemovedListener, AssociatedEnrichmentMapsChangedListener, RowsSetListener {
 
 	@Inject private Provider<ControlPanel> controlPanelProvider;
 	@Inject private Provider<LegendPanelMediator> legendPanelMediatorProvider;
@@ -151,6 +156,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 	
 	private FilterMode filterMode = FilterMode.HIDE;
 	
+	private final CoalesceTimer selectionEventTimer = new CoalesceTimer(200, 1);
 	private Map<CyNetworkView, Timer> filterTimers = new HashMap<>();
 	
 	private boolean firstTime = true;
@@ -368,6 +374,45 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 			EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(e.getNetworkView());
 			updateLegends(viewPanel);
 		});
+	}
+	
+	@Override
+	public void handleEvent(RowsSetEvent e) {
+		// TODO Auto-generated method stub
+		if(e.containsColumn(CyNetwork.SELECTED)) {
+			CyNetworkView networkView = applicationManager.getCurrentNetworkView();
+			if(networkView != null) {
+				CyNetwork network = networkView.getModel();
+				// only handle event if it is a selected node
+				if(e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable()) {
+					selectionEventTimer.coalesce(() -> updateFromNodeSelection(networkView));
+				}
+			}
+		}
+	}
+	
+	private void updateFromNodeSelection(CyNetworkView networkView) {
+		if(networkView == null)
+			return;
+		
+		EnrichmentMap map = getCurrentMap();
+		if(map == null)
+			return;
+		
+		EMViewControlPanel controlPanel = getControlPanel().getViewControlPanel(networkView);
+		if(controlPanel == null)
+			return;
+		
+		CyNetwork network = networkView.getModel();
+		List<CyNode> selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
+		List<CyEdge> selectedEdges = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
+
+		List<AbstractDataSet> dataSets = new ArrayList<>(map.getDataSetList());
+		dataSets.addAll(map.getSignatureSetList());
+				
+		dataSets = HeatMapMediator.filterDataSetsForSelection(dataSets, map, selectedNodes, selectedEdges);
+		
+		controlPanel.getDataSetSelector().setHighlightedDataSets(dataSets);
 	}
 
 	@Override
