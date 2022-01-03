@@ -1,5 +1,10 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
+import static org.baderlab.csplugins.enrichmentmap.PropertyManager.HEATMAP_AUTOFOCUS;
+import static org.baderlab.csplugins.enrichmentmap.PropertyManager.HEATMAP_AUTO_SORT;
+import static org.baderlab.csplugins.enrichmentmap.PropertyManager.HEATMAP_DATASET_SYNC;
+import static org.baderlab.csplugins.enrichmentmap.PropertyManager.HEATMAP_SELECT_SYNC;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -14,8 +19,6 @@ import javax.swing.UIManager;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
-import org.baderlab.csplugins.enrichmentmap.PropertyManager.Property;
-import org.baderlab.csplugins.enrichmentmap.PropertyManager.PropertyListener;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.util.IconUtil;
 import org.cytoscape.util.swing.IconManager;
@@ -91,10 +94,10 @@ public class OptionsPopup extends JPopupMenu {
 		pearsonRadio.addActionListener(pearsonListener = distanceListenerFor(Distance.PEARSON));
 		distanceMenu.add(pearsonRadio);
 		
-		JCheckBoxMenuItem autofocusCheck = createPropItem(PropertyManager.HEATMAP_AUTOFOCUS,    "Auto-Focus HeatMap");
-		JCheckBoxMenuItem syncCheck      = createPropItem(PropertyManager.HEATMAP_DATASET_SYNC, "Sync Data Sets with Control Panel");
-		JCheckBoxMenuItem selectedCheck  = createPropItem(PropertyManager.HEATMAP_SELECT_SYNC,  "Display only selected Data Sets");
-		JCheckBoxMenuItem autoSortCheck  = createPropItem(PropertyManager.HEATMAP_AUTO_SORT,    "Auto sort leading edge");
+		JCheckBoxMenuItem autofocusCheck = propertyManager.createJCheckBoxMenuItem(HEATMAP_AUTOFOCUS,    "Auto-Focus HeatMap");
+		JCheckBoxMenuItem syncCheck      = propertyManager.createJCheckBoxMenuItem(HEATMAP_DATASET_SYNC, "Sync Data Sets with Control Panel");
+		JCheckBoxMenuItem selectedCheck  = propertyManager.createJCheckBoxMenuItem(HEATMAP_SELECT_SYNC,  "Display only selected Data Sets");
+		JCheckBoxMenuItem autoSortCheck  = propertyManager.createJCheckBoxMenuItem(HEATMAP_AUTO_SORT,    "Auto sort leading edge");
 		
 		add(geneManiaButton);
 		add(stringButton);
@@ -109,23 +112,6 @@ public class OptionsPopup extends JPopupMenu {
 		add(syncCheck);
 		add(selectedCheck);
 		add(autoSortCheck);
-	}
-	
-	
-	private JCheckBoxMenuItem createPropItem(Property<Boolean> property, String label) {
-		JCheckBoxMenuItem checkbox = new JCheckBoxMenuItem(label);
-		checkbox.setSelected(propertyManager.isTrue(property));
-		
-		PropertyListener<Boolean> listener = (prop, value) -> checkbox.setSelected(value);
-		propertyManager.addListener(property, listener);
-		
-		checkbox.addActionListener(e -> {
-			propertyManager.removeListener(property, listener);
-			propertyManager.setValue(property, checkbox.isSelected());
-			propertyManager.addListener(property, listener);
-		});
-		
-		return checkbox;
 	}
 	
 	

@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 
+import javax.swing.JCheckBoxMenuItem;
+
 import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTask;
 import org.baderlab.csplugins.enrichmentmap.view.creation.genemania.GenemaniaDialogParameters;
 import org.baderlab.csplugins.enrichmentmap.view.creation.genemania.StringDialogParameters;
@@ -43,6 +45,7 @@ public class PropertyManager implements PropertyUpdatedListener {
 	public static final Property<Boolean>  CREATE_WARN          = Property.of("create.warn", true);
 	public static final Property<Distance> DISTANCE_METRIC      = Property.of("default.distanceMetric", Distance.PEARSON, Distance::valueOf);
 	public static final Property<String>   PATHWAY_COMMONS_URL  = Property.of("pathway.commons.url", OpenPathwayCommonsTask.DEFAULT_BASE_URL);
+	public static final Property<Boolean>  CONTROL_DATASET_SELECT_SYNC = Property.of("control.dataset.sync", false);
 	
 	public static final Property<String> STRING_COLUMN_NAME  = Property.of("string.column.name",  StringDialogParameters.NAME_COLUMN_DEF);
 	public static final Property<String> STRING_COLUMN_FDR   = Property.of("string.column.fdr",   StringDialogParameters.FDR_COLUMN_DEF);
@@ -124,6 +127,10 @@ public class PropertyManager implements PropertyUpdatedListener {
 		return Boolean.TRUE.equals(getValue(property));
 	}
 	
+	public boolean isFalse(Property<Boolean> property) {
+		return !isTrue(property);
+	}
+	
 	@SuppressWarnings("rawtypes")
 	public static List<Property<?>> getAllProperties() {
 		List<Property<?>> properties = new ArrayList<>();
@@ -170,6 +177,23 @@ public class PropertyManager implements PropertyUpdatedListener {
 		public static Property<Double> of(String key, double defaultValue) {
 			return new Property<>(key, defaultValue, Double::valueOf);
 		}
+	}
+	
+	
+	public JCheckBoxMenuItem createJCheckBoxMenuItem(Property<Boolean> property, String label) {
+		JCheckBoxMenuItem checkbox = new JCheckBoxMenuItem(label);
+		checkbox.setSelected(isTrue(property));
+		
+		PropertyListener<Boolean> listener = (prop, value) -> checkbox.setSelected(value);
+		addListener(property, listener);
+		
+		checkbox.addActionListener(e -> {
+			removeListener(property, listener);
+			setValue(property, checkbox.isSelected());
+			addListener(property, listener);
+		});
+		
+		return checkbox;
 	}
 	
 }

@@ -40,6 +40,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.actions.ShowAboutDialogAction;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
@@ -141,6 +142,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private CreationDialogShowAction masterMapDialogAction;
 	@Inject private VisualMappingManager visualMappingManager;
+	@Inject private PropertyManager propertyManager;
 	
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyApplicationManager applicationManager;
@@ -378,7 +380,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 	
 	@Override
 	public void handleEvent(RowsSetEvent e) {
-		// TODO Auto-generated method stub
+		if(propertyManager.isFalse(PropertyManager.CONTROL_DATASET_SELECT_SYNC))
+			return;
+		
 		if(e.containsColumn(CyNetwork.SELECTED)) {
 			CyNetworkView networkView = applicationManager.getCurrentNetworkView();
 			if(networkView != null) {

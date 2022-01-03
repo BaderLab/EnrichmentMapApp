@@ -42,22 +42,25 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import org.baderlab.csplugins.enrichmentmap.AfterInjection;
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
  
 @SuppressWarnings("serial")
 public class DataSetSelector extends JPanel {
 	
 	public static final String PROP_CHECKED_DATA_SETS  = "checkedData";
-	
-	
 	private static final String[] HEARDER_NAMES = new String[]{ "", "", "Name", "" };
 	
 	private static final int SELECTED_COL_IDX = 0;
@@ -67,6 +70,10 @@ public class DataSetSelector extends JPanel {
 	
 	private static final Border CELL_BORDER = new EmptyBorder(0, 0, 0, 0);
 	
+	@Inject private PropertyManager propertyManager;
+	@Inject private IconManager iconManager;
+	
+	
 	private JTable table;
 	private JScrollPane tableScrollPane;
 	private JMenuItem addMenuItem;
@@ -75,23 +82,24 @@ public class DataSetSelector extends JPanel {
 	private JMenuItem selectNoneMenuItem;
 	private JMenuItem selectNodesMenuItem;
 	private JMenuItem deleteSignatureMenuItem;
+	private JMenuItem syncPropMenuItem;
 	private JButton optionButton;
 	
 	private final EnrichmentMap map;
 	
-	private final Set<AbstractDataSet> items;
-	private final Map<AbstractDataSet, Boolean> checkedItems;
+	private final Set<AbstractDataSet> items = new LinkedHashSet<>();
+	private final Map<AbstractDataSet, Boolean> checkedItems = new HashMap<>();
 	private List<Integer> previousSelectedRows;
 	
-	private final CyServiceRegistrar serviceRegistrar;
-
-	public DataSetSelector(final EnrichmentMap map, final CyServiceRegistrar serviceRegistrar) {
+	
+	public static interface Factory {
+		DataSetSelector create(EnrichmentMap map);
+	}
+	
+	@AssistedInject
+	public DataSetSelector(@Assisted EnrichmentMap map) {
 		this.map = map;
-		this.serviceRegistrar = serviceRegistrar;
-		this.items = new LinkedHashSet<>();
-		this.checkedItems = new HashMap<>();
-		
-		init();
+		// init() called using @AfterInjection
 	}
 
 	public void update() {
@@ -175,6 +183,7 @@ public class DataSetSelector extends JPanel {
 		return set;
 	}
 	
+	@AfterInjection
 	private void init() {
 		JLabel titleLabel = new JLabel("Data Sets:");
 		makeSmall(titleLabel);
@@ -393,6 +402,15 @@ public class DataSetSelector extends JPanel {
 		return deleteSignatureMenuItem;
 	}
 	
+	JMenuItem getSyncPropMenuItem() {
+		if (syncPropMenuItem == null) {
+			syncPropMenuItem = propertyManager.createJCheckBoxMenuItem(
+					PropertyManager.CONTROL_DATASET_SELECT_SYNC, 
+					"Highlight Datasets for Selected Nodes and Edges");
+		}
+		return syncPropMenuItem;
+	}
+	
 	JButton getOptionsButton() {
 		if (optionButton == null) {
 			optionButton = new JButton("Options...");
@@ -417,6 +435,7 @@ public class DataSetSelector extends JPanel {
 		menu.addSeparator();
 		menu.add(getSelectNodesMenuItem());
 		menu.add(getDeleteSignatureMenuItem());
+		menu.add(getSyncPropMenuItem());
 		
 		getDeleteSignatureMenuItem().setEnabled(isOnlySignatureSelected());
 		
@@ -472,7 +491,6 @@ public class DataSetSelector extends JPanel {
 		
 		final Font defFont;
 		final Font iconFont;
-		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 		
 		DefaultSelectorTableCellRenderer() {
 			defFont = getFont().deriveFont(LookAndFeelUtil.getSmallFontSize());
