@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.model.io;
 
+import java.awt.Color;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,6 +51,7 @@ public class ModelSerializer {
 		GsonBuilder builder = new GsonBuilder()
 				.registerTypeHierarchyAdapter(Path.class, new PathAdapter())
 				.registerTypeAdapter(EnrichmentResult.class, new EnrichmentResultAdapter())
+				.registerTypeHierarchyAdapter(Color.class, new ColorAdapter())
 				.serializeSpecialFloatingPointValues(); // really important, we allow NaN in expression files
 
 		if (pretty) {
@@ -68,6 +70,7 @@ public class ModelSerializer {
 				.registerTypeAdapter(BiMap.class, new BiMapAdapter())
 				.registerTypeHierarchyAdapter(Path.class, new PathAdapter())
 				.registerTypeAdapter(EnrichmentResult.class, new EnrichmentResultAdapter())
+				.registerTypeHierarchyAdapter(Color.class, new ColorAdapter())
 				.registerTypeAdapter(immutableIntSetType, new ImmutableIntSetAdapter()).create();
 
 		try {
@@ -121,6 +124,31 @@ public class ModelSerializer {
 		@Override
 		public JsonElement serialize(Path path, Type type, JsonSerializationContext context) {
 			return new JsonPrimitive(path.toString());
+		}
+	}
+	
+	public static class ColorAdapter implements JsonDeserializer<Color>, JsonSerializer<Color> {
+		@Override
+		public Color deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext context) {
+			int rgba = Color.GRAY.getRGB();
+			try {
+				if(jsonElement.isJsonObject()) {
+					JsonObject jsonObject = jsonElement.getAsJsonObject();
+					JsonElement element = jsonObject.get("value");
+					rgba = element.getAsInt();
+				} else if(jsonElement.isJsonPrimitive()) {
+					rgba = jsonElement.getAsInt();
+				}
+			} catch(Exception e) { }
+			
+			return new Color(rgba, true);
+		}
+
+		@Override
+		public JsonElement serialize(Color color, Type type, JsonSerializationContext context) {
+			JsonObject obj =  new JsonObject();
+			obj.add("value", new JsonPrimitive(color.getRGB()));
+			return obj;
 		}
 	}
 
