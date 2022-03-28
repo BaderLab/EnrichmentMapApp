@@ -1,6 +1,13 @@
 package org.baderlab.csplugins.enrichmentmap.model.io;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,6 +53,18 @@ public class ModelSerializer {
 	}
 	
 	public static String serialize(EnrichmentMap map, boolean pretty) {
+		var writer = new StringWriter();
+		serialize(map, pretty, writer);
+		return writer.toString();
+	}
+	
+	public static void serialize(EnrichmentMap map, File file) throws IOException {
+		try(var writer = new FileWriter(file)) {
+			serialize(map, true, writer);
+		}
+	}
+	
+	private static void serialize(EnrichmentMap map, boolean pretty, Appendable writer) {
 		// When saving to the session file DO NOT enable pretty printing, the Cytoscape
 		// CSV parser is very slow for multi-line text
 		GsonBuilder builder = new GsonBuilder()
@@ -54,16 +73,28 @@ public class ModelSerializer {
 				.registerTypeHierarchyAdapter(Color.class, new ColorAdapter())
 				.serializeSpecialFloatingPointValues(); // really important, we allow NaN in expression files
 
-		if (pretty) {
+		if(pretty)
 			builder.setPrettyPrinting();
-		}
 
 		Gson gson = builder.create();
-		String json = gson.toJson(map);
-		return json;
+		gson.toJson(map, writer);
+		
+	}
+	
+	public static EnrichmentMap deserialize(File file) throws IOException {
+		try(var reader = new FileReader(file)) {
+			return deserialize(reader);
+		}
 	}
 
 	public static EnrichmentMap deserialize(String json) {
+		try(var reader = new StringReader(json)) {
+			return deserialize(reader);
+		}
+	}
+	
+	
+	private static EnrichmentMap deserialize(Reader reader) {
 		Type immutableIntSetType = new TypeToken<ImmutableSet<Integer>>() {}.getType();
 
 		Gson gson = new GsonBuilder()
@@ -74,7 +105,7 @@ public class ModelSerializer {
 				.registerTypeAdapter(immutableIntSetType, new ImmutableIntSetAdapter()).create();
 
 		try {
-			EnrichmentMap map = gson.fromJson(json, EnrichmentMap.class);
+			EnrichmentMap map = gson.fromJson(reader, EnrichmentMap.class);
 			for (EMDataSet dataset : map.getDataSetList()) {
 				dataset.setParent(map);
 			}

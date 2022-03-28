@@ -1,5 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.model.io;
 
+import java.io.File;
+import java.util.List;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -44,7 +47,14 @@ public class SessionListener implements SessionLoadedListener, SessionAboutToBeS
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent event) {
 		if(sessionIsActuallySaving()) {
-			save();
+			List<File> files = save();
+			if(files != null && !files.isEmpty()) {
+				try {
+					event.addAppFiles(CyActivator.SESSION_DATA_FOLDER, files);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 	
@@ -60,11 +70,12 @@ public class SessionListener implements SessionLoadedListener, SessionAboutToBeS
 		return false;
 	}
 
-	public void save() {
-		modelIO.saveModel();
+	public List<File> save() {
 		if(!headless) {
 			viewIO.saveView();
 		}
+		List<File> files = modelIO.saveModel();
+		return files;
 	}
 	
 	public void restore(CySession session) {

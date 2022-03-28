@@ -52,6 +52,7 @@ import com.google.inject.TypeLiteral;
 public class CyActivator extends AbstractCyActivator {
 
 	public static final String APP_NAME = "EnrichmentMap";
+	public static final String SESSION_DATA_FOLDER = "EnrichmentMap.Data.1";
 	
 	private Injector injector;
 	
