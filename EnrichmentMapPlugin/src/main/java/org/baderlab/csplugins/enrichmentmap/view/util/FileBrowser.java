@@ -31,7 +31,8 @@ public class FileBrowser {
 
 	public static enum Filter {
 		GMT("GMT Files",
-			new FileChooserFilter("gmt Files", "gmt")
+			new FileChooserFilter("gmt Files", "gmt"),
+			new FileChooserFilter("txt Files", "txt")
 		),
 		ENRICHMENT("Enrichment Files",
 			new FileChooserFilter("gct Files", "xls"),
