@@ -35,6 +35,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -44,6 +46,7 @@ import org.baderlab.csplugins.enrichmentmap.model.Ranking;
 import org.baderlab.csplugins.enrichmentmap.model.UniverseType;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetric;
 import org.baderlab.csplugins.enrichmentmap.task.postanalysis.FilterMetricSet;
+import org.baderlab.csplugins.enrichmentmap.util.CoalesceTimer;
 import org.baderlab.csplugins.enrichmentmap.view.EnablementComboBoxRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
@@ -77,7 +80,7 @@ public class PAWeightPanel extends JPanel {
 	
 	private JComboBox<String> datasetCombo;
 	private JComboBox<PostAnalysisFilterType> rankTestCombo;
-	private JFormattedTextField rankTestTextField;
+	private JTextField rankTestTextField;
 	
 	private JRadioButton gmtRadioButton;
 	private JRadioButton intersectionRadioButton;
@@ -100,6 +103,7 @@ public class PAWeightPanel extends JPanel {
     
     private boolean rankTestUpdating = false;
     
+    private CoalesceTimer debouncer = new CoalesceTimer(1000, 1);
 
     public interface Factory {
     		PAWeightPanel create(EnrichmentMap map);
@@ -209,21 +213,12 @@ public class PAWeightPanel extends JPanel {
 		warnLabel.setVisible(message != null);
 	}
 	
-	
-	@SuppressWarnings("unchecked")
-	private JPanel createRankTestSelectPanel() {
-		JLabel testLabel = new JLabel(LABEL_TEST);
-		JLabel cuttofLabel = new JLabel(LABEL_CUTOFF);
-		JLabel dataSetLabel = new JLabel("Data Set:");
-
-		DECIMAL_FORMAT.setParseIntegerOnly(false);
-		rankTestTextField = new JFormattedTextField(DECIMAL_FORMAT);
-		rankTestTextField.setColumns(6);
-		rankTestTextField.setHorizontalAlignment(JTextField.RIGHT);
-		rankTestTextField.addPropertyChangeListener("value", e -> {
+	private void updateRankTestValue() {
+		debouncer.coalesce(() -> {
 			String text = rankTestTextField.getText();
 			try {
 				double val = DECIMAL_FORMAT.parse(text).doubleValue();
+				System.out.println("val:  " + val);
 				PostAnalysisFilterType filterType = getFilterType();
 				savedFilterValues.put(filterType, val);
 				showWarning(filterType.isValid(val) ? null : filterType.getErrorMessage());
@@ -233,6 +228,25 @@ public class PAWeightPanel extends JPanel {
 			
 			if(!rankTestUpdating)
 				firePropertyChange(PROPERTY_PARAMETERS, false, true);
+		});
+	}
+		
+	
+	private JPanel createRankTestSelectPanel() {
+		JLabel testLabel = new JLabel(LABEL_TEST);
+		JLabel cuttofLabel = new JLabel(LABEL_CUTOFF);
+		JLabel dataSetLabel = new JLabel("Data Set:");
+
+		DECIMAL_FORMAT.setParseIntegerOnly(false);
+		rankTestTextField = new JTextField();
+		rankTestTextField.setColumns(15);
+		rankTestTextField.setHorizontalAlignment(JTextField.RIGHT);
+		
+		rankTestTextField.addActionListener(e -> { updateRankTestValue(); });
+		rankTestTextField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override public void removeUpdate(DocumentEvent e) { updateRankTestValue(); }
+			@Override public void insertUpdate(DocumentEvent e) { updateRankTestValue(); }
+			@Override public void changedUpdate(DocumentEvent e) { }
 		});
 
 		rankingEnablementRenderer = new EnablementComboBoxRenderer<>();
@@ -250,7 +264,7 @@ public class PAWeightPanel extends JPanel {
 		rankTestCombo.addActionListener(e -> {
 			rankTestUpdating = true;
 			PostAnalysisFilterType filterType = (PostAnalysisFilterType) rankTestCombo.getSelectedItem();
-			rankTestTextField.setValue(savedFilterValues.get(filterType));
+			rankTestTextField.setText(DECIMAL_FORMAT.format(savedFilterValues.get(filterType)));
 			CardLayout cardLayout = (CardLayout) cardPanel.getLayout();
 
 			if(filterType.isMannWhitney() && map.getAllRanks().isEmpty())
@@ -422,7 +436,7 @@ public class PAWeightPanel extends JPanel {
 		universeSelectionTextField.addPropertyChangeListener("value", e -> {
 			Number val = (Number) universeSelectionTextField.getValue();
 			if (val == null || val.intValue() < 0) {
-				universeSelectionTextField.setValue(1);
+				universeSelectionTextField.setText("1");
 				JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(this), "Universe value must be greater than zero",
 						"Parameter out of bounds", JOptionPane.WARNING_MESSAGE);
 			}
@@ -547,7 +561,7 @@ public class PAWeightPanel extends JPanel {
 
 		PostAnalysisFilterType typeToUse = rankingArray.length == 0 ? PostAnalysisFilterType.HYPERGEOM : PostAnalysisFilterType.MANN_WHIT_TWO_SIDED;
 		rankTestCombo.setSelectedItem(typeToUse);
-		rankTestTextField.setValue(typeToUse.defaultValue);
+		rankTestTextField.setText(DECIMAL_FORMAT.format(typeToUse.defaultValue));
 
 		rankingEnablementRenderer.enableAll();
 		if (rankingArray.length == 0) {
