@@ -126,16 +126,17 @@ public final class ColorUtil {
 	
 	
 	private static float interpolate(final double value, final double lowerBound, final double upperBound) {
-		return (float) MathUtil.invLinearInterp(value, lowerBound, upperBound);
+		double t = MathUtil.invLinearInterp(value, lowerBound, upperBound);
+		
 //		// Linearly interpolate the value
 //		final double f = value < 0.0 ? MathUtil.invLinearInterp(value, lowerBound, 0)
 //				: MathUtil.invLinearInterp(value, 0, upperBound);
 //		float t = (float) (value < 0.0 ? MathUtil.linearInterp(f, 0.0, 1.0) : MathUtil.linearInterp(f, 1.0, 0.0));
 //
-//		// Make sure it's between 0.0-1.0
-//		t = Math.max(0.0f, t);
-//		t = Math.min(1.0f, t);
-//		
-//		return t;
+		// Make sure it's between 0.0-1.0
+		t = Math.max(0.0f, t);
+		t = Math.min(1.0f, t);
+		
+		return (float) t;
 	}
 }
