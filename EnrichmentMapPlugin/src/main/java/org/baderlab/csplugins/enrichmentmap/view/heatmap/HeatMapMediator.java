@@ -567,20 +567,26 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	private void runGeneMANIA() {
 		GeneListTunable geneListTaskParams = createGeneListTaskParams();
 		TaskIterator tasks = geneManiaTaskFactory.createTaskIterator(geneListTaskParams);
-		taskManager.execute(tasks);
+		if(tasks != null) {
+			taskManager.execute(tasks);
+		}
 	}
 	
 	private void runString() {
 		GeneListTunable geneListTaskParams = createGeneListTaskParams();
 		TaskIterator tasks = stringAppTaskFactoy.createTaskIterator(geneListTaskParams);
-		taskManager.execute(tasks);
+		if(tasks != null) {
+			taskManager.execute(tasks);
+		}
 	}
 	
 	private void runPathwayCommons() {
 		long uuid = getEnrichmentMap().getNetworkID();
 		CyNetwork network = networkManager.getNetwork(uuid);
 		OpenPathwayCommonsTask task = pathwayCommonsFactory.createForHeatMap(network);
-		taskManager.execute(new TaskIterator(task));
+		if(task != null) {
+			taskManager.execute(new TaskIterator(task));
+		}
 	}
 
 	private boolean isHeatMapPanelRegistered() {
