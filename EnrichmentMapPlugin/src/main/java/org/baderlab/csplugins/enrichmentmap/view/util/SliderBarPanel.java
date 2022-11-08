@@ -99,15 +99,25 @@ public class SliderBarPanel extends JPanel {
 	private final DecimalFormat format;
 	private boolean ignore;
 	
+	private String minExtraLabel;
+	private String maxExtraLabel;
+	
+	
 	public SliderBarPanel(double min, double max, double value) {
-		this(min, max, value, null);
+		this(min, max, value, null, null, null);
 	}
 	
 	public SliderBarPanel(double min, double max, double value, String title) {
+		this(min, max, value, title, null, null);
+	}
+	
+	public SliderBarPanel(double min, double max, double value, String title, String minLabel, String maxLabel) {
 		this.min = min;
 		this.max = max;
 		this.value = value;
 		this.title = title;
+		this.minExtraLabel = minLabel;
+		this.maxExtraLabel = maxLabel;
 		listeners = new ArrayList<>();
 		
 		String pattern = getFormatPattern(min, max, value);
@@ -120,6 +130,7 @@ public class SliderBarPanel extends JPanel {
 		
 		init();
 	}
+	
 
 	@SuppressWarnings("unchecked")
 	protected void init() {
@@ -219,6 +230,16 @@ public class SliderBarPanel extends JPanel {
 		return textField;
 	}
 	
+	
+	private JLabel createTickLabel(double val, String extra) {
+		var valText = format.format(val);
+		if(extra == null)
+			return new JLabel(valText);
+		else
+			return new JLabel("<html><div style='text-align: center'>" + valText + "<br>" + extra + "</div></html>");
+	}
+	
+	
 	JSlider getSlider() {
 		if (slider == null) {
 			slider = new JSlider(S_MIN, S_MAX);
@@ -241,12 +262,12 @@ public class SliderBarPanel extends JPanel {
 					slider.setMinorTickSpacing(S_RANGE / (n * 2));
 			}
 			
-			labelTable.put(S_MIN, new JLabel(format.format(min)));
+			labelTable.put(S_MIN, createTickLabel(min, minExtraLabel));
 			
 			if ((S_MIN + S_RANGE / 2) % 2 == 0)
 				labelTable.put(S_MIN + S_RANGE / 2, new JLabel(format.format(min + range / 2)));
 			
-			labelTable.put(S_MAX, new JLabel(format.format(max)));
+			labelTable.put(S_MAX, createTickLabel(max, maxExtraLabel));
 			
 			slider.setLabelTable(labelTable);
 			slider.setPaintTicks(true);

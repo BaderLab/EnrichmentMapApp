@@ -6,19 +6,9 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_CONTROL;
-import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.EM_ICON_COLORS;
-import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.GENEMANIA_ICON;
-import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.GENEMANIA_ICON_COLOR;
-import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.LAYERED_EM_ICON;
-import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.LAYERED_STRING_ICON;
-import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.STRING_ICON_COLORS;
-import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.getIconFont;
+import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.*;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
-import static org.cytoscape.util.swing.IconManager.ICON_BARS;
-import static org.cytoscape.util.swing.IconManager.ICON_FILE;
-import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
-import static org.cytoscape.util.swing.IconManager.ICON_REFRESH;
-import static org.cytoscape.util.swing.IconManager.ICON_STAR;
+import static org.cytoscape.util.swing.IconManager.*;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
@@ -697,6 +687,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				similaritySliderPanel = createSimilaritySlider(map);
 				sliderPanelFields.add(similaritySliderPanel.getTextField());
 				
+				vGroup.addGap(15);
 				hGroup.addComponent(similaritySliderPanel);
 				vGroup.addComponent(similaritySliderPanel);
 				
@@ -787,7 +778,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return new SliderBarPanel(
 					(pvalueMin == 1 || pvalueMin >= pvalue ? 0 : pvalueMin),
 					pvalue,
-					pvalue
+					pvalue,
+					null,
+					"sparser", 
+					"denser"
 			);
 		}
 		
@@ -798,7 +792,10 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return new SliderBarPanel(
 					(qvalueMin == 1 || qvalueMin >= qvalue ? 0 : qvalueMin),
 					qvalue,
-					qvalue
+					qvalue,
+					null, 
+					"sparser", 
+					"denser"
 			);
 		}
 		
@@ -809,7 +806,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					similarityCutOff,
 					1,
 					similarityCutOff,
-					"Edge Cutoff (Similarity):"
+					"Edge Cutoff (Similarity):", 
+					"denser", 
+					"sparser"
 			);
 		}
 		
