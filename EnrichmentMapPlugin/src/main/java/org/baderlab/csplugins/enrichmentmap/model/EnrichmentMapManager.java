@@ -170,12 +170,12 @@ public class EnrichmentMapManager implements NetworkAboutToBeDestroyedListener, 
 		// Add EM Network SUID to associated network's table.
 		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
 		
-		Columns.EM_NETWORK_SUID.createColumnIfAbsent(table);
-		Columns.EM_NETWORK_SUID.set(table.getRow(network.getSUID()), map.getNetworkID());
+		AssociatedAppColumns.EM_NETWORK_SUID.createColumnIfAbsent(table);
+		AssociatedAppColumns.EM_NETWORK_SUID.set(table.getRow(network.getSUID()), map.getNetworkID());
 		
 		// Add App name to associated network's hidden table, to make it easier and more consistent later
-		Columns.EM_ASSOCIATED_APP.createColumnIfAbsent(table);
-		Columns.EM_ASSOCIATED_APP.set(table.getRow(network.getSUID()), app.name());
+		AssociatedAppColumns.EM_ASSOCIATED_APP.createColumnIfAbsent(table);
+		AssociatedAppColumns.EM_ASSOCIATED_APP.set(table.getRow(network.getSUID()), app.name());
 		
 		// Update our internal map and fire an event if it changed
 		if (associatedEnrichmentMaps.put(network.getSUID(), map) == null) {

@@ -282,10 +282,21 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 				
 				for (CyNode node : selectedNodes) {
 					CyRow row = network.getRow(node);
-					String geneName = app.getGeneNameColumn().get(row, null, null);
 					
-					if (geneName != null)
-						union.add(geneName);
+					var geneNameCol = app.getGeneNameColumn();
+					if(geneNameCol != null) {
+						String geneName = geneNameCol.get(row, null, null);
+						if (geneName != null)
+							union.add(geneName);
+					}
+					
+					var geneNameListCol = app.getGeneNameListColumn();
+					if(geneNameListCol != null) {
+						String prefix = map.getParams().getAttributePrefix();
+						List<String> geneNames = geneNameListCol.get(row, prefix, null);
+						if (geneNames != null)
+							union.addAll(geneNames);
+					}
 				}
 				
 				inter = union;

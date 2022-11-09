@@ -163,13 +163,11 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 				columnData.put(node.getSUID(), data);
 				
 				String name = NetworkUtil.getGeneName(network, node);
-				
 				if (name == null)
 					continue;
 				
 				String queryTerm = NetworkUtil.getQueryTerm(network, name);
 				Integer id = map.getHashFromGene(queryTerm != null ? queryTerm : name);
-				
 				if (id == null)
 					continue;
 				

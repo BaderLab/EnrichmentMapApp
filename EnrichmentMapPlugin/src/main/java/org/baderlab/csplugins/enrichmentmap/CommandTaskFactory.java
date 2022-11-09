@@ -22,21 +22,16 @@ public interface CommandTaskFactory extends TaskFactory {
 	
 	public static CommandTaskFactory create(String name, String desc, String longDesc, Provider<? extends Task> taskProvider, Task... moreTasks) {
 		Task task = taskProvider.get();
-		boolean supportsJson;
-		if(task instanceof ObservableTask) {
-			supportsJson = ((ObservableTask)task).getResultClasses().contains(JSONResult.class);
-		} else {
-			supportsJson = false;
-		}
+		boolean supportsJson = supportsJson(task);
 		
 		return new CommandTaskFactory() {
 			@Override
 			public TaskIterator createTaskIterator() {
-				TaskIterator taskIterator = new TaskIterator(taskProvider.get());
+				var ti = new TaskIterator(taskProvider.get());
 				for(Task task : moreTasks) {
-					taskIterator.append(task);
+					ti.append(task);
 				}
-				return taskIterator;
+				return ti;
 			}
 
 			@Override public boolean isReady() { return true; }
@@ -45,5 +40,12 @@ public interface CommandTaskFactory extends TaskFactory {
 			@Override public String getLongDescription() { return longDesc == null ? null : desc + " " + longDesc; }
 			@Override public boolean supportsJson() { return supportsJson; }
 		};
+	}
+	
+	private static boolean supportsJson(Task task) {
+		if(task instanceof ObservableTask) {
+			return ((ObservableTask)task).getResultClasses().contains(JSONResult.class);
+		}
+		return false;
 	}
 }

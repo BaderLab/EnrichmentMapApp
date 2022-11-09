@@ -223,6 +223,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 						} else if (app == AssociatedApp.STRING) {
 							setIcon(strIcon);
 							setBorder(appBorder);
+						} else if (app == AssociatedApp.AUTOANNOTATE) {
+							setIcon(emIcon);
+							setBorder(appBorder);
 						} else {
 							setIcon(emIcon);
 							setBorder(null);

@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap;
 
 import org.baderlab.csplugins.enrichmentmap.actions.OpenEnrichmentMapPanelsAction;
+import org.baderlab.csplugins.enrichmentmap.commands.AssociateNetworkCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.ChartCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.DatasetColorCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.DatasetShowCommandTask;
@@ -114,6 +115,12 @@ public class CommandModule extends AbstractModule {
 	public CommandTaskFactory provideExportImage(Provider<ExportNetworkImageCommandTask> taskProvider) {
 		String desc = "Exports the network view to an image file in the users home directory.";
 		return CommandTaskFactory.create("export png", desc, null, taskProvider);
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideAssociateNetwork(Provider<AssociateNetworkCommandTask> taskProvider) {
+		String desc = "Sets a network as 'associated' with an EnrichmentMap network. This command is intended to be used programatically by other Apps.";
+		return CommandTaskFactory.create("associate", desc, null, taskProvider);
 	}
 
 }

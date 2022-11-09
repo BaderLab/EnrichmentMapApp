@@ -3,7 +3,7 @@ package org.baderlab.csplugins.enrichmentmap.model;
 import org.baderlab.csplugins.enrichmentmap.style.ColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 
-public interface Columns {
+public interface AssociatedAppColumns {
 	
 	// GeneMANIA Attributes
 	// NODE
