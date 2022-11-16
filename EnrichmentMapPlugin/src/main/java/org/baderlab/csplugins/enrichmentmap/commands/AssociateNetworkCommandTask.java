@@ -35,26 +35,34 @@ public class AssociateNetworkCommandTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor tm) {
-		if(emNetworkSUID == null)
-			throw new IllegalArgumentException("emNetworkSUID is null");
-		if(!emManager.isEnrichmentMap(emNetworkSUID))
-			throw new IllegalArgumentException("emNetworkSUID is not an EnrichmentMap network");
-		if(associatedNetworkSUID == null)
-			throw new IllegalArgumentException("associatedNetworkSUID is null");
-		
+		// AutoAnnotate may call this command on non-EM networks, so we need to fail gracefully, ie don't throw an Exception.
+		if(emNetworkSUID == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "emNetworkSUID is null");
+			return;
+		}
+		if(associatedNetworkSUID == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "associatedNetworkSUID is null");
+			return;
+		}
+		if(!emManager.isEnrichmentMap(emNetworkSUID)) {
+			tm.showMessage(TaskMonitor.Level.WARN, "emNetworkSUID is not an EnrichmentMap network");
+			return;
+		}
 		var network = netManager.getNetwork(associatedNetworkSUID);
-		if(network == null)
-			throw new IllegalArgumentException("associatedNetworkSUID is invalid");
-		
-		var map = emManager.getEnrichmentMap(emNetworkSUID);
+		if(network == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "associatedNetworkSUID is invalid");
+			return;
+		}
 		
 		AssociatedApp assApp;
 		try {
 			assApp = AssociatedApp.valueOf(app.getSelectedValue());
 		} catch(IllegalArgumentException | NullPointerException e) {
-			throw new IllegalArgumentException("app is invalid");
+			tm.showMessage(TaskMonitor.Level.ERROR, "app is invalid");
+			return;
 		}
 		
+		var map = emManager.getEnrichmentMap(emNetworkSUID);
 		map.addAssociatedNetworkID(network.getSUID());
 		emManager.addAssociatedAppAttributes(network, map, assApp);
 	}
