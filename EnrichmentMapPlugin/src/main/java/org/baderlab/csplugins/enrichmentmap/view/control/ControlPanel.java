@@ -31,6 +31,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -109,7 +110,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	private JButton closePanelButton;
 	
 	private Map<Long/*CynetworkView SUID*/, EMViewControlPanel> emViewCtrlPanels = new HashMap<>();
-	private Map<Long/*CynetworkView SUID*/, AssociatedViewControlPanel> gmViewCtrlPanels = new HashMap<>();
+	private Map<Long/*CynetworkView SUID*/, AbstractViewControlPanel> gmViewCtrlPanels = new HashMap<>();
 
 	private final Icon compIcon = new TextIcon(LAYERED_EM_ICON, getIconFont(18.0f), EM_ICON_COLORS, 16, 16);
 	
@@ -294,14 +295,18 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		return null;
 	}
 	
-	AssociatedViewControlPanel addAssociatedView(CyNetworkView netView) {
+	AbstractViewControlPanel addAssociatedView(CyNetworkView netView, AssociatedApp app) {
 		updateEmViewCombo();
 		
 		if (getAssociatedViewControlPanel(netView) == null) {
-			AssociatedViewControlPanel p = new AssociatedViewControlPanel(netView);
+			AbstractViewControlPanel p;
+			if(app == AssociatedApp.AUTOANNOTATE) {
+				p = new AutoAnnotateControlPanel(netView);
+			} else {
+				p = new AssociatedViewControlPanel(netView);
+			}
 			getCtrlPanelsContainer().add(p, p.getName());
 			gmViewCtrlPanels.put(netView.getSUID(), p);
-			
 			return p;
 		}
 		return null;
@@ -404,15 +409,15 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		return new HashMap<>(emViewCtrlPanels);
 	}
 	
-	AssociatedViewControlPanel getAssociatedViewControlPanel(CyNetworkView netView) {
+	AbstractViewControlPanel getAssociatedViewControlPanel(CyNetworkView netView) {
 		return netView != null ? getAssociatedViewControlPanel(netView.getSUID()) : null;
 	}
 	
-	AssociatedViewControlPanel getAssociatedViewControlPanel(Long suid) {
+	AbstractViewControlPanel getAssociatedViewControlPanel(Long suid) {
 		return gmViewCtrlPanels.get(suid);
 	}
 	
-	public Map<Long, AssociatedViewControlPanel> getAllAssociatedViewControlPanels() {
+	public Map<Long, AbstractViewControlPanel> getAllAssociatedViewControlPanels() {
 		return new HashMap<>(gmViewCtrlPanels);
 	}
 	
@@ -1180,35 +1185,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		JComboBox<EMDataSet> getDataSetCombo() {
 			if (dataSetCombo == null) {
 				dataSetCombo = new JComboBox<>();
-				
-				final Font iconFont = iconManager.getIconFont(12.0f);
-				final int iconSize = 16;
-				Icon sigIcon = new TextIcon(ICON_STAR, iconFont, EMStyleBuilder.Colors.SIG_EDGE_COLOR, iconSize, iconSize);
-				
-				dataSetCombo.setRenderer(new DefaultListCellRenderer() {
-					@Override
-					public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-							boolean isSelected, boolean cellHasFocus) {
-						super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-						
-						Icon icon = null;
-						String text = Labels.ALL;
-						
-						if (value instanceof EMSignatureDataSet) {
-							icon = sigIcon;
-							text = ((EMSignatureDataSet) value).getName();
-						} else if (value instanceof EMDataSet) {
-							EMDataSet ds = (EMDataSet) value;
-							icon = new TextIcon(ICON_FILE, iconFont, ds.getColor(), iconSize, iconSize);
-							text = ds.getName();
-						}
-						
-						setIcon(icon);
-						setText(text);
-						
-						return this;
-					}
-				});
+				dataSetCombo.setRenderer(new DataSetListCellRenderer());
 			}
 			
 			return dataSetCombo;
@@ -1328,6 +1305,101 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			getChartTypeCombo().setEnabled(chartData == ChartData.EXPRESSION_DATA);
 		}
 	}
+	
+	
+	class DataSetListCellRenderer extends DefaultListCellRenderer {
+		
+		final Font iconFont = iconManager.getIconFont(12.0f);
+		final int iconSize = 16;
+		final Icon sigIcon = new TextIcon(ICON_STAR, iconFont, EMStyleBuilder.Colors.SIG_EDGE_COLOR, iconSize, iconSize);
+		
+		@Override
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			
+			Icon icon = null;
+			String text = Labels.ALL;
+			
+			if (value instanceof EMSignatureDataSet) {
+				icon = sigIcon;
+				text = ((EMSignatureDataSet) value).getName();
+			} else if (value instanceof EMDataSet) {
+				EMDataSet ds = (EMDataSet) value;
+				icon = new TextIcon(ICON_FILE, iconFont, ds.getColor(), iconSize, iconSize);
+				text = ds.getName();
+			}
+			
+			setIcon(icon);
+			setText(text);
+			return this;
+		}
+	}
+	
+	
+	class AutoAnnotateControlPanel extends AbstractViewControlPanel {
+		
+		private JList<EMDataSet> dataSetList;
+		
+		private AutoAnnotateControlPanel(CyNetworkView networkView) {
+			super(networkView, "__EM_CHILD_VIEW_CONTROL_PANEL_" + networkView.getSUID());
+		}
+		
+		@Override
+		protected void init() {
+			super.init();
+			update();
+		}
+		
+		@Override
+		JPanel getContentPane() {
+			if (contentPane == null) {
+				contentPane = new JPanel();
+				
+				var layout = new GroupLayout(contentPane);
+				contentPane.setLayout(layout);
+				layout.setAutoCreateContainerGaps(true);
+				layout.setAutoCreateGaps(true);
+				
+				JLabel titleLabel = new JLabel("Data Sets:");
+				makeSmall(titleLabel);
+				
+		   		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+		   			.addComponent(titleLabel)
+					.addComponent(getDataSetList(), 100, PREFERRED_SIZE, Short.MAX_VALUE)
+		   		);
+		   		layout.setVerticalGroup(layout.createSequentialGroup()
+		   			.addComponent(titleLabel)
+					.addComponent(getDataSetList(), 100, DEFAULT_SIZE, PREFERRED_SIZE)
+		   		);
+				
+				if (LookAndFeelUtil.isAquaLAF())
+					contentPane.setOpaque(false);
+			}
+			
+			return contentPane;
+		}
+		
+		private JList<EMDataSet> getDataSetList() {
+			if(dataSetList == null) {
+				dataSetList = new JList<>(new DefaultListModel<>());
+				dataSetList.setCellRenderer(new DataSetListCellRenderer());
+			}
+			return dataSetList;
+		}
+		
+		@Override
+		void update() {
+			EnrichmentMap em = networkView != null ? emManager.getEnrichmentMap(networkView.getModel().getSUID()) : null;
+			
+			var listModel = (DefaultListModel<EMDataSet>) getDataSetList().getModel();
+	        listModel.removeAllElements();
+	        
+	        if(em != null)
+				em.getDataSetList().forEach(listModel::addElement);	
+	        
+		}
+	}
+	
 	
 	private class NullViewControlPanel extends JPanel {
 

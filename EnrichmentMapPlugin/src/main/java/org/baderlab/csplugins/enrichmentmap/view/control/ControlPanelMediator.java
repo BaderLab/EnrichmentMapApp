@@ -468,14 +468,17 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 	 */
 	private AbstractViewControlPanel addNetworkView(CyNetworkView netView) {
 		AbstractViewControlPanel viewPanel = null;
-		EnrichmentMap map = emManager.getEnrichmentMap(netView.getModel().getSUID());
+		var network = netView.getModel();
+		EnrichmentMap map = emManager.getEnrichmentMap(network.getSUID());
 		
 		// Is the new view an EnrichmentMap one?
 		if (map != null) {
-			if (NetworkUtil.isAssociatedNetwork(netView.getModel()))
-				viewPanel = getControlPanel().addAssociatedView(netView);
-			else
+			if (NetworkUtil.isAssociatedNetwork(network)) {
+				var app = NetworkUtil.getAssociatedApp(network);
+				viewPanel = getControlPanel().addAssociatedView(netView, app);
+			} else {
 				viewPanel = getControlPanel().addEnrichmentMapView(netView);
+			}
 			
 			if (viewPanel instanceof EMViewControlPanel)
 				addListeners((EMViewControlPanel) viewPanel, map);
