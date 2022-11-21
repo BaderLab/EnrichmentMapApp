@@ -23,7 +23,7 @@ import com.google.common.base.Strings;
  */
 public class CreateDummyExpressionTask extends AbstractTask {
 
-	public static final float DEFAULT_VAL = 0.25f;
+	public static final float DEFAULT_VAL = 1f;
 	
 	private final EMDataSet dataset;
 
@@ -35,7 +35,7 @@ public class CreateDummyExpressionTask extends AbstractTask {
 	private void createDummyExpression() throws IOException {
 		EnrichmentMap map = dataset.getMap();
 		GeneExpressionMatrix expressionMatrix = new GeneExpressionMatrix();
-		expressionMatrix.setColumnNames(new String[] {"Name", "Description", "Dummy"});
+		expressionMatrix.setColumnNames(new String[] {"Name", "Description", dataset.getName() });
 		expressionMatrix.setNumConditions(3);
 		
 		// Not worried too much about sharing dummy expressions as they don't use up very much space.
