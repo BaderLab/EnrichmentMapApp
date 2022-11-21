@@ -1,11 +1,14 @@
 package org.baderlab.csplugins.enrichmentmap.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.FinishStatus.Type;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.util.ListSingleSelection;
 
 public class TaskUtil {
 	private TaskUtil() {}
@@ -62,4 +65,11 @@ public class TaskUtil {
 		};
 	}
 
+	public static ListSingleSelection<String> lssFromEnum(Enum<?> ... values) {
+		List<String> names = new ArrayList<>(values.length);
+		for(Enum<?> value : values) {
+			names.add(value.name());
+		}
+		return new ListSingleSelection<>(names);
+	}
 }

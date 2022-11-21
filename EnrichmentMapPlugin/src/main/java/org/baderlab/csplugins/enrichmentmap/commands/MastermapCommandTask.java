@@ -3,12 +3,12 @@ package org.baderlab.csplugins.enrichmentmap.commands;
 import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.PathMatcher;
-import java.util.Arrays;
 import java.util.List;
 
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.FilterTunables;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
+import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.GreatFilter;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolverTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
@@ -21,6 +21,7 @@ import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListSingleSelection;
 
 import com.google.inject.Inject;
 
@@ -48,11 +49,22 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 			+ "For more details on syntax see https://docs.oracle.com/javase/8/docs/api/java/nio/file/FileSystem.html#getPathMatcher-java.lang.String-")
 	public String pattern;
 	
+	
+	@Tunable(description="GREAT results can be filtered by one of: HYPER (Hypergeometric p-value), BINOM (Binomial p-value), BOTH, EITHER")
+	public ListSingleSelection<String> greatFilter;
+	
+	
+	
 	@Inject private SynchronousTaskManager<?> taskManager;
 	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
 	
 	
 	private Long[] result = { null };
+	
+	
+	public MastermapCommandTask() {
+		greatFilter = TaskUtil.lssFromEnum(GreatFilter.values());
+	}
 	
 	
 	@Override
@@ -65,7 +77,7 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 		}
 		
 		// Scan root folder (note: throws exception if no data sets were found)
-		DataSetResolverTask resolverTask = new DataSetResolverTask(rootFolder);
+		var resolverTask = new DataSetResolverTask(rootFolder);
 		
 		if(pattern != null) {
 			PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
@@ -73,15 +85,44 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 		}
 		
 		taskManager.execute(new TaskIterator(resolverTask)); // blocks
-		List<DataSetParameters> dataSets = resolverTask.getDataSetResults();
+		var dataSets = resolverTask.getDataSetResults();
 		
+		setCommonFiles(dataSets);
+
+		tm.setStatusMessage("resolved " + dataSets.size() + " data sets");
+		for(var params : dataSets) {
+			tm.setStatusMessage(params.toString());
+		}
+		tm.setStatusMessage(filterArgs.toString());
+		
+		EMCreationParameters params = filterArgs.getCreationParameters();
+		
+		var filter = GreatFilter.valueOf(greatFilter.getSelectedValue());
+		params.setGreatFilter(filter);
+
+		if(filterArgs.networkName != null && !filterArgs.networkName.trim().isEmpty()) {
+			params.setNetworkName(filterArgs.networkName);
+		}
+		
+		var taskFactory = taskFactoryFactory.create(params, dataSets);
+		var tasks = taskFactory.createTaskIterator();
+		
+		taskManager.execute(tasks, TaskUtil.taskFinished(CreateEMNetworkTask.class, networkTask -> {
+			result[0] = networkTask.getResults(Long.class); // get SUID of created network
+		}));
+		
+		tm.setStatusMessage("Done");
+	}
+	
+	
+	private void setCommonFiles(List<DataSetParameters> dataSets) {
 		// Common gmt and expression files
 		// Overwrite all the expression files if the common file has been provided
 		if(commonExpressionFile != null) {
 			if(!commonExpressionFile.canRead()) {
 				throw new IllegalArgumentException("Cannot read commonExpressionFile: " + commonExpressionFile);
 			}
-			for(DataSetParameters dsp : dataSets) {
+			for(var dsp : dataSets) {
 				dsp.getFiles().setExpressionFileName(commonExpressionFile.getAbsolutePath());
 			}
 		}
@@ -91,7 +132,7 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 			if(!commonGMTFile.canRead()) {
 				throw new IllegalArgumentException("Cannot read commonGMTFile: " + commonGMTFile);
 			}
-			for(DataSetParameters dsp : dataSets) {
+			for(var dsp : dataSets) {
 				dsp.getFiles().setGMTFileName(commonGMTFile.getAbsolutePath());
 			}
 		}
@@ -101,37 +142,16 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 			if(!commonClassFile.canRead()) {
 				throw new IllegalArgumentException("Cannot read commonClassFile: " + commonClassFile);
 			}
-			for(DataSetParameters dsp : dataSets) {
+			for(var dsp : dataSets) {
 				dsp.getFiles().setClassFile(commonClassFile.getAbsolutePath());
 			}
 		}
-
-		tm.setStatusMessage("resolved " + dataSets.size() + " data sets");
-		for(DataSetParameters params : dataSets) {
-			tm.setStatusMessage(params.toString());
-		}
-		
-		tm.setStatusMessage(filterArgs.toString());
-		
-		EMCreationParameters params = filterArgs.getCreationParameters();
-
-		if(filterArgs.networkName != null && !filterArgs.networkName.trim().isEmpty()) {
-			params.setNetworkName(filterArgs.networkName);
-		}
-		
-		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
-		TaskIterator tasks = taskFactory.createTaskIterator();
-		
-		taskManager.execute(tasks, TaskUtil.taskFinished(CreateEMNetworkTask.class, networkTask -> {
-			result[0] = networkTask.getResults(Long.class); // get SUID of created network
-		}));
-		
-		tm.setStatusMessage("Done.");
 	}
+	
 	
 	@Override
 	public List<Class<?>> getResultClasses() {
-		return Arrays.asList(String.class, Long.class);
+		return List.of(String.class, Long.class);
 	}
 	
 	@Override

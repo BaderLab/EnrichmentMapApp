@@ -19,7 +19,7 @@ public class EMDataSet extends AbstractDataSet {
 			switch(this) {
 				case GSEA: default: return "GSEA";
 				case Generic:       return "Generic/gProfiler/Enrichr";
-				case Specialized:   return "DAVID/BINGO/Great";
+				case Specialized:   return "DAVID/BiNGO/GREAT";
 			}
 		}
 	}

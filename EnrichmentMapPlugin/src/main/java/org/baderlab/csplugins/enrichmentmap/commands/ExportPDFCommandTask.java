@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.commands;
 
-import static org.baderlab.csplugins.enrichmentmap.commands.tunables.CommandUtil.lssFromEnum;
+import static org.baderlab.csplugins.enrichmentmap.util.TaskUtil.lssFromEnum;
 
 import java.io.File;
 import java.util.ArrayList;

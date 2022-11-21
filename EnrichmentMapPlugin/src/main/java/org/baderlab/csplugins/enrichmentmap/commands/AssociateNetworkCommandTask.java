@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.commands;
 
 import org.baderlab.csplugins.enrichmentmap.model.AssociatedApp;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -26,11 +27,7 @@ public class AssociateNetworkCommandTask extends AbstractTask {
 	@Inject private EnrichmentMapManager emManager;
 	
 	public AssociateNetworkCommandTask() {
-		app = new ListSingleSelection<>(
-				AssociatedApp.GENEMANIA.name(), 
-				AssociatedApp.STRING.name(), 
-				AssociatedApp.AUTOANNOTATE.name()
-			);
+		app = TaskUtil.lssFromEnum(AssociatedApp.values());
 	}
 	
 	@Override
