@@ -572,6 +572,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 		
 		viewPanel.getDataSetSelector().getSelectNodesMenuItem().addActionListener(evt -> {
 			selectNodesEdges(
+				map,
 				viewPanel.getNetworkView(),
 				viewPanel.getDataSetSelector().getSelectedItems(),
 				map.getParams().getCreateDistinctEdges()
@@ -1050,8 +1051,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 		});
 	}
 	
-	private void selectNodesEdges(CyNetworkView netView, Set<AbstractDataSet> dataSets, boolean distinctEdges) {
-		SelectNodesEdgesTask task = selectNodesEdgesTaskFactory.create(netView, dataSets, distinctEdges);
+	private void selectNodesEdges(EnrichmentMap map, CyNetworkView netView, Set<AbstractDataSet> dataSets, boolean distinctEdges) {
+		SelectNodesEdgesTask task = selectNodesEdgesTaskFactory.create(map, netView, dataSets, distinctEdges);
 		dialogTaskManager.execute(new TaskIterator(task));
 	}
 	
@@ -1079,21 +1080,19 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 			
 			// Find nodes and edges that must be displayed
 			Set<CyNode> filteredInNodes = getFilteredInNodes(selectedDataSets);
-			
 			if (cancelled)
 				return;
 			
 			Set<CyEdge> filteredInEdges = getFilteredInEdges(selectedDataSets);
-			
 			if (cancelled)
 				return;
 			
 			// Run Task
 			task = filterNodesEdgesTaskFactory.create(map, netView, filteredInNodes, filteredInEdges, filterMode);
 			dialogTaskManager.execute(new TaskIterator(task), TaskUtil.allFinished(finishStatus -> {
-					task = null;
-					if (!cancelled)
-						netView.updateView();
+				task = null;
+				if (!cancelled)
+					netView.updateView();
 			}));
 		}
 		
@@ -1138,11 +1137,13 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 			EMCreationParameters params = map.getParams();
 
 			// Compound edges are not associated with a specific data set
-			Set<Long> dataSetEdges = EnrichmentMap.getEdgesUnion(selectedDataSets);
+			Set<Long> dataSetEdges = EnrichmentMap.getEdgesUnionForFiltering(selectedDataSets, map, netView.getModel());
 			
-			if (viewPanel.getSimilaritySliderPanel() != null)
-				return getFilteredInEdges(viewPanel.getSimilaritySliderPanel(), map, netView,
-						params.getSimilarityCutoffColumnNames(), dataSetEdges);
+			var sliderPanel = viewPanel.getSimilaritySliderPanel();
+			if (sliderPanel != null) {
+				var names = params.getSimilarityCutoffColumnNames();
+				return getFilteredInEdges(sliderPanel, map, netView, names, dataSetEdges);
+			}
 			
 			Set<CyEdge> filteredInEdges = new HashSet<>();
 			CyNetwork net = netView.getModel();
@@ -1150,8 +1151,9 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 			
 			if (distinct) {
 				for (CyEdge e : net.getEdgeList()) {
-					if (dataSetEdges.contains(e.getSUID()))
+					if (dataSetEdges.contains(e.getSUID())) {
 						filteredInEdges.add(e);
+					}
 				}
 			} else {
 				// If compound edges, all edges are filtered in, no matter the selected data sets

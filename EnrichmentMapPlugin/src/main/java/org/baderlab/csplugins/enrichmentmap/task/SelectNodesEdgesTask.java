@@ -30,6 +30,7 @@ import com.google.inject.assistedinject.Assisted;
 
 public class SelectNodesEdgesTask extends AbstractTask {
 
+	private final EnrichmentMap map;
 	private final CyNetworkView networkView;
 	private final Set<AbstractDataSet> dataSets;
 	private final boolean distinctEdges;
@@ -37,12 +38,21 @@ public class SelectNodesEdgesTask extends AbstractTask {
 	@Inject private CyEventHelper eventHelper;
 
 	public interface Factory {
-		SelectNodesEdgesTask create(CyNetworkView networkView, Set<AbstractDataSet> dataSets, boolean distinctEdges);
+		SelectNodesEdgesTask create(
+			EnrichmentMap map,
+			CyNetworkView networkView, 
+			Set<AbstractDataSet> dataSets,
+			boolean distinctEdges);
 	}
 	
 	@Inject
-	public SelectNodesEdgesTask(@Assisted CyNetworkView networkView, @Assisted Set<AbstractDataSet> dataSets,
-			@Assisted boolean distinctEdges) {
+	public SelectNodesEdgesTask(
+			@Assisted EnrichmentMap map,
+			@Assisted CyNetworkView networkView, 
+			@Assisted Set<AbstractDataSet> dataSets,
+			@Assisted boolean distinctEdges
+	) {
+		this.map = map;
 		this.networkView = networkView;
 		this.dataSets = dataSets;
 		this.distinctEdges = distinctEdges;
@@ -58,7 +68,7 @@ public class SelectNodesEdgesTask extends AbstractTask {
 		final Set<Long> dataSetEdges;
 		
 		if (distinctEdges) {
-			dataSetEdges = EnrichmentMap.getEdgesUnion(dataSets);
+			dataSetEdges = EnrichmentMap.getEdgesUnionForFiltering(dataSets, map, networkView.getModel());
 		} else {
 			dataSetEdges = new HashSet<>();
 			

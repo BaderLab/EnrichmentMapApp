@@ -51,14 +51,9 @@ public class PASimilarityTaskParallel extends CancellableParallelTask<Map<Simila
 	
 	
 	public static interface Factory {
-		PASimilarityTaskParallel create(PostAnalysisParameters params, EnrichmentMap map);
 		PASimilarityTaskParallel create(PostAnalysisParameters params, EnrichmentMap map, List<EMDataSet> dataSets);
 	}
 	
-	@AssistedInject
-	public PASimilarityTaskParallel(@Assisted PostAnalysisParameters params, @Assisted EnrichmentMap map) {
-		this(params, map, map.getDataSetList());
-	}
 	
 	@AssistedInject
 	public PASimilarityTaskParallel(@Assisted PostAnalysisParameters params, @Assisted EnrichmentMap map, @Assisted List<EMDataSet> dataSets) {
@@ -138,10 +133,11 @@ public class PASimilarityTaskParallel extends CancellableParallelTask<Map<Simila
 								boolean passesCutoff = metric.passes(value);
 								comparison.setPassesCutoff(passesCutoff);
 
+								// Very important that the SimilarityKey name is the dataset name.
+								// This gets picked up by the CreatePANetworkTask and set on the "Dataset" edge column.
 								SimilarityKey key = new SimilarityKey(hubName, geneSetName, INTERACTION, dataSet.getName());
 								geneSetSimilarities.put(key, comparison);
-							}
-							
+							} 
 						}
 					}
 				}

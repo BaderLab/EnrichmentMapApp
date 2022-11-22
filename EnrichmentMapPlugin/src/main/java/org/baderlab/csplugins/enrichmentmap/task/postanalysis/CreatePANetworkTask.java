@@ -329,7 +329,7 @@ public class CreatePANetworkTask extends AbstractTask implements ObservableTask 
 		Columns.EDGE_OVERLAP_GENES.set(row, prefix, null, geneList);
 		Columns.EDGE_OVERLAP_SIZE.set(row, prefix, null, genesetSimilarity.getSizeOfOverlap());
 		Columns.EDGE_SIMILARITY_COEFF.set(row, prefix, null, genesetSimilarity.getSimilarityCoeffecient());
-		Columns.EDGE_DATASET.set(row, prefix, null, similarityKey.getName());
+		Columns.EDGE_DATASET.set(row, prefix, null, similarityKey.getName()); // the similarityKey name is the same as the dataset name
 		Columns.EDGE_SIG_DATASET.set(row, prefix, null, sigDataSet.getName());
 		
 		String dataset = genesetSimilarity.getDataSetName();

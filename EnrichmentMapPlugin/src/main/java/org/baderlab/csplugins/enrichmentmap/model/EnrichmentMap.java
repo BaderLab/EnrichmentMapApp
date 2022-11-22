@@ -18,6 +18,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -420,14 +421,72 @@ public class EnrichmentMap {
 		return getIntersection(dataSets, AbstractDataSet::getNodeSuids);
 	}
 			
+	
 	/**
 	 * Returns the SUIDs for all the gene-sets in the given collection of DataSets.
 	 * Each returned gene-set is contained in at least one of the given DataSets.
 	 * 
 	 * Note, this will only return distinct edges, not compound edges.
+	 * 
+	 * This method considers edges that are connected to signature gene sets to be part of the
+	 * signature data set.
 	 */
 	public static Set<Long> getEdgesUnion(Collection<? extends AbstractDataSet> dataSets) {
 		return getUnion(dataSets, AbstractDataSet::getEdgeSuids);
+	}
+	
+	/**
+	 * This method checks if signature edges are actually part of one of the given regular data sets
+	 * when including them or not.
+	 */
+	public static Set<Long> getEdgesUnionForFiltering(Collection<? extends AbstractDataSet> dataSets, EnrichmentMap map, CyNetwork network) {
+		List<EMDataSet> regularDatasets = new ArrayList<>();
+		List<EMSignatureDataSet> signatureDatasets = new ArrayList<>();
+		
+		for(var ds : dataSets) {
+			if(ds instanceof EMDataSet) {
+				regularDatasets.add((EMDataSet)ds);
+			} else if(ds instanceof EMSignatureDataSet) {
+				signatureDatasets.add((EMSignatureDataSet)ds);
+			}
+		}
+		
+		Set<Long> regularEdgesUnion = getUnion(regularDatasets, AbstractDataSet::getEdgeSuids);
+		
+		if(map == null || network == null || signatureDatasets.isEmpty()) {
+			return regularEdgesUnion;
+		}
+		
+		// The problem with Signature edges is that they are associated with the Signature Data Set,
+		// not the data set they were computed against. This information is only available in the
+		// edge table. So we have to go through all the Signature edges and check if they are associated
+		// with any of the regular data sets.
+		
+		Set<Long> allEdges = new HashSet<>();
+		allEdges.addAll(regularEdgesUnion);
+		
+		
+		Set<String> regularDataSetNames = new HashSet<>();
+		for(var ds : regularDatasets) {
+			regularDataSetNames.add(ds.getName());
+		}
+		
+		var edgeTable = network.getDefaultEdgeTable();
+		
+		for(var sigDS : signatureDatasets) {
+			for(Long suid : sigDS.getEdgeSuids()) {
+				if(edgeTable.rowExists(suid)) {
+					var row = edgeTable.getRow(suid);
+					String prefix = map.getParams().getAttributePrefix();
+					String dsname = EMStyleBuilder.Columns.EDGE_DATASET.get(row, prefix);
+					if(regularDataSetNames.contains(dsname)) {
+						allEdges.add(suid);
+					}
+				}
+			}
+		}
+		
+		return allEdges;
 	}
 	
 	/**

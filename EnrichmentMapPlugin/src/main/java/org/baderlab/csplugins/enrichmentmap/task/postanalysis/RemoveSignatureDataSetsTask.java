@@ -67,6 +67,7 @@ public class RemoveSignatureDataSetsTask extends AbstractTask {
 	}
 	
 	private Set<Long> getEdgesToDelete() {
+		// TODO Won't deleting the nodes automatically delete the adjacent edges???
 		Set<Long> edgesToDelete = EnrichmentMap.getEdgesUnion(signatureDataSets);
 		return edgesToDelete;
 	}
