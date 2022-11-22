@@ -33,8 +33,7 @@ public class ParseDavidEnrichmentResults extends AbstractTask {
 		
 		List<String> lines = LineReader.readLines(dataset.getDataSetFiles().getEnrichmentFileName1());
 		
-		//with David results there are no genesets defined.  first pass through the file
-		// needs to parse the genesets
+		//with David results there are no genesets defined.  first pass through the file needs to parse the genesets
 
 		//parameters that can be extracted from David files:
 		//Category	Term	Count	%	PValue	Genes	List Total	Pop Hits	Pop Total	Fold Enrichment	Bonferroni	Benjamini	FDR
@@ -65,11 +64,9 @@ public class ParseDavidEnrichmentResults extends AbstractTask {
 		int length = tokens.length;
 		if(length != 13)
 			throw new IllegalThreadStateException("David results file is missing data.");
-		//not enough data in the file!!
 
 		for(int i = 1; i < lines.size(); i++) {
 			line = lines.get(i);
-
 			tokens = line.split("\t");
 
 			double pvalue = 1.0;
@@ -78,7 +75,9 @@ public class ParseDavidEnrichmentResults extends AbstractTask {
 			int gs_size = 0;
 
 			//The second column of the file is the name of the geneset
-			String description = tokens[1].trim();
+			String term = tokens[1].trim();
+			String description = parseDescription(term);
+			
 			String name = tokens[1].toUpperCase().trim();
 
 			//the first column of the file is the category
@@ -153,6 +152,19 @@ public class ParseDavidEnrichmentResults extends AbstractTask {
 		if(FDR) {
 			dataset.getMap().getParams().setFDR(FDR);
 		}
+	}
+
+	
+	private static String parseDescription(String term) {
+		int index = term.lastIndexOf('~');
+		if(index >= 0) {
+			term = term.substring(index+1);
+		}
+		index = term.lastIndexOf(':');
+		if(index >= 0) {
+			term = term.substring(index+1);
+		}
+		return term;
 	}
 
 }
