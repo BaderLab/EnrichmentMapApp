@@ -65,6 +65,23 @@ public class TaskUtil {
 		};
 	}
 
+	public static <T> TaskObserver taskFinished(Class<T> taskType, Consumer<T> finishConsumer, Consumer<FinishStatus> failConsumer) {
+		return new TaskObserver() {
+			@Override
+			public void taskFinished(ObservableTask task) {
+				if(taskType.isInstance(task)) {
+					finishConsumer.accept(taskType.cast(task));
+				}
+			}
+			@Override
+			public void allFinished(FinishStatus finishStatus) { 
+				if(finishStatus.getType() == Type.FAILED) {
+					failConsumer.accept(finishStatus);
+				}
+			}
+		};
+	}
+	
 	public static ListSingleSelection<String> lssFromEnum(Enum<?> ... values) {
 		List<String> names = new ArrayList<>(values.length);
 		for(Enum<?> value : values) {

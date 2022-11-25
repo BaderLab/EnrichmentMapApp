@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.util.Precision;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
@@ -54,6 +55,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskMonitor.Level;
 
 /**
  * Parse expression file. The user can also use a rank file instead of an
@@ -114,7 +116,7 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		int expressionUniverse = 0;
 		boolean twoColumns = false;
 
-		taskMonitor.setStatusMessage("Parsing GCT file - " + maxValue + " rows");
+		taskMonitor.setStatusMessage("Parsing Expression file - " + maxValue + " rows");
 		
 		for(int i = 0; i < lines.size(); i++) {
 			String line = lines.get(i);
@@ -193,8 +195,8 @@ public class ExpressionFileReaderTask extends AbstractTask {
 					description = tokens[1];
 				}
 
-				GeneExpression expres = new GeneExpression(Name, description);
-				expres.setExpression(tokens);
+				float[] expressionsAsFloat = parseExpressions(tokens);
+				GeneExpression expres = new GeneExpression(Name, description, expressionsAsFloat);
 				expression.put(genekey, expres);
 			}
 			expressionUniverse++;
@@ -211,10 +213,49 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		return expressionMatrix;
 	}
 
+	
+	public static float[] parseExpressions(String[] expres) {
+		// ignore the first two cells --> only if there are at least 3 cells
+		int size = expres.length;
+		float[] expression;
+		
+		if (size > 2) {
+			expression = new float[size - 2];
+			for (int i = 2; i < size; i++) {
+				try {
+					expression[i - 2] = parseAndRound(expres[i]);
+				} catch(NumberFormatException e) {
+					throw new NumberFormatException("The expression file contains the text '" + expres[i] + "' where a number was expected.");
+				}
+			}
+		} else {
+			expression = new float[1];
+			try {
+				expression[0] = parseAndRound(expres[1]);
+			} catch (NumberFormatException e) {
+				// if the column doesn't contain doubles then just assume that the expression file is empty
+				expression[0] = 0.0f;
+			}
+		}
+		return expression;
+	}
+	
+	
+	private static float parseAndRound(String exp) {
+		float f = Float.parseFloat(exp);
+		float r = Precision.round(f, 4);
+		return r;
+	}
+	
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("Parsing GCT file");
-		parse(taskMonitor);
+		taskMonitor.setTitle("Parsing Expression file");
+		try {
+			parse(taskMonitor);
+		} catch(NumberFormatException e) {
+			taskMonitor.showMessage(Level.ERROR, e.getMessage());
+			throw e;
+		}
 	}
 }

@@ -45,8 +45,6 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.Arrays;
 
-import org.apache.commons.math3.util.Precision;
-
 
 /**
  * Class representing the expression of one gene/protein
@@ -57,7 +55,7 @@ public class GeneExpression {
 	private String description;
 	private float[] expression;
 
-	public GeneExpression(String name, String description) {
+	private GeneExpression(String name, String description) {
 		this.name = name;
 		this.description = description;
 	}
@@ -71,37 +69,6 @@ public class GeneExpression {
 		this(name, description);
 		this.expression = new float[] { dummyVal };
 	}
-
-	/**
-	 * Create an array of the expression values.
-	 */
-	public void setExpression(String[] expres) {
-		// ignore the first two cells --> only if there are at least 3 cells
-		int size = expres.length;
-
-		if (size > 2) {
-			expression = new float[size - 2];
-			for (int i = 2; i < size; i++) {
-				expression[i - 2] = parseAndRound(expres[i]);
-			}
-		} else {
-			expression = new float[1];
-			try {
-				expression[0] = parseAndRound(expres[1]);
-			} catch (NumberFormatException e) {
-				// if the column doesn't contain doubles then just assume that the expression file is empty
-				expression[0] = 0.0f;
-			}
-		}
-	}
-	
-	
-	private float parseAndRound(String exp) {
-		float f = Float.parseFloat(exp);
-		float r = Precision.round(f, 4);
-		return r;
-	}
-
 
 	/**
 	 * Row normalize the current gene expression set. Row normalization involved

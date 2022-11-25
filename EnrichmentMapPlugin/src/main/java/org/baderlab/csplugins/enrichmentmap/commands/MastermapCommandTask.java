@@ -20,6 +20,7 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskMonitor.Level;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
@@ -56,10 +57,10 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 	
 	
 	@Inject private SynchronousTaskManager<?> taskManager;
-	@Inject private CreateEnrichmentMapTaskFactory.Factory taskFactoryFactory;
+	@Inject private CreateEnrichmentMapTaskFactory.Factory createEMTaskFactory;
 	
 	
-	private Long[] result = { null };
+	private Long[] resultNetworkSUID = { null };
 	
 	
 	public MastermapCommandTask() {
@@ -76,6 +77,13 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 			throw new IllegalArgumentException("rootFolder is invalid: " + rootFolder);
 		}
 		
+		runTask(tm);
+		
+		tm.setStatusMessage("Done");
+	}
+	
+	
+	private void runTask(TaskMonitor tm) {
 		// Scan root folder (note: throws exception if no data sets were found)
 		var resolverTask = new DataSetResolverTask(rootFolder);
 		
@@ -104,14 +112,12 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 			params.setNetworkName(filterArgs.networkName);
 		}
 		
-		var taskFactory = taskFactoryFactory.create(params, dataSets);
-		var tasks = taskFactory.createTaskIterator();
+		var tasks = createEMTaskFactory.create(params, dataSets).createTaskIterator();
 		
-		taskManager.execute(tasks, TaskUtil.taskFinished(CreateEMNetworkTask.class, networkTask -> {
-			result[0] = networkTask.getResults(Long.class); // get SUID of created network
-		}));
-		
-		tm.setStatusMessage("Done");
+		taskManager.execute(tasks, TaskUtil.taskFinished(CreateEMNetworkTask.class,
+			(task)  -> resultNetworkSUID[0] = task.getResults(Long.class),
+			(error) -> tm.showMessage(Level.ERROR, "Failed to create EnrichmentMap network. Check task log for details.")
+		));
 	}
 	
 	
@@ -156,11 +162,12 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 	
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
+		Long suid = resultNetworkSUID[0];
 		if(String.class.equals(type)) {
-			return type.cast(String.valueOf(result[0]));
+			return type.cast(String.valueOf(suid));
 		}
 		if(Long.class.equals(type)) {
-			return type.cast(result[0]);
+			return type.cast(suid);
 		}
 		return null;
 	}
