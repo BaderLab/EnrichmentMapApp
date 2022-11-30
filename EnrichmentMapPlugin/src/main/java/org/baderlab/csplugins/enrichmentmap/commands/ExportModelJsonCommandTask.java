@@ -24,6 +24,9 @@ public class ExportModelJsonCommandTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		if(file == null)
+			throw new IllegalArgumentException("'file' argument is null");
+		
 		file.createNewFile();
 		if(!file.canWrite())
 			throw new IllegalArgumentException("Cannot write to file");
