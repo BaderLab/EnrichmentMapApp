@@ -1138,16 +1138,6 @@ public class EnrichmentMapParameters {
 		this.fdr = FDR;
 	}
 
-	/* create a method to re-create rank to gene given the gene to rank */
-	public HashMap<Integer, Integer> getRank2geneDataset(HashMap<Integer, Rank> gene2rank) {
-		HashMap<Integer, Integer> rank2gene = new HashMap<Integer, Integer>();
-
-		for(Iterator<?> i = gene2rank.keySet().iterator(); i.hasNext();) {
-			Integer cur = (Integer) i.next();
-			rank2gene.put(gene2rank.get(cur).getRank(), cur);
-		}
-		return rank2gene;
-	}
 
 	public void setDefaultJaccardCutOff(double defaultJaccardCutOff) {
 		this.defaultJaccardCutOff = defaultJaccardCutOff;
