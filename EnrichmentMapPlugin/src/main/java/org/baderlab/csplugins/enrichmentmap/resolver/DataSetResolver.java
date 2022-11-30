@@ -125,6 +125,7 @@ public class DataSetResolver {
 		
 		dataSets.addAll(createDataSetsFromEnrichments(types.get(Type.ENRICHMENT_GENERIC), Method.Generic, exprFiles, rankFiles, clasFiles, gmtFiles));
 		dataSets.addAll(createDataSetsFromEnrichments(types.get(Type.ENRICHMENT_ENRICHR), Method.Generic, exprFiles, rankFiles, clasFiles, gmtFiles));
+		dataSets.addAll(createDataSetsFromEnrichments(types.get(Type.ENRICHMENT_GSEA),  Method.GSEA, exprFiles, rankFiles, clasFiles, gmtFiles));
 		dataSets.addAll(createDataSetsFromEnrichments(types.get(Type.ENRICHMENT_DAVID), Method.Specialized, exprFiles, rankFiles, clasFiles, gmtFiles));
 		dataSets.addAll(createDataSetsFromEnrichments(types.get(Type.ENRICHMENT_BINGO), Method.Specialized, exprFiles, rankFiles, clasFiles, gmtFiles));
 		dataSets.addAll(createDataSetsFromEnrichments(types.get(Type.ENRICHMENT_GREAT), Method.Specialized, exprFiles, rankFiles, clasFiles, gmtFiles));
