@@ -20,7 +20,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
 
-public class HeatMapCellRenderer implements TableCellRenderer {
+@SuppressWarnings("serial")
+public class HeatMapCellRenderer extends JLabel implements TableCellRenderer {
 
 	private final Map<Pair<EMDataSet,Transform>,Optional<DataSetColorRange>> colorRanges = new HashMap<>();
 	private final static DecimalFormat format = new DecimalFormat("###.##");
@@ -29,29 +30,30 @@ public class HeatMapCellRenderer implements TableCellRenderer {
 	
 	@Override
 	public JLabel getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-		JLabel label = new JLabel();
-		label.setOpaque(true); //MUST do this for background to show up.
+		setOpaque(true); //MUST do this for background to show up.
 		
 		if(value instanceof Number) {
 			double d = ((Number)value).doubleValue();
 			
 			HeatMapTableModel model = (HeatMapTableModel) table.getModel();
 			Color color = getColorFor(model, col, d);
-			label.setBackground(color);
+			setBackground(color);
 			Border border = BorderFactory.createMatteBorder(1, 1, 1, 1, isSelected ? table.getSelectionForeground() : color);
-			label.setBorder(border);
+			setBorder(border);
 			
 			String text = getText(d);
-			label.setToolTipText(text);
+			setToolTipText(text);
 			
 			if(showValue && Double.isFinite(d)) {
-				label.setText(text);
-				label.setFont(new Font((UIManager.getFont("TableHeader.font")).getName(), Font.PLAIN, (UIManager.getFont("TableHeader.font")).getSize()-2));
-	      	   	label.setHorizontalAlignment(SwingConstants.RIGHT);
+				setText(text);
+				setFont(new Font((UIManager.getFont("TableHeader.font")).getName(), Font.PLAIN, (UIManager.getFont("TableHeader.font")).getSize()-2));
+	      	   	setHorizontalAlignment(SwingConstants.RIGHT);
 			}
+		} else {
+			setText("");
 		}
 		
-		return label;
+		return this;
 	}
 	
 	
