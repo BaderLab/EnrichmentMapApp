@@ -57,9 +57,12 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
+import org.baderlab.csplugins.enrichmentmap.task.UnsortedRanksException;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskMonitor.Level;
 
 /**
  * Created by User: risserlin Date: May 1, 2009 Time: 9:10:22 AM
@@ -72,53 +75,32 @@ import org.cytoscape.work.TaskMonitor;
  * rank but also have three bland columns.
  *
  */
-public class RanksFileReaderTask extends AbstractTask {
+public class RanksFileReaderTask extends AbstractTask implements ObservableTask {
 
-	private String RankFileName;
-	private EMDataSet dataset;
+	public enum UnsortedRanksStrategy {
+		LOG_WARNING,
+		FAIL_IMMEDIATELY;
+	}
+	
+	private final String RankFileName;
+	private final EMDataSet dataset;
 	private String ranks_name;
+	
+	private final UnsortedRanksStrategy unsortedRanksStrategy;
 
 
 	//distinguish between load from enrichment map input panel and heatmap interface
 	private boolean loadFromHeatmap = false;
+	private boolean sorted = true;
+	
 
 
-	/**
-	 * Class constructor
-	 *
-	 * @param rankFileName - file name of ranks file
-	 * @param dataset - which dataset is this rank file related to (dataset 1 or  dataset 2)
-	 */
-	public RanksFileReaderTask(String rankFileName, EMDataSet dataset, boolean loadFromHeatmap) {
+	public RanksFileReaderTask(String rankFileName, EMDataSet dataset, String ranks_name, boolean loadFromHeatmap, UnsortedRanksStrategy unsortedRanksStrategy) {
 		this.RankFileName = rankFileName;
-		this.dataset = dataset;
-		this.loadFromHeatmap = loadFromHeatmap;
-	}
-
-	/**
-	 * Class constructor - curent task monitor specified.
-	 *
-	 * @param rankFileName - file name of ranks file
-	 * @param dataset - which dataset is this rank file related to (dataset 1 or  dataset 2)
-	 */
-	public RanksFileReaderTask(String rankFileName, EMDataSet dataset, String ranks_name, boolean loadFromHeatmap) {
-		RankFileName = rankFileName;
 		this.ranks_name = ranks_name;
 		this.dataset = dataset;
 		this.loadFromHeatmap = loadFromHeatmap;
-	}
-
-	/**
-	 * Class constructor - for late loaded rank file that aren't specific to a dataset.
-	 *
-	 * @param params - enrichment map parameters for current map
-	 * @param rankFileName - file name of ranks file
-	 * @param ranks_name - name of rankings to be used in heat map drop down to refer to it.
-	 */
-	public RanksFileReaderTask(String rankFileName, String ranks_name, boolean loadFromHeatmap) {
-		this.RankFileName = rankFileName;
-		this.ranks_name = ranks_name;
-		this.loadFromHeatmap = loadFromHeatmap;
+		this.unsortedRanksStrategy = unsortedRanksStrategy;
 	}
 
 	
@@ -153,6 +135,9 @@ public class RanksFileReaderTask extends AbstractTask {
 		 */
 
 		int nScores = 0; //number of found scores
+		double prevScore = Double.MAX_VALUE;
+		boolean sorted = true;
+		
 		for(int i = 0; i < lines.size(); i++) {
 			String line = lines.get(i);
 
@@ -225,12 +210,25 @@ public class RanksFileReaderTask extends AbstractTask {
 			int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
 			taskMonitor.setProgress(percentComplete);
 			currentProgress++;
-
+			
+			if(score > prevScore) {
+				sorted = false;
+			}
+			prevScore = score;
 		}
 
 		//the none of the genes are in the gene list
 		if(ranks.isEmpty()) {
-			throw new IllegalThreadStateException("None of the genes in the rank file are found in the expression file.  Make sure the identifiers of the two files match.");
+			throw new IllegalArgumentException("None of the genes in the rank file are found in the expression file.  Make sure the identifiers of the two files match.");
+		}
+		
+		if(!sorted) {
+			String message = "The ranks file '" + RankFileName + "' is not sorted from greatest to least.";
+			if(unsortedRanksStrategy == UnsortedRanksStrategy.LOG_WARNING) {
+				taskMonitor.showMessage(Level.WARN, message);
+			} else {
+				throw new UnsortedRanksException(message, RankFileName);
+			}
 		}
 
 		//remove Null values from collector
@@ -299,5 +297,14 @@ public class RanksFileReaderTask extends AbstractTask {
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Parsing Ranks file");
 		parse(taskMonitor);
+	}
+
+	public boolean isSorted() {
+		return sorted;
+	}
+	
+	@Override
+	public <R> R getResults(Class<? extends R> type) {
+		return null;
 	}
 }

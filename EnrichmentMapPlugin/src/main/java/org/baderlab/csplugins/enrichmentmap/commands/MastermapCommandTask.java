@@ -12,12 +12,13 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters.GreatFilt
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolverTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEMNetworkTask;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
+import org.baderlab.csplugins.enrichmentmap.util.DelegatingTaskMonitor;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
+import org.baderlab.csplugins.enrichmentmap.util.SimpleSyncTaskManager;
 import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskMonitor.Level;
@@ -56,7 +57,6 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 	
 	
 	
-	@Inject private SynchronousTaskManager<?> taskManager;
 	@Inject private CreateEnrichmentMapTaskFactory.Factory createEMTaskFactory;
 	
 	
@@ -77,7 +77,17 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 			throw new IllegalArgumentException("rootFolder is invalid: " + rootFolder);
 		}
 		
-		runTask(tm);
+		var delegatingTM = new DelegatingTaskMonitor(tm) {
+			@Override
+			public void setStatusMessage(String message) {
+				// Kind of a hack, used to suppress the flood of status messages from ComputeSimilarityTaskParallel
+				if(message != null && message.startsWith("Computing Geneset Similarity:"))
+					return;
+				super.setStatusMessage(message);
+			}
+		};
+		
+		runTask(delegatingTM);
 		
 		tm.setStatusMessage("Done");
 	}
@@ -91,6 +101,8 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 			PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
 			resolverTask.setPathMatcher(matcher);
 		}
+		
+		var taskManager = new SimpleSyncTaskManager(tm);
 		
 		taskManager.execute(new TaskIterator(resolverTask)); // blocks
 		var dataSets = resolverTask.getDataSetResults();

@@ -11,8 +11,10 @@ import javax.swing.JPanel;
 import org.baderlab.csplugins.enrichmentmap.model.DataSetParameters;
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults.ParseGSEAEnrichmentStrategy;
+import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask.UnsortedRanksStrategy;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask.MissingGenesetStrategy;
+import org.baderlab.csplugins.enrichmentmap.task.TaskErrorStrategies;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CutoffPropertiesPanel;
 import org.baderlab.csplugins.enrichmentmap.view.creation.NamePanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
@@ -88,7 +90,8 @@ public abstract class NetworkLoadDialogPage implements CardDialogPage {
 		List<DataSetParameters> dataSets = Collections.singletonList(dsParams);
 		
 		CreateEnrichmentMapTaskFactory taskFactory = taskFactoryFactory.create(params, dataSets);
-		TaskIterator tasks = taskFactory.createTaskIterator(MissingGenesetStrategy.IGNORE, ParseGSEAEnrichmentStrategy.FAIL_IMMEDIATELY);
+		var strategies = new TaskErrorStrategies(MissingGenesetStrategy.IGNORE, ParseGSEAEnrichmentStrategy.FAIL_IMMEDIATELY, UnsortedRanksStrategy.LOG_WARNING);
+		TaskIterator tasks = taskFactory.createTaskIterator(strategies);
 		
 		dialogTaskManager.execute(tasks);
 		

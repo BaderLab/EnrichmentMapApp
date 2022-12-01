@@ -26,6 +26,7 @@ import javax.swing.JTextField;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
+import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask.UnsortedRanksStrategy;
 import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
@@ -82,11 +83,13 @@ public class AddRanksDialog extends JDialog {
 		String rankFileName = ranksFileText.getText();
 		String ranksName = getRanksName();
 		EMDataSet dataset = getDataSet();
-		RanksFileReaderTask task = new RanksFileReaderTask(rankFileName, dataset, ranksName, true);
+		
+		// MKTODO warn the user if the ranks are unsorted
+		RanksFileReaderTask task = new RanksFileReaderTask(rankFileName, dataset, ranksName, true, UnsortedRanksStrategy.LOG_WARNING);
 		
 		dialogTaskManager.execute(new TaskIterator(task), TaskUtil.allFinished(finishStatus -> {
-				resultRanksName = ranksName;
-				dispose();
+			resultRanksName = ranksName;
+			dispose();
 		}));
 	}
 	

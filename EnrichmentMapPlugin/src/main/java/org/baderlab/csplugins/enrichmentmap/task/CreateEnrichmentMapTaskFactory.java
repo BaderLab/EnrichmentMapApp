@@ -34,7 +34,6 @@ import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults.P
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGenericEnrichmentResults;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolver;
-import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask.MissingGenesetStrategy;
 import org.baderlab.csplugins.enrichmentmap.util.Baton;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
@@ -66,25 +65,24 @@ public class CreateEnrichmentMapTaskFactory {
 		this.params = params;
 	}
 	
-	
 	public TaskIterator createTaskIterator() {
-		return createTaskIterator(MissingGenesetStrategy.FAIL_IMMEDIATELY, ParseGSEAEnrichmentStrategy.FAIL_IMMEDIATELY);
+		return createTaskIterator(TaskErrorStrategies.commandDefaults());
 	}
 	
-	public TaskIterator createTaskIterator(MissingGenesetStrategy genesetStrategy, ParseGSEAEnrichmentStrategy gseaStrategy) {
+	public TaskIterator createTaskIterator(TaskErrorStrategies strategies) {
 		TaskIterator tasks = new TaskIterator();
 		if(dataSets.isEmpty())
 			return tasks;
 		tasks.append(new TitleTask("Building EnrichmentMap"));
 		
 		EnrichmentMap map = new EnrichmentMap(params, serviceRegistrar);
-		createTasks(map, tasks, genesetStrategy, gseaStrategy);
+		createTasks(map, tasks, strategies);
 		
 		return tasks;
 	}
 	
 	
-	private void createTasks(EnrichmentMap map, TaskIterator tasks, MissingGenesetStrategy genesetStrategy, ParseGSEAEnrichmentStrategy gseaStrategy) {
+	private void createTasks(EnrichmentMap map, TaskIterator tasks, TaskErrorStrategies strategies) {
 		for(DataSetParameters dataSetParameters : dataSets) {
 			String datasetName = dataSetParameters.getName();
 			Method method = dataSetParameters.getMethod();
@@ -120,7 +118,7 @@ public class CreateEnrichmentMapTaskFactory {
 					tasks.append(new GMTFileReaderTask(dataset));
 				
 				// Load the enrichments 
-				tasks.append(getEnrichmentParserTasks(dataset, gseaStrategy));
+				tasks.append(getEnrichmentParserTasks(dataset, strategies.getGseaStrategy()));
 
 				// Load expression file if specified in the dataset.
 				// If there is no expression file then create a dummy file to associate with this dataset so we can still use the expression viewer (heat map)
@@ -132,7 +130,7 @@ public class CreateEnrichmentMapTaskFactory {
 				// Load ranks if present
 				String ranksName = dataset.getMethod() == Method.GSEA ? Ranking.GSEARanking : datasetName;
 				if(dataset.getRanksByName(ranksName) != null)
-					tasks.append(new RanksFileReaderTask(files.getRankedFile(), dataset, ranksName, false));
+					tasks.append(new RanksFileReaderTask(files.getRankedFile(), dataset, ranksName, false, strategies.getRanksStrategy()));
 				
 				if(!Strings.isNullOrEmpty(dataset.getDataSetFiles().getClassFile()))
 					tasks.append(new ClassFileReaderTask(dataset));
@@ -140,7 +138,7 @@ public class CreateEnrichmentMapTaskFactory {
 		}
 		
 		// Filter out genesets that don't pass the p-value and q-value thresholds
-		InitializeGenesetsOfInterestTask genesetsTask = new InitializeGenesetsOfInterestTask(map, genesetStrategy);
+		InitializeGenesetsOfInterestTask genesetsTask = new InitializeGenesetsOfInterestTask(map, strategies.getGenesetStrategy());
 		tasks.append(genesetsTask);
 		
 		// Trim the genesets to only contain the genes that are in the data file.
