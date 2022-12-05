@@ -47,7 +47,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.util.Optional;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -55,8 +54,11 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 
+import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
+
+import com.google.inject.Inject;
 
 /**
  * Flips column headers to vertical position
@@ -65,14 +67,13 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 
 	public static final int MIN_HEIGHT = 65;
 	
-	private Optional<Color> labelBackgroundColor;
+	@Inject private PropertyManager propertyManager;
 	
-	public ColumnHeaderVerticalRenderer(Color labelBackgroundColor) {
-		this.labelBackgroundColor = Optional.ofNullable(labelBackgroundColor);
-	}
+	private Color phenoColor;
 	
-	public ColumnHeaderVerticalRenderer() {
-		this.labelBackgroundColor = Optional.empty();
+	public ColumnHeaderVerticalRenderer setPhenoColor(Color phenoColor) {
+		this.phenoColor = phenoColor;
+		return this;
 	}
 	
 	@Override
@@ -80,7 +81,8 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
 		EMDataSet dataset = model.getDataSet(col);
 		
-		JLabel verticalLabel = createVerticalLabel(value.toString());
+		String labelText = abbreviate(value.toString());
+		JLabel verticalLabel = createVerticalLabel(labelText);
 		
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(verticalLabel, BorderLayout.CENTER);
@@ -93,12 +95,18 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 			panel.add(barPanel, BorderLayout.NORTH);
 		}
 		
-		panel.setBackground(labelBackgroundColor.isPresent() ? labelBackgroundColor.get()
-				: UIManager.getColor("TableHeader.background"));
+		panel.setBackground(phenoColor != null ? phenoColor : UIManager.getColor("TableHeader.background"));
 		panel.setToolTipText(value.toString() + " - " + dataset.getName());
 		
 		return panel;
 	}
+	
+	
+	private String abbreviate(String value) {
+		int length = propertyManager.getValue(PropertyManager.HEATMAP_NAME_LENGTH);
+		return SwingUtil.abbreviate(value, length);
+	}
+	
 	
 	private JLabel createVerticalLabel(String value) {
 		JLabel label = new JLabel();
@@ -106,11 +114,10 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		label.setToolTipText(value);
 		
 		// Create vertical text label
-		String s = SwingUtil.abbreviate(value, 14);
 		Font font = UIManager.getFont("TableHeader.font");
 		Color foreground = UIManager.getColor("TableHeader.foreground");
 		
-		label.setIcon(new VerticalTextIcon(label.getFontMetrics(font), foreground, false, s));
+		label.setIcon(new VerticalTextIcon(label.getFontMetrics(font), foreground, false, value));
 		label.setVerticalAlignment(JLabel.BOTTOM);
 		label.setHorizontalAlignment(JLabel.CENTER);
 		

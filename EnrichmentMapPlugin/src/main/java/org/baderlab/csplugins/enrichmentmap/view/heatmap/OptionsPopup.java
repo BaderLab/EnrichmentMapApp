@@ -40,6 +40,8 @@ public class OptionsPopup extends JPopupMenu {
 	private JMenuItem stringButton;
 	private JMenuItem pcButton;
 	
+	private JMenuItem nameLengthButton;
+	
 	private JCheckBoxMenuItem cosineRadio;
 	private JCheckBoxMenuItem euclideanRadio;
 	private JCheckBoxMenuItem pearsonRadio;
@@ -94,6 +96,7 @@ public class OptionsPopup extends JPopupMenu {
 		pearsonRadio.addActionListener(pearsonListener = distanceListenerFor(Distance.PEARSON));
 		distanceMenu.add(pearsonRadio);
 		
+		nameLengthButton = new JMenuItem("Expression Header Max Length...");
 		JCheckBoxMenuItem autofocusCheck = propertyManager.createJCheckBoxMenuItem(HEATMAP_AUTOFOCUS,    "Auto-Focus HeatMap");
 		JCheckBoxMenuItem syncCheck      = propertyManager.createJCheckBoxMenuItem(HEATMAP_DATASET_SYNC, "Sync Data Sets with Control Panel");
 		JCheckBoxMenuItem selectedCheck  = propertyManager.createJCheckBoxMenuItem(HEATMAP_SELECT_SYNC,  "Display only selected Data Sets");
@@ -107,6 +110,7 @@ public class OptionsPopup extends JPopupMenu {
 		add(exportTxtButton);
 		add(exportPdfButton);
 		addSeparator();
+		add(nameLengthButton);
 		add(distanceMenu);
 		add(autofocusCheck);
 		add(syncCheck);
@@ -138,6 +142,10 @@ public class OptionsPopup extends JPopupMenu {
 	
 	public JMenuItem getGeneManiaButton() {
 		return geneManiaButton;
+	}
+	
+	public JMenuItem getNameLengthButton() {
+		return nameLengthButton;
 	}
 	
 	public JMenuItem getStringButton() {

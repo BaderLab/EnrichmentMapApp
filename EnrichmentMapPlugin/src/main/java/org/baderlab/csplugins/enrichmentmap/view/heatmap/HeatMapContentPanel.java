@@ -76,6 +76,7 @@ public class HeatMapContentPanel extends JPanel {
 	private static final int COLUMN_WIDTH_VALUE = 50;
 	
 	@Inject private Provider<OptionsPopup> optionsPopupProvider;
+	@Inject private Provider<ColumnHeaderVerticalRenderer> verticalRendererProvider;
 	@Inject private ColumnHeaderRankOptionRenderer.Factory columnHeaderRankOptionRendererFactory;
 	@Inject private PropertyManager propertyManager;
 	@Inject private IconManager iconManager;
@@ -146,9 +147,9 @@ public class HeatMapContentPanel extends JPanel {
 		HeatMapTableModel tableModel = (HeatMapTableModel) getTable().getModel();
 		TableColumnModel columnModel = getTable().getColumnModel();
 		
-		TableCellRenderer vertRenderer = new ColumnHeaderVerticalRenderer();
-		TableCellRenderer vertRendererPheno1 = new ColumnHeaderVerticalRenderer(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_1);
-		TableCellRenderer vertRendererPheno2 = new ColumnHeaderVerticalRenderer(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_2);
+		var vertRenderer = verticalRendererProvider.get();
+		var vertRendererPheno1 = verticalRendererProvider.get().setPhenoColor(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_1);
+		var vertRendererPheno2 = verticalRendererProvider.get().setPhenoColor(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_2);
 		
 		TableColumn rankColumn = columnModel.getColumn(RANK_COL);
 

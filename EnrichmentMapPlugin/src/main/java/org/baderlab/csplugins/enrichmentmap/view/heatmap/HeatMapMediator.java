@@ -16,6 +16,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.swing.JOptionPane;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.actions.OpenPathwayCommonsTask;
@@ -97,7 +101,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	@Inject private HeatMapPanel heatMapPanel;
 	@Inject private Provider<HeatMapContentPanel> contentPanelProvider;
 	
-	private HeatMapContentPanel contentPanel2;
+	private HeatMapContentPanel contentPanel;
 	private final CoalesceTimer selectionEventTimer = new CoalesceTimer(200, 1);
 	private boolean onlyEdges;
 	
@@ -108,6 +112,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	public void setPropertyListeners() {
 		propertyManager.addListener(PropertyManager.HEATMAP_DATASET_SYNC, (prop, value) -> reset());
 		propertyManager.addListener(PropertyManager.HEATMAP_SELECT_SYNC,  (prop, value) -> reset());
+		propertyManager.addListener(PropertyManager.HEATMAP_NAME_LENGTH,  (prop, value) -> reset());
 	}
 	
 	
@@ -123,33 +128,34 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			showValueActionListener = evt -> updateSetting_ShowValues();
 		
 		// Tool Bar
-		if(contentPanel2 == null) {
-			contentPanel2 = contentPanelProvider.get();
-			contentPanel2.getOperatorCombo().addActionListener(operatorActionListener);
-			contentPanel2.getNormCombo().addActionListener(normActionListener);
-			contentPanel2.getCompressCombo().addActionListener(compressActionListener);
-			contentPanel2.getShowValuesCheck().addActionListener(showValueActionListener);
+		if(contentPanel == null) {
+			contentPanel = contentPanelProvider.get();
+			contentPanel.getOperatorCombo().addActionListener(operatorActionListener);
+			contentPanel.getNormCombo().addActionListener(normActionListener);
+			contentPanel.getCompressCombo().addActionListener(compressActionListener);
+			contentPanel.getShowValuesCheck().addActionListener(showValueActionListener);
 			
 			// Fire a setting changed event when column sort changes
-			contentPanel2.getTable().getRowSorter().addRowSorterListener(e -> settingChanged()); 
+			contentPanel.getTable().getRowSorter().addRowSorterListener(e -> settingChanged()); 
 			
 			// Options Popup
-			contentPanel2.getOptionsPopup().setDistanceConsumer(this::updateSetting_Distance);
-			contentPanel2.getOptionsPopup().getGeneManiaButton().addActionListener(e -> runGeneMANIA());
-			contentPanel2.getOptionsPopup().getStringButton().addActionListener(e -> runString());
-			contentPanel2.getOptionsPopup().getPathwayCommonsButton().addActionListener(e -> runPathwayCommons());
-			contentPanel2.getOptionsPopup().getAddRanksButton().addActionListener(e -> addRankings());
-			contentPanel2.getOptionsPopup().getExportTxtButton().addActionListener(txtActionFactory.create(contentPanel2.getTable()));
-			contentPanel2.getOptionsPopup().getExportPdfButton().addActionListener(pdfActionFactory.create(contentPanel2.getTable(), contentPanel2::getRankingOption, contentPanel2::isShowValues));
+			contentPanel.getOptionsPopup().setDistanceConsumer(this::updateSetting_Distance);
+			contentPanel.getOptionsPopup().getGeneManiaButton().addActionListener(e -> runGeneMANIA());
+			contentPanel.getOptionsPopup().getStringButton().addActionListener(e -> runString());
+			contentPanel.getOptionsPopup().getPathwayCommonsButton().addActionListener(e -> runPathwayCommons());
+			contentPanel.getOptionsPopup().getAddRanksButton().addActionListener(e -> addRankings());
+			contentPanel.getOptionsPopup().getNameLengthButton().addActionListener(e -> promptForNameLength());
+			contentPanel.getOptionsPopup().getExportTxtButton().addActionListener(txtActionFactory.create(contentPanel.getTable()));
+			contentPanel.getOptionsPopup().getExportPdfButton().addActionListener(pdfActionFactory.create(contentPanel.getTable(), contentPanel::getRankingOption, contentPanel::isShowValues));
 			
 			// Property Change Listeners
-			contentPanel2.addPropertyChangeListener("selectedRankingOption", evt -> settingChanged());
+			contentPanel.addPropertyChangeListener("selectedRankingOption", evt -> settingChanged());
 		}
-		return contentPanel2;
+		return contentPanel;
 	}
 	
 	private void disposeContentPanel() {
-		contentPanel2 = null;
+		contentPanel = null;
 		heatMapPanel.showContentPanel(null);
 	}
 	
@@ -597,6 +603,21 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		OpenPathwayCommonsTask task = pathwayCommonsFactory.createForHeatMap(network);
 		if(task != null) {
 			taskManager.execute(new TaskIterator(task));
+		}
+	}
+	
+	private void promptForNameLength() {
+		int length = propertyManager.getValue(PropertyManager.HEATMAP_NAME_LENGTH);
+		var spinnerModel = new SpinnerNumberModel(length, 10, 200, 1);
+		var spinner = new JSpinner(spinnerModel);
+
+		int option = JOptionPane.showOptionDialog(null, spinner, "DataSet Max Length", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+		
+		if(option == JOptionPane.OK_OPTION) {
+			int newLength = spinnerModel.getNumber().intValue();
+			if(newLength != length) {
+				propertyManager.setValue(PropertyManager.HEATMAP_NAME_LENGTH, newLength);
+			}
 		}
 	}
 
