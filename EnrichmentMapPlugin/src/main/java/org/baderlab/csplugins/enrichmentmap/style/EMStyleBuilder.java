@@ -226,17 +226,18 @@ public class EMStyleBuilder {
 			}
 			else if(scope == ONLY_CHARTS) {
 				setNodeChartDefaults(vs, chartType);
-				setNodeShapes(vs, options, chartType);
-				setNodeSize(vs, options, chartType);
+//				setNodeShapes(vs, options, chartType);
+//				setNodeSize(vs, options, chartType);
 				setNodeChart(vs, chart);
 			}
 			else if(scope == ONLY_DATASETS) {
+				// commented out some parts of the style because of https://github.com/BaderLab/EnrichmentMapApp/issues/503
 				setEdgePaint(vs, options);
 				setNodeChartDefaults(vs, chartType);
-				setNodeShapes(vs, options, chartType);
-				setNodeSize(vs, options, chartType);
+//				setNodeShapes(vs, options, chartType);
+//				setNodeSize(vs, options, chartType);
 				setNodeChart(vs, chart);
-				setNodeColors(vs, options);
+//				setNodeColors(vs, options);
 			}
 			else if(scope == PUBLICATION_READY) {
 				if (options.isPublicationReady()) {
@@ -601,7 +602,7 @@ public class EMStyleBuilder {
 			
 			// These values used to be 10 and 474 and were changed in EM 3.3.1
 			// See GitHub issue  https://github.com/BaderLab/EnrichmentMapApp/issues/422
-			int val0 = 2, val1 = 500;
+			final int val0 = 2, val1 = 500;
 			
 			VisualMappingFunction<?, Double> oldMapping = vs.getVisualMappingFunction(NODE_SIZE);
 			
