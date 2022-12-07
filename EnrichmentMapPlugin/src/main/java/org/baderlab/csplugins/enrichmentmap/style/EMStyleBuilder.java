@@ -2,7 +2,9 @@ package org.baderlab.csplugins.enrichmentmap.style;
 
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope.*;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
-import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.*;
+import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.DIAMOND;
+import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.ELLIPSE;
+import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.RECTANGLE;
 
 import java.awt.Color;
 import java.awt.Paint;
@@ -272,9 +274,9 @@ public class EMStyleBuilder {
 	}
 	
 	private void setEdgePaint(VisualStyle vs, EMStyleOptions options) {
-		DiscreteMapping<String, Paint> edgePaint = createEdgeColorMapping(options, EDGE_UNSELECTED_PAINT);
+		DiscreteMapping<String,Paint> edgePaint = createEdgeColorMapping(options, EDGE_UNSELECTED_PAINT);
 		vs.addVisualMappingFunction(edgePaint);
-		DiscreteMapping<String, Paint> edgeStrokePaint = createEdgeColorMapping(options, EDGE_STROKE_UNSELECTED_PAINT);
+		DiscreteMapping<String,Paint> edgeStrokePaint = createEdgeColorMapping(options, EDGE_STROKE_UNSELECTED_PAINT);
 		vs.addVisualMappingFunction(edgeStrokePaint);
 	}
 	
@@ -293,11 +295,10 @@ public class EMStyleBuilder {
 	}
 	
 	private DiscreteMapping<String, Paint> createEdgeColorMapping(EMStyleOptions options, VisualProperty<Paint> vp) {
-		int dataSetCount = options.getEnrichmentMap().getDataSetCount();
-		boolean distinctEdges = options.getEnrichmentMap().getParams().getCreateDistinctEdges();
+		var em = options.getEnrichmentMap();
 		
-		String col = (dataSetCount > 1 && distinctEdges) ?
-				Columns.EDGE_DATASET.with(options.getAttributePrefix(), null) : CyEdge.INTERACTION;
+		String col = em.useCompoundEdgeColor() 
+				? CyEdge.INTERACTION : Columns.EDGE_DATASET.with(options.getAttributePrefix(), null);
 		
 		DiscreteMapping<String, Paint> mapping = (DiscreteMapping<String, Paint>) dmFactory
 				.createVisualMappingFunction(col, String.class, vp);
@@ -309,8 +310,7 @@ public class EMStyleBuilder {
 		eventHelper.silenceEventSource(mapping);
 		
 		try {
-			List<EMDataSet> dataSets = options.getEnrichmentMap().getDataSetList();
-			
+			var dataSets = em.getDataSetList();
 			boolean hasColor = dataSets.stream().allMatch(ds -> ds.getColor() != null);
 			
 			Color overlapColor;
@@ -325,11 +325,16 @@ public class EMStyleBuilder {
 					ds.setColor(color);
 				}
 				overlapColor = colors[0];
+				em.setCompoundEdgeColor(overlapColor);
 			} else {
 				for (EMDataSet ds : dataSets) {
 					mapping.putMapValue(ds.getName(), ds.getColor());
 				}
-				overlapColor = dataSets.get(0).getColor();
+				overlapColor = em.getCompoundEdgeColor();
+				if(overlapColor == null) {
+					overlapColor = dataSets.get(0).getColor();
+					em.setCompoundEdgeColor(overlapColor);
+				}
 			}
 			
 			mapping.putMapValue(Columns.EDGE_INTERACTION_VALUE_OVERLAP, overlapColor);

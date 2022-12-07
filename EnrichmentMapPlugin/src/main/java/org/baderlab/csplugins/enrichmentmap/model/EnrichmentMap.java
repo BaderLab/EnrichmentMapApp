@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +63,8 @@ public class EnrichmentMap {
 	private boolean isLegacy = false;
 	private boolean isDistinctExpressionSets = false;
 	private boolean isCommonExpressionValues = false;
+	
+	private Color compoundEdgeColor;
 
 	private final Object lock = new Object();
 	
@@ -644,6 +647,18 @@ public class EnrichmentMap {
 		}
 	}
 
+	public void setCompoundEdgeColor(Color compoundEdgeColor) {
+		this.compoundEdgeColor = compoundEdgeColor;
+	}
+	
+	public Color getCompoundEdgeColor() {
+		return compoundEdgeColor;
+	}
+	
+	public boolean useCompoundEdgeColor() {
+		return !(getDataSetCount() > 1 && getParams().getCreateDistinctEdges());
+	}
+	
 	public void setDistinctExpressionSets(boolean d) {
 		this.isDistinctExpressionSets = d;
 	}

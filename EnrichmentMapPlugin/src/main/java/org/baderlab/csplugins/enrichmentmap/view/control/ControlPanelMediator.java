@@ -917,7 +917,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 	}
 	
 	private boolean showColorDialog(EnrichmentMap map) {
-		DataSetColorSelectorDialog dialog = colorSelectorDialogFactory.create(map.getDataSetList());
+		var dialog = colorSelectorDialogFactory.create(map.getDataSetList());
 		dialog.pack();
 		dialog.setLocationRelativeTo(swingApplication.getJFrame());
 		dialog.setModal(true);

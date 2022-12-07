@@ -17,6 +17,11 @@ public class DatasetColorTunable {
 			+ "name or index of a data set, and the value is an HTML hex color code. "
 			+ "Example: \"DataSet1=#224433,DataSet2=#887766\"")
 	public String colors = null;
+
+	@Tunable(description="Color to use for compound edges, the value is an HTML hex color code. "
+			+ "Note: This parameter has no effect if the EnrichmentMap network uses distinct edges (i.e. separate edges for each data set). "
+			+ "Example: \"#224433\"")
+	public String compoundEdgeColor = null;
 	
 	
 	public Map<String,Color> getColors() {
@@ -40,6 +45,10 @@ public class DatasetColorTunable {
 					v -> Color.decode(v.getValue())
 				)
 			);
+	}
+	
+	public Color getCompoundEdgeColor() {
+		return compoundEdgeColor == null ? null : Color.decode(compoundEdgeColor);
 	}
 
 }

@@ -363,7 +363,7 @@ public class DataSetSelector extends JPanel {
 	
 	JMenuItem getDataSetColorMenuItem() {
 		if (colorMenuItem == null) {
-			colorMenuItem = new JMenuItem("Change data set colors...");
+			colorMenuItem = new JMenuItem("Change Colors...");
 		}
 		return colorMenuItem;
 	}

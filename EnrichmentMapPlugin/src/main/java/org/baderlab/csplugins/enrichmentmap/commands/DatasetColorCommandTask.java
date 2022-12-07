@@ -31,6 +31,7 @@ public class DatasetColorCommandTask extends AbstractTask {
 	@ContainsTunables @Inject
 	public DatasetColorTunable datasetColorTunable;
 	
+	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Change Data Set Colors");
@@ -42,9 +43,28 @@ public class DatasetColorCommandTask extends AbstractTask {
 			throw new IllegalArgumentException("network is not an EnrichmentMap network");
 		
 		Map<String,Color> colors = datasetColorTunable.getColors();
-		if(colors.isEmpty())
+		Color ceColor = datasetColorTunable.getCompoundEdgeColor();
+		if(colors.isEmpty() && ceColor == null)
 			throw new IllegalArgumentException("no colors specified");
 		
+		// Set colors
+		setDatasetColors(tm, map, colors);
+		setCompoundEdgeColor(map, ceColor);
+		
+		// update panels
+		controlPanelMediator.updateDataSetList(networkTunable.getNetworkView());
+		heatMapMediatorProvider.get().reset();
+
+		// update visual style
+		EMStyleOptions styleOptions = controlPanelMediator.createStyleOptions(netView);
+		controlPanelMediator.applyVisualStyle(styleOptions, StyleUpdateScope.ONLY_DATASETS);
+		heatMapMediatorProvider.get().reset();
+		
+		tm.setProgress(1.0);
+	}
+	
+	
+	private static void setDatasetColors(TaskMonitor tm, EnrichmentMap map, Map<String,Color> colors) {
 		List<EMDataSet> datasetList = map.getDataSetList();
 		
 		for(var entry : colors.entrySet()) {
@@ -66,16 +86,12 @@ public class DatasetColorCommandTask extends AbstractTask {
 				}
 			}
 		};
-		
-		// update panels
-		controlPanelMediator.updateDataSetList(networkTunable.getNetworkView());
-		heatMapMediatorProvider.get().reset();
-
-		// update visual style
-		EMStyleOptions styleOptions = controlPanelMediator.createStyleOptions(netView);
-		controlPanelMediator.applyVisualStyle(styleOptions, StyleUpdateScope.ONLY_DATASETS);
-		heatMapMediatorProvider.get().reset();
-		
-		tm.setProgress(1.0);
+	}
+	
+	
+	private static void setCompoundEdgeColor(EnrichmentMap map, Color color) {
+		if(color != null && map.useCompoundEdgeColor()) {
+			map.setCompoundEdgeColor(color);
+		}
 	}
 }

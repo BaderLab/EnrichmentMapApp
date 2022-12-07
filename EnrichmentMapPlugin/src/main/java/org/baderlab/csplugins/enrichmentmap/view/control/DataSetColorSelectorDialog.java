@@ -19,6 +19,7 @@ import javax.swing.JScrollPane;
 import org.apache.commons.math3.util.Pair;
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.color.BrewerType;
@@ -37,8 +38,11 @@ public class DataSetColorSelectorDialog extends JDialog {
 	@Inject private CyColorPaletteChooserFactory paletteChooserFactory;
 	
 	private final List<EMDataSet> dataSets;
+	private final EnrichmentMap map;
 	
 	private final Map<EMDataSet,Color> newColors = new IdentityHashMap<>();
+	private Color newCompoundColor = null;
+	
 	private final List<Pair<EMDataSet,ColorButton>> buttons  = new ArrayList<>();
 	
 	private boolean colorsChanged = false;
@@ -50,11 +54,15 @@ public class DataSetColorSelectorDialog extends JDialog {
 	@Inject
 	public DataSetColorSelectorDialog(@Assisted List<EMDataSet> dataSets) {
 		setTitle("EnrichmentMap: Data Set Colors");
+		if(dataSets == null || dataSets.isEmpty())
+			throw new IllegalArgumentException("There must be at least one dataset to show dialog");
 		this.dataSets = dataSets;
+		this.map = dataSets.get(0).getMap();
 	}
 	
 	@AfterInjection
 	private void createContents() {
+		JPanel compoundEdgePanel = createCompoundEdgeColorPanel();
 		JPanel dataSetPanel = createDataSetColorsPanel();
 		JPanel buttonPanel  = createButtonPanel();
 		
@@ -64,13 +72,40 @@ public class DataSetColorSelectorDialog extends JDialog {
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
 		JPanel panel = new JPanel(new BorderLayout());
+		if(compoundEdgePanel != null)
+			panel.add(compoundEdgePanel, BorderLayout.NORTH);
 		panel.add(scrollPane, BorderLayout.CENTER);
 		panel.add(buttonPanel, BorderLayout.SOUTH);
 		setContentPane(panel);
 	}
 	
+	private JPanel createCompoundEdgeColorPanel() {
+		if(!map.useCompoundEdgeColor())
+			return null;
+		
+		JPanel panel = new JPanel(new GridBagLayout());
+		JLabel label = new JLabel("Edges   ");
+		
+		var color = map.getCompoundEdgeColor();
+		if(color == null)
+			color = dataSets.get(0).getColor();
+		
+		ColorButton colorButton = new ColorButton(color);
+		
+		colorButton.addPropertyChangeListener("color", pce -> {
+			Color newColor = (Color) pce.getNewValue();
+			newCompoundColor = newColor;
+		});
+		
+		panel.add(label,       GBCFactory.grid(0,0).get());
+		panel.add(colorButton, GBCFactory.grid(1,0).get());
+		
+		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		return panel;
+	}
+	
 	private JPanel createDataSetColorsPanel() {
-		JPanel dataSetPanel = new JPanel(new GridBagLayout());
+		JPanel panel = new JPanel(new GridBagLayout());
 		
 		int y = 0;
 		for(EMDataSet dataSet : dataSets) {
@@ -83,19 +118,19 @@ public class DataSetColorSelectorDialog extends JDialog {
 			});
 			buttons.add(new Pair<>(dataSet,colorButton));
 			
-			dataSetPanel.add(label,       GBCFactory.grid(0,y).get());
-			dataSetPanel.add(colorButton, GBCFactory.grid(1,y).get());
+			panel.add(label,       GBCFactory.grid(0,y).get());
+			panel.add(colorButton, GBCFactory.grid(1,y).get());
 			y += 1;
 		}
 		
 		JButton paletteButton = new JButton("Color Palettes");
 		SwingUtil.makeSmall(paletteButton);
 		
-		dataSetPanel.add(paletteButton, GBCFactory.grid(3, 0).gridheight(y).anchor(GridBagConstraints.NORTH).get());
+		panel.add(paletteButton, GBCFactory.grid(3, 0).gridheight(y).anchor(GridBagConstraints.NORTH).get());
 		paletteButton.addActionListener(e -> showPaletteDialog());
 		
-		dataSetPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		return dataSetPanel;
+		panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		return panel;
 	}
 	
 	private JPanel createButtonPanel() {
@@ -128,11 +163,12 @@ public class DataSetColorSelectorDialog extends JDialog {
 	}
 	
 	private void applyColors() {
-		if(newColors.isEmpty())
+		if(newColors.isEmpty() && newCompoundColor == null)
 			return;
 		
 		colorsChanged = true;
 		newColors.forEach(EMDataSet::setColor);
+		map.setCompoundEdgeColor(newCompoundColor);
 	}
 	
 	public boolean colorsChanged() {
