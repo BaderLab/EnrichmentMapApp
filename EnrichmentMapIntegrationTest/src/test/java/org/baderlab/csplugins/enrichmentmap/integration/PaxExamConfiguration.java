@@ -1,12 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.integration;
 
-import static org.ops4j.pax.exam.CoreOptions.frameworkStartLevel;
-import static org.ops4j.pax.exam.CoreOptions.junitBundles;
-import static org.ops4j.pax.exam.CoreOptions.maven;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
-import static org.ops4j.pax.exam.CoreOptions.options;
-import static org.ops4j.pax.exam.CoreOptions.systemProperty;
-import static org.ops4j.pax.exam.CoreOptions.vmOption;
+import static org.ops4j.pax.exam.CoreOptions.*;
 import static org.ops4j.pax.exam.karaf.options.KarafDistributionOption.karafDistributionConfiguration;
 
 import org.ops4j.pax.exam.Configuration;
@@ -25,7 +19,7 @@ public abstract class PaxExamConfiguration {
 		
 		// These have to match what's in the pom.xml files.
 		final String cyVersion = "3.7.1"; 
-		final String emVersion = "3.3.1-SNAPSHOT";
+		final String emVersion = "3.3.5-SNAPSHOT";
 		final String karafVersion = "4.2.1";
 		final String groupId   = "org.baderlab.csplugins";
 		final String appBundle = "EnrichmentMap";
@@ -42,10 +36,10 @@ public abstract class PaxExamConfiguration {
 			frameworkStartLevel(50),
 
 			// Specify all of our repositories
-//				repository("http://code.cytoscape.org/nexus/content/repositories/snapshots/"),
-//				repository("http://code.cytoscape.org/nexus/content/repositories/releases/"),
-//				repository("http://code.cytoscape.org/nexus/content/repositories/thirdparty/"),
-
+			repository("https://nrnb-nexus.ucsd.edu/repository/cytoscape_releases/"),
+			repository("https://nrnb-nexus.ucsd.edu/repository/cytoscape_snapshots/"),
+			repository("https://nrnb-nexus.ucsd.edu/repository/cytoscape_thirdparty/"),
+			
 			// Misc. bundles required to run minimal Cytoscape
 			mavenBundle().groupId("org.apache.servicemix.specs").artifactId("org.apache.servicemix.specs.jaxb-api-2.1").version("1.2.0").startLevel(3),
 			mavenBundle().groupId("org.apache.servicemix.bundles").artifactId("org.apache.servicemix.bundles.jaxb-impl").version("2.1.6_1").startLevel(3),

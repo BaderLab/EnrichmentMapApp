@@ -45,25 +45,6 @@
 							</artifactItems>
 						</configuration>
 					</execution>
-					<execution>
-						<id>unpack-api-docs</id>
-						<phase>generate-test-resources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.cytoscape</groupId>
-									<artifactId>swing-app-api</artifactId>
-									<version>${cy3.version}</version>
-									<includes>package-list</includes>
-									<type>javadoc</type>
-									<outputDirectory>target/dependencies</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -247,28 +228,30 @@
 			<version>${cy3.version}</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>ding-presentation-impl</artifactId>
 			<version>${cy3.version}</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-gui-impl</artifactId>
 			<version>${cy3.version}</version>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>vizmap-gui-core-impl</artifactId>
+			<version>${cy3.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>session-impl</artifactId>
 			<version>${cy3.version}</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-impl</artifactId>
@@ -287,6 +270,37 @@
 			<version>${cy3.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-util-impl</artifactId>
+			<version>${cy3.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape.distribution</groupId>
+			<artifactId>application-metadata-impl</artifactId>
+			<version>${cy3.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>api-bundle</artifactId>
+			<version>${cy3.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape.distribution</groupId>
+			<artifactId>third-party</artifactId>
+			<version>${cy3.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>util-impl</artifactId>
+			<version>${cy3.version}</version>
+			<scope>test</scope>
+		</dependency>
+
 
 		<!-- Pax Exam Dependencies -->
 		
