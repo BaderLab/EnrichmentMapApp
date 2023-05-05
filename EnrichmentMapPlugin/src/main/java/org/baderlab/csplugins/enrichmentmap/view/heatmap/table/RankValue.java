@@ -11,8 +11,11 @@ import org.baderlab.csplugins.enrichmentmap.model.Rank;
  */
 public class RankValue {
 
-	public static final RankValue EMPTY = new RankValue(null, null, false);
-	
+	public static final RankValue EMPTY = new RankValue(null, null, false) {
+		@Override public String toString() {
+			return "RankValue[EMPTY]";
+		}
+	};
 	
 	private @Nullable Integer rank;
 	private @Nullable Double score;
@@ -45,5 +48,11 @@ public class RankValue {
 	public boolean isSignificant() {
 		return significant;
 	}
+
+	@Override
+	public String toString() {
+		return "RankValue[rank=" + rank + ", score=" + score + ", significant=" + significant + "]";
+	}
+	
 	
 }

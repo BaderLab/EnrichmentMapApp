@@ -18,14 +18,15 @@ public class RankValueRenderer extends DefaultTableCellRenderer {
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+		setBackground(table.getBackground());
+		setText("");
 		
 		if(value instanceof RankValue) {
 			RankValue rankValue = (RankValue) value;
 			setText(ExportTXTTask.getRankText(format, rankValue));
 			
-			if (rankValue.isSignificant()) {
+			if(rankValue.isSignificant()) {
 				setBackground(SIGNIFICANT_COLOR);
-				setOpaque(true);
 			}
 		}
 		

@@ -101,7 +101,6 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 		Map<Integer,RankValue> result = new HashMap<>();
 		
 		int previous = -1;
-		boolean significant = false;
 
 		for (int m = 0; m < ranksSubset.length; m++) {
 			//if the current gene doesn't have a rank then don't show it
@@ -112,10 +111,10 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 
 			previous = ranksSubset[m];
 			
-			significant = false;
-			if (ranksSubset[m] <= topRank && !isNegative && topRank != 0 && topRank != -1)
+			boolean significant = false;
+			if (!isNegative && ranksSubset[m] <= topRank && topRank != 0 && topRank != -1)
 				significant = true;
-			else if (ranksSubset[m] >= topRank && isNegative && topRank != 0 && topRank != -1)
+			else if (isNegative && ranksSubset[m] >= topRank && topRank != 0 && topRank != -1)
 				significant = true;
 
 			List<Integer> keys = rank2keys.get(ranksSubset[m]);
