@@ -7,7 +7,7 @@
 	<parent>
 	    <groupId>org.baderlab.csplugins</groupId>
 	    <artifactId>enrichmentmap-parent</artifactId>
-	    <version>3.3.5</version>
+	    <version>3.3.6</version>
 	</parent>
    
 	<artifactId>enrichmentmap-integration</artifactId>
