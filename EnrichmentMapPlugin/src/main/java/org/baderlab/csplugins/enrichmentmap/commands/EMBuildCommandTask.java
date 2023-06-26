@@ -164,6 +164,8 @@ public class EMBuildCommandTask extends AbstractTask {
 
 	private DataSetFiles getDataSet2Files() {
 		DataSetFiles dataset2files = new DataSetFiles();
+		if(gmtFile != null)
+			dataset2files.setGMTFileName(gmtFile.getAbsolutePath());
 		if(expressionDataset2!=null)
 			dataset2files.setExpressionFileName(expressionDataset2.getAbsolutePath());
 		if(enrichmentsDataset2 != null)
