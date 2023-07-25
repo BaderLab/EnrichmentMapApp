@@ -42,7 +42,7 @@ public class ParseEnrichrEnrichmentResults extends AbstractTask {
 	}
 	
 	
-	private void parse(LineReader lines) {
+	private void parse(LineReader lines) throws IOException {
 		EnrichmentMap map = dataset.getMap();
 		SetOfEnrichmentResults enrichments = dataset.getEnrichments();
 		Map<String, EnrichmentResult> results = enrichments.getEnrichments();

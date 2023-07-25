@@ -43,7 +43,7 @@ public class ParseGREATEnrichmentResults extends AbstractTask {
 	
 	
 	
-	private void parse(LineReader lines) {
+	private void parse(LineReader lines) throws IOException {
 		boolean hasBackground = false;
 
 		EMCreationParameters params = dataset.getMap().getParams();

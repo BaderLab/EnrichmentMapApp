@@ -130,6 +130,8 @@ public class ExpressionFileReaderTask extends AbstractTask {
 
 		while(lineReader.hasMoreLines()) {
 			String line = lineReader.nextLine();
+			if(line.isBlank())
+				continue;
 			
 			String[] tokens = line.split("\t");
 			String name = tokens[0].toUpperCase().trim();

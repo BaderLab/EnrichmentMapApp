@@ -43,7 +43,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 	}
 	
 	
-	private void parse(LineReader lineReader) {
+	private void parse(LineReader lineReader) throws IOException {
 		boolean FDR = false; // false data rate
 		boolean hasNegOneNES = false, hasPosOneNES = false, hasOtherNES = false;
 		
@@ -72,7 +72,11 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 		lineReader.skip(1); // skip header line
 		
 		while(lineReader.hasMoreLines()) {
-			String[] tokens = lineReader.nextLine().split("\t");
+			String line = lineReader.nextLine();
+			if(line.isBlank())
+				continue;
+			
+			String[] tokens = line.split("\t");
 
 			double pvalue = 1.0;
 			double FDRqvalue = 1.0;

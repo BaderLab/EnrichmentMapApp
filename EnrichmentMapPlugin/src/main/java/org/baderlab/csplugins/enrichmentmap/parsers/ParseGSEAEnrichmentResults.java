@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Map;
 
 import org.apache.commons.math3.util.Precision;
@@ -34,32 +35,31 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws IOException {
 		taskMonitor = NullTaskMonitor.check(taskMonitor);
-		taskMonitor.setTitle("Parsing Bingo Enrichment Result file");
+		taskMonitor.setTitle("Parsing GSEA Enrichment Result file");
 		
 		dataset.getMap().getParams().setFDR(true);
 		NESFilter nesFilter = dataset.getMap().getParams().getNESFilter();
 		
 		if(nesFilter == NESFilter.ALL || nesFilter == NESFilter.POSITIVE) {
-			String positiveEnrichmentResults = dataset.getDataSetFiles().getEnrichmentFileName1();
-			if(!Strings.isNullOrEmpty(positiveEnrichmentResults)) {
-				readFile(taskMonitor, positiveEnrichmentResults);
-			}
+			readFile(dataset.getDataSetFiles().getEnrichmentFileName1());
 		}
-		
 		if(nesFilter == NESFilter.ALL || nesFilter == NESFilter.NEGATIVE) {
-			String negativeEnrichmentResults = dataset.getDataSetFiles().getEnrichmentFileName2();
-			if(!Strings.isNullOrEmpty(negativeEnrichmentResults)) {
-				readFile(taskMonitor, negativeEnrichmentResults);
+			readFile(dataset.getDataSetFiles().getEnrichmentFileName2());
+		}
+	}
+	
+	private void readFile(String fileName) throws IOException {
+		if(!Strings.isNullOrEmpty(fileName)) {
+			LineReader lines = LineReader.create(fileName);
+			try(lines) {
+				parse(lines);
+			} catch(IOException | UncheckedIOException e) {
+				throw new IOException("Error parsing line " + lines.getLineNumber() + " of file: '" + fileName + "'", e);
 			}
 		}
 	}
 	
-	
-	private void readFile(TaskMonitor taskMonitor, String enrichmentFile) throws IOException {
-		taskMonitor.setStatusMessage("Parsing Enrichment Results File");
-
-		LineReader lines = LineReader.create(enrichmentFile);
-		
+	private void parse(LineReader lines) throws IOException {
 		Map<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
 		
 		//skip the first line which just has the field names (start i=1)

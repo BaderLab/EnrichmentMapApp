@@ -38,12 +38,15 @@ public class ParseGenericEnrichmentsForDummy extends AbstractTask implements Obs
 		
 	}
 	
-	private void parse(LineReader lines) {
+	private void parse(LineReader lines) throws IOException {
 		//skip the first line which just has the field names (start i=1)
 		lines.skip(1);
 		
 		while(lines.hasMoreLines()) {
 			String line = lines.nextLine();
+			if(line.isBlank())
+				continue;
+			
 			String[] tokens = line.split("\t");
 			//update the length each time because some line might have missing values
 			if(tokens.length > 5) {

@@ -1,55 +1,44 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class LineReader implements AutoCloseable {
 	
-	private Stream<String> lineStream;
-	private Iterator<String> lineIterator;
-	
 	private int lineNumber = -1;
+	private final BufferedReader reader;
 	
 	
 	private LineReader(String fileName) throws IOException {
-		Path path = new File(fileName).toPath();
-		
-		lineStream = 
-			Files.lines(path)
-				.map(line -> {
-					lineNumber++;
-					return line;
-				})
-				.filter(line -> !line.isBlank());
-				
-		lineIterator = lineStream.iterator();
+		reader = getBufferedReader(fileName);
 	}
 	
-	public boolean hasMoreLines() {
-		return lineIterator.hasNext();
+	private static BufferedReader getBufferedReader(String fileName) throws IOException {
+		return new BufferedReader(new FileReader(fileName));
 	}
 	
-	public String nextLine() {
-		return lineIterator.next();
+	public boolean hasMoreLines() throws IOException {
+		return reader.ready();
 	}
 	
-	public void skip(int n) {
+	public String nextLine() throws IOException {
+		String line = reader.readLine();
+		lineNumber++;
+		return line;
+	}
+	
+	public void skip(int n) throws IOException {
 		while(n-- > 0 && hasMoreLines()) {
 			nextLine();
 		}
 	}
 	
 	@Override
-	public void close() {
-		lineStream.close();
+	public void close() throws IOException {
+		reader.close();
 	}
 	
 	/**
@@ -62,25 +51,6 @@ public class LineReader implements AutoCloseable {
 	
 	public static LineReader create(String fileName) throws IOException {
 		return new LineReader(fileName);
-	}
-	
-	
-	// MKTODO Temporary
-	public static List<String> readAllLines(String fileName, int limit) throws IOException {
-		try(var fileReader = new FileReader(fileName);
-			var reader = new BufferedReader(fileReader)) {
-			
-			List<String> lines = new ArrayList<>();
-			int count = 0;
-            for(String line; (line = reader.readLine()) != null;) {
-                lines.add(line);
-                count++;
-                if(count >= limit) {
-                	break;
-                }
-            }
-            return lines;
-        }
 	}
 	
 	
