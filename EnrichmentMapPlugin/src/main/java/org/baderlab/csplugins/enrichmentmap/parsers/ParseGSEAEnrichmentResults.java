@@ -1,7 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.util.Precision;
@@ -56,30 +55,18 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 	}
 	
 	
-	/**
-	 * Values in EDB files are rounded to 4 decimal places. 
-	 * @param exp
-	 * @return
-	 */
-	private float parseAndRound(String exp) {
-		float f = Float.parseFloat(exp);
-		float r = Precision.round(f, 4);
-		return r;
-	}
-	
 	private void readFile(TaskMonitor taskMonitor, String enrichmentFile) throws IOException {
-		List<String> lines = LineReader.readLines(enrichmentFile);
-		
-		int currentProgress = 0;
-		int maxValue = lines.size();
-		taskMonitor.setStatusMessage("Parsing Enrichment Results file - " + maxValue + " rows");
+		taskMonitor.setStatusMessage("Parsing Enrichment Results File");
 
+		LineReader lines = LineReader.create(enrichmentFile);
 		
 		Map<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
 		
 		//skip the first line which just has the field names (start i=1)
-		for(int i = 1; i < lines.size(); i++) {
-			String line = lines.get(i);
+		lines.skip(1);
+		
+		while(lines.hasMoreLines()) {
+			String line = lines.nextLine();
 			String[] tokens = line.split("\t");
 			
 			int size = 0;
@@ -137,12 +124,6 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 			FWERqvalue = Precision.round(FWERqvalue, 4);
 			
 			GSEAResult result = new GSEAResult(Name, size, ES, NES, pvalue, FDRqvalue, FWERqvalue, rankAtMax, scoreAtMax);
-
-			// Calculate Percentage.  This must be a value between 0..100.
-			int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-			taskMonitor.setProgress(percentComplete);
-			currentProgress++;
-
 			results.put(Name, result);
 		}
 	}
@@ -167,6 +148,15 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 			}
 			throw new ParseGSEAEnrichmentException(e);
 		}
+	}
+	
+	/**
+	 * Values in EDB files are rounded to 4 decimal places. 
+	 */
+	private float parseAndRound(String exp) {
+		float f = Float.parseFloat(exp);
+		float r = Precision.round(f, 4);
+		return r;
 	}
 
 }

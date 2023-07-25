@@ -41,6 +41,12 @@ public class LineReader implements AutoCloseable {
 		return lineIterator.next();
 	}
 	
+	public void skip(int n) {
+		while(n-- > 0 && hasMoreLines()) {
+			nextLine();
+		}
+	}
+	
 	@Override
 	public void close() {
 		lineStream.close();

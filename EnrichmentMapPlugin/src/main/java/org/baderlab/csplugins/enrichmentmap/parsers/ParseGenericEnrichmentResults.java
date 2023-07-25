@@ -9,6 +9,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
+import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -25,6 +26,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws IOException {
+		taskMonitor = NullTaskMonitor.check(taskMonitor);
 		taskMonitor.setStatusMessage("Parsing Generic Enrichment file");
 		taskMonitor.setTitle("Parsing Generic Result file");
 		
@@ -35,9 +37,9 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 			parse(lines);
 		} catch(Exception e) {
 			throw new IOException("Could not parse line " + lines.getLineNumber() + " of enrichment file '" + fileName +  "'", e);
+		} finally {
+			taskMonitor.setProgress(1.0);
 		}
-		
-		taskMonitor.setProgress(1.0);
 	}
 	
 	
@@ -67,7 +69,7 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 			dataset.getMap().getParams().setEMgmt(true);
 		}
 
-		lineReader.nextLine(); // skip header line
+		lineReader.skip(1); // skip header line
 		
 		while(lineReader.hasMoreLines()) {
 			String[] tokens = lineReader.nextLine().split("\t");

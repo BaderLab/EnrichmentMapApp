@@ -1,7 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
@@ -28,10 +27,23 @@ public class ParseGREATEnrichmentResults extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws IOException {
 		taskMonitor = NullTaskMonitor.check(taskMonitor);
-		taskMonitor.setTitle("Parsing Enrichment Result file");
-
-		List<String> lines = LineReader.readLines(dataset.getDataSetFiles().getEnrichmentFileName1());
+		taskMonitor.setTitle("Parsing Great Results File");
 		
+		String fileName = dataset.getDataSetFiles().getEnrichmentFileName1();
+		LineReader lines = LineReader.create(fileName);
+
+		try(lines) {
+			parse(lines);
+		} catch(Exception e) {
+			throw new IOException("Could not parse line " + lines.getLineNumber() + " of enrichment file '" + fileName +  "'", e);
+		} finally {
+			taskMonitor.setProgress(1.0);
+		}
+	}
+	
+	
+	
+	private void parse(LineReader lines) {
 		boolean hasBackground = false;
 
 		EMCreationParameters params = dataset.getMap().getParams();
@@ -45,11 +57,8 @@ public class ParseGREATEnrichmentResults extends AbstractTask {
 		Map<String, GeneSet> genesets = dataset.getSetOfGeneSets().getGeneSets();
 
 		EnrichmentMap map = dataset.getMap();
-		Map<String, EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
+		Map<String,EnrichmentResult> results = dataset.getEnrichments().getEnrichments();
 		
-		int currentProgress = 0;
-		int maxValue = lines.size();
-		taskMonitor.setStatusMessage("Parsing Great Results file - " + maxValue + " rows");
 		//for great files there is an FDR
 		dataset.getMap().getParams().setFDR(true);
 
@@ -57,29 +66,26 @@ public class ParseGREATEnrichmentResults extends AbstractTask {
 		//check to see how many columns the data has
 
 		//go through each line until we find the header line
-		int k = 0;
-		String line = lines.get(k);
-		String[] tokens = line.split("\t");
-		for(; k < lines.size(); k++) {
-			line = lines.get(k);
-			tokens = line.split("\t");
-			int length = tokens.length;
-			if((length == 24) && tokens[3].equalsIgnoreCase("BinomRank")) {
+		while(lines.hasMoreLines()) {
+			String line = lines.nextLine();
+			final String[] tokens = line.split("\t");
+			
+			if(tokens.length == 24 && tokens[3].equalsIgnoreCase("BinomRank")) {
 				break;
 			}
 			//If GREAT is done with a background set then the table looks different
 			//There is not binom rank and no binomial data.
-			else if((length == 20) && tokens[3].equalsIgnoreCase("Rank")) {
+			else if(tokens.length == 20 && tokens[3].equalsIgnoreCase("Rank")) {
 				hasBackground = true;
 				break;
 			}
 		}
 
 		//go through the rest of the lines
-		for(int i = k + 1; i < lines.size(); i++) {
-			line = lines.get(i);
-
-			tokens = line.split("\t");
+		while(lines.hasMoreLines()) {
+			String line = lines.nextLine();
+			String[] tokens = line.split("\t");
+			
 			//there are extra lines at the end of the file that should be ignored.
 			if(!hasBackground && tokens.length != 24)
 				continue;
@@ -188,9 +194,6 @@ public class ParseGREATEnrichmentResults extends AbstractTask {
 			result = new GenericResult(name, description, pvalue, gs_size, FDRqvalue);
 
 			// Calculate Percentage.  This must be a value between 0..100.
-			int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-			taskMonitor.setProgress(percentComplete);
-			currentProgress++;
 
 			//check to see if the gene set has already been entered in the results
 			//it is possible that one geneset will be in both phenotypes.

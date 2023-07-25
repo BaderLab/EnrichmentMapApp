@@ -2,7 +2,6 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
@@ -27,12 +26,24 @@ public class ParseGenericEnrichmentsForDummy extends AbstractTask implements Obs
 		taskMonitor = NullTaskMonitor.check(taskMonitor);
 		taskMonitor.setTitle("Parsing Generic Result file");
 		
-		List<String> lines = LineReader.readLines(fileName);
+		LineReader lines = LineReader.create(fileName);
 
-		//skip the first line which just has the field names (start i=1)
+		try(lines) {
+			parse(lines);
+		} catch(Exception e) {
+			throw new IOException("Could not parse line " + lines.getLineNumber() + " of enrichment file '" + fileName +  "'", e);
+		} finally {
+			taskMonitor.setProgress(1.0);
+		}
 		
-		for(int i = 1; i < lines.size(); i++) {
-			String line = lines.get(i);
+	}
+	
+	private void parse(LineReader lines) {
+		//skip the first line which just has the field names (start i=1)
+		lines.skip(1);
+		
+		while(lines.hasMoreLines()) {
+			String line = lines.nextLine();
 			String[] tokens = line.split("\t");
 			//update the length each time because some line might have missing values
 			if(tokens.length > 5) {

@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
-import java.util.List;
+import java.io.IOException;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -9,7 +9,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
-import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -26,27 +25,36 @@ public class ParseEnrichrEnrichmentResults extends AbstractTask {
 	}
 	
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor taskMonitor) throws IOException {
 		taskMonitor = NullTaskMonitor.check(taskMonitor);
-		List<String> lines = LineReader.readLines(dataset.getDataSetFiles().getEnrichmentFileName1());
-		DiscreteTaskMonitor tm = new DiscreteTaskMonitor(taskMonitor, lines.size());
-		tm.setStatusMessage("Parsing Enrichr file - " + lines.size() + " rows");
-		tm.setTitle("Parsing Enricher Result file");
-		parse(tm, lines);
+		taskMonitor.setTitle("Parsing Enricher Result file");
+		
+		String fileName = dataset.getDataSetFiles().getEnrichmentFileName1();
+		LineReader lines = LineReader.create(fileName);
+		
+		try(lines) {
+			parse(lines);
+		} catch(Exception e) {
+			throw new IOException("Could not parse line " + lines.getLineNumber() + " of enrichment file '" + fileName +  "'", e);
+		} finally {
+			taskMonitor.setProgress(1.0);
+		}
 	}
 	
 	
-	private void parse(DiscreteTaskMonitor tm, List<String> lines) {
+	private void parse(LineReader lines) {
 		EnrichmentMap map = dataset.getMap();
 		SetOfEnrichmentResults enrichments = dataset.getEnrichments();
 		Map<String, EnrichmentResult> results = enrichments.getEnrichments();
 		Map<String,GeneSet> genesets = dataset.getSetOfGeneSets().getGeneSets();
 		boolean useFDR = false;
 		
+		// skip the first line which just has the field names
+		lines.skip(1);
 		
-		//skip the first line which just has the field names (start i=1), check to see how many columns the data has
-		for(int i = 1; i < lines.size(); i++) {
-			String line = lines.get(i);
+		while(lines.hasMoreLines()) {
+			String line = lines.nextLine();
+			
 			String[] tokens = line.split("\t");
 			
 			//The first column of the file is the name of the geneset
@@ -77,8 +85,6 @@ public class ParseEnrichrEnrichmentResults extends AbstractTask {
 			
 			GenericResult result = new GenericResult(name, name, pvalue, gsSize, qvalue);
 			results.put(name, result);
-			
-			tm.inc();
 		}
 		
 		if(useFDR) {
