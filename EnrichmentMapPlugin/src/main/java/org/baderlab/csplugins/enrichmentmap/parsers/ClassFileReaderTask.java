@@ -36,7 +36,7 @@ public class ClassFileReaderTask extends AbstractTask {
 			return null;
 
 		try {
-			List<String> lines = LineReader.readLines(classFile, 4);
+			List<String> lines = LineReader.readAllLines(classFile, 4);
 
 			/*
 			 * GSEA class files will have 3 lines in the following format: 6 2 1

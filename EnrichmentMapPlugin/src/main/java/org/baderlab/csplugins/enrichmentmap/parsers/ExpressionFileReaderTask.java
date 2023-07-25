@@ -44,7 +44,6 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.util.Precision;
@@ -52,10 +51,10 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
+import org.baderlab.csplugins.enrichmentmap.util.MathUtil;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskMonitor.Level;
 
 /**
  * Parse expression file. The user can also use a rank file instead of an
@@ -65,25 +64,40 @@ public class ExpressionFileReaderTask extends AbstractTask {
 
 	private final EMDataSet dataset;
 
-	/**
-	 * @param dataset - dataset expression file is associated with
-	 */
 	public ExpressionFileReaderTask(EMDataSet dataset) {
 		this.dataset = dataset;
 	}
-
-	/**
-	 * Parse expression/rank file
-	 */
+	
+	@Override
+	public void run(TaskMonitor taskMonitor) throws IOException {
+		parse(taskMonitor);
+	}
+	
 	public GeneExpressionMatrix parse() throws IOException {
 		return parse(null);
 	}
 	
-	/**
-	 * Parse expression/rank file
-	 */
-	public GeneExpressionMatrix parse(TaskMonitor taskMonitor) throws IOException {
+	
+	private GeneExpressionMatrix parse(TaskMonitor taskMonitor) throws IOException {
 		taskMonitor = NullTaskMonitor.check(taskMonitor);
+		taskMonitor.setTitle("Parsing Expression file");
+		
+		String fileName = dataset.getDataSetFiles().getExpressionFileName();
+		LineReader lines = LineReader.create(fileName);
+		
+		try(lines) {
+			return parseLines(lines);
+		} catch(NumberFormatException e) {
+			throw new IOException("Invalid number on line " + lines.getLineNumber() + " of expression file: '" + fileName + "'", e);
+		} catch(Exception e) {
+			throw new IOException("Could not parse line " + lines.getLineNumber() + " of expression file '" + fileName +  "'", e);
+		} finally {
+			taskMonitor.setProgress(1.0);
+		}
+	}
+	
+	
+	private GeneExpressionMatrix parseLines(LineReader lineReader) throws IOException {
 
 		//Need to check if the file specified as an expression file is actually a rank file
 		//If it is a rank file it can either be 5 or 2 columns but it is important that the rank
@@ -110,81 +124,57 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		
 		Map<Integer, GeneExpression> expression = expressionMatrix.getExpressionMatrix();
 		
-		List<String> lines = LineReader.readLines(expressionFileName);
-		int currentProgress = 0;
-		int maxValue = lines.size();
 		int expressionUniverse = 0;
 		boolean twoColumns = false;
 
-		taskMonitor.setStatusMessage("Parsing Expression file - " + maxValue + " rows");
-		
-		for(int i = 0; i < lines.size(); i++) {
-			String line = lines.get(i);
-			String[] tokens = line.split("\t");
 
-			//The first column of the file is the name of the geneset
-			String Name = tokens[0].toUpperCase().trim();
+		while(lineReader.hasMoreLines()) {
+			String line = lineReader.nextLine();
+			
+			String[] tokens = line.split("\t");
+			String name = tokens[0].toUpperCase().trim();
 
 			//if this is the first line and the expression matrix if still empty and the column names are empty
 			//Added column names empty for GSEA rank files that have no heading but after going through the loop
 			//the first time we have given them default headings
-			if(i == 0 && (expressionMatrix == null || expressionMatrix.getExpressionMatrix().isEmpty()) && expressionMatrix.getColumnNames() == null) {
+			if(lineReader.getLineNumber() == 1 && (expressionMatrix == null || expressionMatrix.getExpressionMatrix().isEmpty()) && expressionMatrix.getColumnNames() == null) {
 				//otherwise the first line is the header
-				if(Name.equalsIgnoreCase("#1.2")) {
-					line = lines.get(2);
-					i = 2;
+				if(name.equalsIgnoreCase("#1.2")) {
+					lineReader.nextLine();
+					line = lineReader.nextLine();
 				} else {
-					line = lines.get(0);
-					//ignore all comment lines
-					int k = 0;
 					while(line.startsWith("#")) {
-						k++;
-						line = lines.get(k);
+						line = lineReader.nextLine(); //ignore all comment lines
 					}
-					i = k;
 				}
-				tokens = line.split("\t");
-
-				//check to see how many columns there are
-				//if there are only 2 columns then we could be dealing with a ranked file
-				//check to see if the second column contains expression values.
+				
+				tokens = line.split("\t"); // May have skipped lines, need to split again
+				
 				if(tokens.length == 2) {
 					twoColumns = true;
-					//the assumption is the first line is the column names but
-					//if we are loading a GSEA edb rnk file then their might not be column names
-					try {
-						int temp = Integer.parseInt(tokens[1]);
-						i = -1;
-						tokens[0] = "Name";
-						tokens[1] = "Rank/Score";
-					} catch(NumberFormatException v) {
-						try {
-							double temp2 = Double.parseDouble(tokens[1]);
-							i = -1;
-							tokens[0] = "Name";
-							tokens[1] = "Rank/Score";
-
-						} catch(NumberFormatException v2) {
-							//if it isn't a double or int then we have a title line.
-						}
-					}
 				}
-
-				//expressionMatrix = new GeneExpressionMatrix(tokens);
-				expressionMatrix.setColumnNames(tokens);
-				expressionMatrix.setNumConditions(expressionMatrix.getColumnNames().length);
-				expressionMatrix.setExpressionMatrix(expression);
-
-				continue;
+				
+				if(tokens.length == 2 && MathUtil.isNumber(tokens[1])) {
+					// Found a data line, use default names for columns, continue to parse the data below
+					expressionMatrix.setColumnNames(new String[] { "Name", "Rank/Score" });
+					expressionMatrix.setNumConditions(expressionMatrix.getColumnNames().length);
+					expressionMatrix.setExpressionMatrix(expression);
+				} else {
+					// Found a header line, use it for the column names, skip to next line
+					expressionMatrix.setColumnNames(tokens);
+					expressionMatrix.setNumConditions(expressionMatrix.getColumnNames().length);
+					expressionMatrix.setExpressionMatrix(expression);
+					
+					continue; 
+				}
 			}
 
 			//Check to see if this gene is in the genes list
 			//Currently we only load gene expression data for genes that are already in the gene list (i.e. are listed in at least one geneset)
 			//TODO:is there the possibility that we need all the expression genes?  Currently this great decreases space when saving sessions
-			Integer genekey = map.getHashFromGene(Name);
+			Integer genekey = map.getHashFromGene(name);
 			if(genekey != null) {
 				String description = "";
-				//check to see if the second column is parseable
 				if(twoColumns) {
 					try {
 						Double.parseDouble(tokens[1]);
@@ -196,16 +186,10 @@ public class ExpressionFileReaderTask extends AbstractTask {
 				}
 
 				float[] expressionsAsFloat = parseExpressions(tokens);
-				GeneExpression expres = new GeneExpression(Name, description, expressionsAsFloat);
+				GeneExpression expres = new GeneExpression(name, description, expressionsAsFloat);
 				expression.put(genekey, expres);
 			}
 			expressionUniverse++;
-
-			// Calculate Percentage.  This must be a value between 0..100.
-			int percentComplete = (int) (((double) currentProgress / maxValue) * 100);
-			taskMonitor.setProgress(percentComplete);
-			
-			currentProgress++;
 		}
 
 		//set the number of genes
@@ -246,16 +230,6 @@ public class ExpressionFileReaderTask extends AbstractTask {
 		float r = Precision.round(f, 4);
 		return r;
 	}
-	
 
-	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("Parsing Expression file");
-		try {
-			parse(taskMonitor);
-		} catch(NumberFormatException e) {
-			taskMonitor.showMessage(Level.ERROR, e.getMessage());
-			throw e;
-		}
-	}
+	
 }

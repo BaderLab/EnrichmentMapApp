@@ -8,6 +8,21 @@ public final class MathUtil {
 		// restrict instantiation
 	}
 	
+	
+	public static boolean isNumber(String s) {
+	    if(s == null) {
+	        return false;
+	    }
+	    try {
+	        @SuppressWarnings("unused")
+			double d = Double.parseDouble(s);
+	    } catch (NumberFormatException e) {
+	        return false;
+	    }
+	    return true;
+	}
+	
+	
 	/**
 	 * Computes an inverse linear interpolation, returning an interpolation
 	 * fraction. Returns 0.5 if the min and max values are the same.

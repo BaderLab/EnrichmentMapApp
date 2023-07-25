@@ -1,7 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.parsers;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
@@ -10,7 +9,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EnrichmentResult;
 import org.baderlab.csplugins.enrichmentmap.model.GeneSet;
 import org.baderlab.csplugins.enrichmentmap.model.GenericResult;
 import org.baderlab.csplugins.enrichmentmap.model.SetOfEnrichmentResults;
-import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -27,15 +25,23 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws IOException {
-		List<String> lines = LineReader.readLines(dataset.getDataSetFiles().getEnrichmentFileName1());
-		DiscreteTaskMonitor tm = new DiscreteTaskMonitor(taskMonitor, lines.size());
-		tm.setStatusMessage("Parsing Generic Results file - " + lines.size() + " rows");
-		tm.setTitle("Parsing Generic Result file");
-		parse(tm, lines);
+		taskMonitor.setStatusMessage("Parsing Generic Enrichment file");
+		taskMonitor.setTitle("Parsing Generic Result file");
+		
+		var fileName = dataset.getDataSetFiles().getEnrichmentFileName1();
+		LineReader lines = LineReader.create(fileName);
+		
+		try(lines) {
+			parse(lines);
+		} catch(Exception e) {
+			throw new IOException("Could not parse line " + lines.getLineNumber() + " of enrichment file '" + fileName +  "'", e);
+		}
+		
+		taskMonitor.setProgress(1.0);
 	}
 	
 	
-	private void parse(DiscreteTaskMonitor tm, List<String> lines) {
+	private void parse(LineReader lineReader) {
 		boolean FDR = false; // false data rate
 		boolean hasNegOneNES = false, hasPosOneNES = false, hasOtherNES = false;
 		
@@ -61,10 +67,10 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 			dataset.getMap().getParams().setEMgmt(true);
 		}
 
-		//skip the first line which just has the field names (start i=1), check to see how many columns the data has
-		for(int i = 1; i < lines.size(); i++) {
-			String line = lines.get(i);
-			String[] tokens = line.split("\t");
+		lineReader.nextLine(); // skip header line
+		
+		while(lineReader.hasMoreLines()) {
+			String[] tokens = lineReader.nextLine().split("\t");
 
 			double pvalue = 1.0;
 			double FDRqvalue = 1.0;
@@ -144,8 +150,6 @@ public class ParseGenericEnrichmentResults extends AbstractTask {
 			} else {
 				result = new GenericResult(name, description, pvalue, gs_size);
 			}
-
-			tm.inc();
 
 			//check to see if the gene set has already been entered in the results
 			//it is possible that one geneset will be in both phenotypes.
