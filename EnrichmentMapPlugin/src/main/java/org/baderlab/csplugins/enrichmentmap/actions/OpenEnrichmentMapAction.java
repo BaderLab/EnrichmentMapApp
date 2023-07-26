@@ -26,6 +26,7 @@ public class OpenEnrichmentMapAction extends AbstractCyAction implements Task {
 	public OpenEnrichmentMapAction() {
 		super(NAME);
 		setPreferredMenu("Apps");
+		setMenuGravity(3.1f);
 	}
 
 	public synchronized void showPanels() {
