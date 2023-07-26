@@ -1,19 +1,21 @@
 package org.baderlab.csplugins.enrichmentmap.actions;
 
+import java.awt.event.ActionEvent;
+
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
+@SuppressWarnings("serial")
 @Singleton
-public class OpenEnrichmentMapAction implements TaskFactory {
+public class OpenEnrichmentMapAction extends AbstractCyAction implements Task {
 	
 	public static final String NAME = "EnrichmentMap";
 
@@ -21,30 +23,28 @@ public class OpenEnrichmentMapAction implements TaskFactory {
 	@Inject private Provider<HeatMapMediator> heatMapMediatorProvider;
 	@Inject private CreationDialogShowAction masterMapDialogAction;
 
+	public OpenEnrichmentMapAction() {
+		super(NAME);
+		setPreferredMenu("Apps");
+	}
+
+	public synchronized void showPanels() {
+		controlPanelMediatorProvider.get().showControlPanel();
+		heatMapMediatorProvider.get().showHeatMapPanel();
+		masterMapDialogAction.showDialog();
+	}
+	
 	@Override
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new OpenEnrichmentMapTask());
+	public void actionPerformed(ActionEvent e) {
+		showPanels();
 	}
 
 	@Override
-	public boolean isReady() {
-		return true;
+	public void run(TaskMonitor taskMonitor) {
+		showPanels();
 	}
 	
-	
-	private class OpenEnrichmentMapTask extends AbstractTask {
-
-		public synchronized void showPanels() {
-			controlPanelMediatorProvider.get().showControlPanel();
-			heatMapMediatorProvider.get().showHeatMapPanel();
-			masterMapDialogAction.showDialog();
-		}
-		
-		@Override
-		public void run(TaskMonitor taskMonitor) {
-			showPanels();
-		}
-		
+	@Override
+	public void cancel() {
 	}
-	
 }
