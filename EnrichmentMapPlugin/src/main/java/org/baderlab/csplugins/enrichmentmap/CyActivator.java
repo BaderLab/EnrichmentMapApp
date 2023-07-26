@@ -1,9 +1,6 @@
  package org.baderlab.csplugins.enrichmentmap;
 
-import static org.cytoscape.work.ServiceProperties.APPS_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.util.Properties;
 import java.util.Set;
@@ -92,8 +89,14 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, injector, Injector.class);
 		} else {
 			// Don't load UI services if running headless
+			
 			// register actions
-			registerAllServices(bc, injector.getInstance(OpenEnrichmentMapAction.class));
+			OpenEnrichmentMapAction openTaskFactory = injector.getInstance(OpenEnrichmentMapAction.class);
+			var props = new Properties();
+			props.setProperty(PREFERRED_MENU, "Apps");
+			props.setProperty(MENU_GRAVITY, "3.1");
+			props.setProperty(TITLE, "EnrichmentMap");
+			registerService(bc, openTaskFactory, TaskFactory.class, props);
 			
 			// context menu actions in network view
 			registerNodeViewMenu(bc, "Pathway Commons", OpenPathwayCommonsTaskFactory.class);
