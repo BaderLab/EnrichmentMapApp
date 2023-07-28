@@ -41,6 +41,7 @@ import org.cytoscape.work.TaskIterator;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 public class CreateEnrichmentMapTaskFactory {
@@ -51,6 +52,7 @@ public class CreateEnrichmentMapTaskFactory {
 	@Inject private CreateEMNetworkTask.Factory createEMNetworkTaskFactory;
 	@Inject private CreateEMViewTask.Factory createEMViewTaskFactory;
 	@Inject private LoadEnrichmentsFromGenemaniaTask.Factory genemanaiaTaskFactory;
+	@Inject private Provider<OpenAutoAnnotateTask> openAutoAnnotateTaskProvider;
 	
 	private final EMCreationParameters params;
 	private final List<DataSetParameters> dataSets;
@@ -158,7 +160,11 @@ public class CreateEnrichmentMapTaskFactory {
 		
 		// Create style and layout
 		if(!headless) {
-			tasks.append(createEMViewTaskFactory.create(map));
+			tasks.append(createEMViewTaskFactory.create(map, params.getLayout()));
+			
+			if(params.isOpenAutoAnnotate()) {
+				tasks.append(openAutoAnnotateTaskProvider.get());
+			}
 		}
 	}
 	

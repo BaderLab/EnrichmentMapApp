@@ -44,6 +44,8 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	
 	private String networkName;
 	private EdgeStrategy edgeStrategy;
+	private boolean openAutoAnnotate = false;
+	private String layout = null;
 	
 	private transient boolean forceNES = false;
 	
@@ -272,6 +274,22 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	
 	public boolean isForceNES() {
 		return forceNES;
+	}
+	
+	public boolean isOpenAutoAnnotate() {
+		return openAutoAnnotate;
+	}
+
+	public void setOpenAutoAnnotate(boolean openAutoAnnotate) {
+		this.openAutoAnnotate = openAutoAnnotate;
+	}
+
+	public String getLayout() {
+		return layout;
+	}
+
+	public void setLayout(String layout) {
+		this.layout = layout;
 	}
 
 	@Override

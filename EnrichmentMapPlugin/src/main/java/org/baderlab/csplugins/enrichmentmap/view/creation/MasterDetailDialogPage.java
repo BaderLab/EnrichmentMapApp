@@ -90,13 +90,14 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Inject private Provider<DetailCommonPanel> commonPanelProvider;
 	@Inject private Provider<DetailGettingStartedPanel> nullPanelProvider;
 	@Inject private Provider<CommandDisplayMediator> commandDisplayProvider;
+	@Inject private Provider<NameAndLayoutPanel> namePanelProvider;
 	@Inject private DetailDataSetPanel.Factory dataSetPanelFactory;
 	@Inject private ErrorMessageDialog.Factory errorMessageDialogFactory;
 	@Inject private EMDialogTaskRunner.Factory taskRunnerFactory;
 
 	@Inject private CutoffPropertiesPanel cutoffPanel;
 	
-	private NamePanel networkNamePanel;
+	private NameAndLayoutPanel networkNamePanel;
 	private DetailCommonPanel commonPanel;
 	private DataSetListItem commonParams;
 	
@@ -142,7 +143,11 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	private EMCreationParameters getCreationParameters() {
 		EMCreationParameters params = cutoffPanel.getCreationParameters();
+		
 		params.setNetworkName(networkNamePanel.getNameText());
+		params.setOpenAutoAnnotate(networkNamePanel.openAutoAnnotate());
+		params.setLayout(networkNamePanel.getLayoutAlgorithm().getName());
+		
 		return params;
 	}
 	
@@ -197,7 +202,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		commonParams = new DataSetListItem(commonPanel);
 				
 		JPanel dataPanel = createDataSetPanel();
-		networkNamePanel = new NamePanel("Network Name");
+		networkNamePanel = namePanelProvider.get();
+		networkNamePanel.setCloseCallback(callback::close);
 		
 		JPanel bottom = new JPanel(new GridBagLayout());
 		bottom.add(networkNamePanel, GBCFactory.grid(0,0).insets(0).weightx(1.0).fill(GridBagConstraints.HORIZONTAL).get());
@@ -303,6 +309,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			selectItem(null); // reset the detail panel, shows "getting started" message
 			dataSetList.clearSelection();
 		}
+		networkNamePanel.opened();
 	}
 	
 	private void addDataSetToList(DataSetParameters params) {

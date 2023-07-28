@@ -11,6 +11,8 @@ import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -29,6 +31,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -304,5 +307,19 @@ public class SwingUtil {
 	    	openBrowser.openURL(url);
 	    });
 	    return button;
+	}
+	
+	public static JLabel createLinkLabel(OpenBrowser openBrowser, String text, String url, Runnable onClick) {
+		JLabel link = new JLabel("<HTML><FONT color=\"#000099\"><U>" + text + "</U></FONT></HTML>");
+		link.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		link.addMouseListener(new MouseAdapter() {
+			@Override public void mouseClicked(MouseEvent e) {
+				openBrowser.openURL(url);
+				if(onClick != null) {
+					onClick.run();
+				}
+			}
+		});
+		return link;
 	}
 }

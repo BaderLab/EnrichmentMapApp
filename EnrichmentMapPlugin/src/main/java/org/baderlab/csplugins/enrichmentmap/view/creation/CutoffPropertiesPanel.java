@@ -603,8 +603,7 @@ public class CutoffPropertiesPanel extends JPanel {
 		EdgeStrategy edgeStrategy = getEdgeStrategy();
 		boolean parseBaderlab = getParseBaderlabGeneSets();
 		
-		EMCreationParameters params = 
-				new EMCreationParameters(attributePrefix, stylePrefix, pvalue, qvalue, nesFilter, minExperiments, filterByExpressions, 
+		var params = new EMCreationParameters(attributePrefix, stylePrefix, pvalue, qvalue, nesFilter, minExperiments, filterByExpressions, 
 						parseBaderlab, similarityMetric, cutoff, combined, edgeStrategy);
 		return params;
 	}

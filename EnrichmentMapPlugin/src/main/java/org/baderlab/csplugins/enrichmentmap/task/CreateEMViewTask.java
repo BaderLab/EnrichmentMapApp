@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import javax.annotation.Nullable;
+
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
@@ -26,14 +28,16 @@ public class CreateEMViewTask extends AbstractTask {
 	@Inject private ApplyEMStyleTask.Factory applyStyleTaskFactory;
 	
 	private final EnrichmentMap map;
+	private final String layoutName;
 
 	public interface Factory {
-		CreateEMViewTask create(EnrichmentMap map);
+		CreateEMViewTask create(EnrichmentMap map, String layoutName);
 	}
 	
 	@Inject
-	public CreateEMViewTask(@Assisted EnrichmentMap map) {
+	public CreateEMViewTask(@Assisted EnrichmentMap map, @Assisted @Nullable String layoutName) {
 		this.map = map;
+		this.layoutName = layoutName;
 	}
 	
 	@Override
@@ -42,6 +46,24 @@ public class CreateEMViewTask extends AbstractTask {
 		visualizeMap();
 		tm.setStatusMessage("");
 	}
+	
+	
+	private CyLayoutAlgorithm getLayout() {
+		if(layoutName != null) {
+			var layout = layoutManager.getLayout(layoutName);
+			if(layout != null) {
+				return layout;
+			}
+		}
+		
+		var layout = layoutManager.getLayout("force-directed");
+		if(layout != null) {
+			return layout;
+		}
+		
+		return layoutManager.getDefaultLayout();
+	}
+	
 	
 	private void visualizeMap() {
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
@@ -56,13 +78,13 @@ public class CreateEMViewTask extends AbstractTask {
 		EMStyleOptions options = new EMStyleOptions(view, map);
 		ApplyEMStyleTask styleTask = applyStyleTaskFactory.create(options, StyleUpdateScope.ALL);
 		
-		//apply force directed layout
-		CyLayoutAlgorithm layout = layoutManager.getLayout("force-directed");
-		if (layout == null)
-			layout = layoutManager.getDefaultLayout();
+		//apply layout
+		CyLayoutAlgorithm layout = getLayout();
+		System.out.println("Running Layout: " + layout);
 		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
 		
-		TaskIterator tasks = new TaskIterator(styleTask);
+		TaskIterator tasks = new TaskIterator();
+		tasks.append(styleTask);
 		tasks.append(layoutTasks);
 		tasks.append(new AbstractTask() {
 			@Override public void run(TaskMonitor tm)  {
