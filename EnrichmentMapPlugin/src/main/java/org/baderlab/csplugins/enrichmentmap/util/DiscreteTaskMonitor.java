@@ -1,7 +1,8 @@
 package org.baderlab.csplugins.enrichmentmap.util;
 
-import java.text.MessageFormat;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import org.cytoscape.work.TaskMonitor;
 
@@ -14,7 +15,9 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 	
 	private final int totalWork;
 	private AtomicInteger currentWork = new AtomicInteger(0);
-	private String messageTemplate;
+	
+	private BiFunction<Integer,Integer,String> ofMessage;
+	private Function<Double,String> percentMessage;
 	
 	
 	public DiscreteTaskMonitor(TaskMonitor delegate, int totalWork, double low, double high) {
@@ -28,8 +31,12 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 		this(delegate, totalWork, 0.0, 1.0);
 	}
 	
-	public void setStatusMessageTemplate(String template) {
-		this.messageTemplate = template;
+	public void setOfMessageCallback(BiFunction<Integer,Integer,String> ofMessage) {
+		this.ofMessage = ofMessage;
+	}
+	
+	public void setPercentMessageCallback(Function<Double,String> percentMessage) {
+		this.percentMessage = percentMessage;
 	}
 	
 	private static double map(double in, double inStart, double inEnd, double outStart, double outEnd) {
@@ -41,10 +48,19 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 	public void setProgress(double progress) {
 		double mappedProgress = map(progress, 0.0, 1.0, low, high);
 		delegate.setProgress(mappedProgress);
-		if(messageTemplate != null) {
-			String message = MessageFormat.format(messageTemplate, getCurrentWork(), getTotalWork());
+		if(ofMessage != null) {
+			String message = ofMessage.apply(getCurrentWork(), getTotalWork());
+			delegate.setStatusMessage(message);
+		} else if(percentMessage != null) {
+			String message = percentMessage.apply(getCurrentWorkPercent());
 			delegate.setStatusMessage(message);
 		}
+	}
+	
+	private double getCurrentWorkPercent() {
+		double current = getCurrentWork();
+		double total = getTotalWork();
+		return current / total;
 	}
 	
 	public void addWork(int delta) {

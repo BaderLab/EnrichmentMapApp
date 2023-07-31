@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.task.postanalysis;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -128,7 +129,7 @@ public class CreatePANetworkTask extends AbstractTask implements ObservableTask 
 		// Create Signature Hub Edges
 		tm.setStatusMessage("Creating Edges");
 		DiscreteTaskMonitor dtm = new DiscreteTaskMonitor(tm, geneSetSimilarities.size(), 0.4, 0.9);
-		dtm.setStatusMessageTemplate("Similarity {0} of {1}");
+		dtm.setOfMessageCallback((current, total) -> MessageFormat.format("Similarity {0} of {1}", current, total));
 		for(SimilarityKey similarityKey : geneSetSimilarities.keySet()) {
 			createEdge(similarityKey, network, networkView, prefix, edgeTable, nodeTable, sigDataSet);
 			dtm.inc();

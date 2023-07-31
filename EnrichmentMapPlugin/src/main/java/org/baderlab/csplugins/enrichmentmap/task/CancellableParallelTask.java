@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.task;
 
+import java.text.MessageFormat;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -51,7 +52,7 @@ public abstract class CancellableParallelTask<T> extends AbstractTask {
 	public static DiscreteTaskMonitor discreteTaskMonitor(TaskMonitor tm, int size) {
 		DiscreteTaskMonitor taskMonitor = new DiscreteTaskMonitor(tm, size);
         taskMonitor.setTitle("Computing Geneset Similarities...");
-        taskMonitor.setStatusMessageTemplate("Computing Geneset Similarity: {0} of {1} tasks");
+        taskMonitor.setPercentMessageCallback(percent -> MessageFormat.format("Computing Geneset Similarity: {0,number,#%}", percent));
         return taskMonitor;
 	}
 }
