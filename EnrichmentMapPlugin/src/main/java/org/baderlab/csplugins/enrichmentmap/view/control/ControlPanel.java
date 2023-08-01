@@ -893,12 +893,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				chartDataCombo.addItem(ChartData.NES_VALUE);
 				chartDataCombo.addItem(ChartData.NES_SIG);
 				chartDataCombo.addItem(ChartData.P_VALUE);
+				chartDataCombo.addItem(ChartData.MAX_NEG_LOG10_PVAL);
 				
 				EnrichmentMap map = getEnrichmentMap();
-				
 				if (map != null) {
-					EMCreationParameters params = map.getParams();
-					
+					var params = map.getParams();
 					if (params != null && params.isFDR())
 						chartDataCombo.addItem(ChartData.FDR_VALUE);
 					if (map.isTwoPhenotypeGeneric())

@@ -4,6 +4,7 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.view.util.Labels;
 
 public enum ChartData {
+	
 	NONE(Labels.NONE, null),
 	NES_VALUE("NES Columns", Columns.NODE_NES),
 	NES_SIG("NES Columns (significant)", Columns.NODE_NES),
@@ -11,7 +12,8 @@ public enum ChartData {
 	FDR_VALUE("Q-value (FDR) Columns", Columns.NODE_FDR_QVALUE),
 	PHENOTYPES("Phenotypes", Columns.NODE_COLOURING),
 	DATA_SET("Color by Data Set", Columns.DATASET_CHART),
-	EXPRESSION_DATA("Color by Expression Data", Columns.EXPRESSION_DATA_CHART);
+	EXPRESSION_DATA("Color by Expression Data", Columns.EXPRESSION_DATA_CHART),
+	MAX_NEG_LOG10_PVAL("-log10(pvalue)", Columns.NODE_MAX_LOG_PVALUE);
 	
 	private final String label;
 	private final AbstractColumnDescriptor columnDescriptor;
@@ -27,6 +29,10 @@ public enum ChartData {
 	
 	public AbstractColumnDescriptor getColumnDescriptor() {
 		return columnDescriptor;
+	}
+	
+	public boolean isColumnPerDataset() {
+		return this != MAX_NEG_LOG10_PVAL;
 	}
 	
 	public boolean isChartTypeSelectable() {

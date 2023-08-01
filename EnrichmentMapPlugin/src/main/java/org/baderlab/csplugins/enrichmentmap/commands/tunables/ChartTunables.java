@@ -1,6 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.commands.tunables;
 
-import static org.baderlab.csplugins.enrichmentmap.style.ChartData.*;
+import static org.baderlab.csplugins.enrichmentmap.style.ChartData.DATA_SET;
 import static org.baderlab.csplugins.enrichmentmap.style.ChartType.DATASET_PIE;
 import static org.baderlab.csplugins.enrichmentmap.style.ChartType.HEAT_MAP;
 import static org.baderlab.csplugins.enrichmentmap.style.ChartType.HEAT_STRIPS;
@@ -29,7 +29,7 @@ public class ChartTunables {
 	
 	
 	public ChartTunables() {
-		data   = TaskUtil.lssFromEnum(NES_VALUE, P_VALUE, FDR_VALUE, PHENOTYPES, DATA_SET, EXPRESSION_DATA, NES_SIG, NONE); // want NES to be the default
+		data   = TaskUtil.lssFromEnumWithDefault(ChartData.values(), ChartData.NES_VALUE);
 		type   = TaskUtil.lssFromEnum(RADIAL_HEAT_MAP, HEAT_STRIPS, HEAT_MAP); // don't include DATASET_PIE
 		colors = TaskUtil.lssFromEnum(ColorScheme.values());
 	}

@@ -673,18 +673,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 		if(map.getDataSetCount() > 0) {
 			EMCreationParameters params = map.getParams();
 			
-			ChartData chartData;
+			ChartData chartData = ChartData.MAX_NEG_LOG10_PVAL; // default
 			if(map.isTwoPhenotypeGeneric()) {
 				chartData = ChartData.PHENOTYPES;
-			} else if(params != null && map.hasNonGSEADataSet()) {
-				if(params.isForceNES())
-					chartData = ChartData.NES_VALUE;
-				else if(params.isFDR()) 
-					chartData = ChartData.FDR_VALUE;
-				else
-					chartData = ChartData.P_VALUE;
-			} else {
-				chartData = ChartData.NES_VALUE; // Default for GSEA data sets
+			} else if(params != null && map.hasNonGSEADataSet() && params.isForceNES()) {
+				chartData = ChartData.NES_VALUE;
 			}
 			
 			viewPanel.getChartDataCombo().setSelectedItem(chartData);

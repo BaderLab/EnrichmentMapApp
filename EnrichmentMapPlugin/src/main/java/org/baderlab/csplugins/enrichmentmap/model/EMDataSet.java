@@ -67,6 +67,10 @@ public class EMDataSet extends AbstractDataSet {
 		return genes;
 	}
 	
+	public EnrichmentResult getEnrichment(String genesetName) {
+		return getEnrichments().getEnrichments().get(genesetName);
+	}
+	
 	
 	public Method getMethod() {
 		return method;

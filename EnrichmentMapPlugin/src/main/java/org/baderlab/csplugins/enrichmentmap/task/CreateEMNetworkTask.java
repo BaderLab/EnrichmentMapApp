@@ -148,14 +148,14 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 			List<String> genes = geneIds.stream().map(map::getGeneFromHashKey).collect(Collectors.toList());
 			Columns.NODE_GENES.set(row, prefix, null, genes);
 			Columns.NODE_GS_SIZE.set(row, prefix, null, genes.size());
+			Columns.NODE_MAX_LOG_PVALUE.set(row, prefix, null, getMaxNegLog10pval(genesetName));
 			
-			// Set attributes specific to each dataset
+			
 			for(EMDataSet ds : map.getDataSetList()) {
 				if(ds.getGeneSetsOfInterest().getGeneSets().containsKey(genesetName))
 					ds.addNodeSuid(node.getSUID());
 				
-				Map<String, EnrichmentResult> enrichmentResults = ds.getEnrichments().getEnrichments();
-				EnrichmentResult result = enrichmentResults.get(genesetName);
+				var result = ds.getEnrichment(genesetName);
 				
 				// if result is null it will fail both instanceof checks
 				if(result instanceof GSEAResult)
@@ -168,6 +168,58 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		return nodes;
 	}
 	
+	
+	
+	private boolean needsInit = true;
+	private Double minPValueThatsNotZero = null;
+	
+	private Double getMinPValueThatsNotZero() {
+		if(needsInit) {
+			Double minPValue = null;
+			
+			for(String genesetName : map.getAllGeneSetOfInterestNames()) {
+				for(EMDataSet ds : map.getDataSetList()) { 
+					var result = ds.getEnrichment(genesetName);
+					if(result != null) {
+						double pval = result.getPvalue();
+						if(pval > 0.0) {
+							minPValue = minPValue == null ? pval : Math.min(minPValue, pval);
+						}
+					}
+				}
+			}
+			
+			minPValueThatsNotZero = minPValue; // could still possibly be null
+			needsInit = false;
+		}
+		return minPValueThatsNotZero;
+	}
+		
+		
+	private Double getMaxNegLog10pval(String genesetName) {
+		boolean hasVal = false;
+		double maxVal = Double.MIN_VALUE;
+		
+		for(EMDataSet ds : map.getDataSetList()) {
+			var result = ds.getEnrichment(genesetName);
+			if(result != null) {
+				double pval = result.getPvalue();
+				if(pval > 0.0) {
+					hasVal = true;
+					maxVal = Math.max(maxVal, -Math.log10(pval));
+				} else {
+					Double minPval = getMinPValueThatsNotZero();
+					if(minPval != null) {
+						hasVal = true;
+						maxVal = Math.max(maxVal, -Math.log10(minPval));
+					}
+				}
+			}
+		}
+		return hasVal ? maxVal : null; // leave the cell blank
+	}
+	
+		
 	/**
 	 * Note, we expect that GenesetSimilarity object that don't pass the cutoff have already been filtered out.
 	 * @param network
@@ -221,6 +273,7 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		Columns.NODE_GS_TYPE.createColumn(table, prefix, null);// !
 		Columns.NODE_GENES.createColumn(table, prefix, null); // Union of geneset genes across all datasets // !
 		Columns.NODE_GS_SIZE.createColumn(table, prefix, null); // Size of the union // !
+		Columns.NODE_MAX_LOG_PVALUE.createColumn(table, prefix, null); // max -log10(pval) for all datasets
 		
 		if(params.isParseBaderlabGeneSets()) {
 			Columns.NODE_DATASOURCE.createColumn(table, prefix, null);

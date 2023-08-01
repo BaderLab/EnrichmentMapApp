@@ -236,7 +236,11 @@ public class ApplyEMStyleTask extends AbstractTask {
 					props.put("cy_rotation", "CLOCKWISE");
 					
 				} else {
-					List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(prefix, dataSets, columnDescriptor, columnIdFactory);
+					List<CyColumnIdentifier> columns;
+					if(data.isColumnPerDataset())
+						columns = ChartUtil.getSortedColumnIdentifiers(prefix, dataSets, columnDescriptor, columnIdFactory);
+					else
+						columns = ChartUtil.getColumnIdentifier(prefix, columnDescriptor, columnIdFactory);
 	
 					List<Color> colors = ChartUtil.getChartColors(chartOptions, true);
 					List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);

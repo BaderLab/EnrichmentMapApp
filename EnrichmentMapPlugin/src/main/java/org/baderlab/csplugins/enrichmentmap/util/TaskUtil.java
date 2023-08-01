@@ -1,6 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -87,6 +88,22 @@ public class TaskUtil {
 		for(Enum<?> value : values) {
 			names.add(value.name());
 		}
+		return new ListSingleSelection<>(names);
+	}
+	
+	
+	public static ListSingleSelection<String> lssFromEnumWithDefault(Enum<?>[] allValues, Enum<?> defaultValue) {
+		List<Enum<?>> values = new ArrayList<>(Arrays.asList(allValues));
+		if(defaultValue != null) {
+			values.remove(defaultValue);
+			values.add(0, defaultValue);
+		}
+		
+		List<String> names = new ArrayList<>(values.size());
+		for(Enum<?> value : values) {
+			names.add(value.name());
+		}
+		
 		return new ListSingleSelection<>(names);
 	}
 }

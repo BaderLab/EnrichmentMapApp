@@ -48,26 +48,40 @@ public final class ChartUtil {
 	public static final Color TRANSPARENT_COLOR = new Color(0x00, 0x00, 0x00, 0);
 	private static final Color DEF_CHART_ITEM_COLOR = Color.decode("#F5F5F5");
 	
-	private ChartUtil() {
-	}
+	private ChartUtil() { }
 	
-	public static List<CyColumnIdentifier> getSortedColumnIdentifiers(String attributePrefix,
-			Collection<EMDataSet> dataSets, AbstractColumnDescriptor columnDescriptor,
-			CyColumnIdentifierFactory columnIdFactory) {
-		List<CyColumnIdentifier> columns = dataSets
-				.stream()
+	
+	public static List<CyColumnIdentifier> getSortedColumnIdentifiers(
+			String attributePrefix,
+			Collection<EMDataSet> dataSets, 
+			AbstractColumnDescriptor columnDescriptor,
+			CyColumnIdentifierFactory columnIdFactory
+	) {
+		List<CyColumnIdentifier> columns = dataSets.stream()
 				.map(ds -> columnDescriptor.with(attributePrefix, ds))  // column name
 				.map(columnIdFactory::createColumnIdentifier) // column id
 				.collect(Collectors.toList());
 		
 		// Sort the columns by name, so the chart items have the same order as the data set list
 		Collator collator = Collator.getInstance();
-		Collections.sort(columns, (CyColumnIdentifier o1, CyColumnIdentifier o2) -> {
-			return collator.compare(o1.getColumnName(), o2.getColumnName());
-		});
+		Collections.sort(columns, (CyColumnIdentifier o1, CyColumnIdentifier o2) -> 
+			collator.compare(o1.getColumnName(), o2.getColumnName())
+		);
 		
 		return columns;
 	}
+	
+	public static List<CyColumnIdentifier> getColumnIdentifier(
+			String attributePrefix, 
+			AbstractColumnDescriptor columnDescriptor,
+			CyColumnIdentifierFactory columnIdFactory
+	) {
+		
+		String colName = columnDescriptor.with(attributePrefix);
+		var id = columnIdFactory.createColumnIdentifier(colName);
+		return List.of(id);
+	}
+	
 	
 	public static List<EMDataSet> sortDataSets(Collection<EMDataSet> dataSets) {
 		List<EMDataSet> list = new ArrayList<>(dataSets);

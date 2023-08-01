@@ -85,6 +85,7 @@ public class EMStyleBuilder {
 		public static final String NODE_GS_TYPE_SIGNATURE  = "SIG";
 		public static final ColumnListDescriptor<String> NODE_GENES = new ColumnListDescriptor<>("Genes", String.class);
 		public static final ColumnDescriptor<Integer> NODE_GS_SIZE  = new ColumnDescriptor<>("gs_size", Integer.class);
+		public static final ColumnDescriptor<Double> NODE_MAX_LOG_PVALUE = new ColumnDescriptor<>("-log10(pvalue)_max", Double.class);
 		
 		// Per-DataSet attributes
 		// GSEA attributes
@@ -488,8 +489,7 @@ public class EMStyleBuilder {
 	
 	private void setNodeColors(VisualStyle vs, EMStyleOptions options) {
 		String prefix = options.getAttributePrefix();
-		List<AbstractDataSet> dataSets = options.getDataSets()
-				.stream()
+		List<AbstractDataSet> dataSets = options.getDataSets().stream()
 				.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets in charts
 				.collect(Collectors.toList());
 		
@@ -498,28 +498,19 @@ public class EMStyleBuilder {
 			EMDataSet ds = (EMDataSet) dataSets.iterator().next();
 			
 			// Create boundary conditions
-			BoundaryRangeValues<Paint> bv3a = new BoundaryRangeValues<>(
-					Colors.MAX_PHENOTYPE_2, Colors.MAX_PHENOTYPE_2, Colors.MAX_PHENOTYPE_2);
-			BoundaryRangeValues<Paint> bv3b = new BoundaryRangeValues<>(
-					Colors.LIGHTER_PHENOTYPE_2, Colors.LIGHTER_PHENOTYPE_2, Colors.MAX_PHENOTYPE_2);
-			BoundaryRangeValues<Paint> bv3c = new BoundaryRangeValues<>(
-					Colors.LIGHTEST_PHENOTYPE_2, Colors.LIGHTEST_PHENOTYPE_2, Colors.LIGHTER_PHENOTYPE_2);
-			BoundaryRangeValues<Paint> bv3d = new BoundaryRangeValues<>(
-					Colors.LIGHTEST_PHENOTYPE_2, Colors.OVER_COLOR, Colors.OVER_COLOR);
-			BoundaryRangeValues<Paint> bv3e = new BoundaryRangeValues<>(
-					Colors.OVER_COLOR, Colors.OVER_COLOR, Colors.OVER_COLOR);
-			BoundaryRangeValues<Paint> bv3f = new BoundaryRangeValues<>(
-					Colors.OVER_COLOR, Colors.OVER_COLOR, Colors.LIGHTEST_PHENOTYPE_1);
-			BoundaryRangeValues<Paint> bv3g = new BoundaryRangeValues<>(
-					Colors.LIGHTEST_PHENOTYPE_1, Colors.LIGHTEST_PHENOTYPE_1, Colors.LIGHTER_PHENOTYPE_1);
-			BoundaryRangeValues<Paint> bv3h = new BoundaryRangeValues<>(
-					Colors.LIGHTER_PHENOTYPE_1, Colors.LIGHTER_PHENOTYPE_1, Colors.MAX_PHENOTYPE_1);
-			BoundaryRangeValues<Paint> bv3i = new BoundaryRangeValues<>(
-					Colors.MAX_PHENOTYPE_1, Colors.MAX_PHENOTYPE_1, Colors.MAX_PHENOTYPE_1);
+			var bv3a = new BoundaryRangeValues<Paint>(Colors.MAX_PHENOTYPE_2, Colors.MAX_PHENOTYPE_2, Colors.MAX_PHENOTYPE_2);
+			var bv3b = new BoundaryRangeValues<Paint>(Colors.LIGHTER_PHENOTYPE_2, Colors.LIGHTER_PHENOTYPE_2, Colors.MAX_PHENOTYPE_2);
+			var bv3c = new BoundaryRangeValues<Paint>(Colors.LIGHTEST_PHENOTYPE_2, Colors.LIGHTEST_PHENOTYPE_2, Colors.LIGHTER_PHENOTYPE_2);
+			var bv3d = new BoundaryRangeValues<Paint>(Colors.LIGHTEST_PHENOTYPE_2, Colors.OVER_COLOR, Colors.OVER_COLOR);
+			var bv3e = new BoundaryRangeValues<Paint>(Colors.OVER_COLOR, Colors.OVER_COLOR, Colors.OVER_COLOR);
+			var bv3f = new BoundaryRangeValues<Paint>(Colors.OVER_COLOR, Colors.OVER_COLOR, Colors.LIGHTEST_PHENOTYPE_1);
+			var bv3g = new BoundaryRangeValues<Paint>(Colors.LIGHTEST_PHENOTYPE_1, Colors.LIGHTEST_PHENOTYPE_1, Colors.LIGHTER_PHENOTYPE_1);
+			var bv3h = new BoundaryRangeValues<Paint>(Colors.LIGHTER_PHENOTYPE_1, Colors.LIGHTER_PHENOTYPE_1, Colors.MAX_PHENOTYPE_1);
+			var bv3i = new BoundaryRangeValues<Paint>(Colors.MAX_PHENOTYPE_1, Colors.MAX_PHENOTYPE_1, Colors.MAX_PHENOTYPE_1);
 	
 			// Continuous Mapping - set node colour based on the sign of the ES score of the dataset
-			ContinuousMapping<Double, Paint> cm = (ContinuousMapping<Double, Paint>) cmFactory
-					.createVisualMappingFunction(Columns.NODE_COLOURING.with(prefix, ds), Double.class, BasicVisualLexicon.NODE_FILL_COLOR);
+			var cm = (ContinuousMapping<Double, Paint>) cmFactory.createVisualMappingFunction(
+					Columns.NODE_COLOURING.with(prefix, ds), Double.class, BasicVisualLexicon.NODE_FILL_COLOR);
 	
 			// Silence events fired by this mapping to prevent unnecessary style and view updates
 			eventHelper.silenceEventSource(cm);
@@ -560,7 +551,7 @@ public class EMStyleBuilder {
 		} else {
 			// 2 or more Data Sets? Use simple node colours and charts...
 			// Add mapping function for node fill color
-			DiscreteMapping<String, Paint> dm = (DiscreteMapping<String, Paint>) dmFactory.createVisualMappingFunction(
+			var dm = (DiscreteMapping<String, Paint>) dmFactory.createVisualMappingFunction(
 					Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_FILL_COLOR);
 			
 			// Silence events fired by this mapping to prevent unnecessary style and view updates
