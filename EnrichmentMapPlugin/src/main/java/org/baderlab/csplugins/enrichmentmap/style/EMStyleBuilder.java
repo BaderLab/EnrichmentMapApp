@@ -573,6 +573,8 @@ public class EMStyleBuilder {
 		PassthroughMapping<String, String> nodeLabel = (PassthroughMapping<String, String>) pmFactory
 				.createVisualMappingFunction(Columns.NODE_GS_DESCR.with(prefix, null), String.class, NODE_LABEL);
 		vs.addVisualMappingFunction(nodeLabel);
+		
+		vs.setDefaultValue(BasicVisualLexicon.NODE_LABEL_TRANSPARENCY, 125);
 	}
 	
 	private void setNodeTooltip(VisualStyle vs, EMStyleOptions options) {
