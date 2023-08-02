@@ -13,6 +13,7 @@ import org.baderlab.csplugins.enrichmentmap.commands.ExportPDFCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.MastermapCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.MastermapListCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.PAKnownSignatureCommandTask;
+import org.baderlab.csplugins.enrichmentmap.commands.SignificanceListTask;
 import org.baderlab.csplugins.enrichmentmap.commands.TableCommandTask;
 
 import com.google.inject.AbstractModule;
@@ -121,6 +122,12 @@ public class CommandModule extends AbstractModule {
 	public CommandTaskFactory provideAssociateNetwork(Provider<AssociateNetworkCommandTask> taskProvider) {
 		String desc = "Sets a network as 'associated' with an EnrichmentMap network. This command is intended to be used programatically by other Apps.";
 		return CommandTaskFactory.create("associate", desc, null, taskProvider);
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideSignificanceList(Provider<SignificanceListTask> taskProvider) {
+		String desc = "Returns a list of CyNodes sorted by significance. This command is intended to be used programatically by other Apps.";
+		return CommandTaskFactory.create("list significant", desc, null, taskProvider);
 	}
 
 }

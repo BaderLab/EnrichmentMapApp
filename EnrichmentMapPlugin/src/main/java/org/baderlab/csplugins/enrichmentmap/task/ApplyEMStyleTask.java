@@ -180,7 +180,8 @@ public class ApplyEMStyleTask extends AbstractTask {
 		if (!vs.equals(visualMappingManager.getVisualStyle(view)))
 			visualMappingManager.setVisualStyle(vs, view);
 		
-		CyCustomGraphics2<?> chart = createChart();
+		Map<String, Object> props = createChartProps();
+		CyCustomGraphics2<?> chart = createChart(props, options.getChartOptions().getType());
 		
 		styleBuilderProvider.get().updateStyle(vs, options, chart, scope);
 	}
@@ -212,8 +213,23 @@ public class ApplyEMStyleTask extends AbstractTask {
 		return null;
 	}
 	
-	public CyCustomGraphics2<?> createChart() {
-		CyCustomGraphics2<?> chart = null;
+	
+	public CyCustomGraphics2<?> createChart(Map<String,Object> props, ChartType type) {
+		try {
+			CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
+			if (factory != null)
+				return factory.getInstance(props);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
+	
+	public Map<String, Object> createChartProps() {
+		Map<String, Object> props = new HashMap<>();
+		
 		ChartOptions chartOptions = options.getChartOptions();
 		ChartData data = chartOptions != null ? chartOptions.getData() : null;
 		
@@ -221,8 +237,9 @@ public class ApplyEMStyleTask extends AbstractTask {
 			List<EMDataSet> dataSets = filterEMDataSets(options.getDataSets()); // Ignore Signature Data Sets in charts
 			
 			if (!dataSets.isEmpty()) {
-				ChartType type = chartOptions.getType();
-				Map<String, Object> props = new HashMap<>(type.getProperties());
+				var type = chartOptions.getType();
+				props.putAll(type.getProperties());
+				props.put("chartType", type);
 				
 				String prefix = options.getAttributePrefix();
 				AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
@@ -273,18 +290,10 @@ public class ApplyEMStyleTask extends AbstractTask {
 						props.put(AbstractChart.COLOR_POINTS, colorScheme.getPoints());
 					} 
 				}
-				
-				try {
-					CyCustomGraphics2Factory<?> factory = chartFactoryManager.getChartFactory(type.getId());
-					if (factory != null)
-						chart = factory.getInstance(props);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
 			}
 		}
 		
-		return chart;
+		return props;
 	}
 	
 	
