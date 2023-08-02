@@ -168,8 +168,8 @@ public class ApplyStyleTest {
 		verify(vs).setDefaultValue(customPaint1, chart);
 		
 		// setNodeColors()
-		verify(nodeColorMapping).putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_COLOR);
-		verify(nodeColorMapping).putMapValue(Columns.NODE_GS_TYPE_SIGNATURE,  Colors.SIG_NODE_COLOR);
+//		verify(nodeColorMapping).putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_COLOR);
+//		verify(nodeColorMapping).putMapValue(Columns.NODE_GS_TYPE_SIGNATURE,  Colors.SIG_NODE_COLOR);
 		
 		// setNodeDefaults()
 		verify(vs).setDefaultValue(NODE_FILL_COLOR, Colors.DEF_NODE_COLOR);
@@ -371,7 +371,6 @@ public class ApplyStyleTest {
 		styleBuilder.updateStyle(vs, options, chart, StyleUpdateScope.PUBLICATION_READY);
 		
 		verify(vs, times(1)).addVisualMappingFunction(any());
-		verify(vs, times(1)).setDefaultValue(any(), any());
 		
 		verify(vs).addVisualMappingFunction(nodeLabelMapping);
 		verify(vs).setDefaultValue(NETWORK_BACKGROUND_PAINT, Color.WHITE);

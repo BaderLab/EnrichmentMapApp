@@ -8,22 +8,15 @@ import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.R
 
 import java.awt.Color;
 import java.awt.Paint;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
-import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -216,7 +209,6 @@ public class EMStyleBuilder {
 				setNodeShapes(vs, options, chartType);
 				setNodeSize(vs, options, chartType);
 				setNodeChart(vs, chart);
-				setNodeColors(vs, options);
 				setNodeDefaults(vs, options, chartType);
 				setNodeBorderColors(vs, options);
 				setNodeLabels(vs, options);
@@ -238,7 +230,6 @@ public class EMStyleBuilder {
 //				setNodeShapes(vs, options, chartType);
 //				setNodeSize(vs, options, chartType);
 				setNodeChart(vs, chart);
-//				setNodeColors(vs, options);
 			}
 			else if(scope == PUBLICATION_READY) {
 				if (options.isPublicationReady()) {
@@ -487,86 +478,6 @@ public class EMStyleBuilder {
 		vs.addVisualMappingFunction(dm);
 	}
 	
-	private void setNodeColors(VisualStyle vs, EMStyleOptions options) {
-		String prefix = options.getAttributePrefix();
-		List<AbstractDataSet> dataSets = options.getDataSets().stream()
-				.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets in charts
-				.collect(Collectors.toList());
-		
-		if (dataSets.size() == 1) {
-			// Only 1 Data Set? Set a continuous mapping for node colour...
-			EMDataSet ds = (EMDataSet) dataSets.iterator().next();
-			
-			// Create boundary conditions
-			var bv3a = new BoundaryRangeValues<Paint>(Colors.MAX_PHENOTYPE_2, Colors.MAX_PHENOTYPE_2, Colors.MAX_PHENOTYPE_2);
-			var bv3b = new BoundaryRangeValues<Paint>(Colors.LIGHTER_PHENOTYPE_2, Colors.LIGHTER_PHENOTYPE_2, Colors.MAX_PHENOTYPE_2);
-			var bv3c = new BoundaryRangeValues<Paint>(Colors.LIGHTEST_PHENOTYPE_2, Colors.LIGHTEST_PHENOTYPE_2, Colors.LIGHTER_PHENOTYPE_2);
-			var bv3d = new BoundaryRangeValues<Paint>(Colors.LIGHTEST_PHENOTYPE_2, Colors.OVER_COLOR, Colors.OVER_COLOR);
-			var bv3e = new BoundaryRangeValues<Paint>(Colors.OVER_COLOR, Colors.OVER_COLOR, Colors.OVER_COLOR);
-			var bv3f = new BoundaryRangeValues<Paint>(Colors.OVER_COLOR, Colors.OVER_COLOR, Colors.LIGHTEST_PHENOTYPE_1);
-			var bv3g = new BoundaryRangeValues<Paint>(Colors.LIGHTEST_PHENOTYPE_1, Colors.LIGHTEST_PHENOTYPE_1, Colors.LIGHTER_PHENOTYPE_1);
-			var bv3h = new BoundaryRangeValues<Paint>(Colors.LIGHTER_PHENOTYPE_1, Colors.LIGHTER_PHENOTYPE_1, Colors.MAX_PHENOTYPE_1);
-			var bv3i = new BoundaryRangeValues<Paint>(Colors.MAX_PHENOTYPE_1, Colors.MAX_PHENOTYPE_1, Colors.MAX_PHENOTYPE_1);
-	
-			// Continuous Mapping - set node colour based on the sign of the ES score of the dataset
-			var cm = (ContinuousMapping<Double, Paint>) cmFactory.createVisualMappingFunction(
-					Columns.NODE_COLOURING.with(prefix, ds), Double.class, BasicVisualLexicon.NODE_FILL_COLOR);
-	
-			// Silence events fired by this mapping to prevent unnecessary style and view updates
-			eventHelper.silenceEventSource(cm);
-			
-			try {
-				// Set the attribute point values associated with the boundary values
-				cm.addPoint(-1.0, bv3a);
-				cm.addPoint(-0.995, bv3b);
-				cm.addPoint(-0.95, bv3c);
-				cm.addPoint(-0.9, bv3d);
-				cm.addPoint(0.0, bv3e);
-				cm.addPoint(0.9, bv3f);
-				cm.addPoint(0.95, bv3g);
-				cm.addPoint(0.995, bv3h);
-				cm.addPoint(1.0, bv3i);
-			} finally {
-				eventHelper.unsilenceEventSource(cm);
-			}
-	
-			vs.addVisualMappingFunction(cm);
-			
-			// Then we need to use bypass to colour the hub nodes (signature genesets)
-			List<EMSignatureDataSet> signatureDataSets = options.getEnrichmentMap().getSignatureSetList();
-			CyNetworkView netView = options.getNetworkView();
-			CyNetwork net = netView.getModel();
-			
-			for (EMSignatureDataSet sds : signatureDataSets) {
-				for (Long suid : sds.getNodeSuids()) {
-					CyNode node = net.getNode(suid);
-					if (node != null) {
-						View<CyNode> nv = netView.getNodeView(node);
-						if (nv != null) {
-							nv.setLockedValue(NODE_FILL_COLOR, Colors.SIG_NODE_COLOR);
-						}
-					}
-				}
-			}
-		} else {
-			// 2 or more Data Sets? Use simple node colours and charts...
-			// Add mapping function for node fill color
-			var dm = (DiscreteMapping<String, Paint>) dmFactory.createVisualMappingFunction(
-					Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_FILL_COLOR);
-			
-			// Silence events fired by this mapping to prevent unnecessary style and view updates
-			eventHelper.silenceEventSource(dm);
-			
-			try {
-				dm.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_COLOR);
-				dm.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, Colors.SIG_NODE_COLOR);
-			} finally {
-				eventHelper.unsilenceEventSource(dm);
-			}
-				
-			vs.addVisualMappingFunction(dm);
-		}
-	}
 	
 	private void setNodeLabels(VisualStyle vs, EMStyleOptions options) {
 		String prefix = options.getAttributePrefix();
