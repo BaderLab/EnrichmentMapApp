@@ -70,6 +70,11 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 		Comparator<CyNode> comp = (n1, n2) -> Double.compare(nodeSig.get(n1), nodeSig.get(n2));
 		nodes.sort(comp.reversed());
 		
+		for(CyNode node: nodes) {
+			System.out.println("Node:" + node.getSUID() + ", sig:" + nodeSig.get(node));
+		}
+		
+		
 		results = nodes;
 	}
 	
