@@ -10,6 +10,8 @@ import org.baderlab.csplugins.enrichmentmap.commands.EMGseaCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.ExportModelJsonCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.ExportNetworkImageCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.ExportPDFCommandTask;
+import org.baderlab.csplugins.enrichmentmap.commands.GetColorsCommandTask;
+import org.baderlab.csplugins.enrichmentmap.commands.GetDataSetNamesCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.MastermapCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.MastermapListCommandTask;
 import org.baderlab.csplugins.enrichmentmap.commands.PAKnownSignatureCommandTask;
@@ -128,6 +130,18 @@ public class CommandModule extends AbstractModule {
 	public CommandTaskFactory provideSignificanceList(Provider<SignificanceListTask> taskProvider) {
 		String desc = "Returns a list of CyNodes sorted by significance. This command is intended to be used programatically by other Apps.";
 		return CommandTaskFactory.create("list significant", desc, null, taskProvider);
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideGetDataSetNames(Provider<GetDataSetNamesCommandTask> taskProvider) {
+		String desc = "Returns a list of data set names for the given EnrichmentMap network.";
+		return CommandTaskFactory.create("get datasets", desc, null, taskProvider);
+	}
+	
+	@ProvidesIntoSet
+	public CommandTaskFactory provideGetColors(Provider<GetColorsCommandTask> taskProvider) {
+		String desc = "Returns the chart colors for the given nodes and the given dataset.";
+		return CommandTaskFactory.create("get colors", desc, null, taskProvider);
 	}
 
 }

@@ -47,6 +47,10 @@ public class NetworkTunable {
 		return emManager.getEnrichmentMap(getNetwork().getSUID()); 
 	}
 	
+	public boolean isEnrichmentMap() {
+		return getEnrichmentMap() != null;
+	}
+	
 	public boolean isAssociatedEnrichmenMap() {
 		CyNetwork network = getNetwork();
 		if(network == null)

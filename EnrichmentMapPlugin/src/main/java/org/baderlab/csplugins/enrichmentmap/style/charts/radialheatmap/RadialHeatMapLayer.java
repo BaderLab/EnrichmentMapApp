@@ -84,7 +84,7 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 	// ==[ PRIVATE METHODS ]============================================================================================
 	
 	@Override
-	protected PieDataset createDataset() {
+	public PieDataset createDataset() {
 		List<Double> values = data.isEmpty() ? Collections.emptyList() : data.values().iterator().next();
 		
 		// All the slices must have the same size
@@ -111,7 +111,7 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 	}
     
 	@Override
-	protected JFreeChart createChart(final PieDataset dataset) {
+	public JFreeChart createChart(final PieDataset dataset) {
 		JFreeChart chart = ChartFactory.createPieChart(
 				null, // chart title
 				dataset, // data
