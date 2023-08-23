@@ -180,8 +180,16 @@ public class ApplyEMStyleTask extends AbstractTask {
 		if (!vs.equals(visualMappingManager.getVisualStyle(view)))
 			visualMappingManager.setVisualStyle(vs, view);
 		
+		CyCustomGraphics2<?> chart = null;
+		
 		Map<String, Object> props = createChartProps();
-		CyCustomGraphics2<?> chart = createChart(props, options.getChartOptions().getType());
+		if(!props.isEmpty()) {
+			ChartOptions chartOptions = options.getChartOptions();
+			ChartType type = chartOptions != null ? chartOptions.getType() : null;
+			if(type != null) {
+				chart = createChart(props, type);
+			}
+		}
 		
 		styleBuilderProvider.get().updateStyle(vs, options, chart, scope);
 	}

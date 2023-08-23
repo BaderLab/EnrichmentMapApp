@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.NetworkTunable;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
@@ -50,32 +51,59 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 		EMStyleOptions options = controlPanelMediator.createStyleOptions(networkView);
 		ChartOptions chartOptions = options.getChartOptions();
 		ChartData chartData = chartOptions.getData();
-		if(chartData == ChartData.NONE || chartData == ChartData.DATA_SET)
+		
+		tm.setStatusMessage("Significance: " + chartData);
+		if(!isValidSignificance(chartData))
 			return;
 
-		tm.setStatusMessage("Significance: " + chartData);
-		
 		List<CyColumnIdentifier> columnIDs = getSignificanceColumns(map, options);
-		if(columnIDs == null || columnIDs.isEmpty())
+		if(columnIDs.isEmpty())
 			return;
 		
 		
 		List<CyNode> nodes = new ArrayList<>(network.getNodeList());
-		Map<CyNode,Double> nodeSig = new HashMap<>();
 		
+		Map<CyNode,Double> nodeSig = new HashMap<>();
 		for(CyNode node : nodes) {
 			nodeSig.put(node, getNodeAvgSig(network, node, columnIDs));
 		}
 		
-		Comparator<CyNode> comp = (n1, n2) -> Double.compare(nodeSig.get(n1), nodeSig.get(n2));
-		nodes.sort(comp.reversed());
+		nodes.sort(getComparator(nodeSig, chartData));
 		
 		for(CyNode node: nodes) {
 			System.out.println("Node:" + node.getSUID() + ", sig:" + nodeSig.get(node));
 		}
 		
-		
 		results = nodes;
+	}
+	
+	
+	private static boolean isValidSignificance(ChartData chartData) {
+		switch(chartData) {
+			case DATA_SET: case EXPRESSION_DATA: case NONE: case PHENOTYPES:
+				return false;
+			default:
+				return true;
+		}
+	}
+	
+	
+	private Comparator<CyNode> getComparator(Map<CyNode,Double> nodeSig, ChartData chartData) {
+		switch(chartData) {
+			default:
+			case NES_VALUE:
+			case NES_SIG:
+				return (n1, n2) -> {
+					var sig1 = Math.abs(nodeSig.get(n1));
+					var sig2 = Math.abs(nodeSig.get(n2));
+					return -Double.compare(sig1, sig2);
+				};
+			case P_VALUE: 
+			case FDR_VALUE:
+				return (n1, n2) -> Double.compare(nodeSig.get(n1), nodeSig.get(n2));
+			case MAX_NEG_LOG10_PVAL:
+				return (n1, n2) -> -Double.compare(nodeSig.get(n1), nodeSig.get(n2));
+		}
 	}
 	
 	
@@ -84,7 +112,7 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 		var applyStyleTask = applyEmStyleTaskFactory.create(options, StyleUpdateScope.ALL); // update scope doesn't matter
 		var props = applyStyleTask.createChartProps();
 		var columns = (List<CyColumnIdentifier>) props.get("cy_dataColumns");
-		return columns;
+		return columns == null ? List.of() : columns;
 	}
 	
 	
@@ -120,7 +148,10 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
 		if(String.class.equals(type)) {
-			return type.cast(results.toString());
+			String str = results.stream()
+					.map(n -> n.getSUID().toString())
+					.collect(Collectors.joining(", ", "[", "]"));
+			return type.cast(str);
 		}
 		if(List.class.equals(type)) {
 			return type.cast(new ArrayList<>(results));
