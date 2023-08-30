@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.NetworkTunable;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope;
@@ -24,16 +26,21 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
 import com.google.inject.Inject;
 
 public class SignificanceListTask extends AbstractTask implements ObservableTask {
 
 	@Inject private ControlPanelMediator controlPanelMediator;
+	@Inject private EnrichmentMapManager emManager;
 	@Inject private ApplyEMStyleTask.Factory applyEmStyleTaskFactory;
 	
 	@ContainsTunables @Inject
 	public NetworkTunable networkTunable;
+	
+	@Tunable
+	public String dataSet;
 	
 	
 	private List<CyNode> results = new ArrayList<>();
@@ -45,10 +52,18 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 		CyNetwork network = networkTunable.getNetwork();
 		CyNetworkView networkView = networkTunable.getNetworkView();
 		EnrichmentMap map = networkTunable.getEnrichmentMap();
+		
 		if(networkView == null || map == null)
 			throw new IllegalArgumentException("network is not an EnrichmentMap network");
 		
 		EMStyleOptions options = controlPanelMediator.createStyleOptions(networkView);
+		
+		EMDataSet ds = getDataSet(map); 
+		if(ds != null) {
+			// Rebuild the options with just the one data set
+			options = new EMStyleOptions(networkView, map, List.of(ds), options.getChartOptions(), false, false);
+		}
+		
 		ChartOptions chartOptions = options.getChartOptions();
 		ChartData chartData = chartOptions.getData();
 		
@@ -59,7 +74,6 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 		List<CyColumnIdentifier> columnIDs = getSignificanceColumns(map, options);
 		if(columnIDs.isEmpty())
 			return;
-		
 		
 		List<CyNode> nodes = new ArrayList<>(network.getNodeList());
 		
@@ -75,6 +89,18 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 		}
 		
 		results = nodes;
+	}
+	
+	
+	private EMDataSet getDataSet(EnrichmentMap map) {
+		EMDataSet ds = null;
+		if(dataSet != null) {
+			ds = map.getDataSet(dataSet);
+			if(ds == null) {
+				throw new IllegalArgumentException("dataSet '" + dataSet + "' not found");
+			}
+		}
+		return ds;
 	}
 	
 	
