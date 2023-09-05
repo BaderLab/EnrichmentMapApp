@@ -39,6 +39,7 @@ public class GetColorsCommandTask extends AbstractTask implements ObservableTask
 	@ContainsTunables @Inject
 	public NodeListTunable nodeListTunable;
 	
+	// TODO allow this param to be null, return "average" color of datasets
 	@Tunable(description = "Name of data set")
 	public String dataSet;
 	
@@ -50,11 +51,7 @@ public class GetColorsCommandTask extends AbstractTask implements ObservableTask
 	public void run(TaskMonitor tm) {
 		if(!networkTunable.isEnrichmentMap())
 			throw new IllegalArgumentException("Network is not an Enrichment Map.");
-		if(dataSet == null)
-			throw new IllegalArgumentException("dataSet is null");
-		
-		int index = getDataSetIndex();
-		if(index < 0)
+		if(dataSet != null && !networkTunable.getEnrichmentMap().getDataSetNames().contains(dataSet))
 			throw new IllegalArgumentException("dataSet '" + dataSet + "' not found");
 		
 		var network = networkTunable.getNetwork();
@@ -70,8 +67,8 @@ public class GetColorsCommandTask extends AbstractTask implements ObservableTask
 			if(nodeView == null) {
 				results.add(null);
 			} else {
-				var color = getColor(radialHeatMapChart, networkView, nodeView, index);
-				results.add(color == null ? null : color.toString());
+				var color = getColor(radialHeatMapChart, networkView, nodeView);
+				results.add(color == null ? null : Integer.toString(color.getRGB()));
 			}
 		}
 	}
@@ -85,9 +82,8 @@ public class GetColorsCommandTask extends AbstractTask implements ObservableTask
 	}
 	
 	
-	private int getDataSetIndex() {
+	private int getDataSetIndex(String dataSet) {
 		var names = networkTunable.getEnrichmentMap().getDataSetNames();
-		
 		for(int i = 0; i < names.size(); i++) {
 			String name = names.get(i);
 			if(name.equals(dataSet)) {
@@ -98,7 +94,16 @@ public class GetColorsCommandTask extends AbstractTask implements ObservableTask
 	}
 	
 	
-	private Color getColor(RadialHeatMapChart radialHeatMapChart, CyNetworkView networkView, View<CyNode> nodeView, int dataSetIndex) {
+	private List<String> getDataSetNamesToUse() {
+		if(dataSet == null)
+			return networkTunable.getEnrichmentMap().getDataSetNames();
+		else
+			return List.of(dataSet);
+	}
+	
+	
+	
+	private Color getColor(RadialHeatMapChart radialHeatMapChart, CyNetworkView networkView, View<CyNode> nodeView) {
 		List<RadialHeatMapLayer> layers = radialHeatMapChart.getLayers(networkView, nodeView);
 		if(layers == null || layers.isEmpty())
 			return null;
@@ -108,12 +113,36 @@ public class GetColorsCommandTask extends AbstractTask implements ObservableTask
 		var chart = layer.createChart(dataset);
 		var plot = (PiePlot) chart.getPlot();
 		
-		var k = "#" + (dataSetIndex + 1);
-		var paint = plot.getSectionPaint(k);
+		List<Color> colors = new ArrayList<>();
+		for(var dataSet : getDataSetNamesToUse()) {
+			int dataSetIndex = getDataSetIndex(dataSet);
+			var k = "#" + (dataSetIndex + 1);
+			var paint = plot.getSectionPaint(k);
+			if(paint instanceof Color) {
+				colors.add((Color)paint);
+			}
+		}
 		
-		return paint instanceof Color ? (Color)paint : null;
+		return average(colors);
+	}
+	
+	private static Color average(List<Color> colors) {
+		int n = colors.size();
+		if(n == 0)
+			return null;
+		if(n == 1)
+			return colors.get(0);
+		
+		int sumR = 0, sumG = 0, sumB = 0;
+		for(var color : colors) {
+			sumR += color.getRed();
+			sumG += color.getGreen();
+			sumB += color.getBlue();
+		}
+		return new Color(sumR / n, sumG / n, sumB / n);
 	}
 
+	
 	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(String.class, List.class);
