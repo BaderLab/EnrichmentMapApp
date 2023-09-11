@@ -309,17 +309,23 @@ public class SwingUtil {
 	    return button;
 	}
 	
-	public static JLabel createLinkLabel(OpenBrowser openBrowser, String text, String url, Runnable onClick) {
+	public static JLabel createLinkLabel(String text, OpenBrowser openBrowser, String url, Runnable onClick) {
 		JLabel link = new JLabel("<HTML><FONT color=\"#000099\"><U>" + text + "</U></FONT></HTML>");
 		link.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		link.addMouseListener(new MouseAdapter() {
 			@Override public void mouseClicked(MouseEvent e) {
-				openBrowser.openURL(url);
+				if(openBrowser != null && url != null) {
+					openBrowser.openURL(url);
+				}
 				if(onClick != null) {
 					onClick.run();
 				}
 			}
 		});
 		return link;
+	}
+	
+	public static JLabel createLinkLabel(String text, Runnable onClick) {
+		return createLinkLabel(text, null, null, onClick);
 	}
 }

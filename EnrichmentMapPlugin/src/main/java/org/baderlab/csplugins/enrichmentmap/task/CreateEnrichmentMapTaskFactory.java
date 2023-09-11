@@ -161,10 +161,6 @@ public class CreateEnrichmentMapTaskFactory {
 		// Create style and layout
 		if(!headless) {
 			tasks.append(createEMViewTaskFactory.create(map, params.getLayout()));
-			
-			if(params.isOpenAutoAnnotate()) {
-				tasks.append(openAutoAnnotateTaskProvider.get());
-			}
 		}
 	}
 	

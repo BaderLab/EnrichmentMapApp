@@ -65,7 +65,9 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
+import org.baderlab.csplugins.enrichmentmap.task.OpenAutoAnnotateTask;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
+import org.baderlab.csplugins.enrichmentmap.view.creation.DependencyChecker;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.Labels;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
@@ -81,9 +83,12 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskIterator;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -100,6 +105,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	@Inject private IconManager iconManager;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private DataSetSelector.Factory dataSetSelectorFactory;
+	@Inject private DependencyChecker dependencyChecker;
+	@Inject private Provider<OpenAutoAnnotateTask> aaTaskProvider;
+	@Inject private SynchronousTaskManager<?> syncTaskManager;
 	
 	private JPanel ctrlPanelsContainer;
 	private final CardLayout cardLayout = new CardLayout();
@@ -497,6 +505,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JButton setEdgeWidthButton;
 		private JButton showLegendButton;
 		
+		private JLabel aaLink;
 		private JComboBox<ChartData> chartDataCombo;
 		private JComboBox<ChartType> chartTypeCombo;
 		private JComboBox<ColorScheme> chartColorsCombo;
@@ -715,7 +724,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		private JPanel createStylePanel() {
 			makeSmall(chartDataLabel, chartTypeLabel, chartColorsLabel);
-			makeSmall(getChartDataCombo(), getChartTypeCombo(), getChartColorsCombo(), getShowChartLabelsCheck());
+			makeSmall(getAutoAnnotateOpenLink(), getChartDataCombo(), getChartTypeCombo(), getChartColorsCombo(), getShowChartLabelsCheck());
 			makeSmall(getPublicationReadyCheck(), getShowLegendButton(), getSetEdgeWidthButton(), getResetStyleButton());
 			
 			final JPanel panel = new JPanel();
@@ -735,6 +744,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addGroup(layout.createParallelGroup(LEADING, true)
+									.addComponent(getAutoAnnotateOpenLink(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartDataCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartTypeCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartColorsCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -750,7 +760,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 			);
+			
 			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(getAutoAnnotateOpenLink())
 					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(chartDataLabel)
 							.addComponent(getChartDataCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -778,6 +790,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			
 			return panel;
 		}
+		
 		
 		private SliderBarPanel createPvalueSlider(EnrichmentMap map) {
 			double pvalueMin = map.getParams().getPvalueMin();
@@ -886,6 +899,22 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return dataSetSelector;
 		}
 
+		private JLabel getAutoAnnotateOpenLink() {
+			if (aaLink == null) {
+				aaLink = SwingUtil.createLinkLabel(
+					"Run AutoAnnotate to highlight clusters", 
+					() -> {
+						var task = aaTaskProvider.get();
+						syncTaskManager.execute(new TaskIterator(task));
+					}
+				);
+				aaLink.setVisible(dependencyChecker.isAutoAnnotateOpenCommandAvailable());
+				aaLink.setBorder(BorderFactory.createEmptyBorder(0, 8, 4, 0));
+			}
+			return aaLink;
+		}
+		
+		
 		JComboBox<ChartData> getChartDataCombo() {
 			if (chartDataCombo == null) {
 				chartDataCombo = new JComboBox<>();

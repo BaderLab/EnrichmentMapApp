@@ -145,7 +145,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		EMCreationParameters params = cutoffPanel.getCreationParameters();
 		
 		params.setNetworkName(networkNamePanel.getNameText());
-		params.setOpenAutoAnnotate(networkNamePanel.openAutoAnnotate());
 		params.setLayout(networkNamePanel.getLayoutAlgorithm().getName());
 		
 		return params;
