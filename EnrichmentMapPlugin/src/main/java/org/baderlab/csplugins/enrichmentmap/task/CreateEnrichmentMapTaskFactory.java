@@ -52,7 +52,7 @@ public class CreateEnrichmentMapTaskFactory {
 	@Inject private CreateEMNetworkTask.Factory createEMNetworkTaskFactory;
 	@Inject private CreateEMViewTask.Factory createEMViewTaskFactory;
 	@Inject private LoadEnrichmentsFromGenemaniaTask.Factory genemanaiaTaskFactory;
-	@Inject private Provider<OpenAutoAnnotateTask> openAutoAnnotateTaskProvider;
+	@Inject private Provider<AutoAnnotateOpenTask> openAutoAnnotateTaskProvider;
 	
 	private final EMCreationParameters params;
 	private final List<DataSetParameters> dataSets;

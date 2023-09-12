@@ -8,16 +8,16 @@ import org.cytoscape.work.TaskMonitor;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-public class OpenAutoAnnotateTask extends AbstractTask {
+public class AutoAnnotateRedrawTask extends AbstractTask {
 	
 	@Inject private CommandExecutorTaskFactory commandTaskFactory;
 	@Inject private Provider<DependencyChecker> dependencyCheckerProvider;
 
 	@Override
 	public void run(TaskMonitor tm) {
-		var commandAvailable = dependencyCheckerProvider.get().isAutoAnnotateOpenCommandAvailable();
+		var commandAvailable = dependencyCheckerProvider.get().isAutoAnnotateRedrawCommandAvailable();
 		if(commandAvailable) {
-			var tasks = commandTaskFactory.createTaskIterator(null, "autoannotate open tab=QUICK");
+			var tasks = commandTaskFactory.createTaskIterator(null, "autoannotate redraw eventType=emChartChanged");
 			insertTasksAfterCurrentTask(tasks);
 		}
 	}

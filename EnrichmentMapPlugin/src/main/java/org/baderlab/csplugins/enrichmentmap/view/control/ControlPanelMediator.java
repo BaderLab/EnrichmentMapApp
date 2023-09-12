@@ -13,6 +13,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,6 +73,8 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScop
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
+import org.baderlab.csplugins.enrichmentmap.task.AutoAnnotateOpenTask;
+import org.baderlab.csplugins.enrichmentmap.task.AutoAnnotateRedrawTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask.FilterMode;
 import org.baderlab.csplugins.enrichmentmap.task.SelectNodesEdgesTask;
@@ -118,6 +121,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -143,6 +147,8 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 	@Inject private CreationDialogShowAction masterMapDialogAction;
 	@Inject private VisualMappingManager visualMappingManager;
 	@Inject private PropertyManager propertyManager;
+	@Inject private Provider<AutoAnnotateOpenTask> autoAnnotateOpenTaskProvider;
+	@Inject private Provider<AutoAnnotateRedrawTask> autoAnnotateRedrawTaskProvider;
 	
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyApplicationManager applicationManager;
@@ -155,6 +161,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 	@Inject private FilterNodesEdgesTask.Factory filterNodesEdgesTaskFactory;
 	@Inject private SelectNodesEdgesTask.Factory selectNodesEdgesTaskFactory;
 	@Inject private DialogTaskManager dialogTaskManager;
+	@Inject private SynchronousTaskManager<?> syncTaskManager;
 	
 	private FilterMode filterMode = FilterMode.HIDE;
 	
@@ -579,6 +586,13 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 			);
 		});
 		
+		viewPanel.getAutoAnnotateOpenLink().addMouseListener(new MouseAdapter() {
+			@Override public void mouseClicked(MouseEvent e) {
+				var task = autoAnnotateOpenTaskProvider.get();
+				syncTaskManager.execute(new TaskIterator(task));
+			}
+		});
+		
 		viewPanel.getChartDataCombo().addItemListener(evt -> {
 			if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
 				updating = true;
@@ -798,11 +812,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 	}
 
 	public void applyVisualStyle(EMStyleOptions options, StyleUpdateScope scope) {
-		ApplyEMStyleTask task = applyStyleTaskFactory.create(options, scope);
-		dialogTaskManager.execute(new TaskIterator(task), TaskUtil.allFinished(finishStatus -> {
+		var styleTask  = applyStyleTaskFactory.create(options, scope);
+		var redrawTask = autoAnnotateRedrawTaskProvider.get();
+		dialogTaskManager.execute(
+			new TaskIterator(styleTask, redrawTask), 
+			TaskUtil.allFinished(finishStatus -> {
 				EMViewControlPanel viewPanel = getControlPanel().getViewControlPanel(options.getNetworkView());
 				updateLegends(viewPanel);
-		}));
+			})
+		);
 	}
 	
 	private void updateAssociatedStyle(EnrichmentMap map, AssociatedViewControlPanel viewPanel) {

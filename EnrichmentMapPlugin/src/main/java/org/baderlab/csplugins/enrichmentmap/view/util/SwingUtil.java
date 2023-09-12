@@ -310,8 +310,7 @@ public class SwingUtil {
 	}
 	
 	public static JLabel createLinkLabel(String text, OpenBrowser openBrowser, String url, Runnable onClick) {
-		JLabel link = new JLabel("<HTML><FONT color=\"#000099\"><U>" + text + "</U></FONT></HTML>");
-		link.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		JLabel link = createLinkLabel(text);
 		link.addMouseListener(new MouseAdapter() {
 			@Override public void mouseClicked(MouseEvent e) {
 				if(openBrowser != null && url != null) {
@@ -325,7 +324,9 @@ public class SwingUtil {
 		return link;
 	}
 	
-	public static JLabel createLinkLabel(String text, Runnable onClick) {
-		return createLinkLabel(text, null, null, onClick);
+	public static JLabel createLinkLabel(String text) {
+		JLabel link = new JLabel("<HTML><FONT color=\"#000099\"><U>" + text + "</U></FONT></HTML>");
+		link.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		return link;
 	}
 }

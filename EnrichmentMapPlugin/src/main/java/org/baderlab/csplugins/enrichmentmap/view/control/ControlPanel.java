@@ -65,7 +65,6 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
-import org.baderlab.csplugins.enrichmentmap.task.OpenAutoAnnotateTask;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
 import org.baderlab.csplugins.enrichmentmap.view.creation.DependencyChecker;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
@@ -83,12 +82,9 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskIterator;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -106,8 +102,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private DataSetSelector.Factory dataSetSelectorFactory;
 	@Inject private DependencyChecker dependencyChecker;
-	@Inject private Provider<OpenAutoAnnotateTask> aaTaskProvider;
-	@Inject private SynchronousTaskManager<?> syncTaskManager;
 	
 	private JPanel ctrlPanelsContainer;
 	private final CardLayout cardLayout = new CardLayout();
@@ -899,15 +893,9 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return dataSetSelector;
 		}
 
-		private JLabel getAutoAnnotateOpenLink() {
+		JLabel getAutoAnnotateOpenLink() {
 			if (aaLink == null) {
-				aaLink = SwingUtil.createLinkLabel(
-					"Run AutoAnnotate to highlight clusters", 
-					() -> {
-						var task = aaTaskProvider.get();
-						syncTaskManager.execute(new TaskIterator(task));
-					}
-				);
+				aaLink = SwingUtil.createLinkLabel("Run AutoAnnotate to highlight clusters");
 				aaLink.setVisible(dependencyChecker.isAutoAnnotateOpenCommandAvailable());
 				aaLink.setBorder(BorderFactory.createEmptyBorder(0, 8, 4, 0));
 			}

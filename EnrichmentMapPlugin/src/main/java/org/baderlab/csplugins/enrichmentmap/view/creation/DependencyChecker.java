@@ -26,5 +26,14 @@ public class DependencyChecker {
 		return false;
 	}
 	
+	public boolean isAutoAnnotateRedrawCommandAvailable() {
+		boolean aaInstalled = availableCommands.getNamespaces().contains("autoannotate");
+		if(aaInstalled) {
+			return availableCommands.getCommands("autoannotate").contains("redraw");
+		}
+		return false;
+	}
+	
+	
 }
 
