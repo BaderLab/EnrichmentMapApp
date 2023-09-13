@@ -10,18 +10,23 @@ import java.util.stream.Collectors;
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.NetworkTunable;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMapManager;
+import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
 import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
-import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope;
+import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
 import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
+import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
@@ -32,9 +37,9 @@ import com.google.inject.Inject;
 
 public class SignificanceListTask extends AbstractTask implements ObservableTask {
 
+	@Inject private CyColumnIdentifierFactory columnIdFactory;
+	@Inject private VisualMappingManager visualMappingManager;
 	@Inject private ControlPanelMediator controlPanelMediator;
-	@Inject private EnrichmentMapManager emManager;
-	@Inject private ApplyEMStyleTask.Factory applyEmStyleTaskFactory;
 	
 	@ContainsTunables @Inject
 	public NetworkTunable networkTunable;
@@ -57,21 +62,10 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 			throw new IllegalArgumentException("network is not an EnrichmentMap network");
 		
 		EMStyleOptions options = controlPanelMediator.createStyleOptions(networkView);
-		
-		EMDataSet ds = getDataSet(map); 
-		if(ds != null) {
-			// Rebuild the options with just the one data set
-			options = new EMStyleOptions(networkView, map, List.of(ds), options.getChartOptions(), false, false);
-		}
-		
 		ChartOptions chartOptions = options.getChartOptions();
 		ChartData chartData = chartOptions.getData();
 		
-		tm.setStatusMessage("Significance: " + chartData);
-		if(!isValidSignificance(chartData))
-			return;
-
-		List<CyColumnIdentifier> columnIDs = getSignificanceColumns(map, options);
+		List<CyColumnIdentifier> columnIDs = getSignificanceColumns(map, networkView, options);
 		if(columnIDs.isEmpty())
 			return;
 		
@@ -84,9 +78,9 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 		
 		nodes.sort(getComparator(nodeSig, chartData));
 		
-		for(CyNode node: nodes) {
-			System.out.println("Node:" + node.getSUID() + ", sig:" + nodeSig.get(node));
-		}
+		System.out.println("** significance command **");
+		columnIDs.forEach(System.out::println);
+		nodes.forEach(node -> System.out.println("Node:" + node.getSUID() + ", sig:" + nodeSig.get(node)));
 		
 		results = nodes;
 	}
@@ -104,9 +98,15 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 	}
 	
 	
-	private static boolean isValidSignificance(ChartData chartData) {
+	public static boolean useChartForSignificance(ChartData chartData) {
+		if(chartData == null)
+			return false;
+		
 		switch(chartData) {
-			case DATA_SET: case EXPRESSION_DATA: case NONE: case PHENOTYPES:
+			case NONE:
+			case DATA_SET: 
+			case EXPRESSION_DATA:
+			case PHENOTYPES:
 				return false;
 			default:
 				return true;
@@ -117,6 +117,12 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 	private Comparator<CyNode> getComparator(Map<CyNode,Double> nodeSig, ChartData chartData) {
 		switch(chartData) {
 			default:
+			case NONE: // NONE defaults to P_VALUE
+			case P_VALUE: 
+			case FDR_VALUE:
+				return (n1, n2) -> Double.compare(nodeSig.get(n1), nodeSig.get(n2));
+			case MAX_NEG_LOG10_PVAL:
+				return (n1, n2) -> -Double.compare(nodeSig.get(n1), nodeSig.get(n2));
 			case NES_VALUE:
 			case NES_SIG:
 				return (n1, n2) -> {
@@ -124,21 +130,43 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 					var sig2 = Math.abs(nodeSig.get(n2));
 					return -Double.compare(sig1, sig2);
 				};
-			case P_VALUE: 
-			case FDR_VALUE:
-				return (n1, n2) -> Double.compare(nodeSig.get(n1), nodeSig.get(n2));
-			case MAX_NEG_LOG10_PVAL:
-				return (n1, n2) -> -Double.compare(nodeSig.get(n1), nodeSig.get(n2));
 		}
 	}
 	
+	private CyColumnIdentifier getColumnFromStyle(CyNetworkView networkView) {
+		var visualStyle = visualMappingManager.getVisualStyle(networkView);
+		if(visualStyle != null) {
+			var mapping = visualStyle.getVisualMappingFunction(BasicVisualLexicon.NODE_FILL_COLOR);
+			if(mapping instanceof ContinuousMapping) {
+				var contMapping = (ContinuousMapping) mapping;
+				var name = contMapping.getMappingColumnName();
+				return columnIdFactory.createColumnIdentifier(name);
+			}
+		}
+		return null;
+	}
 	
-	private List<CyColumnIdentifier> getSignificanceColumns(EnrichmentMap map, EMStyleOptions options) {
-		// TODO how does NES_SIG work???
-		var applyStyleTask = applyEmStyleTaskFactory.create(options, StyleUpdateScope.ALL); // update scope doesn't matter
-		var props = applyStyleTask.createChartProps();
-		var columns = (List<CyColumnIdentifier>) props.get("cy_dataColumns");
-		return columns == null ? List.of() : columns;
+	private List<CyColumnIdentifier> getSignificanceColumns(EnrichmentMap map, CyNetworkView networkView, EMStyleOptions options) {
+		var chartData = options.getChartOptions().getData();
+		
+		AbstractColumnDescriptor columnDescriptor;
+		if(useChartForSignificance(chartData)) {
+			columnDescriptor = options.getChartOptions().getData().getColumnDescriptor();
+		} else {
+			var styleCol = getColumnFromStyle(networkView);
+			if(styleCol != null) {
+				return List.of(styleCol);
+			}
+			columnDescriptor = EMStyleBuilder.Columns.NODE_PVALUE; // default to p-value
+		}
+		
+		EMDataSet ds = getDataSet(map); 
+		List<EMDataSet> dataSets = ds == null
+				? ApplyEMStyleTask.filterEMDataSets(options.getDataSets())
+				: List.of(ds);
+		
+		var prefix = map.getParams().getAttributePrefix();
+		return ChartUtil.getSortedColumnIdentifiers(prefix, dataSets, columnDescriptor, columnIdFactory);
 	}
 	
 	

@@ -31,6 +31,7 @@ public enum ChartData {
 		return columnDescriptor;
 	}
 	
+	@Deprecated
 	public boolean isColumnPerDataset() {
 		return this != MAX_NEG_LOG10_PVAL;
 	}

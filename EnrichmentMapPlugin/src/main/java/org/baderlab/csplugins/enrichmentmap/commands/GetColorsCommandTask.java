@@ -1,12 +1,17 @@
 package org.baderlab.csplugins.enrichmentmap.commands;
 
 import java.awt.Color;
+import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.NetworkTunable;
 import org.baderlab.csplugins.enrichmentmap.commands.tunables.NodeListTunable;
+import org.baderlab.csplugins.enrichmentmap.style.ChartData;
+import org.baderlab.csplugins.enrichmentmap.style.ChartOptions;
 import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
@@ -18,6 +23,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
@@ -54,27 +60,43 @@ public class GetColorsCommandTask extends AbstractTask implements ObservableTask
 		if(dataSet != null && !networkTunable.getEnrichmentMap().getDataSetNames().contains(dataSet))
 			throw new IllegalArgumentException("dataSet '" + dataSet + "' not found");
 		
-		var network = networkTunable.getNetwork();
 		var networkView = networkTunable.getNetworkView();
+		EMStyleOptions styleOptions = getStyleOptions(networkView);
 		
-		RadialHeatMapChart radialHeatMapChart = getChart(networkView);
-		
+		var chartData = getChartType(styleOptions);
 		var nodeSuids = nodeListTunable.getNodeSuids();
-		results = new ArrayList<>(nodeSuids.size());
 		
-		for(var suid : nodeSuids) {
-			var nodeView = networkView.getNodeView(network.getNode(suid));
-			if(nodeView == null) {
-				results.add(null);
-			} else {
-				var color = getColor(radialHeatMapChart, networkView, nodeView);
-				results.add(color == null ? null : Integer.toString(color.getRGB()));
-			}
+		if(chartData == null || chartData == ChartData.NONE) {
+			// get colors from node fill style
+			var colors = getColorsFromVisualProperties(nodeSuids, networkView);
+			results = colorsToStrings(colors);
+		} else {
+			// get colors from chart
+			RadialHeatMapChart radialHeatMapChart = getChart(styleOptions);
+			var colors = getColorsFromChart(nodeSuids, networkView, radialHeatMapChart);
+			results = colorsToStrings(colors);
 		}
+		
+		System.out.println("** colors command **");
+		results.forEach(System.out::println);
 	}
 	
-	private RadialHeatMapChart getChart(CyNetworkView networkView) {
-		EMStyleOptions options = controlPanelMediator.createStyleOptions(networkView);
+	
+	private EMStyleOptions getStyleOptions(CyNetworkView networkView) {
+		return controlPanelMediator.createStyleOptions(networkView);
+	}
+	
+	
+	private static ChartData getChartType(EMStyleOptions styleOptions) {
+		ChartOptions chartOptions = styleOptions.getChartOptions();
+		if(chartOptions != null) {
+			return chartOptions.getData();
+		}
+		return null;
+	}
+	
+	
+	private RadialHeatMapChart getChart(EMStyleOptions options) {
 		var applyStyleTask = applyEmStyleTaskFactory.create(options, StyleUpdateScope.ALL); // update scope doesn't matter
 		var props = applyStyleTask.createChartProps();
 		CyCustomGraphics2<?> chart = applyStyleTask.createChart(props, ChartType.RADIAL_HEAT_MAP);
@@ -95,15 +117,46 @@ public class GetColorsCommandTask extends AbstractTask implements ObservableTask
 	
 	
 	private List<String> getDataSetNamesToUse() {
-		if(dataSet == null)
-			return networkTunable.getEnrichmentMap().getDataSetNames();
-		else
-			return List.of(dataSet);
+		return dataSet == null
+			? networkTunable.getEnrichmentMap().getDataSetNames()
+			: List.of(dataSet);
 	}
 	
 	
+	private static List<Color> getColors(List<Long> nodeSuids, CyNetworkView networkView, Function<View<CyNode>,Color> colorForNode) {
+		var network = networkView.getModel();
+		List<Color> colors = new ArrayList<>(nodeSuids.size());
+		
+		for(var suid : nodeSuids) {
+			var nodeView = networkView.getNodeView(network.getNode(suid));
+			if(nodeView == null) {
+				colors.add(null);
+			} else {
+				var color = colorForNode.apply(nodeView);
+				colors.add(color);
+			}
+		}
+		
+		return colors;
+	}
 	
-	private Color getColor(RadialHeatMapChart radialHeatMapChart, CyNetworkView networkView, View<CyNode> nodeView) {
+	
+	private List<Color> getColorsFromVisualProperties(List<Long> nodeSuids, CyNetworkView networkView) {
+		return getColors(nodeSuids, networkView, nodeView -> {
+			Paint paint = nodeView.getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR);
+			return paint instanceof Color ? (Color)paint : null;
+		});
+	}
+	
+	
+	private List<Color> getColorsFromChart(List<Long> nodeSuids, CyNetworkView networkView, RadialHeatMapChart radialHeatMapChart) {
+		return getColors(nodeSuids, networkView, nodeView -> {
+			return getColorFromChart(radialHeatMapChart, networkView, nodeView);
+		});
+	}
+	
+	
+	private Color getColorFromChart(RadialHeatMapChart radialHeatMapChart, CyNetworkView networkView, View<CyNode> nodeView) {
 		List<RadialHeatMapLayer> layers = radialHeatMapChart.getLayers(networkView, nodeView);
 		if(layers == null || layers.isEmpty())
 			return null;
@@ -126,6 +179,7 @@ public class GetColorsCommandTask extends AbstractTask implements ObservableTask
 		return average(colors);
 	}
 	
+	
 	private static Color average(List<Color> colors) {
 		int n = colors.size();
 		if(n == 0)
@@ -143,10 +197,18 @@ public class GetColorsCommandTask extends AbstractTask implements ObservableTask
 	}
 
 	
+	private static List<String> colorsToStrings(List<Color> colors) {
+		return colors.stream()
+				.map(color -> color == null ? null : Integer.toString(color.getRGB()))
+				.collect(Collectors.toList());
+	}
+	
+	
 	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(String.class, List.class);
 	}
+	
 	
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
