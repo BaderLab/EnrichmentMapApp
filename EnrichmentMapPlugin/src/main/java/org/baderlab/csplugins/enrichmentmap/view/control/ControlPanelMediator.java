@@ -687,7 +687,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 		if(map.getDataSetCount() > 0) {
 			EMCreationParameters params = map.getParams();
 			
-			ChartData chartData = ChartData.MAX_NEG_LOG10_PVAL; // default
+			ChartData chartData = ChartData.LOG10_PVAL; // default
 			if(map.isTwoPhenotypeGeneric()) {
 				chartData = ChartData.PHENOTYPES;
 			} else if(params != null && map.hasNonGSEADataSet() && params.isForceNES()) {

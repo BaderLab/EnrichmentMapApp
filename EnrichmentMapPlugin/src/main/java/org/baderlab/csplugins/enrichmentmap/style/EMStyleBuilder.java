@@ -78,7 +78,8 @@ public class EMStyleBuilder {
 		public static final String NODE_GS_TYPE_SIGNATURE  = "SIG";
 		public static final ColumnListDescriptor<String> NODE_GENES = new ColumnListDescriptor<>("Genes", String.class);
 		public static final ColumnDescriptor<Integer> NODE_GS_SIZE  = new ColumnDescriptor<>("gs_size", Integer.class);
-		public static final ColumnDescriptor<Double> NODE_MAX_LOG_PVALUE = new ColumnDescriptor<>("-log10(pvalue)_max", Double.class);
+		public static final ColumnDescriptor<Double> NODE_LOG_PVALUE = new ColumnDescriptor<>("-log10(pvalue)", Double.class);
+		public static final ColumnDescriptor<Double> NODE_LOG_PVALUE_MAX = new ColumnDescriptor<>("-log10(pvalue)_max", Double.class);
 		
 		// Per-DataSet attributes
 		// GSEA attributes

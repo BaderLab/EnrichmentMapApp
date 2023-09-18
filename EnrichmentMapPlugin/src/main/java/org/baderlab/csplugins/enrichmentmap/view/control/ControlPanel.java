@@ -910,7 +910,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				chartDataCombo.addItem(ChartData.NES_VALUE);
 				chartDataCombo.addItem(ChartData.NES_SIG);
 				chartDataCombo.addItem(ChartData.P_VALUE);
-				chartDataCombo.addItem(ChartData.MAX_NEG_LOG10_PVAL);
+				chartDataCombo.addItem(ChartData.LOG10_PVAL);
 				
 				EnrichmentMap map = getEnrichmentMap();
 				if (map != null) {

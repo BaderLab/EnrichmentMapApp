@@ -13,7 +13,7 @@ public enum ChartData {
 	PHENOTYPES("Phenotypes", Columns.NODE_COLOURING),
 	DATA_SET("Color by Data Set", Columns.DATASET_CHART),
 	EXPRESSION_DATA("Color by Expression Data", Columns.EXPRESSION_DATA_CHART),
-	MAX_NEG_LOG10_PVAL("-log10(pvalue)", Columns.NODE_MAX_LOG_PVALUE);
+	LOG10_PVAL("-log10(pvalue)", Columns.NODE_LOG_PVALUE);
 	
 	private final String label;
 	private final AbstractColumnDescriptor columnDescriptor;
@@ -29,11 +29,6 @@ public enum ChartData {
 	
 	public AbstractColumnDescriptor getColumnDescriptor() {
 		return columnDescriptor;
-	}
-	
-	@Deprecated
-	public boolean isColumnPerDataset() {
-		return this != MAX_NEG_LOG10_PVAL;
 	}
 	
 	public boolean isChartTypeSelectable() {

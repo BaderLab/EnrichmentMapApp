@@ -148,7 +148,7 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 			List<String> genes = geneIds.stream().map(map::getGeneFromHashKey).collect(Collectors.toList());
 			Columns.NODE_GENES.set(row, prefix, null, genes);
 			Columns.NODE_GS_SIZE.set(row, prefix, null, genes.size());
-			Columns.NODE_MAX_LOG_PVALUE.set(row, prefix, null, getMaxNegLog10pval(genesetName));
+			Columns.NODE_LOG_PVALUE_MAX.set(row, prefix, null, getMaxNegLog10pval(genesetName));
 			
 			
 			for(EMDataSet ds : map.getDataSetList()) {
@@ -195,7 +195,17 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		return minPValueThatsNotZero;
 	}
 		
-		
+	
+	private Double getNegLog10pval(EMDataSet dataset, EnrichmentResult result) {
+		double pval = result.getPvalue();
+		if(pval > 0.0) {
+			return -Math.log10(pval);
+		} else {
+			return null;
+		}
+	}
+	
+	
 	private Double getMaxNegLog10pval(String genesetName) {
 		boolean hasVal = false;
 		double maxVal = Double.MIN_VALUE;
@@ -273,7 +283,7 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		Columns.NODE_GS_TYPE.createColumn(table, prefix, null);// !
 		Columns.NODE_GENES.createColumn(table, prefix, null); // Union of geneset genes across all datasets // !
 		Columns.NODE_GS_SIZE.createColumn(table, prefix, null); // Size of the union // !
-		Columns.NODE_MAX_LOG_PVALUE.createColumn(table, prefix, null); // max -log10(pval) for all datasets
+		Columns.NODE_LOG_PVALUE_MAX.createColumn(table, prefix, null); // max -log10(pval) for all datasets
 		
 		if(params.isParseBaderlabGeneSets()) {
 			Columns.NODE_DATASOURCE.createColumn(table, prefix, null);
@@ -290,6 +300,7 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 			// MKTODO only create these if method is GSEA?
 			Columns.NODE_ES.createColumn(table, prefix, dataset);
 			Columns.NODE_NES.createColumn(table, prefix, dataset); 
+			Columns.NODE_LOG_PVALUE.createColumn(table, prefix, dataset); 
 			Columns.NODE_COLOURING.createColumn(table, prefix, dataset);
 			
 			params.addPValueColumnName(Columns.NODE_PVALUE.with(prefix, dataset));
@@ -316,6 +327,7 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		Columns.NODE_FDR_QVALUE.set(row, prefix, dataset, result.getFdrqvalue());
 		Columns.NODE_NES.set(row, prefix, dataset, result.getNES());
 		Columns.NODE_COLOURING.set(row, prefix, dataset, getColorScore(result));
+		Columns.NODE_LOG_PVALUE.set(row, prefix, dataset, getNegLog10pval(dataset, result));
 	}
 	
 	private void setGSEAResultNodeAttributes(CyRow row, EMDataSet dataset, GSEAResult result) {
@@ -325,6 +337,7 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		Columns.NODE_ES.set(row, prefix, dataset, result.getES());
 		Columns.NODE_NES.set(row, prefix, dataset, result.getNES());
 		Columns.NODE_COLOURING.set(row, prefix, dataset, getColorScore(result));
+		Columns.NODE_LOG_PVALUE.set(row, prefix, dataset, getNegLog10pval(dataset, result));
 		
 		EMCreationParameters params = map.getParams();
 		params.addPValueColumnName(Columns.NODE_PVALUE.with(prefix, dataset));

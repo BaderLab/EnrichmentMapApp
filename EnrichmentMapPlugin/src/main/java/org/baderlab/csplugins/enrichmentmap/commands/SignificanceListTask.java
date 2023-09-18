@@ -121,7 +121,7 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 			case P_VALUE: 
 			case FDR_VALUE:
 				return (n1, n2) -> Double.compare(nodeSig.get(n1), nodeSig.get(n2));
-			case MAX_NEG_LOG10_PVAL:
+			case LOG10_PVAL:
 				return (n1, n2) -> -Double.compare(nodeSig.get(n1), nodeSig.get(n2));
 			case NES_VALUE:
 			case NES_SIG:
