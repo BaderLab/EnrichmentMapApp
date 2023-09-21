@@ -80,7 +80,6 @@ public class CreateEMViewTask extends AbstractTask {
 		
 		//apply layout
 		CyLayoutAlgorithm layout = getLayout();
-		System.out.println("Running Layout: " + layout);
 		TaskIterator layoutTasks = layout.createTaskIterator(view, layout.createLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, null);
 		
 		TaskIterator tasks = new TaskIterator();

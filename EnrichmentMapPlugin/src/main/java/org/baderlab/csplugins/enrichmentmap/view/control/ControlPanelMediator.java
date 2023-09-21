@@ -687,9 +687,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 		if(map.getDataSetCount() > 0) {
 			EMCreationParameters params = map.getParams();
 			
-			ChartData chartData = ChartData.LOG10_PVAL; // default
+			ChartData chartData = ChartData.LOG10_PVAL; // default for multi-dataset
 			if(map.isTwoPhenotypeGeneric()) {
 				chartData = ChartData.PHENOTYPES;
+			} else if(map.getDataSetCount() == 1) {
+				chartData = ChartData.NONE; // one-dataset should show node fill color style mapping by default
 			} else if(params != null && map.hasNonGSEADataSet() && params.isForceNES()) {
 				chartData = ChartData.NES_VALUE;
 			}

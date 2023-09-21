@@ -142,8 +142,8 @@ public final class ChartUtil {
 				range.add(max);
 			}
 		} else {
-			range.add(0d);
-			range.add(0d);
+			range.add(0.0);
+			range.add(0.0);
 		}
 		
 		return range;

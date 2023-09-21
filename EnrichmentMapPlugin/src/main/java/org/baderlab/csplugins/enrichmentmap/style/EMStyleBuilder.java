@@ -8,21 +8,30 @@ import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.R
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
+import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunction;
@@ -50,7 +59,7 @@ public class EMStyleBuilder {
 	
 	public final static String COMBINED = "Combined";
 	
-	public final static Integer DEF_NODE_TRANSPARENCY = 220;
+	public final static Integer DEF_NODE_TRANSPARENCY = 180;
 	public final static Integer FILTERED_OUT_NODE_TRANSPARENCY = 40;
 	
 	private final static double MIN_NODE_SIZE = 20.0;
@@ -170,6 +179,7 @@ public class EMStyleBuilder {
 	@Inject private @Discrete    VisualMappingFunctionFactory dmFactory;
 	@Inject private @Passthrough VisualMappingFunctionFactory pmFactory;
 	
+	@Inject private CyColumnIdentifierFactory columnIdFactory;
 	@Inject private RenderingEngineManager renderingEngineManager;
 	@Inject private CyEventHelper eventHelper;
 	
@@ -210,6 +220,7 @@ public class EMStyleBuilder {
 				setNodeShapes(vs, options, chartType);
 				setNodeSize(vs, options, chartType);
 				setNodeChart(vs, chart);
+				setNodeColors(vs, options);
 				setNodeDefaults(vs, options, chartType);
 				setNodeBorderColors(vs, options);
 				setNodeLabels(vs, options);
@@ -477,6 +488,80 @@ public class EMStyleBuilder {
 		}
 		
 		vs.addVisualMappingFunction(dm);
+	}
+	
+	private void setNodeColors(VisualStyle vs, EMStyleOptions options) {
+		String prefix = options.getAttributePrefix();
+		List<AbstractDataSet> dataSets = options.getDataSets().stream()
+			.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets in charts
+			.collect(Collectors.toList());
+		
+		if (dataSets.size() == 1) {
+			// Only 1 Data Set? Set a continuous mapping for node colour...
+			EMDataSet ds = (EMDataSet) dataSets.iterator().next();
+			CyNetworkView netView = options.getNetworkView();
+			CyNetwork net = netView.getModel();
+			
+			var logPValCol = Columns.NODE_LOG_PVALUE_MAX.with(prefix);
+			
+			var colList = List.of(columnIdFactory.createColumnIdentifier(logPValCol));
+			var range = ChartUtil.calculateGlobalRange(net, colList);
+			var max = range.get(1);
+			
+			// Continuous Mapping - set node colour based on the sign of the ES score of the dataset
+			var cm = (ContinuousMapping<Double, Paint>) cmFactory.createVisualMappingFunction(
+						logPValCol, Double.class, BasicVisualLexicon.NODE_FILL_COLOR);
+			
+			var color0 = ColorScheme.RD_BU_3.getColors().get(1);
+			var color1 = ColorScheme.RD_BU_3.getColors().get(0);
+			
+			var point0 = new BoundaryRangeValues<Paint>(color0, color0, color0);
+			var point1 = new BoundaryRangeValues<Paint>(color1, color1, color1);
+			
+			eventHelper.silenceEventSource(cm);
+			try {
+				cm.addPoint(max, point1);
+				cm.addPoint(0.0, point0);
+			} finally {
+				eventHelper.unsilenceEventSource(cm);
+			}
+			
+			vs.addVisualMappingFunction(cm);
+			
+			// Then we need to use bypass to colour the hub nodes (signature genesets)
+			List<EMSignatureDataSet> signatureDataSets = options.getEnrichmentMap().getSignatureSetList();
+			
+			
+			for (EMSignatureDataSet sds : signatureDataSets) {
+				for (Long suid : sds.getNodeSuids()) {
+					CyNode node = net.getNode(suid);
+					if (node != null) {
+						View<CyNode> nv = netView.getNodeView(node);
+						if (nv != null) {
+							nv.setLockedValue(NODE_FILL_COLOR, Colors.SIG_NODE_COLOR);
+						}
+					}
+				}
+			}
+			
+		} else {
+			// 2 or more Data Sets? Use simple node colours and charts...
+			// Add mapping function for node fill color
+			var dm = (DiscreteMapping<String, Paint>) dmFactory.createVisualMappingFunction(
+					Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_FILL_COLOR);
+			
+			// Silence events fired by this mapping to prevent unnecessary style and view updates
+			eventHelper.silenceEventSource(dm);
+			
+			try {
+				dm.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_COLOR);
+				dm.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, Colors.SIG_NODE_COLOR);
+			} finally {
+				eventHelper.unsilenceEventSource(dm);
+			}
+				
+			vs.addVisualMappingFunction(dm);
+		}
 	}
 	
 	
