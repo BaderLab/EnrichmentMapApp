@@ -200,9 +200,13 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		double pval = result.getPvalue();
 		if(pval > 0.0) {
 			return -Math.log10(pval);
-		} else {
-			return null;
+		} else if(pval == 0.0) {
+			Double minPval = getMinPValueThatsNotZero();
+			if(minPval != null) {
+				return -Math.log10(minPval);
+			}
 		}
+		return null;
 	}
 	
 	
