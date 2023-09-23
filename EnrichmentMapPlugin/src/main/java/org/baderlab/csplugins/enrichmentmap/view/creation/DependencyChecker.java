@@ -18,22 +18,26 @@ public class DependencyChecker {
 		return layoutManager.getAllLayouts().stream().anyMatch(layout -> layout.getName().startsWith("yfiles"));
 	}
 	
-	public boolean isAutoAnnotateOpenCommandAvailable() {
-		boolean aaInstalled = availableCommands.getNamespaces().contains("autoannotate");
-		if(aaInstalled) {
-			return availableCommands.getCommands("autoannotate").contains("open");
+	public boolean isCommandAvailable(String namespace, String command) {
+		boolean namespaceAvailable = availableCommands.getNamespaces().contains(namespace);
+		if(namespaceAvailable) {
+			return availableCommands.getCommands(namespace).contains(command);
 		}
 		return false;
 	}
 	
-	public boolean isAutoAnnotateRedrawCommandAvailable() {
-		boolean aaInstalled = availableCommands.getNamespaces().contains("autoannotate");
-		if(aaInstalled) {
-			return availableCommands.getCommands("autoannotate").contains("redraw");
-		}
-		return false;
-	}
 	
+//	public boolean isAutoAnnotateOpenCommandAvailable() {
+//		return isCommandAvailable("autoannotate", "open");
+//	}
+//	
+//	public boolean isAutoAnnotateRedrawCommandAvailable() {
+//		return isCommandAvailable("autoannotate", "redraw");
+//	}
+//	
+//	public boolean isAutoAnnotateInitCommandAvailable() {
+//		return isCommandAvailable("autoannotate", "eminit");
+//	}
 	
 }
 

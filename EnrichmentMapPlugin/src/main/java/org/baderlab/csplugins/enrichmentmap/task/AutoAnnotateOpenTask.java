@@ -15,7 +15,7 @@ public class AutoAnnotateOpenTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor tm) {
-		var commandAvailable = dependencyCheckerProvider.get().isAutoAnnotateOpenCommandAvailable();
+		var commandAvailable = dependencyCheckerProvider.get().isCommandAvailable("autoannotate", "open");
 		if(commandAvailable) {
 			var tasks = commandTaskFactory.createTaskIterator(null, "autoannotate open tab=QUICK");
 			insertTasksAfterCurrentTask(tasks);

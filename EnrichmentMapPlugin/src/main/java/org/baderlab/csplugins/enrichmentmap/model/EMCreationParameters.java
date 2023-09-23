@@ -44,6 +44,7 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	
 	private String networkName;
 	private EdgeStrategy edgeStrategy;
+	private boolean runAutoAnnotate = false;
 	private String layout = null;
 	
 	private transient boolean forceNES = false;
@@ -108,6 +109,14 @@ public class EMCreationParameters implements EnrichmentResultFilterParams {
 	 */
 	public String getStylePrefix() {
 		return (stylePrefix == null) ? attributePrefix : stylePrefix;
+	}
+
+	public boolean isRunAutoAnnotate() {
+		return runAutoAnnotate;
+	}
+
+	public void setRunAutoAnnotate(boolean runAutoAnnotate) {
+		this.runAutoAnnotate = runAutoAnnotate;
 	}
 
 	@Override

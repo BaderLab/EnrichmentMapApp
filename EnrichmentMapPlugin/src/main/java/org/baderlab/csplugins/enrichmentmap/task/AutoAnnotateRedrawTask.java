@@ -15,7 +15,7 @@ public class AutoAnnotateRedrawTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor tm) {
-		var commandAvailable = dependencyCheckerProvider.get().isAutoAnnotateRedrawCommandAvailable();
+		var commandAvailable = dependencyCheckerProvider.get().isCommandAvailable("autoannotate", "redraw");
 		if(commandAvailable) {
 			var tasks = commandTaskFactory.createTaskIterator(null, "autoannotate redraw eventType=emChartChanged");
 			insertTasksAfterCurrentTask(tasks);

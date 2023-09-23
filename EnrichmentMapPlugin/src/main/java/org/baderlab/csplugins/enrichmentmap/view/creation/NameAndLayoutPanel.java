@@ -39,6 +39,7 @@ public class NameAndLayoutPanel extends JPanel {
 	private JComboBox<ComboItem<CyLayoutAlgorithm>> layoutComboBox;
 	
 	private JLabel yFilesLink;
+	private JCheckBox autoAnnotateCheck;
 	
 	private String automaticValue;
 	private String manualValue;
@@ -59,9 +60,11 @@ public class NameAndLayoutPanel extends JPanel {
 		fillLayoutCombo();
 		
 		yFilesLink = createInstallLink();
+		
+		autoAnnotateCheck = new JCheckBox("Run AutoAnnotate after creating network");
 
 		makeSmall(networkLabel, useAutomaticCheck, nameText);
-		makeSmall(layoutLabel, layoutComboBox, yFilesLink);
+		makeSmall(layoutLabel, layoutComboBox, yFilesLink, autoAnnotateCheck);
 		
 		useAutomaticCheck.setSelected(true);
 		nameText.setEnabled(false);
@@ -94,6 +97,9 @@ public class NameAndLayoutPanel extends JPanel {
 				.addComponent(layoutComboBox, 0, 400, 400)
 				.addComponent(yFilesLink)
 			)
+			.addGroup(layout.createSequentialGroup()
+				.addComponent(autoAnnotateCheck)
+			)
 		);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
@@ -107,6 +113,9 @@ public class NameAndLayoutPanel extends JPanel {
 				.addComponent(layoutComboBox)
 				.addComponent(yFilesLink)
 			)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(autoAnnotateCheck)
+			)
 		);
 		
 		opened();
@@ -114,7 +123,10 @@ public class NameAndLayoutPanel extends JPanel {
 	
 	
 	public void opened() {
+		boolean aaInstalled = dependencyCheckerProvider.get().isCommandAvailable("autoannotate", "eminit");
 		boolean yfInstalled = dependencyCheckerProvider.get().isYFilesInstalled();
+		autoAnnotateCheck.setEnabled(aaInstalled);
+		autoAnnotateCheck.setSelected(aaInstalled);
 		yFilesLink.setVisible(!yfInstalled);
 		fillLayoutCombo();
 	}
@@ -177,6 +189,10 @@ public class NameAndLayoutPanel extends JPanel {
 	
 	public CyLayoutAlgorithm getLayoutAlgorithm() {
 		return layoutComboBox.getItemAt(layoutComboBox.getSelectedIndex()).getValue();
+	}
+	
+	public boolean isRunAutoAnnotate() {
+		return autoAnnotateCheck.isSelected();
 	}
 
 }
