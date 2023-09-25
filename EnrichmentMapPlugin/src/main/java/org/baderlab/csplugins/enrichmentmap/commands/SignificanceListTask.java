@@ -76,11 +76,11 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 			nodeSig.put(node, getNodeAvgSig(network, node, columnIDs));
 		}
 		
-		nodes.sort(getComparator(nodeSig, chartData));
+		nodes.sort(compareSignificance(nodeSig, chartData));
 		
-		System.out.println("** significance command **");
-		columnIDs.forEach(System.out::println);
-		nodes.forEach(node -> System.out.println("Node:" + node.getSUID() + ", sig:" + nodeSig.get(node)));
+//		System.out.println("** significance command **");
+//		columnIDs.forEach(System.out::println);
+//		nodes.forEach(node -> System.out.println("Node:" + node.getSUID() + ", sig:" + nodeSig.get(node)));
 		
 		results = nodes;
 	}
@@ -114,13 +114,13 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 	}
 	
 	
-	private Comparator<CyNode> getComparator(Map<CyNode,Double> nodeSig, ChartData chartData) {
+	private static Comparator<CyNode> compareSignificance(Map<CyNode,Double> nodeSig, ChartData chartData) {
 		switch(chartData) {
 			default:
-			case NONE: // NONE defaults to P_VALUE
 			case P_VALUE: 
 			case FDR_VALUE:
 				return (n1, n2) -> Double.compare(nodeSig.get(n1), nodeSig.get(n2));
+			case NONE: // NONE defaults to -log10
 			case LOG10_PVAL:
 				return (n1, n2) -> -Double.compare(nodeSig.get(n1), nodeSig.get(n2));
 			case NES_VALUE:
