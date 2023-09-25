@@ -73,16 +73,20 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 		
 		Map<CyNode,Double> nodeSig = new HashMap<>();
 		for(CyNode node : nodes) {
-			nodeSig.put(node, getNodeAvgSig(network, node, columnIDs));
+			var nodeAvgSig = getNodeAvgSig(network, node, columnIDs);
+			if(nodeAvgSig != null) {
+				nodeSig.put(node, nodeAvgSig);
+			}
 		}
 		
-		nodes.sort(compareSignificance(nodeSig, chartData));
+		results = nodes.stream()
+			.filter(nodeSig::containsKey)
+			.sorted(compareSignificance(nodeSig, chartData))
+			.collect(Collectors.toList());
 		
-//		System.out.println("** significance command **");
-//		columnIDs.forEach(System.out::println);
-//		nodes.forEach(node -> System.out.println("Node:" + node.getSUID() + ", sig:" + nodeSig.get(node)));
-		
-		results = nodes;
+		System.out.println("** significance command **");
+		columnIDs.forEach(System.out::println);
+		results.forEach(node -> System.out.println("Node:" + node.getSUID() + ", sig:" + nodeSig.get(node)));
 	}
 	
 	
@@ -119,8 +123,8 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 			default:
 			case P_VALUE: 
 			case FDR_VALUE:
-				return (n1, n2) -> Double.compare(nodeSig.get(n1), nodeSig.get(n2));
-			case NONE: // NONE defaults to -log10
+				return (n1, n2) ->  Double.compare(nodeSig.get(n1), nodeSig.get(n2));
+			case NONE: // -log10
 			case LOG10_PVAL:
 				return (n1, n2) -> -Double.compare(nodeSig.get(n1), nodeSig.get(n2));
 			case NES_VALUE:
@@ -157,7 +161,7 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 			if(styleCol != null) {
 				return List.of(styleCol);
 			}
-			columnDescriptor = EMStyleBuilder.Columns.NODE_PVALUE; // default to p-value
+			columnDescriptor = EMStyleBuilder.Columns.NODE_LOG_PVALUE_MAX;
 		}
 		
 		EMDataSet ds = getDataSet(map); 
@@ -170,7 +174,7 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 	}
 	
 	
-	private double getNodeAvgSig(CyNetwork network, CyNode node, List<CyColumnIdentifier> columnIDs) {
+	private Double getNodeAvgSig(CyNetwork network, CyNode node, List<CyColumnIdentifier> columnIDs) {
 		CyTable nodeTable = network.getDefaultNodeTable();
 		
 		double sigSum = 0;
@@ -178,16 +182,19 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 		
 		for(var colID : columnIDs) {
 			String colName = colID.getColumnName();
-			Object val = network.getRow(node).get(colName, nodeTable.getColumn(colName).getType());
-			if(val instanceof Number) {
-				double sig = ((Number)val).doubleValue();
-				sigSum += sig;
-				hasSig = true;
+			var column = nodeTable.getColumn(colName);
+			if(column != null) {
+				Object val = network.getRow(node).get(colName, column.getType());
+				if(val instanceof Number) {
+					double sig = ((Number)val).doubleValue();
+					sigSum += sig;
+					hasSig = true;
+				}
 			}
 		}
 		
 		if(!hasSig)
-			return Double.NaN;
+			return null;
 
 		return sigSum / columnIDs.size();
 	}
