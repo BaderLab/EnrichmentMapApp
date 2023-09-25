@@ -59,7 +59,7 @@ public class EMStyleBuilder {
 	
 	public final static String COMBINED = "Combined";
 	
-	public final static Integer DEF_NODE_TRANSPARENCY = 180;
+	public final static Integer DEF_NODE_TRANSPARENCY = 200;
 	public final static Integer FILTERED_OUT_NODE_TRANSPARENCY = 40;
 	
 	private final static double MIN_NODE_SIZE = 20.0;
@@ -498,7 +498,6 @@ public class EMStyleBuilder {
 		
 		if (dataSets.size() == 1) {
 			// Only 1 Data Set? Set a continuous mapping for node colour...
-			EMDataSet ds = (EMDataSet) dataSets.iterator().next();
 			CyNetworkView netView = options.getNetworkView();
 			CyNetwork net = netView.getModel();
 			
@@ -506,6 +505,7 @@ public class EMStyleBuilder {
 			
 			var colList = List.of(columnIdFactory.createColumnIdentifier(logPValCol));
 			var range = ChartUtil.calculateGlobalRange(net, colList);
+			var min = range.get(0);
 			var max = range.get(1);
 			
 			// Continuous Mapping - set node colour based on the sign of the ES score of the dataset
@@ -520,8 +520,8 @@ public class EMStyleBuilder {
 			
 			eventHelper.silenceEventSource(cm);
 			try {
+				cm.addPoint(min, point0);
 				cm.addPoint(max, point1);
-				cm.addPoint(0.0, point0);
 			} finally {
 				eventHelper.unsilenceEventSource(cm);
 			}
@@ -531,7 +531,7 @@ public class EMStyleBuilder {
 			// Then we need to use bypass to colour the hub nodes (signature genesets)
 			List<EMSignatureDataSet> signatureDataSets = options.getEnrichmentMap().getSignatureSetList();
 			
-			
+			// For "signature" nodes that were added by Post Analysis
 			for (EMSignatureDataSet sds : signatureDataSets) {
 				for (Long suid : sds.getNodeSuids()) {
 					CyNode node = net.getNode(suid);
