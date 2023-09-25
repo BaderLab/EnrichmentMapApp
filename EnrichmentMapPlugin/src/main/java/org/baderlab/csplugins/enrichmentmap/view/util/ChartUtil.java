@@ -160,8 +160,11 @@ public final class ChartUtil {
 		if(forStyle) {
 			// The 3-color schemes need to be swapped when the chart only includes positive numbers.
 			// Swap UP and ZERO colors if q or p-value (it should not have negative values!)
-			if ((data == ChartData.FDR_VALUE || data == ChartData.P_VALUE) && colors.size() == 3)
+			if ((data == ChartData.FDR_VALUE || data == ChartData.P_VALUE) && colors.size() == 3) {
 				colors = Arrays.asList(colors.get(0), colors.get(1));
+			} else if(data == ChartData.LOG10_PVAL && colors.size() == 3) {
+				colors = Arrays.asList(colors.get(1), colors.get(0));
+			}
 		}
 				
 		return colors;
