@@ -84,9 +84,9 @@ public class SignificanceListTask extends AbstractTask implements ObservableTask
 			.sorted(compareSignificance(nodeSig, chartData))
 			.collect(Collectors.toList());
 		
-		System.out.println("** significance command **");
-		columnIDs.forEach(System.out::println);
-		results.forEach(node -> System.out.println("Node:" + node.getSUID() + ", sig:" + nodeSig.get(node)));
+//		System.out.println("** significance command **");
+//		columnIDs.forEach(System.out::println);
+//		results.forEach(node -> System.out.println("Node:" + node.getSUID() + ", sig:" + nodeSig.get(node)));
 	}
 	
 	

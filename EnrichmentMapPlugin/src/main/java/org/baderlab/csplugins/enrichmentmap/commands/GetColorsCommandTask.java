@@ -77,8 +77,8 @@ public class GetColorsCommandTask extends AbstractTask implements ObservableTask
 			results = colorsToStrings(colors);
 		}
 		
-		System.out.println("** colors command **");
-		results.forEach(System.out::println);
+//		System.out.println("** colors command **");
+//		results.forEach(System.out::println);
 	}
 	
 	
