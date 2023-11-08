@@ -57,7 +57,6 @@ import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.model.Rank;
 import org.baderlab.csplugins.enrichmentmap.model.Ranking;
-import org.baderlab.csplugins.enrichmentmap.task.UnsortedRanksException;
 import org.baderlab.csplugins.enrichmentmap.util.NullTaskMonitor;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -219,7 +218,8 @@ public class RanksFileReaderTask extends AbstractTask implements ObservableTask 
 
 		//the none of the genes are in the gene list
 		if(ranks.isEmpty()) {
-			throw new IllegalArgumentException("None of the genes in the rank file are found in the expression file.  Make sure the identifiers of the two files match.");
+			String message = "The genes in the provided rank file were not found in the enrichments file or in the GMT file.";
+			throw new RanksGeneMismatchException(RankFileName, message);
 		}
 		
 		if(!sorted) {
@@ -227,7 +227,7 @@ public class RanksFileReaderTask extends AbstractTask implements ObservableTask 
 			if(unsortedRanksStrategy == UnsortedRanksStrategy.LOG_WARNING) {
 				taskMonitor.showMessage(Level.WARN, message);
 			} else {
-				throw new UnsortedRanksException(message, RankFileName);
+				throw new RanksUnsortedException(RankFileName, message);
 			}
 		}
 

@@ -1,11 +1,11 @@
-package org.baderlab.csplugins.enrichmentmap.task;
+package org.baderlab.csplugins.enrichmentmap.parsers;
 
 @SuppressWarnings("serial")
-public class UnsortedRanksException extends RuntimeException {
+public class RanksGeneMismatchException extends RuntimeException {
 
 	private final String ranksFileName;
 	
-	public UnsortedRanksException(String message, String ranksFileName) {
+	public RanksGeneMismatchException(String ranksFileName, String message) {
 		super(message);
 		this.ranksFileName = ranksFileName;
 	}

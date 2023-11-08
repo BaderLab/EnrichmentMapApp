@@ -12,11 +12,11 @@ import org.baderlab.csplugins.enrichmentmap.model.EMCreationParameters;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentException;
 import org.baderlab.csplugins.enrichmentmap.parsers.ParseGSEAEnrichmentResults.ParseGSEAEnrichmentStrategy;
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask.UnsortedRanksStrategy;
+import org.baderlab.csplugins.enrichmentmap.parsers.RanksUnsortedException;
 import org.baderlab.csplugins.enrichmentmap.task.CreateEnrichmentMapTaskFactory;
 import org.baderlab.csplugins.enrichmentmap.task.InitializeGenesetsOfInterestTask.MissingGenesetStrategy;
 import org.baderlab.csplugins.enrichmentmap.task.MissingGenesetsException;
 import org.baderlab.csplugins.enrichmentmap.task.TaskErrorStrategies;
-import org.baderlab.csplugins.enrichmentmap.task.UnsortedRanksException;
 import org.baderlab.csplugins.enrichmentmap.util.TaskUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.dialog.ErrorMessageDialog;
 import org.baderlab.csplugins.enrichmentmap.view.util.dialog.Message;
@@ -78,8 +78,8 @@ public class EMDialogTaskRunner {
 					runImpl(strategies.with(ParseGSEAEnrichmentStrategy.REPLACE_WITH_1));
 				}
 			} 
-			else if(e instanceof UnsortedRanksException) {
-				var ranksFileName = ((UnsortedRanksException)e).getRanksFileName();
+			else if(e instanceof RanksUnsortedException) {
+				var ranksFileName = ((RanksUnsortedException)e).getRanksFileName();
 				boolean retry = promptForUnsortedRanksRetry(ranksFileName);
 				if(retry) {
 					runImpl(strategies.with(UnsortedRanksStrategy.LOG_WARNING));

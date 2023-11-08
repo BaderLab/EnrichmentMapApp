@@ -134,11 +134,8 @@ public class ErrorMessageDialog extends JDialog {
 	}
 	
 	public void addSection(List<Message> messages, String title, String icon) {
-		final boolean hasError = messages.stream().anyMatch(Message::isError);
-		if(hasError) {
-			finishButton.setVisible(false);
-			doNotShowCheckbox.setVisible(false);
-			hasErrors = true;
+		if(messages.stream().anyMatch(Message::isError)) {
+			setError();
 		}
 		
 		JLabel iconLabel = new JLabel(icon == null ? "" : " " + icon + "  ");
@@ -161,6 +158,12 @@ public class ErrorMessageDialog extends JDialog {
 			messagePanel.add(messageLabel, GBCFactory.grid(2,y).insets(2).get());
 			y++;
 		}
+	}
+	
+	public void setError() {
+		finishButton.setVisible(false);
+		doNotShowCheckbox.setVisible(false);
+		hasErrors = true;
 	}
 	
 	public boolean hasErrors() {
