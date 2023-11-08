@@ -3,17 +3,14 @@ package org.baderlab.csplugins.enrichmentmap.parsers;
 @SuppressWarnings("serial")
 public class ParseGSEAEnrichmentException extends RuntimeException {
 	
-	public ParseGSEAEnrichmentException(String message, Throwable cause) {
-		super(message, cause);
-	}
+	private final String nonParsableToken;
 
-	public ParseGSEAEnrichmentException(String message) {
-		super(message);
-	}
-
-	public ParseGSEAEnrichmentException(Throwable cause) {
+	public ParseGSEAEnrichmentException(Throwable cause, String nonParsableToken) {
 		super(cause);
+		this.nonParsableToken = nonParsableToken;
 	}
 
-	
+	public String getNonParseableToken() {
+		return nonParsableToken;
+	}
 }

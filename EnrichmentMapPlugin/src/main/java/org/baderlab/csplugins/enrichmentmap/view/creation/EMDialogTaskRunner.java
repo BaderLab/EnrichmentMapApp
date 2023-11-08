@@ -73,7 +73,8 @@ public class EMDialogTaskRunner {
 				}
 			} 
 			else if(e instanceof ParseGSEAEnrichmentException) {
-				boolean retry = promptForGSEAParseRetry();
+				String token = ((ParseGSEAEnrichmentException)e).getNonParseableToken();
+				boolean retry = promptForGSEAParseRetry(token);
 				if(retry) {
 					runImpl(strategies.with(ParseGSEAEnrichmentStrategy.REPLACE_WITH_1));
 				}
@@ -123,16 +124,18 @@ public class EMDialogTaskRunner {
 		});
 	}
 	
-	private boolean promptForGSEAParseRetry() {
+	private boolean promptForGSEAParseRetry(String badToken) {
 		return prompt(dialog -> {
-			String title = "A GSEA enrichment file contained the characters '---' where a numeric value should be. "
-					+ "This is a known bug in some versions of GSEA.";
+			String title = "A GSEA enrichment file contained the characters '" + badToken + "' where a numeric value should be. ";
+			if(badToken.trim().equals("---"))
+				title += "This is a known bug in some versions of GSEA.";
 			
 			dialog.addSection(List.of(), title, IconManager.ICON_WARNING);
 			
 			String bottomMessage = "<html>Click 'Cancel' to stop the creation of the EnrichmentMap network. You may choose to update "
-					+ "your version of GSEA, or manually replace the occurrances of '---' with numeric values. <br>"
-					+ "Click 'Continue' to create the network with the current files. All instances of '---' in the enrichment file will be treated as the value 1.</html>";
+					+ "your version of GSEA, or manually replace the occurrances of '" + badToken + "' with numeric values. <br>"
+					+ "Click 'Continue' to create the network with the current files. All instances of '" + badToken + "' in the "
+					+ "enrichment file will be treated as the value 1.</html>";
 			dialog.addSection(List.of(), bottomMessage, null);
 		});
 	}
@@ -143,9 +146,9 @@ public class EMDialogTaskRunner {
 			
 			dialog.addSection(List.of(), title, IconManager.ICON_WARNING);
 			
-			String bottomMessage = "<html>Click 'Cancel' to stop the creation of the EnrichmentMap network. You may choose to provide "
+			String bottomMessage = "<html>Click <b>'Cancel'</b> to stop the creation of the EnrichmentMap network. You may choose to provide "
 					+ "sorted rank files instead. <br>"
-					+ "Click 'Continue' to create the network with the current files.</html>";
+					+ "Click <b>'Continue'</b> to create the network with the current files.</html>";
 			dialog.addSection(List.of(), bottomMessage, null);
 		});
 	}

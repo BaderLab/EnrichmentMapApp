@@ -132,10 +132,10 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 		try {
 			return Double.parseDouble(token);
 		} catch(NumberFormatException e) {
-			if(strategy == ParseGSEAEnrichmentStrategy.REPLACE_WITH_1 && token.trim().equals("---")) {
+			if(strategy == ParseGSEAEnrichmentStrategy.REPLACE_WITH_1) {
 				return 1;
 			}
-			throw new ParseGSEAEnrichmentException(e);
+			throw new ParseGSEAEnrichmentException(e, token);
 		}
 	}
 	
@@ -143,10 +143,10 @@ public class ParseGSEAEnrichmentResults extends AbstractTask {
 		try {
 			return Integer.parseInt(token);
 		} catch(NumberFormatException e) {
-			if(strategy == ParseGSEAEnrichmentStrategy.REPLACE_WITH_1 && token.trim().equals("---")) {
+			if(strategy == ParseGSEAEnrichmentStrategy.REPLACE_WITH_1) {
 				return 1;
 			}
-			throw new ParseGSEAEnrichmentException(e);
+			throw new ParseGSEAEnrichmentException(e, token);
 		}
 	}
 	
