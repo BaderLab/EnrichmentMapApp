@@ -20,6 +20,7 @@ import org.baderlab.csplugins.enrichmentmap.model.GenesetSimilarity;
 import org.baderlab.csplugins.enrichmentmap.model.LegacySupport;
 import org.baderlab.csplugins.enrichmentmap.model.SimilarityKey;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
+import org.baderlab.csplugins.enrichmentmap.util.DiscreteTaskMonitor;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -49,7 +50,7 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 	
 	private final Supplier<Map<SimilarityKey,GenesetSimilarity>> supplier;
 	
-	private long networkSuidResult;
+	private Long networkSuidResult;
 	
 	public interface Factory {
 		CreateEMNetworkTask create(EnrichmentMap map, Supplier<Map<SimilarityKey,GenesetSimilarity>> supplier);
@@ -63,10 +64,10 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 	}
 	
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("Creating EnrichmentMap Network");
-		networkSuidResult = createEMNetwork();
-		taskMonitor.setStatusMessage("");
+	public void run(TaskMonitor tm) {
+		tm.setTitle("Creating EnrichmentMap Network");
+		networkSuidResult = createEMNetwork(tm);
+		tm.setStatusMessage("");
 	}
 	
 	
@@ -86,8 +87,41 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 	}
 	
 	
-	private long createEMNetwork() {
-		// Create the CyNetwork
+	private Long createEMNetwork(TaskMonitor tm) {
+		CyNetwork network = createNetwork();
+		map.setNetworkID(network.getSUID());
+		
+		createNodeColumns(network);
+		createEdgeColumns(network);
+		
+		Map<String,Set<Integer>> geneSets = map.unionAllGeneSetsOfInterest();
+		Map<SimilarityKey,GenesetSimilarity> similarities = supplier.get();
+		
+		int numNodes = geneSets.size();
+		int numEdges = similarities.size();
+		
+		tm.setProgress(0.1);
+		
+		var nodeTm = new DiscreteTaskMonitor(tm, numNodes, 0.1, 0.2).percentMessage("Creating " + numNodes + " Nodes: {0,number,#%}");
+		Map<String,CyNode> nodes = createNodes(network, geneSets, nodeTm);
+		
+		if(cancelled)
+			return null;
+		
+		var edgeTm = new DiscreteTaskMonitor(tm, numEdges, 0.2, 1.0).percentMessage("Creating " + numEdges + " Edges: {0,number,#%}");
+		createEdges(network, nodes, similarities, edgeTm);
+		
+		if(cancelled)
+			return null;
+		
+		networkManager.addNetwork(network);
+		emManager.registerEnrichmentMap(map);
+		
+		return network.getSUID();
+	}
+	
+	
+	private CyNetwork createNetwork() {
 		CyNetwork network = networkFactory.createNetwork();
 		CyRootNetwork rootNetwork = ((CySubNetwork)network).getRootNetwork();
 		
@@ -98,25 +132,17 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		
 		rootNetwork.getRow(rootNetwork).set(CyNetwork.NAME, LegacySupport.EM_NAME);
 		network.getRow(network).set(CyNetwork.NAME, networkName);
-		
-		map.setNetworkID(network.getSUID());
-		
-		createNodeColumns(network);
-		createEdgeColumns(network);
-		
-		Map<String,CyNode> nodes = createNodes(network);
-		createEdges(network, nodes);
-		
-		networkManager.addNetwork(network);
-		emManager.registerEnrichmentMap(map);
-		return network.getSUID();
+		return network;
 	}
 	
-	private Map<String, CyNode> createNodes(CyNetwork network) {
+	
+	private Map<String, CyNode> createNodes(CyNetwork network, Map<String,Set<Integer>> geneSets, DiscreteTaskMonitor tm) {
 		Map<String,CyNode> nodes = new HashMap<>();
-		Map<String,Set<Integer>> geneSets = map.unionAllGeneSetsOfInterest();
 		
 		for(String genesetName : geneSets.keySet()) {
+			if(cancelled)
+				return null;
+			
 			CyNode node = network.addNode();
 			nodes.put(genesetName, node);
 			
@@ -163,6 +189,8 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 				else if(result instanceof GenericResult)
 					setGenericResultNodeAttributes(row, ds, (GenericResult) result);
 			}
+			
+			tm.inc();
 		}
 		
 		return nodes;
@@ -236,12 +264,12 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		
 	/**
 	 * Note, we expect that GenesetSimilarity object that don't pass the cutoff have already been filtered out.
-	 * @param network
-	 * @param nodes
 	 */
-	private void createEdges(CyNetwork network, Map<String,CyNode> nodes) {
-		Map<SimilarityKey,GenesetSimilarity> similarities = supplier.get();
+	private void createEdges(CyNetwork network, Map<String,CyNode> nodes, Map<SimilarityKey,GenesetSimilarity> similarities, DiscreteTaskMonitor tm) {
 		for(SimilarityKey key : similarities.keySet()) {
+			if(cancelled)
+				return;
+			
 			GenesetSimilarity similarity = similarities.get(key);
 			
 			CyNode node1 = nodes.get(similarity.getGeneset1Name());
@@ -275,6 +303,8 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 			} else {
 				Columns.EDGE_DATASET.set(row, prefix, null, similarity.getDataSetName());
 			}
+			
+			tm.inc();
 		}
 	}
 	

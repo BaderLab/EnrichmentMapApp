@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.util;
 
+import java.text.MessageFormat;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -15,6 +17,7 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 	
 	private final int totalWork;
 	private AtomicInteger currentWork = new AtomicInteger(0);
+	private String lastMessage = null;
 	
 	private BiFunction<Integer,Integer,String> ofMessage;
 	private Function<Double,String> percentMessage;
@@ -31,13 +34,27 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 		this(delegate, totalWork, 0.0, 1.0);
 	}
 	
-	public void setOfMessageCallback(BiFunction<Integer,Integer,String> ofMessage) {
+	
+	public DiscreteTaskMonitor setOfMessageCallback(BiFunction<Integer,Integer,String> ofMessage) {
 		this.ofMessage = ofMessage;
+		return this;
 	}
 	
-	public void setPercentMessageCallback(Function<Double,String> percentMessage) {
-		this.percentMessage = percentMessage;
+	public DiscreteTaskMonitor ofMessage(String messageFormat) {
+		setOfMessageCallback((current, total) -> MessageFormat.format(messageFormat, current, total));
+		return this;
 	}
+	
+	public DiscreteTaskMonitor setPercentMessageCallback(Function<Double,String> percentMessage) {
+		this.percentMessage = percentMessage;
+		return this;
+	}
+	
+	public DiscreteTaskMonitor percentMessage(String messageFormat) {
+		setPercentMessageCallback(percent -> MessageFormat.format(messageFormat, percent));
+		return this;
+	}
+	
 	
 	private static double map(double in, double inStart, double inEnd, double outStart, double outEnd) {
 		double slope = (outEnd - outStart) / (inEnd - inStart);
@@ -48,12 +65,16 @@ public class DiscreteTaskMonitor implements TaskMonitor {
 	public void setProgress(double progress) {
 		double mappedProgress = map(progress, 0.0, 1.0, low, high);
 		delegate.setProgress(mappedProgress);
+		
+		String message = null;
 		if(ofMessage != null) {
-			String message = ofMessage.apply(getCurrentWork(), getTotalWork());
-			delegate.setStatusMessage(message);
+			message = ofMessage.apply(getCurrentWork(), getTotalWork());
 		} else if(percentMessage != null) {
-			String message = percentMessage.apply(getCurrentWorkPercent());
-			delegate.setStatusMessage(message);
+			message = percentMessage.apply(getCurrentWorkPercent());
+		}
+		
+		if(!Objects.equals(message, lastMessage)) {
+			delegate.setStatusMessage(lastMessage = message);
 		}
 	}
 	
