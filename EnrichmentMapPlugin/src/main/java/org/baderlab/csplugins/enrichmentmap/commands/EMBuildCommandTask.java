@@ -183,6 +183,11 @@ public class EMBuildCommandTask extends AbstractTask {
 		return dataset2files;
 	}
 	
+	
+	private boolean is2DataSet() {
+		return expressionDataset2 != null || enrichmentsDataset2 != null || enrichments2Dataset2 != null;
+	}
+	
 
 	@Override
 	public void run(TaskMonitor tm) {
@@ -192,8 +197,8 @@ public class EMBuildCommandTask extends AbstractTask {
 		DataSetFiles dataset1files = getDataSet1Files();
 		dataSets.add(new DataSetParameters(LegacySupport.DATASET1, method, dataset1files));
 		
-		DataSetFiles dataset2files = getDataSet2Files();
-		if(!dataset2files.isEmpty()) {
+		if(is2DataSet()) {
+			DataSetFiles dataset2files = getDataSet2Files();
 			dataSets.add(new DataSetParameters(LegacySupport.DATASET2, method, dataset2files));
 		}
 		

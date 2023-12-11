@@ -114,16 +114,4 @@ public class DataSetFiles {
 		this.phenotype2 = copy.getPhenotype2();
 	}
 
-
-	public boolean isEmpty() {
-		if(this.GMTFileName != null && !this.GMTFileName.equalsIgnoreCase(""))
-			return false;
-		if(this.expressionFileName != null && !this.expressionFileName.equalsIgnoreCase(""))
-			return false;
-		if(this.enrichmentFileName1 != null && !this.enrichmentFileName1.equalsIgnoreCase(""))
-			return false;
-		if(this.enrichmentFileName2 != null && !this.enrichmentFileName2.equalsIgnoreCase(""))
-			return false;
-		return true;
-	}
 }
