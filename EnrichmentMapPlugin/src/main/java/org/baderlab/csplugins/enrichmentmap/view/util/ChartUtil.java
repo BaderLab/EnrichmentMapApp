@@ -100,7 +100,6 @@ public final class ChartUtil {
 	 */
 	@SuppressWarnings("unchecked")
 	public static List<Double> calculateGlobalRange(CyNetwork network, List<CyColumnIdentifier> dataColumns) {
-		List<Double> range = new ArrayList<>(2);
 		List<CyNode> nodes = network.getNodeList();
 		
 		if (!nodes.isEmpty()) {
@@ -138,16 +137,13 @@ public final class ChartUtil {
 			}
 			
 			if (min != Double.POSITIVE_INFINITY && max != Double.NEGATIVE_INFINITY) {
-				range.add(min);
-				range.add(max);
+				return List.of(min, max);
 			}
-		} else {
-			range.add(0.0);
-			range.add(0.0);
-		}
+		} 
 		
-		return range;
+		return List.of(0.0, 0.0);
 	}
+	
 	
 	public static List<Color> getChartColors(ChartOptions options, boolean forStyle) {
 		ColorScheme colorScheme = options != null ? options.getColorScheme() : null;
