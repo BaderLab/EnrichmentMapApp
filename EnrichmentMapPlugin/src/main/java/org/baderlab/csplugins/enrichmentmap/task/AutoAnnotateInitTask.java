@@ -30,7 +30,7 @@ public class AutoAnnotateInitTask extends AbstractTask {
 	public void run(TaskMonitor tm) {
 		var commandAvailable = dependencyCheckerProvider.get().isCommandAvailable("autoannotate", "eminit");
 		if(commandAvailable) {
-			var tasks = commandTaskFactory.createTaskIterator(null, "autoannotate eminit dataSet=\"" + dataset + "\"");
+			var tasks = commandTaskFactory.createTaskIterator(null, "autoannotate eminit warn=true dataSet=\"" + dataset + "\"");
 			insertTasksAfterCurrentTask(tasks);
 		}
 	}

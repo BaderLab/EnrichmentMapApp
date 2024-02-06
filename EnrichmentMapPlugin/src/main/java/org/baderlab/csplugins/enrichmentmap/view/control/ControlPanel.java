@@ -895,7 +895,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 
 		JLabel getAutoAnnotateOpenLink() {
 			if (aaLink == null) {
-				aaLink = SwingUtil.createLinkLabel("Run AutoAnnotate to highlight clusters");
+				aaLink = SwingUtil.createLinkLabel("Use AutoAnnotate to find clusters of similar gene-sets");
 				aaLink.setVisible(dependencyChecker.isCommandAvailable("autoannotate", "open"));
 				aaLink.setBorder(BorderFactory.createEmptyBorder(0, 8, 4, 0));
 			}
