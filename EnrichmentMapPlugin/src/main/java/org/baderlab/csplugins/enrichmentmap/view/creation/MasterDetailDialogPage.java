@@ -220,6 +220,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	private JPanel createDataSetPanel() {
 		JPanel titlePanel = createTitlePanel();
+		titlePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
 		
 		dataSetListModel = new IterableListModel<>();
 		dataSetList = new DataSetList(dataSetListModel);
@@ -263,10 +264,11 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	private JPanel createTitlePanel() {
 		JLabel label = new JLabel("Data Sets:");
+		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
 		SwingUtil.makeSmall(label);
 		
-		JButton addButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_PLUS, "Add data set from files");
-		scanButton   = SwingUtil.createIconButton(iconManager, IconManager.ICON_FOLDER_O, "Add data sets from folder (scan)");
+		scanButton = SwingUtil.createIconTextButton(iconManager, IconManager.ICON_FOLDER_O, "Scan folder for data sets");
+		JButton addButton = SwingUtil.createIconTextButton(iconManager, IconManager.ICON_PLUS, "Add data set manually");
 		deleteButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_TRASH_O, "Delete selected data sets");
 		
 		addButton.addActionListener(e -> addNewDataSetToList());
@@ -279,19 +281,24 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		layout.setAutoCreateGaps(true);
 		layout.setAutoCreateContainerGaps(false);
 		
-		layout.setHorizontalGroup(layout.createSequentialGroup()
+		layout.setHorizontalGroup(layout.createParallelGroup()
 			.addComponent(label)
-			.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-			.addComponent(scanButton)
-			.addComponent(addButton)
-			.addComponent(deleteButton)
+			.addGroup(layout.createSequentialGroup()
+				.addGap(5)
+				.addComponent(scanButton)
+				.addComponent(addButton)
+				.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(deleteButton)
+			)
 		);
 		
-		layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
+		layout.setVerticalGroup(layout.createSequentialGroup()
 			.addComponent(label)
-			.addComponent(scanButton)
-			.addComponent(addButton)
-			.addComponent(deleteButton)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(scanButton)
+				.addComponent(addButton)
+				.addComponent(deleteButton)
+			)
 		);
 		
 		return panel;

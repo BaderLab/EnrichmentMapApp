@@ -61,7 +61,7 @@ public class NameAndLayoutPanel extends JPanel {
 		
 		yFilesLink = createInstallLink();
 		
-		autoAnnotateCheck = new JCheckBox("Run AutoAnnotate after creating network");
+		autoAnnotateCheck = new JCheckBox("Highlight Significant Nodes with AutoAnnotate");
 
 		makeSmall(networkLabel, useAutomaticCheck, nameText);
 		makeSmall(layoutLabel, layoutComboBox, yFilesLink, autoAnnotateCheck);

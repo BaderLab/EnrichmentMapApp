@@ -46,6 +46,7 @@ import javax.swing.event.ListDataListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -144,6 +145,7 @@ public class SwingUtil {
 		return btn;
 	}
 	
+
 	public static JButton createIconButton(IconManager iconManager, String icon, String toolTip) {
 		JButton button = new JButton(icon);
 		button.setFont(iconManager.getIconFont(13.0f));
@@ -154,6 +156,28 @@ public class SwingUtil {
 		}
 		return button;
 	}
+	
+	
+	public static JButton createIconTextButton(IconManager iconManager, String icon, String text) {
+		return createIconTextButton(iconManager, icon, text, null);
+	}
+	
+	public static JButton createIconTextButton(IconManager iconManager, String icon, String text, String toolTip) {
+		JButton button = new JButton(text);
+		button.setToolTipText(toolTip);
+		Font iconFont = iconManager.getIconFont(12.0f);
+		Color iconColor = UIManager.getColor("Label.foreground");
+		int iconSize = 20;
+		TextIcon textIcon = new TextIcon(icon, iconFont, iconColor, iconSize, iconSize);
+		button.setIcon(textIcon);
+//		if(LookAndFeelUtil.isAquaLAF()) {
+//			button.putClientProperty("JButton.buttonType", "gradient");
+//			button.putClientProperty("JComponent.sizeVariant", "small");
+//		}
+		makeSmall(button);
+		return button;
+	}
+	
 	
 	/**
 	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
