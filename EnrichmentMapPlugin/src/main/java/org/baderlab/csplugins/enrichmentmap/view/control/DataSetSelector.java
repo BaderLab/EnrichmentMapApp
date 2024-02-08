@@ -50,6 +50,7 @@ import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
+import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
@@ -413,20 +414,12 @@ public class DataSetSelector extends JPanel {
 	
 	JButton getOptionsButton() {
 		if (optionButton == null) {
-			optionButton = new JButton("Options...");
-			makeSmall(optionButton);
-			if (isAquaLAF())
-				optionButton.putClientProperty("JButton.buttonType", "gradient");
-			
-			optionButton.addActionListener(e -> {
-				getOptionsMenu().show(optionButton, 0, optionButton.getHeight());
-			});
+			optionButton = SwingUtil.createMenuButton("Options...", this::fillOptionsMenu);
 		}
 		return optionButton;
 	}
 	
-	private JPopupMenu getOptionsMenu() {
-		JPopupMenu menu = new JPopupMenu();
+	private void fillOptionsMenu(JPopupMenu menu) {
 		menu.add(getAddMenuItem());
 		menu.add(getDataSetColorMenuItem());
 		menu.addSeparator();
@@ -436,10 +429,7 @@ public class DataSetSelector extends JPanel {
 		menu.add(getSelectNodesMenuItem());
 		menu.add(getDeleteSignatureMenuItem());
 		menu.add(getSyncPropMenuItem());
-		
 		getDeleteSignatureMenuItem().setEnabled(isOnlySignatureSelected());
-		
-		return menu;
 	}
 		
 	private boolean isOnlySignatureSelected() {

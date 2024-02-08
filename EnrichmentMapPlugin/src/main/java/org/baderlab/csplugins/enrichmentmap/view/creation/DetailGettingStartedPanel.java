@@ -37,6 +37,7 @@ public class DetailGettingStartedPanel extends JPanel {
 	@AfterInjection
 	public void createContents() {
 		JLabel header = new JLabel("<html><h2>Getting Started with EnrichmentMap</h2></html>");
+		JLabel message = new JLabel("Click the \"Add\" button");
 		
 		JButton scanButton = SwingUtil.createIconTextButton(iconManager, IconManager.ICON_FOLDER_O, "Scan a folder for enrichment data", null);
 		scanButton.addActionListener(e -> {
@@ -58,6 +59,7 @@ public class DetailGettingStartedPanel extends JPanel {
 				.addGap(0, 0, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER)
 					.addComponent(header, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(message)
 //					.addComponent(scanButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(link1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(link2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -69,6 +71,8 @@ public class DetailGettingStartedPanel extends JPanel {
 			.addGap(0, 0, Short.MAX_VALUE)
 			.addComponent(header, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			.addGap(2, 10, 10)
+			.addComponent(message)
+			.addGap(2, 20, 20)
 //			.addComponent(scanButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			.addComponent(link1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			.addComponent(link2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)

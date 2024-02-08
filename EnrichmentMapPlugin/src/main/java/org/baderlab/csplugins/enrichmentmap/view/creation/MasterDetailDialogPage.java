@@ -2,6 +2,7 @@ package org.baderlab.csplugins.enrichmentmap.view.creation;
 
 import static org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogParameters.COMMAND_BUTTON_ACTION;
 import static org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogParameters.RESET_BUTTON_ACTION;
+import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.*;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -62,12 +63,12 @@ import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolverTask;
 import org.baderlab.csplugins.enrichmentmap.view.util.FileBrowser;
 import org.baderlab.csplugins.enrichmentmap.view.util.GBCFactory;
 import org.baderlab.csplugins.enrichmentmap.view.util.IterableListModel;
-import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogCallback;
 import org.baderlab.csplugins.enrichmentmap.view.util.dialog.CardDialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.util.dialog.ErrorMessageDialog;
 import org.baderlab.csplugins.enrichmentmap.view.util.dialog.Message;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.FinishStatus.Type;
 import org.cytoscape.work.ObservableTask;
@@ -94,7 +95,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Inject private DetailDataSetPanel.Factory dataSetPanelFactory;
 	@Inject private ErrorMessageDialog.Factory errorMessageDialogFactory;
 	@Inject private EMDialogTaskRunner.Factory taskRunnerFactory;
-
 	@Inject private CutoffPropertiesPanel cutoffPanel;
 	
 	private NameAndLayoutPanel networkNamePanel;
@@ -107,7 +107,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	private CardLayout cardLayout;
 	
 	private JButton deleteButton;
-	private JButton scanButton;
+	private JButton addButton;
 	
 	private CardDialogCallback callback;
 	
@@ -159,21 +159,24 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			.filter(x -> x != null)
 			.collect(Collectors.toList());
 
-		// Overwrite all the expression files if the common file has been provided
-		if(commonPanel.hasExprFile()) {
-			String exprPath = commonPanel.getExprFile();
-			dataSets.forEach(dsp -> dsp.getFiles().setExpressionFileName(exprPath));
+		if(commonPanel != null) {
+			// Overwrite all the expression files if the common file has been provided
+			if(commonPanel.hasExprFile()) {
+				String exprPath = commonPanel.getExprFile();
+				dataSets.forEach(dsp -> dsp.getFiles().setExpressionFileName(exprPath));
+			}
+			// Overwrite all the gmt files if a common file has been provided
+			if(commonPanel.hasGmtFile()) {
+				String gmtPath = commonPanel.getGmtFile();
+				dataSets.forEach(dsp -> dsp.getFiles().setGMTFileName(gmtPath));
+			}
+			// Overwrite all the class files if a common file has been provided
+			if(commonPanel.hasClassFile()) {
+				String classPath = commonPanel.getClassFile();
+				dataSets.forEach(dsp -> dsp.getFiles().setClassFile(classPath));
+			}
 		}
-		// Overwrite all the gmt files if a common file has been provided
-		if(commonPanel.hasGmtFile()) {
-			String gmtPath = commonPanel.getGmtFile();
-			dataSets.forEach(dsp -> dsp.getFiles().setGMTFileName(gmtPath));
-		}
-		// Overwrite all the class files if a common file has been provided
-		if(commonPanel.hasClassFile()) {
-			String classPath = commonPanel.getClassFile();
-			dataSets.forEach(dsp -> dsp.getFiles().setClassFile(classPath));
-		}
+		
 		return dataSets;
 	}
 	
@@ -185,9 +188,9 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		if(networkNamePanel.isAutomatic())
 			params.setNetworkName(null);
 		
-		String commonExprFile  = commonPanel.hasExprFile()  ? commonPanel.getExprFile()  : null;
-		String commonGMTFile   = commonPanel.hasGmtFile()   ? commonPanel.getGmtFile()   : null;
-		String commonClassFile = commonPanel.hasClassFile() ? commonPanel.getClassFile() : null;
+		String commonExprFile  = commonPanel != null && commonPanel.hasExprFile()  ? commonPanel.getExprFile()  : null;
+		String commonGMTFile   = commonPanel != null && commonPanel.hasGmtFile()   ? commonPanel.getGmtFile()   : null;
+		String commonClassFile = commonPanel != null && commonPanel.hasClassFile() ? commonPanel.getClassFile() : null;
 		
 		JDialog parent = callback.getDialogFrame();
 		CommandDisplayMediator commandDisplayMediator = commandDisplayProvider.get();
@@ -198,10 +201,11 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
 		this.callback = callback;
-		this.commonPanel = commonPanelProvider.get();
-		commonParams = new DataSetListItem(commonPanel);
+//		this.commonPanel = commonPanelProvider.get();
+//		commonParams = new DataSetListItem(commonPanel);
 				
 		JPanel dataPanel = createDataSetPanel();
+		dataPanel.setBorder(LookAndFeelUtil.createPanelBorder());
 		networkNamePanel = namePanelProvider.get();
 		networkNamePanel.setCloseCallback(callback::close);
 		
@@ -218,6 +222,19 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	}
 
 	
+	private void addCommonPanel() {
+		if(commonPanel != null)
+			return;
+		
+		// Common page
+		this.commonPanel = commonPanelProvider.get();
+		this.commonParams = new DataSetListItem(commonPanel);
+		
+		dataSetListModel.add(0, commonParams);
+		dataSetDetailPanel.add(commonParams.getDetailPanel().getPanel(), commonParams.id);
+		dataSetList.setSelectedValue(commonParams, true);
+	}
+	
 	private JPanel createDataSetPanel() {
 		JPanel titlePanel = createTitlePanel();
 		titlePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
@@ -226,13 +243,13 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		dataSetList = new DataSetList(dataSetListModel);
 		dataSetList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		dataSetList.addListSelectionListener(e -> selectItem(dataSetList.getSelectedValue()));
-		dataSetListModel.addListDataListener(SwingUtil.simpleListDataListener(this::updateAutomaticNetworkName));
+		dataSetListModel.addListDataListener(simpleListDataListener(this::updateAutomaticNetworkName));
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(dataSetList);
 		
 		dataSetDetailPanel = new JPanel(new BorderLayout());
-		dataSetDetailPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"))); 
+//		dataSetDetailPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"))); 
 		cardLayout = new CardLayout();
 		dataSetDetailPanel.setLayout(cardLayout);
 		
@@ -241,9 +258,9 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		nullPanel.setScanButtonCallback(this::scanButtonClicked);
 		dataSetDetailPanel.add(nullPanel, "nothing");
 		
-		// Common page
-		dataSetListModel.addElement(commonParams);
-		dataSetDetailPanel.add(commonParams.getDetailPanel().getPanel(), commonParams.id);
+//		// Common page
+//		dataSetListModel.addElement(commonParams);
+//		dataSetDetailPanel.add(commonParams.getDetailPanel().getPanel(), commonParams.id);
 		
 		JPanel leftPanel = new JPanel(new BorderLayout());
 		leftPanel.add(titlePanel, BorderLayout.NORTH);
@@ -253,6 +270,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		rightPanel.add(dataSetDetailPanel, BorderLayout.CENTER);
 		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
+		splitPane.setOpaque(false);
 		splitPane.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
 		splitPane.setResizeWeight(0.2);
 		
@@ -263,17 +281,22 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	}
 	
 	private JPanel createTitlePanel() {
-		JLabel label = new JLabel("Data Sets:");
+		JLabel label = new JLabel("Data Set List:");
 		label.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
-		SwingUtil.makeSmall(label);
+		makeSmall(label);
 		
-		scanButton = SwingUtil.createIconTextButton(iconManager, IconManager.ICON_FOLDER_O, "Scan folder for data sets");
-		JButton addButton = SwingUtil.createIconTextButton(iconManager, IconManager.ICON_PLUS, "Add data set manually");
-		deleteButton = SwingUtil.createIconButton(iconManager, IconManager.ICON_TRASH_O, "Delete selected data sets");
+		addButton = createMenuButton("Add...", menu -> {
+			menu.add(createIconMenuItem(iconManager, IconManager.ICON_FOLDER_O, "Scan folder for data sets to add", this::scanButtonClicked));
+			menu.add(createIconMenuItem(iconManager, IconManager.ICON_PLUS, "Add data set manually", this::addNewDataSetToList));
+			menu.addSeparator();
+			var addCommonItem = createIconMenuItem(iconManager, IconManager.ICON_FILE_O, "Add common files", this::addCommonPanel);
+			addCommonItem.setEnabled(commonPanel == null);
+			menu.add(addCommonItem);
+		});
+		setIcon(addButton, iconManager, IconManager.ICON_PLUS);
 		
-		addButton.addActionListener(e -> addNewDataSetToList());
+		deleteButton = createIconTextButton(iconManager, IconManager.ICON_TRASH_O, "", "Delete selected");
 		deleteButton.addActionListener(e -> deleteSelectedItems());
-		scanButton.addActionListener(e -> scanButtonClicked());
 		
 		JPanel panel = new JPanel();
 		GroupLayout layout = new GroupLayout(panel);
@@ -281,31 +304,25 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		layout.setAutoCreateGaps(true);
 		layout.setAutoCreateContainerGaps(false);
 		
-		layout.setHorizontalGroup(layout.createParallelGroup()
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+			.addGap(5)
 			.addComponent(label)
-			.addGroup(layout.createSequentialGroup()
-				.addGap(5)
-				.addComponent(scanButton)
-				.addComponent(addButton)
-				.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(deleteButton)
-			)
+			.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+			.addComponent(addButton)
+			.addComponent(deleteButton)
 		);
 		
-		layout.setVerticalGroup(layout.createSequentialGroup()
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
 			.addComponent(label)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(scanButton)
-				.addComponent(addButton)
-				.addComponent(deleteButton)
-			)
+			.addComponent(addButton)
+			.addComponent(deleteButton)
 		);
 		
 		return panel;
 	}
 	
 	private void addNewDataSetToList() {
-		int n = dataSetListModel.size();
+		int n = (int) dataSetListModel.stream().filter(dsli -> dsli != commonParams).count() + 1;
 		DataSetParameters params = new DataSetParameters("Data Set " + n, Method.GSEA, new DataSetFiles());
 		addDataSetToList(params);
 	}
@@ -317,6 +334,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			dataSetList.clearSelection();
 		}
 		networkNamePanel.opened();
+		addButton.requestFocus();
 	}
 	
 	private void addDataSetToList(DataSetParameters params) {
@@ -333,10 +351,12 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	private void deleteSelectedItems() {
 		for(DataSetListItem item : dataSetList.getSelectedValuesList()) {
-			if(item != commonParams) {
-				dataSetListModel.removeElement(item);
-				dataSetDetailPanel.remove(item.getDetailPanel().getPanel());
-			}
+			if(item == commonParams) {
+				this.commonPanel = null;
+				this.commonParams = null;
+			} 
+			dataSetListModel.removeElement(item);
+			dataSetDetailPanel.remove(item.getDetailPanel().getPanel());
 		}
 	}
 	
@@ -373,16 +393,21 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	
 	private void updateButtonEnablement() {
-		deleteButton.setEnabled(dataSetListModel.getSize() > 0 && dataSetList.getSelectedIndex() > 0);
-		callback.getExtraButton(COMMAND_BUTTON_ACTION).setEnabled(dataSetListModel.size() > 1);
-		callback.setFinishButtonEnabled(dataSetListModel.size() > 1);
+		int count = dataSetListModel.getSize();
+		boolean hasCommon = commonPanel != null;
+		boolean canFinish = count > (hasCommon ? 1 : 0);
+		
+		deleteButton.setEnabled(count > 0);
+		callback.getExtraButton(COMMAND_BUTTON_ACTION).setEnabled(canFinish);
+		callback.setFinishButtonEnabled(canFinish);
 	}
 	
 	private void updateAutomaticNetworkName() {
-		if(dataSetListModel.size() > 1) {
-			String name = dataSetListModel.get(1).getDetailPanel().getDataSetName();
-			networkNamePanel.setAutomaticName(name);
-		}
+		if(dataSetListModel.isEmpty())
+			return;
+		int index = commonPanel == null ? 0 : 1;
+		String name = dataSetListModel.get(index).getDetailPanel().getDataSetName();
+		networkNamePanel.setAutomaticName(name);
 	}
 	
 	@Override
@@ -402,12 +427,11 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				"Clear inputs and restore default values?", "EnrichmentMap: Reset", JOptionPane.OK_CANCEL_OPTION);
 		if(result == JOptionPane.OK_OPTION) {
 			cutoffPanel.reset();
-			commonPanel.reset();
+			commonPanel = null;
+			commonParams = null;
 			for(DataSetListItem item : dataSetListModel.toList()) {
-				if(item != commonParams) {
-					dataSetListModel.removeElement(item);
-					dataSetDetailPanel.remove(item.getDetailPanel().getPanel());
-				}
+				dataSetListModel.removeElement(item);
+				dataSetDetailPanel.remove(item.getDetailPanel().getPanel());
 			}
 			callback.setFinishButtonEnabled(false);
 			
@@ -415,6 +439,8 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				selectItem(null); // reset the detail panel, shows "getting started" message
 				dataSetList.clearSelection();
 			}
+			
+			networkNamePanel.reset();
 		}
 	}
 	
@@ -427,7 +453,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	}
 	
 	private void runResolverTask(List<File> files) {
-		scanButton.setEnabled(false);
+		addButton.setEnabled(false);
 		DataSetResolverTask task = new DataSetResolverTask(files);
 		
 		dialogTaskManager.execute(new TaskIterator(task), new TaskObserver() {
@@ -448,7 +474,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			
 			@Override
 			public void allFinished(FinishStatus finishStatus) {
-				scanButton.setEnabled(true);
+				addButton.setEnabled(true);
 				updateButtonEnablement();
 				if(!foundDatasets && finishStatus.getType() != Type.CANCELLED) {
 					JOptionPane.showMessageDialog(callback.getDialogFrame(), "No data sets found", "EnrichmentMap", JOptionPane.WARNING_MESSAGE);
@@ -457,39 +483,41 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		});
 	}
 	
-	public DetailCommonPanel getCommonPanel() {
-		return commonPanel;
+	public Optional<DetailCommonPanel> getCommonPanel() {
+		return Optional.ofNullable(commonPanel);
 	}
 	
 	
 	private boolean validateInput() {
 		ErrorMessageDialog dialog = errorMessageDialogFactory.create(callback.getDialogFrame());
 		
-		// Check if the user provided a global expression file, warn if there are also per-dataset expression files.
-		if(commonPanel.hasExprFile() && editPanelStream().anyMatch(DetailDataSetPanel::hasExpressionFile)) {
-			addCommonWarnSection(dialog, commonPanel, "expression");
-		}
-		// Check if the user provided a global gmt file, warn if there are also per-dataset gmt files.
-		if(commonPanel.hasGmtFile() && editPanelStream().anyMatch(DetailDataSetPanel::hasGmtFile)) {
-			addCommonWarnSection(dialog, commonPanel, "GMT");
-		}
-		// Check if the user provided a global gmt file, warn if there are also per-dataset gmt files.
-		if(commonPanel.hasClassFile() && editPanelStream().anyMatch(DetailDataSetPanel::hasClassFile)) {
-			addCommonWarnSection(dialog, commonPanel, "class");
-		}
-		
-		// Warn when will distinct edges will always be the same.
-		// 1) Common GMT and Common Expression
-		// 2) Common GMT no filtering
-		if(commonPanel.hasGmtFile() && cutoffPanel.getEdgeStrategy() == EdgeStrategy.DISTINCT) { // and the user has explicitly specified distinct edges
-			if(commonPanel.hasExprFile()) {
-				String message = "<html>When providing a common GMT and common expression file 'Separate' edges will all be the same.<br>"
-						+ "It is recommended to select 'Combine Edges' or 'Automatic' in this case.</html>";
-				dialog.addSection(Message.warn(message), commonPanel.getDisplayName(), commonPanel.getIcon());
-			} else if(!cutoffPanel.getFilterGenesByExpressions()) {
-				String message = "<html>When providing a common GMT and not filtering gene sets by expressions then 'Separate' edges will all be the same.<br>"
-						+ "It is recommended to select 'Combine Edges' or 'Automatic' in this case.</html>";
-				dialog.addSection(Message.warn(message), commonPanel.getDisplayName(), commonPanel.getIcon());
+		if(commonPanel != null) {
+			// Check if the user provided a global expression file, warn if there are also per-dataset expression files.
+			if(commonPanel.hasExprFile() && editPanelStream().anyMatch(DetailDataSetPanel::hasExpressionFile)) {
+				addCommonWarnSection(dialog, commonPanel, "expression");
+			}
+			// Check if the user provided a global gmt file, warn if there are also per-dataset gmt files.
+			if(commonPanel.hasGmtFile() && editPanelStream().anyMatch(DetailDataSetPanel::hasGmtFile)) {
+				addCommonWarnSection(dialog, commonPanel, "GMT");
+			}
+			// Check if the user provided a global gmt file, warn if there are also per-dataset gmt files.
+			if(commonPanel.hasClassFile() && editPanelStream().anyMatch(DetailDataSetPanel::hasClassFile)) {
+				addCommonWarnSection(dialog, commonPanel, "class");
+			}
+			
+			// Warn when will distinct edges will always be the same.
+			// 1) Common GMT and Common Expression
+			// 2) Common GMT no filtering
+			if(commonPanel.hasGmtFile() && cutoffPanel.getEdgeStrategy() == EdgeStrategy.DISTINCT) { // and the user has explicitly specified distinct edges
+				if(commonPanel.hasExprFile()) {
+					String message = "<html>When providing a common GMT and common expression file 'Separate' edges will all be the same.<br>"
+							+ "It is recommended to select 'Combine Edges' or 'Automatic' in this case.</html>";
+					dialog.addSection(Message.warn(message), commonPanel.getDisplayName(), commonPanel.getIcon());
+				} else if(!cutoffPanel.getFilterGenesByExpressions()) {
+					String message = "<html>When providing a common GMT and not filtering gene sets by expressions then 'Separate' edges will all be the same.<br>"
+							+ "It is recommended to select 'Combine Edges' or 'Automatic' in this case.</html>";
+					dialog.addSection(Message.warn(message), commonPanel.getDisplayName(), commonPanel.getIcon());
+				}
 			}
 		}
 		
@@ -506,7 +534,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 			});
 			
 			if(!messages.isEmpty()) {
-				dialog.addSection(messages, "Duplicate Data Set Names", commonPanel.getIcon());
+				dialog.addSection(messages, "Duplicate Data Set Names", DetailCommonPanel.ICON);
 			}
 		}
 		
@@ -520,7 +548,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		}
 		
 		if(networkNamePanel.getNameText().trim().isEmpty()) {
-			dialog.addSection(Message.error("Network name is missing"), "Network Name", commonPanel.getIcon());
+			dialog.addSection(Message.error("Network name is missing"), "Network Name", DetailCommonPanel.ICON);
 		}
 			
 		if(dialog.isEmpty())
@@ -603,7 +631,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 				
 				String title = detail.getDisplayName();
 				JLabel titleLabel = new JLabel(title);
-				SwingUtil.makeSmall(titleLabel);
+				makeSmall(titleLabel);
 				titleLabel.setForeground(fgColor);
 				
 				JPanel panel = new JPanel(new BorderLayout());
@@ -642,7 +670,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 						JMenuItem downItem = new JMenuItem("Move Down");
 						downItem.addActionListener(ae -> moveItemDown());
 						
-						deleteItem.setEnabled(index > 0);
 						upItem.setEnabled(index > 1);
 						downItem.setEnabled(index != 0 && index != getModel().getSize()-1);
 						

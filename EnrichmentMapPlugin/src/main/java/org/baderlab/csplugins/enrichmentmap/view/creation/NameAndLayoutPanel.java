@@ -39,7 +39,6 @@ public class NameAndLayoutPanel extends JPanel {
 	private JComboBox<ComboItem<CyLayoutAlgorithm>> layoutComboBox;
 	
 	private JLabel yFilesLink;
-	private JCheckBox autoAnnotateCheck;
 	
 	private String automaticValue;
 	private String manualValue;
@@ -61,10 +60,8 @@ public class NameAndLayoutPanel extends JPanel {
 		
 		yFilesLink = createInstallLink();
 		
-		autoAnnotateCheck = new JCheckBox("Highlight Significant Nodes with AutoAnnotate");
-
 		makeSmall(networkLabel, useAutomaticCheck, nameText);
-		makeSmall(layoutLabel, layoutComboBox, yFilesLink, autoAnnotateCheck);
+		makeSmall(layoutLabel, layoutComboBox, yFilesLink);
 		
 		useAutomaticCheck.setSelected(true);
 		nameText.setEnabled(false);
@@ -97,9 +94,6 @@ public class NameAndLayoutPanel extends JPanel {
 				.addComponent(layoutComboBox, 0, 400, 400)
 				.addComponent(yFilesLink)
 			)
-			.addGroup(layout.createSequentialGroup()
-				.addComponent(autoAnnotateCheck)
-			)
 		);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
@@ -113,20 +107,18 @@ public class NameAndLayoutPanel extends JPanel {
 				.addComponent(layoutComboBox)
 				.addComponent(yFilesLink)
 			)
-			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-				.addComponent(autoAnnotateCheck)
-			)
 		);
 		
 		opened();
 	}
 	
 	
+	private boolean isAAInstalled() {
+		return dependencyCheckerProvider.get().isCommandAvailable("autoannotate", "eminit");
+	}
+	
 	public void opened() {
-		boolean aaInstalled = dependencyCheckerProvider.get().isCommandAvailable("autoannotate", "eminit");
 		boolean yfInstalled = dependencyCheckerProvider.get().isYFilesInstalled();
-		autoAnnotateCheck.setEnabled(aaInstalled);
-		autoAnnotateCheck.setSelected(aaInstalled);
 		yFilesLink.setVisible(!yfInstalled);
 		fillLayoutCombo();
 	}
@@ -146,6 +138,14 @@ public class NameAndLayoutPanel extends JPanel {
 						closeRunnable.run();
 					}
 				});
+	}
+	
+	public void reset() {
+		automaticValue = null;
+		manualValue = null;
+		useAutomaticCheck.setSelected(true);
+		nameText.setText("");
+		nameText.setEnabled(false);
 	}
 	
 	
@@ -182,7 +182,7 @@ public class NameAndLayoutPanel extends JPanel {
 	
 	public void setAutomaticName(String networkName) {
 		this.automaticValue = networkName;
-		if(isAutomatic()	) {
+		if(isAutomatic()) {
 			nameText.setText(automaticValue);
 		}
 	}
@@ -192,7 +192,7 @@ public class NameAndLayoutPanel extends JPanel {
 	}
 	
 	public boolean isRunAutoAnnotate() {
-		return autoAnnotateCheck.isSelected();
+		return isAAInstalled();
 	}
 
 }

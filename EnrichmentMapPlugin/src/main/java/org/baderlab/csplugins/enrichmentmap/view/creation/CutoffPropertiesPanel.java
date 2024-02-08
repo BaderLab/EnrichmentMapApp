@@ -348,10 +348,10 @@ public class CutoffPropertiesPanel extends JPanel {
 	
 	
 	private JPanel createFilterEdgesPanel_Simple() {
-		JLabel sliderLabel = new JLabel("Connectivity:   ");
+//		JLabel sliderLabel = new JLabel("Connectivity:   ");
 		similaritySlider = new SimilaritySlider(sliderTicks, 3);
 		similaritySlider.setOpaque(false);
-		SwingUtil.makeSmall(sliderLabel);
+//		SwingUtil.makeSmall(sliderLabel);
 		
 		JPanel panel = new JPanel();
 		final GroupLayout layout = new GroupLayout(panel);
@@ -361,12 +361,12 @@ public class CutoffPropertiesPanel extends JPanel {
 		
 		layout.setHorizontalGroup(
 			layout.createSequentialGroup()
-				.addComponent(sliderLabel)
+//				.addComponent(sliderLabel)
 				.addComponent(similaritySlider, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 		);
 		layout.setVerticalGroup(
 			layout.createParallelGroup(Alignment.CENTER)
-				.addComponent(sliderLabel)
+//				.addComponent(sliderLabel)
 				.addComponent(similaritySlider, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
 		);
 		

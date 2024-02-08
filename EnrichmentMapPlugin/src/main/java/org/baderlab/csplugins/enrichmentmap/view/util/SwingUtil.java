@@ -1,5 +1,7 @@
 package org.baderlab.csplugins.enrichmentmap.view.util;
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -19,7 +21,9 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 import javax.swing.AbstractButton;
@@ -35,6 +39,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -165,17 +170,53 @@ public class SwingUtil {
 	public static JButton createIconTextButton(IconManager iconManager, String icon, String text, String toolTip) {
 		JButton button = new JButton(text);
 		button.setToolTipText(toolTip);
+		setIcon(button, iconManager, icon);
+		if(LookAndFeelUtil.isAquaLAF()) {
+			button.putClientProperty("JButton.buttonType", "gradient");
+			button.putClientProperty("JComponent.sizeVariant", "small");
+		}
+		makeSmall(button);
+		return button;
+	}
+	
+	public static void setIcon(AbstractButton button, IconManager iconManager, String icon) {
 		Font iconFont = iconManager.getIconFont(12.0f);
 		Color iconColor = UIManager.getColor("Label.foreground");
 		int iconSize = 20;
 		TextIcon textIcon = new TextIcon(icon, iconFont, iconColor, iconSize, iconSize);
 		button.setIcon(textIcon);
-//		if(LookAndFeelUtil.isAquaLAF()) {
-//			button.putClientProperty("JButton.buttonType", "gradient");
-//			button.putClientProperty("JComponent.sizeVariant", "small");
-//		}
+	}
+	
+	public static JButton createMenuButton(String label, Consumer<JPopupMenu> fillMenu) {
+		Objects.nonNull(fillMenu);
+		
+		JButton button = new JButton(label);
 		makeSmall(button);
+		if(isAquaLAF()) {
+			button.putClientProperty("JButton.buttonType", "gradient");
+			button.putClientProperty("JComponent.sizeVariant", "small");
+		}
+		
+		button.addActionListener(e -> {
+			JPopupMenu menu = new JPopupMenu();
+			fillMenu.accept(menu);
+			menu.show(button, 0, button.getHeight());
+		});
+		
 		return button;
+	}
+	
+	public static JMenuItem createMenuItem(String text, Runnable onClick) {
+		JMenuItem menuItem = new JMenuItem(text);
+		menuItem.addActionListener(e -> onClick.run());
+		return menuItem;
+	}
+	
+	public static JMenuItem createIconMenuItem(IconManager iconManager, String icon, String text, Runnable onClick) {
+		JMenuItem menuItem = new JMenuItem(text);
+		menuItem.addActionListener(e -> onClick.run());
+		setIcon(menuItem, iconManager, icon);
+		return menuItem;
 	}
 	
 	
@@ -327,9 +368,8 @@ public class SwingUtil {
 	    button.setOpaque(false);
 	    button.setToolTipText(url);
 	    button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-	    button.addActionListener(e -> {
-	    	openBrowser.openURL(url);
-	    });
+	    button.addActionListener(e -> openBrowser.openURL(url));
+	    makeSmall(button);
 	    return button;
 	}
 	
@@ -353,4 +393,5 @@ public class SwingUtil {
 		link.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		return link;
 	}
+	
 }

@@ -328,7 +328,7 @@ public class DetailDataSetPanel extends JPanel implements DetailPanel {
 		if(!classesText.emptyOrReadable())
 			messages.add(Message.error("Classes file path is not valid."));
 		
-		if(gmtText.isReadable() && !parent.getCommonPanel().hasGmtFile()) {
+		if(gmtText.isReadable() && !parent.getCommonPanel().map(cp -> cp.hasGmtFile()).orElse(false)) {
 			String parentDir = gmtText.getPath().getParent().getFileName().toString();
 			if("edb".equalsIgnoreCase(parentDir)) {
 				messages.add(Message.warn("Using GMT file from EDB directory. This GMT file was filtered by "

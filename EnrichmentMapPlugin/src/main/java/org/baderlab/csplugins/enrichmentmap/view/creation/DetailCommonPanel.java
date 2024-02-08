@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.baderlab.csplugins.enrichmentmap.AfterInjection;
@@ -22,6 +23,8 @@ import com.google.inject.Inject;
 @SuppressWarnings("serial")
 public class DetailCommonPanel extends JPanel implements DetailPanel {
 
+	public static final String ICON = IconManager.ICON_FILE_O;
+	
 	@Inject private PathTextField.Factory pathTextFactory;
 	
 	private PathTextField gmtText;
@@ -31,7 +34,7 @@ public class DetailCommonPanel extends JPanel implements DetailPanel {
 	
 	@Override
 	public String getIcon() {
-		return IconManager.ICON_FILE_O;
+		return ICON;
 	}
 
 	@Override
@@ -51,6 +54,8 @@ public class DetailCommonPanel extends JPanel implements DetailPanel {
 	
 	@AfterInjection
 	private void createContents() {
+		JLabel title = new JLabel("<html>These files will be included in all data sets. <br>Individual data sets may overide these files.</html>");
+		SwingUtil.makeSmall(title);
 		gmtText = pathTextFactory.create("GMT File:", FileBrowser.Filter.GMT);
 		expressionsText = pathTextFactory.create("Expressions:", FileBrowser.Filter.EXPRESSION);
 		classText = pathTextFactory.create("Class File:", FileBrowser.Filter.CLASS);
@@ -64,28 +69,30 @@ public class DetailCommonPanel extends JPanel implements DetailPanel {
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 	   		
-		layout.setHorizontalGroup(
-			layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup(Alignment.TRAILING)
-					.addComponent(gmtText.getLabel())
-					.addComponent(expressionsText.getLabel())
-					.addComponent(classText.getLabel())
-				)
-				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-					.addComponent(gmtText.getTextField())
-					.addComponent(expressionsText.getTextField())
-					.addComponent(classText.getTextField())
-					.addComponent(resetButton, Alignment.TRAILING)
-				)
-				.addGroup(layout.createParallelGroup()
-					.addComponent(gmtText.getBrowseButton())
-					.addComponent(expressionsText.getBrowseButton())
-					.addComponent(classText.getBrowseButton())
-				)
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+			.addGroup(layout.createParallelGroup(Alignment.TRAILING)
+				.addComponent(gmtText.getLabel())
+				.addComponent(expressionsText.getLabel())
+				.addComponent(classText.getLabel())
+			)
+			.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(title)
+				.addComponent(gmtText.getTextField())
+				.addComponent(expressionsText.getTextField())
+				.addComponent(classText.getTextField())
+				.addComponent(resetButton, Alignment.TRAILING)
+			)
+			.addGroup(layout.createParallelGroup()
+				.addComponent(gmtText.getBrowseButton())
+				.addComponent(expressionsText.getBrowseButton())
+				.addComponent(classText.getBrowseButton())
+			)
 		);
 		
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
+				.addComponent(title)
+				.addGap(15)
 				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
 					.addComponent(gmtText.getLabel())
 					.addComponent(gmtText.getTextField())
