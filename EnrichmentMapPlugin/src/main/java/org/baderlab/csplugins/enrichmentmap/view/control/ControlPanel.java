@@ -458,10 +458,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		protected JButton getResetStyleButton() {
 			if (resetStyleButton == null) {
-				resetStyleButton = new JButton(ICON_REFRESH);
-				resetStyleButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(13.0f));
-				resetStyleButton.setToolTipText("Reset Style");
-				
+				resetStyleButton = new JButton("Reset Style");
 				if (isAquaLAF())
 					resetStyleButton.putClientProperty("JButton.buttonType", "gradient");
 			}
@@ -496,10 +493,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		private DataSetSelector dataSetSelector;
 		private JCheckBox publicationReadyCheck;
-		private JButton setEdgeWidthButton;
 		private JButton showLegendButton;
 		
-		private JLabel aaLink;
 		private JComboBox<ChartData> chartDataCombo;
 		private JComboBox<ChartType> chartTypeCombo;
 		private JComboBox<ColorScheme> chartColorsCombo;
@@ -718,8 +713,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		
 		private JPanel createStylePanel() {
 			makeSmall(chartDataLabel, chartTypeLabel, chartColorsLabel);
-			makeSmall(getAutoAnnotateOpenLink(), getChartDataCombo(), getChartTypeCombo(), getChartColorsCombo(), getShowChartLabelsCheck());
-			makeSmall(getPublicationReadyCheck(), getShowLegendButton(), getSetEdgeWidthButton(), getResetStyleButton());
+			makeSmall(getChartDataCombo(), getChartTypeCombo(), getChartColorsCombo(), getShowChartLabelsCheck());
+			makeSmall(getPublicationReadyCheck(), getShowLegendButton(), getResetStyleButton());
 			
 			final JPanel panel = new JPanel();
 			panel.setBorder(LookAndFeelUtil.createTitledBorder("Style"));
@@ -738,7 +733,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addGroup(layout.createParallelGroup(LEADING, true)
-									.addComponent(getAutoAnnotateOpenLink(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartDataCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartTypeCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 									.addComponent(getChartColorsCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -747,8 +741,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							)
 					)
 					.addGroup(layout.createSequentialGroup()
-							.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
 							.addComponent(getShowLegendButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
 							.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -756,7 +748,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			);
 			
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(getAutoAnnotateOpenLink())
 					.addGroup(layout.createParallelGroup(CENTER, false)
 							.addComponent(chartDataLabel)
 							.addComponent(getChartDataCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -773,7 +764,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					.addComponent(getPublicationReadyCheck(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(layout.createParallelGroup(CENTER, false)
-							.addComponent(getSetEdgeWidthButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getShowLegendButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
@@ -891,15 +881,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				dataSetSelector = dataSetSelectorFactory.create(getEnrichmentMap());
 			}
 			return dataSetSelector;
-		}
-
-		JLabel getAutoAnnotateOpenLink() {
-			if (aaLink == null) {
-				aaLink = SwingUtil.createLinkLabel("Use AutoAnnotate to find clusters of similar gene-sets");
-				aaLink.setVisible(dependencyChecker.isCommandAvailable("autoannotate", "open"));
-				aaLink.setBorder(BorderFactory.createEmptyBorder(0, 8, 4, 0));
-			}
-			return aaLink;
 		}
 		
 		
@@ -1019,15 +1000,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 			return publicationReadyCheck;
 		}
 		
-		JButton getSetEdgeWidthButton() {
-			if (setEdgeWidthButton == null) {
-				setEdgeWidthButton = new JButton("Set Signature Edge Width...");
-				if (isAquaLAF())
-					setEdgeWidthButton.putClientProperty("JButton.buttonType", "gradient");
-			}
-			return setEdgeWidthButton;
-		}
-		
+
 		JButton getShowLegendButton() {
 			if (showLegendButton == null) {
 				showLegendButton = new JButton("Show Legend...");

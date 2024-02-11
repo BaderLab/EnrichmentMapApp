@@ -13,7 +13,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -585,14 +584,6 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 				map.getParams().getCreateDistinctEdges()
 			);
 		});
-		
-		viewPanel.getAutoAnnotateOpenLink().addMouseListener(new MouseAdapter() {
-			@Override public void mouseClicked(MouseEvent e) {
-				var task = autoAnnotateOpenTaskProvider.get();
-				syncTaskManager.execute(new TaskIterator(task));
-			}
-		});
-		
 		viewPanel.getChartDataCombo().addItemListener(evt -> {
 			if (!updating && evt.getStateChange() == ItemEvent.SELECTED) {
 				updating = true;
@@ -631,7 +622,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 		
 		// MKTODO we should have a warning dialog when resetting the entire style
 		viewPanel.getResetStyleButton().addActionListener(evt -> resetStyle(map, viewPanel));
-		viewPanel.getSetEdgeWidthButton().addActionListener(evt -> showEdgeWidthDialog());
+//		viewPanel.getSetEdgeWidthButton().addActionListener(evt -> showEdgeWidthDialog());
 		viewPanel.getShowLegendButton().addActionListener(evt -> showLegendDialog());
 		
 		viewPanel.updateChartDataCombo();
@@ -1005,6 +996,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 		}
 		
 		menu.addSeparator();
+		
+		
+		JMenuItem setEdgeWidthItem = new JMenuItem("Set Signature  Edge Width...");
+		setEdgeWidthItem.addActionListener(evt -> showEdgeWidthDialog());
+		menu.add(setEdgeWidthItem);
 		
 		menu.add(new JMenuItem(showAboutDialogActionProvider.get()));
 		
