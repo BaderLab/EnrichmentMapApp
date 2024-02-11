@@ -5,7 +5,6 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
-import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_CONTROL;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.*;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
 import static org.cytoscape.util.swing.IconManager.*;
@@ -155,8 +154,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		setMinimumSize(new Dimension(390, 400));
 		setPreferredSize(new Dimension(390, 600));
 		
-		JButton helpButton = SwingUtil.createOnlineHelpButton(HELP_URL_CONTROL, "Online Manual...", serviceRegistrar);
-		
 		makeSmall(getClosePanelButton());
 		
 		final GroupLayout layout = new GroupLayout(this);
@@ -167,8 +164,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
    		layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
    				.addGroup(layout.createSequentialGroup()
    						.addComponent(getEmViewCombo(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-   						.addPreferredGap(ComponentPlacement.RELATED)
-   						.addComponent(helpButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addPreferredGap(ComponentPlacement.RELATED)
    						.addComponent(getCreateEmButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addPreferredGap(ComponentPlacement.RELATED)
@@ -183,7 +178,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
    		layout.setVerticalGroup(layout.createSequentialGroup()
    				.addGroup(layout.createParallelGroup(CENTER, false)
    						.addComponent(getEmViewCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-   						.addComponent(helpButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getCreateEmButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    						.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
    				)

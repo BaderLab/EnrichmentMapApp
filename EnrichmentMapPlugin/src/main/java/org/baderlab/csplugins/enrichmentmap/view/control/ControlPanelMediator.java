@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.control;
 
+import static org.baderlab.csplugins.enrichmentmap.EMBuildProps.HELP_URL_CONTROL;
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_DATASET_VALUE_COMPOUND;
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.EDGE_INTERACTION_VALUE_SIG;
 import static org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns.NODE_GS_TYPE;
@@ -96,6 +97,7 @@ import org.baderlab.csplugins.enrichmentmap.view.legend.LegendPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.EdgeWidthDialog;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogMediator;
 import org.baderlab.csplugins.enrichmentmap.view.util.IconUtil;
+import org.baderlab.csplugins.enrichmentmap.view.util.OpenBrowser;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import org.cytoscape.application.CyApplicationManager;
@@ -998,9 +1000,15 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 		menu.addSeparator();
 		
 		
-		JMenuItem setEdgeWidthItem = new JMenuItem("Set Signature  Edge Width...");
+		JMenuItem setEdgeWidthItem = new JMenuItem("Set Signature Edge Width...");
 		setEdgeWidthItem.addActionListener(evt -> showEdgeWidthDialog());
 		menu.add(setEdgeWidthItem);
+		
+		menu.addSeparator();
+		
+		JMenuItem helpItem = new JMenuItem("Online Help...");
+		helpItem.addActionListener(evt -> new OpenBrowser().openURL(HELP_URL_CONTROL));
+		menu.add(helpItem);
 		
 		menu.add(new JMenuItem(showAboutDialogActionProvider.get()));
 		
