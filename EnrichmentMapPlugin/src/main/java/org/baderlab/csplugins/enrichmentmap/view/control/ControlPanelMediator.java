@@ -73,6 +73,7 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScop
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleOptions;
 import org.baderlab.csplugins.enrichmentmap.style.WidthFunction;
 import org.baderlab.csplugins.enrichmentmap.task.ApplyEMStyleTask;
+import org.baderlab.csplugins.enrichmentmap.task.AutoAnnotateInitTask;
 import org.baderlab.csplugins.enrichmentmap.task.AutoAnnotateOpenTask;
 import org.baderlab.csplugins.enrichmentmap.task.AutoAnnotateRedrawTask;
 import org.baderlab.csplugins.enrichmentmap.task.FilterNodesEdgesTask;
@@ -89,6 +90,7 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanel.EMViewCont
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams.CutoffParam;
 import org.baderlab.csplugins.enrichmentmap.view.creation.CreationDialogShowAction;
+import org.baderlab.csplugins.enrichmentmap.view.creation.DependencyChecker;
 import org.baderlab.csplugins.enrichmentmap.view.creation.genemania.GenemaniaDialogShowAction;
 import org.baderlab.csplugins.enrichmentmap.view.creation.genemania.StringDialogShowAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapMediator;
@@ -148,8 +150,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 	@Inject private CreationDialogShowAction masterMapDialogAction;
 	@Inject private VisualMappingManager visualMappingManager;
 	@Inject private PropertyManager propertyManager;
+	
+	@Inject private DependencyChecker dependencyChecker;
 	@Inject private Provider<AutoAnnotateOpenTask> autoAnnotateOpenTaskProvider;
 	@Inject private Provider<AutoAnnotateRedrawTask> autoAnnotateRedrawTaskProvider;
+	@Inject private AutoAnnotateInitTask.Factory autoAnnotateInitTaskFactory;
 	
 	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyApplicationManager applicationManager;
@@ -622,10 +627,12 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 				updateVisualStyle(map, viewPanel, StyleUpdateScope.PUBLICATION_READY);
 		});
 		
-		// MKTODO we should have a warning dialog when resetting the entire style
 		viewPanel.getResetStyleButton().addActionListener(evt -> resetStyle(map, viewPanel));
-//		viewPanel.getSetEdgeWidthButton().addActionListener(evt -> showEdgeWidthDialog());
 		viewPanel.getShowLegendButton().addActionListener(evt -> showLegendDialog());
+		viewPanel.getFindClustersButton().addActionListener(evt -> {
+			var button = viewPanel.getFindClustersButton();
+			getClusterMenu().show(button, 0, button.getHeight());
+		});
 		
 		viewPanel.updateChartDataCombo();
 	}
@@ -703,12 +710,11 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 		});
 		
 		ctrlPanel.getOptionsButton().addActionListener(evt -> {
-			getOptionsMenu().show(ctrlPanel.getOptionsButton(), 0, ctrlPanel.getOptionsButton().getHeight());
+			var button = ctrlPanel.getOptionsButton();
+			getOptionsMenu().show(button, 0, button.getHeight());
 		});
 		
-		ctrlPanel.getClosePanelButton().addActionListener(evt -> {
-			closeControlPanel();
-		});
+		ctrlPanel.getClosePanelButton().addActionListener(evt -> closeControlPanel());
 		
 		ctrlPanel.update(applicationManager.getCurrentNetworkView());
 		
@@ -965,7 +971,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 	}
 	
 	private JPopupMenu getOptionsMenu() {
-		final JPopupMenu menu = new JPopupMenu();
+		JPopupMenu menu = new JPopupMenu();
 		
 		{
 			JMenuItem showLegendItem = new JCheckBoxMenuItem("Show Legend");
@@ -1011,6 +1017,33 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 		menu.add(helpItem);
 		
 		menu.add(new JMenuItem(showAboutDialogActionProvider.get()));
+		
+		return menu;
+	}
+	
+	
+	private JPopupMenu getClusterMenu() {
+		JPopupMenu menu = new JPopupMenu();
+		
+		JMenuItem openAAItem = new JMenuItem("Use AutoAnnotate to find clusters of similar nodes");
+		openAAItem.setEnabled(dependencyChecker.isCommandAvailable("autoannotate", "open"));
+		openAAItem.addActionListener(e -> {
+			var task = autoAnnotateOpenTaskProvider.get();
+			syncTaskManager.execute(new TaskIterator(task));
+		});
+		menu.add(openAAItem);
+		
+		JMenuItem emInitItem = new JMenuItem("Highlight significant nodes");
+		emInitItem.setEnabled(dependencyChecker.isCommandAvailable("autoannotate", "eminit"));
+		emInitItem.addActionListener(e -> {
+			var dataSetList = getCurrentMap().getDataSetList();
+			if(!dataSetList.isEmpty()) { // can this even happen?
+				var dataSet = dataSetList.get(0);
+				var task = autoAnnotateInitTaskFactory.create(dataSet.getName());
+				syncTaskManager.execute(new TaskIterator(task));
+			}
+		});
+		menu.add(emInitItem);
 		
 		return menu;
 	}

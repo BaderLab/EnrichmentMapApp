@@ -65,7 +65,6 @@ import org.baderlab.csplugins.enrichmentmap.style.ChartType;
 import org.baderlab.csplugins.enrichmentmap.style.ColorScheme;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
-import org.baderlab.csplugins.enrichmentmap.view.creation.DependencyChecker;
 import org.baderlab.csplugins.enrichmentmap.view.util.ComboItem;
 import org.baderlab.csplugins.enrichmentmap.view.util.Labels;
 import org.baderlab.csplugins.enrichmentmap.view.util.SliderBarPanel;
@@ -75,7 +74,6 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyDisposable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
@@ -94,13 +92,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 	
 	private static final String BORDER_COLOR_KEY = "Separator.foreground";
 	
-	@Inject private CyServiceRegistrar serviceRegistrar;
 	@Inject private CyNetworkManager networkManager;
 	@Inject private CyNetworkViewManager networkViewManager;
 	@Inject private IconManager iconManager;
 	@Inject private EnrichmentMapManager emManager;
 	@Inject private DataSetSelector.Factory dataSetSelectorFactory;
-	@Inject private DependencyChecker dependencyChecker;
 	
 	private JPanel ctrlPanelsContainer;
 	private final CardLayout cardLayout = new CardLayout();
@@ -488,6 +484,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private DataSetSelector dataSetSelector;
 		private JCheckBox publicationReadyCheck;
 		private JButton showLegendButton;
+		private JButton findClustersButton;
 		
 		private JComboBox<ChartData> chartDataCombo;
 		private JComboBox<ChartType> chartTypeCombo;
@@ -708,7 +705,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 		private JPanel createStylePanel() {
 			makeSmall(chartDataLabel, chartTypeLabel, chartColorsLabel);
 			makeSmall(getChartDataCombo(), getChartTypeCombo(), getChartColorsCombo(), getShowChartLabelsCheck());
-			makeSmall(getPublicationReadyCheck(), getShowLegendButton(), getResetStyleButton());
+			makeSmall(getPublicationReadyCheck(), getFindClustersButton(), getShowLegendButton(), getResetStyleButton());
 			
 			final JPanel panel = new JPanel();
 			panel.setBorder(LookAndFeelUtil.createTitledBorder("Style"));
@@ -735,6 +732,8 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 							)
 					)
 					.addGroup(layout.createSequentialGroup()
+							.addComponent(getFindClustersButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
 							.addComponent(getShowLegendButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
 							.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -758,6 +757,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					.addComponent(getPublicationReadyCheck(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(getFindClustersButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getShowLegendButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getResetStyleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
@@ -1002,6 +1002,15 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 					showLegendButton.putClientProperty("JButton.buttonType", "gradient");
 			}
 			return showLegendButton;
+		}
+		
+		JButton getFindClustersButton() {
+			if (findClustersButton == null) {
+				findClustersButton = new JButton("Find Clusters...");
+				if (isAquaLAF())
+					findClustersButton.putClientProperty("JButton.buttonType", "gradient");
+			}
+			return findClustersButton;
 		}
 		
 		void updateFilterPanel() {
