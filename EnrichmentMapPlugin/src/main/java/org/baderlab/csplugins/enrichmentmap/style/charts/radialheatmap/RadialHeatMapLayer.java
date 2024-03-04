@@ -51,7 +51,7 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 		this.startAngle = startAngle;
 		this.rotation = rotation;
 		this.labels = new HashMap<>();
-		useColorsDirectly = false;
+		this.useColorsDirectly = false;
 
 		// Range cannot be null
 		if (this.range == null)
@@ -78,7 +78,7 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 		this.startAngle = startAngle;
 		this.rotation = rotation;
 		this.labels = new HashMap<>();
-		useColorsDirectly = true;
+		this.useColorsDirectly = true;
 	}
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
@@ -153,10 +153,11 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 		Color lowerColor = Color.RED;
 		Color nanColor = Color.LIGHT_GRAY;
 		
-		if (colorPoints.isEmpty() || colorPoints.size() != colors.size()) {
+		boolean useColorPoints = colorPoints != null && !colorPoints.isEmpty() && colorPoints.size() == colors.size();
+		
+		if (!useColorPoints) {
 			if (range != null && range.size() >= 2 && range.get(0) != null && range.get(1) != null) {
-				final int colorsSize = colors != null ? colors.size() : 0;
-				
+				int colorsSize = colors != null ? colors.size() : 0;
 				if (colorsSize > 0) upperColor = colors.get(0);
 				if (colorsSize > 1) zeroColor = colors.get(1);
 				if (colorsSize > 2) lowerColor = colors.get(2);
@@ -175,18 +176,19 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 			if (v == null || !Double.isFinite(v)) {
 				c = nanColor;
 			} else {
-				if (useColorsDirectly)
+				if (useColorsDirectly) {
 					c = colors.size() > i ? colors.get(i) : nanColor;
-				else if (colorPoints.isEmpty() || colorPoints.size() != colors.size())
-					c = range.size() > 1
-							? ColorUtil.getColor(v, range.get(0), range.get(1), lowerColor, zeroColor, upperColor)
-							: null;
-				else
+				} else if (useColorPoints) {
 					c = ColorUtil.getColor(v, colors, colorPoints);
+				} 
+				else {
+					c = range.size() > 1 ? ColorUtil.getColor(v, range.get(0), range.get(1), lowerColor, zeroColor, upperColor) : null;
+				} 
 			}
 			
-			if (c == null)
+			if (c == null) {
 				c = nanColor;
+			}
 			
 			plot.setSectionPaint(k, c);
 			plot.setSectionOutlinePaint(k, borderWidth > 0 ? borderColor : TRANSPARENT_COLOR);
@@ -195,4 +197,5 @@ public class RadialHeatMapLayer extends AbstractChartLayer<PieDataset> {
 		
 		return chart;
 	}
+	
 }

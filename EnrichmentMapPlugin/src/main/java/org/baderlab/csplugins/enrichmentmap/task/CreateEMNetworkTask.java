@@ -335,6 +335,7 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 			Columns.NODE_ES.createColumn(table, prefix, dataset);
 			Columns.NODE_NES.createColumn(table, prefix, dataset); 
 			Columns.NODE_LOG_PVALUE.createColumn(table, prefix, dataset); 
+			Columns.NODE_LOG_PVALUE_NES.createColumn(table, prefix, dataset); 
 			Columns.NODE_COLOURING.createColumn(table, prefix, dataset);
 			
 			params.addPValueColumnName(Columns.NODE_PVALUE.with(prefix, dataset));
@@ -361,7 +362,10 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		Columns.NODE_FDR_QVALUE.set(row, prefix, dataset, result.getFdrqvalue());
 		Columns.NODE_NES.set(row, prefix, dataset, result.getNES());
 		Columns.NODE_COLOURING.set(row, prefix, dataset, getColorScore(result));
-		Columns.NODE_LOG_PVALUE.set(row, prefix, dataset, getNegLog10pval(dataset, result));
+		
+		var log10 = getNegLog10pval(dataset, result);
+		Columns.NODE_LOG_PVALUE.set(row, prefix, dataset, log10);
+		Columns.NODE_LOG_PVALUE_NES.set(row, prefix, dataset, log10 * sign(result.getNES()));
 	}
 	
 	private void setGSEAResultNodeAttributes(CyRow row, EMDataSet dataset, GSEAResult result) {
@@ -371,11 +375,20 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 		Columns.NODE_ES.set(row, prefix, dataset, result.getES());
 		Columns.NODE_NES.set(row, prefix, dataset, result.getNES());
 		Columns.NODE_COLOURING.set(row, prefix, dataset, getColorScore(result));
-		Columns.NODE_LOG_PVALUE.set(row, prefix, dataset, getNegLog10pval(dataset, result));
+		
+		var log10 = getNegLog10pval(dataset, result);
+		Columns.NODE_LOG_PVALUE.set(row, prefix, dataset, log10);
+		Columns.NODE_LOG_PVALUE_NES.set(row, prefix, dataset, log10 * sign(result.getNES()));
 		
 		EMCreationParameters params = map.getParams();
 		params.addPValueColumnName(Columns.NODE_PVALUE.with(prefix, dataset));
 	}
+	
+	private static double sign(double x) {
+		// Math.signum() can return 0, we don't want that
+		return x < 0 ? -1 : 1;
+	}
+	
 	
 	private static double getColorScore(EnrichmentResult result) {
 		if(result == null)

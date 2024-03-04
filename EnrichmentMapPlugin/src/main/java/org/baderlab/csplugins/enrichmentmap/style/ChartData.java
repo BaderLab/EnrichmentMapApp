@@ -13,7 +13,8 @@ public enum ChartData {
 	PHENOTYPES("Phenotypes", Columns.NODE_COLOURING),
 	DATA_SET("Color by Data Set", Columns.DATASET_CHART),
 	EXPRESSION_DATA("Color by Expression Data", Columns.EXPRESSION_DATA_CHART),
-	LOG10_PVAL("-log10(pvalue)", Columns.NODE_LOG_PVALUE);
+	LOG10_PVAL("-log10(pvalue)", Columns.NODE_LOG_PVALUE),
+	LOG10_PVAL_NES("-log10(pvalue)*sign(NES)", Columns.NODE_LOG_PVALUE_NES);
 	
 	private final String label;
 	private final AbstractColumnDescriptor columnDescriptor;

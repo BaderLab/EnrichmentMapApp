@@ -254,7 +254,7 @@ public class ApplyEMStyleTask extends AbstractTask {
 				
 				if (data == ChartData.DATA_SET) {
 					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.with(prefix)));
-					List<Color> colors = getColors(dataSets);
+					List<Color> colors = dataSetColors(dataSets);
 					props.put("cy_dataColumns", columns);
 					props.put("cy_colors", colors);
 					props.put("cy_showItemLabels", chartOptions.isShowLabels());
@@ -262,6 +262,7 @@ public class ApplyEMStyleTask extends AbstractTask {
 					
 				} else {
 					List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(prefix, dataSets, columnDescriptor, columnIdFactory);
+					
 					List<Color> colors = ChartUtil.getChartColors(chartOptions, true);
 					List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
 					
@@ -296,11 +297,11 @@ public class ApplyEMStyleTask extends AbstractTask {
 			}
 		}
 		
-		return props;
+		return props; 
 	}
 	
 	
-	public static List<Color> getColors(Collection<EMDataSet> dataSets) {
+	public static List<Color> dataSetColors(Collection<EMDataSet> dataSets) {
 		return dataSets.stream().map(EMDataSet::getColor).collect(Collectors.toList());
 	}
 	

@@ -215,7 +215,7 @@ public class UpdateAssociatedStyleTask extends AbstractTask {
 				
 				if (data == ChartData.DATA_SET) {
 					List<CyColumnIdentifier> columns = Arrays.asList(columnIdFactory.createColumnIdentifier(columnDescriptor.with(prefix)));
-					List<Color> colors = ApplyEMStyleTask.getColors(dataSets);
+					List<Color> colors = ApplyEMStyleTask.dataSetColors(dataSets);
 					
 					props.put("cy_dataColumns", columns);
 					props.put("cy_colors", colors);

@@ -7,7 +7,10 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static org.baderlab.csplugins.enrichmentmap.view.util.IconUtil.*;
 import static org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil.makeSmall;
-import static org.cytoscape.util.swing.IconManager.*;
+import static org.cytoscape.util.swing.IconManager.ICON_BARS;
+import static org.cytoscape.util.swing.IconManager.ICON_FILE;
+import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
+import static org.cytoscape.util.swing.IconManager.ICON_STAR;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
@@ -886,6 +889,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, CyDispo
 				chartDataCombo.addItem(ChartData.NES_SIG);
 				chartDataCombo.addItem(ChartData.P_VALUE);
 				chartDataCombo.addItem(ChartData.LOG10_PVAL);
+				chartDataCombo.addItem(ChartData.LOG10_PVAL_NES);
 				
 				EnrichmentMap map = getEnrichmentMap();
 				if (map != null) {
