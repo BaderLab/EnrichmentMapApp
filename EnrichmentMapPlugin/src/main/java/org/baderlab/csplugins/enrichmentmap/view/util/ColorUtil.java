@@ -62,15 +62,24 @@ public final class ColorUtil {
 			final Color zeroColor,
 			final Color upperColor
 	) {
-		final boolean hasZero = lowerBound < -EPSILON && upperBound > EPSILON && zeroColor != null;
-
+		boolean hasZero = lowerBound < -EPSILON && upperBound > EPSILON && zeroColor != null;
+		
 		if (hasZero && value < EPSILON && value > -EPSILON)
 			return zeroColor;
-
-		final Color color = value < 0.0 ? lowerColor : upperColor;
-		float t = interpolate(value, lowerBound, upperBound);
-
-		return ColorUtil.interpolate(zeroColor, color, t);
+		
+		var color = value < 0.0 ? lowerColor : upperColor;
+		
+		// Linearly interpolate the value
+		double f = value < 0.0 ?
+				MathUtil.invLinearInterp(value, lowerBound, 0) : MathUtil.invLinearInterp(value, 0, upperBound);
+		float t = (float) (value < 0.0 ? MathUtil.linearInterp(f, 0.0, 1.0) : MathUtil.linearInterp(f, 1.0, 0.0));
+		
+		// Make sure it's between 0.0-1.0
+		t = Math.max(0.0f, t);
+		t = Math.min(1.0f, t);
+				
+		Color c = ColorUtil.interpolate(zeroColor, color, t);
+		return c;
 	}
 
 	/**
