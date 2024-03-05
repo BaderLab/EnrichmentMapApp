@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.cytoscape.view.model.CyNetworkView;
 
@@ -63,5 +64,15 @@ public class EMStyleOptions {
 	
 	public void setPostAnalysis(boolean postAnalysis) {
 		this.postAnalysis = postAnalysis;
+	}
+	
+	/**
+	 * Returns the number of data sets that are not Signature data sets. 
+	 */
+	public int getEMDataSetCount() {
+		return (int) getDataSets()
+			.stream()
+			.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets in charts
+			.count();
 	}
 }

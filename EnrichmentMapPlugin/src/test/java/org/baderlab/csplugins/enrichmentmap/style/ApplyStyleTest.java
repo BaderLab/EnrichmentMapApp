@@ -18,6 +18,7 @@ import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Colors;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.Columns;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder.StyleUpdateScope;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualLexicon;
@@ -26,6 +27,8 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.property.LineTypeVisualProperty;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
+import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -85,6 +88,11 @@ public class ApplyStyleTest {
 			when(em.getDataSetCount()).thenReturn(2);
 			
 			bind(EnrichmentMap.class).toInstance(em);
+			
+			// CyColumnIdentifierFactory columnIdFactory;
+			var columnIdFactory = mock(CyColumnIdentifierFactory.class);
+			bind(CyColumnIdentifierFactory.class).toInstance(columnIdFactory);
+			when(columnIdFactory.createColumnIdentifier(any())).thenReturn(mock(CyColumnIdentifier.class));
 		}
 	}
 	
@@ -132,6 +140,7 @@ public class ApplyStyleTest {
 		// Create the style
 		VisualStyle vs = mock(VisualStyle.class);
 		CyNetworkView netView = mock(CyNetworkView.class);
+		when(netView.getModel()).thenReturn(mock(CyNetwork.class));
 		CyCustomGraphics2 chart = mock(CyCustomGraphics2.class);
 		EMStyleOptions options = new EMStyleOptions(netView, em);
 		

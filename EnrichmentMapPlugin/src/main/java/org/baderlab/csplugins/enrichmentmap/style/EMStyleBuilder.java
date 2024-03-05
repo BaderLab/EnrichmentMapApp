@@ -9,13 +9,12 @@ import static org.cytoscape.view.presentation.property.NodeShapeVisualProperty.R
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
-import org.baderlab.csplugins.enrichmentmap.model.AbstractDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
@@ -491,77 +490,74 @@ public class EMStyleBuilder {
 		vs.addVisualMappingFunction(dm);
 	}
 	
-	private void setNodeColors(VisualStyle vs, EMStyleOptions options) {
-		String prefix = options.getAttributePrefix();
-		List<AbstractDataSet> dataSets = options.getDataSets().stream()
-			.filter(ds -> ds instanceof EMDataSet) // Ignore Signature Data Sets in charts
-			.collect(Collectors.toList());
+	
+	private ContinuousMapping<Double,Paint> createLog10NodeColorMapping(EMStyleOptions options) {
+		var map = options.getEnrichmentMap();
+		var prefix = options.getAttributePrefix();
 		
-		if (dataSets.size() == 1) {
-			// Only 1 Data Set? Set a continuous mapping for node colour...
-			CyNetworkView netView = options.getNetworkView();
-			CyNetwork net = netView.getModel();
-			
-			var logPValCol = Columns.NODE_LOG_PVALUE_MAX.with(prefix);
-			
+		boolean isSingleGSEA = map.getDataSetCount() == 1 && map.getDataSetList().get(0).getMethod() == Method.GSEA;
+		
+		String logPValCol;
+		if(isSingleGSEA)
+			logPValCol = Columns.NODE_LOG_PVALUE_NES.with(prefix, map.getDataSetList().get(0));
+		else
+			logPValCol = Columns.NODE_LOG_PVALUE_MAX.with(prefix);
+		
+		
+		var mapping = (ContinuousMapping<Double,Paint>) cmFactory.createVisualMappingFunction(
+				logPValCol, Double.class, BasicVisualLexicon.NODE_FILL_COLOR);
+		
+		if(mapping != null) { // can happen in tests
+			var network = options.getNetworkView().getModel();
 			var colList = List.of(columnIdFactory.createColumnIdentifier(logPValCol));
-			var range = ChartUtil.calculateGlobalRange(net, colList);
-			var min = range.get(0);
-			var max = range.get(1);
+			var range = ChartUtil.calculateGlobalRange(network, colList, true);
 			
-			// Continuous Mapping - set node colour based on the sign of the ES score of the dataset
-			var cm = (ContinuousMapping<Double, Paint>) cmFactory.createVisualMappingFunction(
-						logPValCol, Double.class, BasicVisualLexicon.NODE_FILL_COLOR);
+			var colors = ColorScheme.RD_BU_3.getColors();
+			var negColor  = colors.get(2);
+			var zeroColor = colors.get(1);
+			var posColor  = colors.get(0);
 			
-			var color0 = ColorScheme.RD_BU_3.getColors().get(1);
-			var color1 = ColorScheme.RD_BU_3.getColors().get(0);
-			
-			var point0 = new BoundaryRangeValues<Paint>(color0, color0, color0);
-			var point1 = new BoundaryRangeValues<Paint>(color1, color1, color1);
-			
-			eventHelper.silenceEventSource(cm);
+			var negPoint  = new BoundaryRangeValues<Paint>(negColor, negColor, negColor);
+			var zeroPoint = new BoundaryRangeValues<Paint>(zeroColor, zeroColor, zeroColor);
+			var posPoint  = new BoundaryRangeValues<Paint>(posColor, posColor, posColor);
+						
+			eventHelper.silenceEventSource(mapping);
 			try {
-				cm.addPoint(min, point0);
-				cm.addPoint(max, point1);
+				if(isSingleGSEA) {
+					mapping.addPoint(-range.max, negPoint);
+				}
+				mapping.addPoint(0.0, zeroPoint);
+				mapping.addPoint(range.max, posPoint);
 			} finally {
-				eventHelper.unsilenceEventSource(cm);
+				eventHelper.unsilenceEventSource(mapping);
 			}
-			
-			vs.addVisualMappingFunction(cm);
-			
-			// Then we need to use bypass to colour the hub nodes (signature genesets)
-			List<EMSignatureDataSet> signatureDataSets = options.getEnrichmentMap().getSignatureSetList();
-			
-			// For "signature" nodes that were added by Post Analysis
-			for (EMSignatureDataSet sds : signatureDataSets) {
-				for (Long suid : sds.getNodeSuids()) {
-					CyNode node = net.getNode(suid);
-					if (node != null) {
-						View<CyNode> nv = netView.getNodeView(node);
-						if (nv != null) {
-							nv.setLockedValue(NODE_FILL_COLOR, Colors.SIG_NODE_COLOR);
-						}
+		}
+		
+		return mapping;
+	}
+	
+	
+	private void setNodeColors(VisualStyle vs, EMStyleOptions options) {
+		CyNetworkView netView = options.getNetworkView();
+		CyNetwork net = netView.getModel();
+		
+		var mapping = createLog10NodeColorMapping(options);
+		vs.addVisualMappingFunction(mapping);
+		
+		// Then we need to use bypass to colour the hub nodes (signature genesets)
+		List<EMSignatureDataSet> signatureDataSets = options.getEnrichmentMap().getSignatureSetList();
+		
+		// For "signature" nodes that were added by Post Analysis
+		for (EMSignatureDataSet sds : signatureDataSets) {
+			for (Long suid : sds.getNodeSuids()) {
+				CyNode node = net.getNode(suid);
+				if (node != null) {
+					View<CyNode> nv = netView.getNodeView(node);
+					if (nv != null) {
+						nv.setLockedValue(NODE_FILL_COLOR, Colors.SIG_NODE_COLOR);
 					}
 				}
 			}
-			
-		} else {
-			// 2 or more Data Sets? Use simple node colours and charts...
-			// Add mapping function for node fill color
-			var dm = (DiscreteMapping<String, Paint>) dmFactory.createVisualMappingFunction(
-					Columns.NODE_GS_TYPE.with(prefix, null), String.class, NODE_FILL_COLOR);
-			
-			// Silence events fired by this mapping to prevent unnecessary style and view updates
-			eventHelper.silenceEventSource(dm);
-			
-			try {
-				dm.putMapValue(Columns.NODE_GS_TYPE_ENRICHMENT, Colors.DEF_NODE_COLOR);
-				dm.putMapValue(Columns.NODE_GS_TYPE_SIGNATURE, Colors.SIG_NODE_COLOR);
-			} finally {
-				eventHelper.unsilenceEventSource(dm);
-			}
-				
-			vs.addVisualMappingFunction(dm);
 		}
 	}
 	

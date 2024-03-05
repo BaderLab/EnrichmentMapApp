@@ -99,7 +99,7 @@ public final class ChartUtil {
 	 * @return List whose first item is the minimum value of the range, and whose second item is the maximum value.
 	 */
 	@SuppressWarnings("unchecked")
-	public static List<Double> calculateGlobalRange(CyNetwork network, List<CyColumnIdentifier> dataColumns) {
+	public static Range calculateGlobalRange(CyNetwork network, List<CyColumnIdentifier> dataColumns, boolean includeZero) {
 		List<CyNode> nodes = network.getNodeList();
 		
 		if (!nodes.isEmpty()) {
@@ -137,11 +137,15 @@ public final class ChartUtil {
 			}
 			
 			if (min != Double.POSITIVE_INFINITY && max != Double.NEGATIVE_INFINITY) {
-				return List.of(min, max);
+				if(includeZero) {
+					return new Range(Math.min(min, 0), Math.max(0, max));
+				}
+				
+				return new Range(min, max);
 			}
 		} 
 		
-		return List.of(0.0, 0.0);
+		return new Range(0.0, 0.0);
 	}
 	
 	

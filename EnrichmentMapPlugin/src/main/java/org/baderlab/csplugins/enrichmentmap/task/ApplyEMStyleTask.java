@@ -264,10 +264,10 @@ public class ApplyEMStyleTask extends AbstractTask {
 					List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(prefix, dataSets, columnDescriptor, columnIdFactory);
 					
 					List<Color> colors = ChartUtil.getChartColors(chartOptions, true);
-					List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
+					var range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns, true);
 					
 					props.put("cy_dataColumns", columns);
-					props.put("cy_range", range);
+					props.put("cy_range", range.toList());
 					props.put("cy_autoRange", false);
 					props.put("cy_globalRange", true);
 					props.put("cy_showItemLabels", chartOptions.isShowLabels());

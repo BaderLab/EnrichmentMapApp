@@ -320,11 +320,9 @@ public class LegendPanel extends JPanel implements LegendContent {
 					dataSets, columnDescriptor, columnIdFactory);
 	
 			List<Color> colors = ChartUtil.getChartColors(chartOptions, false);
-			List<Double> range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns);
-			double min = range.get(0) ;
-			double max = range.get(1);
+			var range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns, true);
 			
-			String posMaxLabel = max > 0 ? String.format("%.2f", max) : "N/A";
+			String posMaxLabel = range.max > 0 ? String.format("%.2f", range.max) : "N/A";
 			Color posMaxColor;
 			Color posMinColor;
 			if(data == ChartData.NES_VALUE) {
@@ -354,7 +352,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 	
 			
 			if(data == ChartData.NES_VALUE || data == ChartData.NES_SIG || data == ChartData.LOG10_PVAL_NES) { // need to show negative range
-				String negMinLabel = min < 0 ? String.format("%.2f", min) : "N/A";
+				String negMinLabel = range.min < 0 ? String.format("%.2f", range.min) : "N/A";
 				Color negMaxColor = colors.get(colors.size()-1);
 				Color negMinColor = colors.get(colors.size()/2);
 				chartNegLegend = new ColorLegendPanel(negMinColor, negMaxColor, "0", negMinLabel, false);
