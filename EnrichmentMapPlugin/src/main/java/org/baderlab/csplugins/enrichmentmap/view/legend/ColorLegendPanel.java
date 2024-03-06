@@ -72,7 +72,7 @@ public class ColorLegendPanel extends JPanel {
 	private final boolean legacy;
 
 	public ColorLegendPanel(Color minColor, Color maxColor, String phenotype1, String phenotype2) {
-		this(minColor, maxColor, phenotype1, phenotype2, true);
+		this(minColor, maxColor, phenotype1, phenotype2, false);
 	}
 	
 	public ColorLegendPanel(Color minColor, Color maxColor, String phenotype1, String phenotype2, boolean legacy) {

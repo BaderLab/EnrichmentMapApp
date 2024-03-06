@@ -22,6 +22,9 @@ public abstract class AbstractColumnDescriptor {
 	}
 	
 	public String with(String prefix, AbstractDataSet ds) {
+		if(prefix == null && ds == null)
+			return getBaseName();
+		
 		StringBuilder sb = new StringBuilder();
 		if(prefix != null)
 			sb.append(prefix);

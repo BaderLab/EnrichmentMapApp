@@ -14,7 +14,6 @@ import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Continuous;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Discrete;
 import org.baderlab.csplugins.enrichmentmap.CytoscapeServiceModule.Passthrough;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EMSignatureDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.view.util.ChartUtil;
@@ -70,6 +69,8 @@ public class EMStyleBuilder {
 	public final static Integer FILTERED_OUT_EDGE_TRANSPARENCY = 10;
 	
 	private static final NodeShape SIGNATURE_NODE_SHAPE = DIAMOND;
+	
+	public static final ColorScheme DEF_NODE_COLOR_SCHEME = ColorScheme.RD_BU_3;
 	
 	public static class Columns {
 		public static final String NAMESPACE = "EnrichmentMap";
@@ -152,14 +153,15 @@ public class EMStyleBuilder {
 		public static final Color SIG_EDGE_COLOR = new Color(252, 141, 98);
 		public static final Color COMPOUND_EDGE_COLOR = new Color(102, 194, 165);
 		
-		/* See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=9 */
-		public static final Color MAX_PHENOTYPE_1 = new Color(178, 24, 43);
-		public static final Color LIGHTER_PHENOTYPE_1 = new Color(214, 96, 77);
-		public static final Color LIGHTEST_PHENOTYPE_1 = new Color(244, 165, 130);
-		public static final Color OVER_COLOR = new Color(247, 247, 247);
-		public static final Color MAX_PHENOTYPE_2 = new Color(33, 102, 172);
-		public static final Color LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
-		public static final Color LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
+//		/* See http://colorbrewer2.org/#type=diverging&scheme=RdBu&n=9 */
+		// These are deprecated, use ColorScheme.RD_BU_9 instead
+		@Deprecated public static final Color MAX_PHENOTYPE_1 = new Color(178, 24, 43);
+		@Deprecated public static final Color LIGHTER_PHENOTYPE_1 = new Color(214, 96, 77);
+		@Deprecated public static final Color LIGHTEST_PHENOTYPE_1 = new Color(244, 165, 130);
+		@Deprecated public static final Color OVER_COLOR = new Color(247, 247, 247);
+		@Deprecated public static final Color MAX_PHENOTYPE_2 = new Color(33, 102, 172);
+		@Deprecated public static final Color LIGHTER_PHENOTYPE_2 = new Color(67, 147, 195);
+		@Deprecated public static final Color LIGHTEST_PHENOTYPE_2 = new Color(146, 197, 222);
 	
 		public static final Color LIGHT_GREY = new Color(190, 190, 190);
 		private static final Color BG_COLOR = Color.WHITE;
@@ -490,47 +492,57 @@ public class EMStyleBuilder {
 		vs.addVisualMappingFunction(dm);
 	}
 	
+	public static ColumnDescriptor<Double> getDefaultMappingColumn(EMStyleOptions options) {
+		var isSingleGSEA = options.getEnrichmentMap().isSingleGSEA();
+		if(isSingleGSEA)
+			return Columns.NODE_LOG_PVALUE_NES;
+		else
+			return Columns.NODE_LOG_PVALUE_MAX;
+	}
 	
-	private ContinuousMapping<Double,Paint> createLog10NodeColorMapping(EMStyleOptions options) {
+	public static String getDefaultMappingColumnName(EMStyleOptions options) {
 		var map = options.getEnrichmentMap();
 		var prefix = options.getAttributePrefix();
+		boolean isSingleGSEA = map.isSingleGSEA();
 		
-		boolean isSingleGSEA = map.getDataSetCount() == 1 && map.getDataSetList().get(0).getMethod() == Method.GSEA;
-		
-		String logPValCol;
 		if(isSingleGSEA)
-			logPValCol = Columns.NODE_LOG_PVALUE_NES.with(prefix, map.getDataSetList().get(0));
+			return Columns.NODE_LOG_PVALUE_NES.with(prefix, map.getDataSetList().get(0));
 		else
-			logPValCol = Columns.NODE_LOG_PVALUE_MAX.with(prefix);
-		
+			return Columns.NODE_LOG_PVALUE_MAX.with(prefix);
+	}
+	
+	
+	private ContinuousMapping<Double,Paint> createLog10NodeColorMapping(EMStyleOptions options) {
+		var logPValCol = getDefaultMappingColumnName(options);
 		
 		var mapping = (ContinuousMapping<Double,Paint>) cmFactory.createVisualMappingFunction(
 				logPValCol, Double.class, BasicVisualLexicon.NODE_FILL_COLOR);
 		
-		if(mapping != null) { // can happen in tests
-			var network = options.getNetworkView().getModel();
-			var colList = List.of(columnIdFactory.createColumnIdentifier(logPValCol));
-			var range = ChartUtil.calculateGlobalRange(network, colList, true);
-			
-			var colors = ColorScheme.RD_BU_3.getColors();
-			var negColor  = colors.get(2);
-			var zeroColor = colors.get(1);
-			var posColor  = colors.get(0);
-			
-			var negPoint  = new BoundaryRangeValues<Paint>(negColor, negColor, negColor);
-			var zeroPoint = new BoundaryRangeValues<Paint>(zeroColor, zeroColor, zeroColor);
-			var posPoint  = new BoundaryRangeValues<Paint>(posColor, posColor, posColor);
-						
-			eventHelper.silenceEventSource(mapping);
-			try {
-				if(isSingleGSEA) {
-					mapping.addPoint(-range.max, negPoint);
-				}
-				mapping.addPoint(0.0, zeroPoint);
-				mapping.addPoint(range.max, posPoint);
-			} finally {
-				eventHelper.unsilenceEventSource(mapping);
+		if(mapping == null) // can happen in tests
+			return null;
+		
+		var network = options.getNetworkView().getModel();
+		var colList = List.of(columnIdFactory.createColumnIdentifier(logPValCol));
+		var range = ChartUtil.calculateGlobalRange(network, colList, true);
+		
+		var colors = DEF_NODE_COLOR_SCHEME.getColors();
+		var negColor  = colors.get(2);
+		var zeroColor = colors.get(1);
+		var posColor  = colors.get(0);
+		
+		var negPoint  = new BoundaryRangeValues<Paint>(negColor, negColor, negColor);
+		var zeroPoint = new BoundaryRangeValues<Paint>(zeroColor, zeroColor, zeroColor);
+		var posPoint  = new BoundaryRangeValues<Paint>(posColor, posColor, posColor);
+					
+		eventHelper.silenceEventSource(mapping);
+		try {
+			if(options.getEnrichmentMap().isSingleGSEA()) {
+				mapping.addPoint(-range.max, negPoint);
 			}
+			mapping.addPoint(0.0, zeroPoint);
+			mapping.addPoint(range.max, posPoint);
+		} finally {
+			eventHelper.unsilenceEventSource(mapping);
 		}
 		
 		return mapping;

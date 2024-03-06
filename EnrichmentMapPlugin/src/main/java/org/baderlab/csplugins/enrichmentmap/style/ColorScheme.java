@@ -68,6 +68,18 @@ public enum ColorScheme {
 		return Arrays.asList(colors);
 	}
 	
+	public Color getPosColor() {
+		return colors[0];
+	}
+	
+	public Color getNegColor() {
+		return colors[colors.length-1];
+	}
+	
+	public Color getZeroColor() {
+		return colors[colors.length/2];
+	}
+	
 	/**
 	 * Can be used to create more complex gradients, with fixed range points,
 	 * such as the ones created by Continuous Mappings.

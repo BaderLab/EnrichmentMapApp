@@ -36,6 +36,13 @@ public enum ChartData {
 		return this != NONE && this != DATA_SET && this != EXPRESSION_DATA;
 	}
 	
+	/**
+	 * Returns true if the data range goes negative-zero-positive
+	 */
+	public boolean isDiverging() {
+		return this == NES_VALUE || this == NES_SIG || this == LOG10_PVAL_NES;
+	}
+	
 	@Override
 	public String toString() {
 		return label;

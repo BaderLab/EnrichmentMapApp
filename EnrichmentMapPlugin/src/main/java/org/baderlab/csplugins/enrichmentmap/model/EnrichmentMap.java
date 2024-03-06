@@ -694,6 +694,10 @@ public class EnrichmentMap {
 		return dataSets.values().stream().anyMatch(ds -> ds.getMethod() != Method.GSEA);
 	}
 	
+	public boolean isSingleGSEA() {
+		return getDataSetCount() == 1 && getDataSetList().get(0).getMethod() == Method.GSEA;
+	}
+	
 	@Override
 	public String toString() {
 		return getName();

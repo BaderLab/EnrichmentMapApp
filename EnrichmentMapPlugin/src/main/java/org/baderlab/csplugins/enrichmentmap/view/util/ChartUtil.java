@@ -163,9 +163,6 @@ public final class ChartUtil {
 			if ((data == ChartData.FDR_VALUE || data == ChartData.P_VALUE) && colors.size() == 3) {
 				colors = Arrays.asList(colors.get(1), colors.get(0));
 			} 
-//			else if(data == ChartData.LOG10_PVAL && colors.size() == 3) {
-//				colors = Arrays.asList(colors.get(0), colors.get(1));
-//			}
 		}
 				
 		return colors;

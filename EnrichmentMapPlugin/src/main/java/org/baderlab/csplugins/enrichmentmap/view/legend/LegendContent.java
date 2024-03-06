@@ -28,7 +28,9 @@ public interface LegendContent {
 	
 	public Icon getSignatureNodeShape();
 	
-	public ColorLegendPanel getNodeColorLegend();
+	public ColorLegendPanel getNodePosLegend();
+	
+	public ColorLegendPanel getNodeNegLegend();
 	
 	public ColorLegendPanel getChartPosLegend();
 	

@@ -78,6 +78,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet.Method;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
 import org.baderlab.csplugins.enrichmentmap.style.AbstractColumnDescriptor;
 import org.baderlab.csplugins.enrichmentmap.style.ChartData;
@@ -151,7 +152,8 @@ public class LegendPanel extends JPanel implements LegendContent {
 	private EMStyleOptions options;
 	
 	// legend content
-	private ColorLegendPanel nodeColorLegend;
+	private ColorLegendPanel nodePosLegend;
+	private ColorLegendPanel nodeNegLegend;
 	private ColorLegendPanel chartPosLegend;
 	private ColorLegendPanel chartNegLegend;
 	private JFreeChart chart;
@@ -177,8 +179,13 @@ public class LegendPanel extends JPanel implements LegendContent {
 	}
 	
 	@Override
-	public ColorLegendPanel getNodeColorLegend() {
-		return nodeColorLegend;
+	public ColorLegendPanel getNodePosLegend() {
+		return nodePosLegend;
+	}
+	
+	@Override
+	public ColorLegendPanel getNodeNegLegend() {
+		return nodeNegLegend;
 	}
 	
 	@Override
@@ -238,7 +245,8 @@ public class LegendPanel extends JPanel implements LegendContent {
 			edgeColorPanel = null;
 			dataSetColorPanel = null;
 			
-			nodeColorLegend = null;
+			nodePosLegend = null;
+			nodeNegLegend = null;
 			chartPosLegend = null;
 			chartNegLegend = null;
 			chart = null;
@@ -273,6 +281,7 @@ public class LegendPanel extends JPanel implements LegendContent {
 
 		revalidate();
 	}
+	
 
 	private void updateNodeColorPanel(Collection<EMDataSet> dataSets) {
 		JPanel p = getNodeColorPanel();
@@ -280,32 +289,68 @@ public class LegendPanel extends JPanel implements LegendContent {
 		
 		ChartData data = options.getChartOptions().getData();
 		
-		if (dataSets != null && dataSets.size() == 1 && data == ChartData.NONE) {
-			EMDataSet ds = dataSets.iterator().next();
-			
-			nodeColorLegend = new ColorLegendPanel(
-					Colors.MAX_PHENOTYPE_1,
-					Colors.MAX_PHENOTYPE_2,
-					ds.getEnrichments().getPhenotype1(),
-					ds.getEnrichments().getPhenotype2()
-			);
-			
-			GroupLayout layout = (GroupLayout) p.getLayout();
-	
-			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addGap(0, 0, Short.MAX_VALUE)
-					.addComponent(nodeColorLegend, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(0, 0, Short.MAX_VALUE)
-			);
-			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
-					.addComponent(nodeColorLegend)
-			);
-			
-			p.setVisible(true);
-		} else {
+		p.setVisible(true);
+		if(dataSets == null || dataSets.size() > 1 || data != ChartData.NONE) {
 			p.setVisible(false);
+			return;
 		}
+		
+		// The node color style can only be mapped to one column, charts are needed for multi-column
+		var colName = EMStyleBuilder.getDefaultMappingColumnName(options);
+ 		var colors = EMStyleBuilder.DEF_NODE_COLOR_SCHEME;
+		
+		var columns = List.of(columnIdFactory.createColumnIdentifier(colName));
+		var range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns, true);
+		
+		EMDataSet ds = dataSets.iterator().next();
+		
+		nodePosLegend = new ColorLegendPanel(colors.getPosColor(), colors.getZeroColor(), range.getChartLabelMax(), "0");
+		JLabel posLabel = new JLabel("Positive");
+		SwingUtil.makeSmall(posLabel);
+		
+		var layout = (GroupLayout) p.getLayout();
+		var horizontal = layout.createSequentialGroup()
+			.addGap(0, 0, Short.MAX_VALUE)
+			.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+				.addComponent(posLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(nodePosLegend, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+		var vertical = layout.createParallelGroup(Alignment.CENTER, false)
+			.addGroup(layout.createSequentialGroup()
+				.addComponent(posLabel)
+				.addComponent(nodePosLegend)
+			);
+		
+		if(ds.getMethod() == Method.GSEA) {
+			nodeNegLegend = new ColorLegendPanel(colors.getZeroColor(), colors.getNegColor(), "0", range.getChartLabelMin());
+			JLabel negLabel = new JLabel("Negative");
+			SwingUtil.makeSmall(negLabel);
+			
+			horizontal.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+				.addComponent(negLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(nodeNegLegend, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			vertical.addGroup(layout.createSequentialGroup()
+				.addComponent(negLabel)
+				.addComponent(nodeNegLegend)
+			);
+		}
+		
+		String colLabelName = EMStyleBuilder.getDefaultMappingColumn(options).getBaseName(); // don't want the prefix
+		JLabel colLabel = new JLabel(colLabelName);
+		SwingUtil.makeSmall(colLabel);
+		
+		horizontal.addGap(0, 0, Short.MAX_VALUE);
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER)
+			.addComponent(colLabel)
+			.addGroup(horizontal)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+			.addComponent(colLabel)
+			.addGroup(vertical)
+		);
 	}
+
 	
 	private void updateNodeChartColorPanel(Collection<EMDataSet> dataSets) {
 		JPanel p = getNodeChartColorPanel();
@@ -314,69 +359,67 @@ public class LegendPanel extends JPanel implements LegendContent {
 		ChartOptions chartOptions = options.getChartOptions();
 		ChartData data = chartOptions.getData();
 		
-		if(data != ChartData.NONE && data != ChartData.DATA_SET) {
-			AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
-			List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
-					dataSets, columnDescriptor, columnIdFactory);
-	
-			List<Color> colors = ChartUtil.getChartColors(chartOptions, false);
-			var range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns, true);
-			
-			String posMaxLabel = range.max > 0 ? String.format("%.2f", range.max) : "N/A";
-			Color posMaxColor;
-			Color posMinColor;
-			if(data == ChartData.NES_VALUE) {
-				posMaxColor = colors.get(0);
-				posMinColor = colors.get(colors.size()/2);
-			} else {
-				posMaxColor = colors.get(colors.size()/2);
-				posMinColor = colors.get(0);
-			}
-			
-			chartPosLegend = new ColorLegendPanel(posMaxColor, posMinColor, posMaxLabel, "0", false);
-			JLabel posLabel = new JLabel("Positive");
-			SwingUtil.makeSmall(posLabel);
-			
-			GroupLayout layout = (GroupLayout) p.getLayout();
-			SequentialGroup horizontal = layout.createSequentialGroup()
-				.addGap(0, 0, Short.MAX_VALUE)
-				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-					.addComponent(posLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(chartPosLegend, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				);
-			ParallelGroup vertical = layout.createParallelGroup(Alignment.CENTER, false)
-				.addGroup(layout.createSequentialGroup()
-					.addComponent(posLabel)
-					.addComponent(chartPosLegend)
-				);
-	
-			
-			if(data == ChartData.NES_VALUE || data == ChartData.NES_SIG || data == ChartData.LOG10_PVAL_NES) { // need to show negative range
-				String negMinLabel = range.min < 0 ? String.format("%.2f", range.min) : "N/A";
-				Color negMaxColor = colors.get(colors.size()-1);
-				Color negMinColor = colors.get(colors.size()/2);
-				chartNegLegend = new ColorLegendPanel(negMinColor, negMaxColor, "0", negMinLabel, false);
-				JLabel negLabel = new JLabel("Negative");
-				SwingUtil.makeSmall(negLabel);
-				
-				horizontal.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-					.addComponent(negLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(chartNegLegend, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				);
-				vertical.addGroup(layout.createSequentialGroup()
-					.addComponent(negLabel)
-					.addComponent(chartNegLegend)
-				);
-			}
-			
-			horizontal.addGap(0, 0, Short.MAX_VALUE);
-			layout.setHorizontalGroup(horizontal);
-			layout.setVerticalGroup(vertical);
-			
-			p.setVisible(true);
-		} else {
+		p.setVisible(true);
+		if(data == ChartData.DATA_SET || data == ChartData.NONE) {
 			p.setVisible(false);
+			return;
 		}
+		
+		AbstractColumnDescriptor columnDescriptor = data.getColumnDescriptor();
+		List<CyColumnIdentifier> columns = ChartUtil.getSortedColumnIdentifiers(options.getAttributePrefix(),
+				dataSets, columnDescriptor, columnIdFactory);
+
+		List<Color> colors = ChartUtil.getChartColors(chartOptions, false);
+		var range = ChartUtil.calculateGlobalRange(options.getNetworkView().getModel(), columns, true);
+		
+		Color posMaxColor;
+		Color posMinColor;
+		if(data.isDiverging()) {
+			posMaxColor = colors.get(0);
+			posMinColor = colors.get(colors.size()/2);
+		} else {
+			posMaxColor = colors.get(colors.size()/2);
+			posMinColor = colors.get(0);
+		}
+		
+		chartPosLegend = new ColorLegendPanel(posMaxColor, posMinColor, range.getChartLabelMax(), "0");
+		JLabel posLabel = new JLabel("Positive");
+		SwingUtil.makeSmall(posLabel);
+		
+		var layout = (GroupLayout) p.getLayout();
+		var horizontal = layout.createSequentialGroup()
+			.addGap(0, 0, Short.MAX_VALUE)
+			.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+				.addComponent(posLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(chartPosLegend, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+		var vertical = layout.createParallelGroup(Alignment.CENTER, false)
+			.addGroup(layout.createSequentialGroup()
+				.addComponent(posLabel)
+				.addComponent(chartPosLegend)
+			);
+
+		
+		if(data.isDiverging()) { // need to show negative range
+			Color negMaxColor = colors.get(colors.size()-1);
+			Color negMinColor = colors.get(colors.size()/2);
+			chartNegLegend = new ColorLegendPanel(negMinColor, negMaxColor, "0", range.getChartLabelMin());
+			JLabel negLabel = new JLabel("Negative");
+			SwingUtil.makeSmall(negLabel);
+			
+			horizontal.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+				.addComponent(negLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(chartNegLegend, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			vertical.addGroup(layout.createSequentialGroup()
+				.addComponent(negLabel)
+				.addComponent(chartNegLegend)
+			);
+		}
+		
+		horizontal.addGap(0, 0, Short.MAX_VALUE);
+		layout.setHorizontalGroup(horizontal);
+		layout.setVerticalGroup(vertical);
 	}
 	
 	private void updateNodeShapePanel() {

@@ -70,13 +70,14 @@ public class ExportLegendPDFTask extends AbstractTask {
 	
 	
 	private List<Element> createNodeColorSection(PdfWriter writer) throws DocumentException {
-		ColorLegendPanel colorPanel = content.getNodeColorLegend();
-		if(colorPanel == null)
-			return null;
-		Paragraph title = new Paragraph(new Chunk(LegendContent.NODE_COLOR_HEADER));
-		Paragraph body = new Paragraph();
-		body.add(createNodeColor(writer, colorPanel));
-		return Arrays.asList(title, body);
+//		ColorLegendPanel colorPanel = content.getNodeColorLegend();
+//		if(colorPanel == null)
+//			return null;
+//		Paragraph title = new Paragraph(new Chunk(LegendContent.NODE_COLOR_HEADER));
+//		Paragraph body = new Paragraph();
+//		body.add(createNodeColor(writer, colorPanel));
+//		return Arrays.asList(title, body);
+		return null;
 	}
 	
 	private static Image createNodeColor(PdfWriter writer, ColorLegendPanel colorPanel) throws DocumentException {
