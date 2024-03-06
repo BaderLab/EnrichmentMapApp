@@ -10,7 +10,7 @@ import org.jfree.chart.JFreeChart;
 
 public interface LegendContent {
 	
-	public static final String NODE_COLOR_HEADER = "Node Fill Color: Phenotype * (1-P_value)";
+	public static final String NODE_COLOR_HEADER = "Node Fill Color";
 	public static final String NODE_CHART_HEADER = "Node Charts";
 	public static final String NODE_SHAPE_HEADER = "Node Shape";
 	public static final String NODE_CHART_COLOR_HEADER = "Node Chart Colors";
@@ -20,25 +20,27 @@ public interface LegendContent {
 	public static final int LEGEND_ICON_SIZE = 18;
 	
 	
-	public JFreeChart getChart();
+	JFreeChart getChart();
 	
-	public String getChartLabel();
+	String getChartLabel();
 	
-	public Icon getGeneSetNodeShape();
+	Icon getGeneSetNodeShape();
 	
-	public Icon getSignatureNodeShape();
+	Icon getSignatureNodeShape();
 	
-	public ColorLegendPanel getNodePosLegend();
+	ColorLegendPanel getNodePosLegend();
 	
-	public ColorLegendPanel getNodeNegLegend();
+	ColorLegendPanel getNodeNegLegend();
 	
-	public ColorLegendPanel getChartPosLegend();
+	String getNodeColorMappingColName();
 	
-	public ColorLegendPanel getChartNegLegend();
+	ColorLegendPanel getChartPosLegend();
 	
-	public Map<Object,Paint> getEdgeColors();
+	ColorLegendPanel getChartNegLegend();
 	
-	public Map<Object,Paint> getDataSetColors();
+	Map<Object,Paint> getEdgeColors();
 	
-	public EMStyleOptions getOptions();
+	Map<Object,Paint> getDataSetColors();
+	
+	EMStyleOptions getOptions();
 }

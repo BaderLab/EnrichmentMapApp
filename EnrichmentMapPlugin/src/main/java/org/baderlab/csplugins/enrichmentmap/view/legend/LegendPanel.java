@@ -189,6 +189,11 @@ public class LegendPanel extends JPanel implements LegendContent {
 	}
 	
 	@Override
+	public String getNodeColorMappingColName() {
+		return EMStyleBuilder.getDefaultMappingColumn(options).getBaseName(); 
+	}
+	
+	@Override
 	public JFreeChart getChart() {
 		return chart;
 	}
