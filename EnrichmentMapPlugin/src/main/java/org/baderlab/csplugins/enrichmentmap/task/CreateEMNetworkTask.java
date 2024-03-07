@@ -199,9 +199,9 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 	
 	
 	private boolean needsInit = true;
-	private Double minPValueThatsNotZero = null;
+	private double minPValueThatsNotZero;
 	
-	private Double getMinPValueThatsNotZero() {
+	private double getMinPValueThatsNotZero() {
 		if(needsInit) {
 			Double minPValue = null;
 			
@@ -217,29 +217,30 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 				}
 			}
 			
-			minPValueThatsNotZero = minPValue; // could still possibly be null
+			if(minPValue == null) {
+				minPValueThatsNotZero = 1e-10; // bug #540
+			} else {
+				minPValueThatsNotZero = minPValue;
+			}
+			
 			needsInit = false;
 		}
 		return minPValueThatsNotZero;
 	}
 		
 	
-	private Double getNegLog10pval(EMDataSet dataset, EnrichmentResult result) {
+	private double getNegLog10pval(EMDataSet dataset, EnrichmentResult result) {
 		double pval = result.getPvalue();
 		if(pval > 0.0) {
 			return -Math.log10(pval);
-		} else if(pval == 0.0) {
-			Double minPval = getMinPValueThatsNotZero();
-			if(minPval != null) {
-				return -Math.log10(minPval);
-			}
+		} else {
+			double minPval = getMinPValueThatsNotZero();
+			return -Math.log10(minPval);
 		}
-		return null;
 	}
 	
 	
-	private Double getMaxNegLog10pval(String genesetName) {
-		boolean hasVal = false;
+	private double getMaxNegLog10pval(String genesetName) {
 		double maxVal = Double.MIN_VALUE;
 		
 		for(EMDataSet ds : map.getDataSetList()) {
@@ -247,18 +248,14 @@ public class CreateEMNetworkTask extends AbstractTask implements ObservableTask 
 			if(result != null) {
 				double pval = result.getPvalue();
 				if(pval > 0.0) {
-					hasVal = true;
 					maxVal = Math.max(maxVal, -Math.log10(pval));
 				} else {
-					Double minPval = getMinPValueThatsNotZero();
-					if(minPval != null) {
-						hasVal = true;
-						maxVal = Math.max(maxVal, -Math.log10(minPval));
-					}
+					double minPval = getMinPValueThatsNotZero();
+					maxVal = Math.max(maxVal, -Math.log10(minPval));
 				}
 			}
 		}
-		return hasVal ? maxVal : null; // leave the cell blank
+		return maxVal; // leave the cell blank
 	}
 	
 		

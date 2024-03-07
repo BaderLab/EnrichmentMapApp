@@ -493,22 +493,19 @@ public class EMStyleBuilder {
 	}
 	
 	public static ColumnDescriptor<Double> getDefaultMappingColumn(EMStyleOptions options) {
-		var isSingleGSEA = options.getEnrichmentMap().isSingleGSEA();
-		if(isSingleGSEA)
-			return Columns.NODE_LOG_PVALUE_NES;
-		else
-			return Columns.NODE_LOG_PVALUE_MAX;
+		boolean isSingleGSEA = options.getEnrichmentMap().isSingleGSEA();
+		return isSingleGSEA
+			? Columns.NODE_LOG_PVALUE_NES
+			: Columns.NODE_LOG_PVALUE_MAX;
 	}
 	
 	public static String getDefaultMappingColumnName(EMStyleOptions options) {
 		var map = options.getEnrichmentMap();
 		var prefix = options.getAttributePrefix();
 		boolean isSingleGSEA = map.isSingleGSEA();
-		
-		if(isSingleGSEA)
-			return Columns.NODE_LOG_PVALUE_NES.with(prefix, map.getDataSetList().get(0));
-		else
-			return Columns.NODE_LOG_PVALUE_MAX.with(prefix);
+		return isSingleGSEA
+			? Columns.NODE_LOG_PVALUE_NES.with(prefix, map.getDataSetList().get(0))
+			: Columns.NODE_LOG_PVALUE_MAX.with(prefix);
 	}
 	
 	
@@ -525,14 +522,14 @@ public class EMStyleBuilder {
 		var colList = List.of(columnIdFactory.createColumnIdentifier(logPValCol));
 		var range = ChartUtil.calculateGlobalRange(network, colList, true);
 		
-		var colors = DEF_NODE_COLOR_SCHEME.getColors();
-		var negColor  = colors.get(2);
-		var zeroColor = colors.get(1);
-		var posColor  = colors.get(0);
+		var colors = DEF_NODE_COLOR_SCHEME;
+		var negColor  = colors.getNegColor();
+		var zeroColor = colors.getZeroColor();
+		var posColor  = colors.getPosColor();
 		
-		var negPoint  = new BoundaryRangeValues<Paint>(negColor, negColor, negColor);
+		var negPoint  = new BoundaryRangeValues<Paint>(negColor,  negColor,  negColor);
 		var zeroPoint = new BoundaryRangeValues<Paint>(zeroColor, zeroColor, zeroColor);
-		var posPoint  = new BoundaryRangeValues<Paint>(posColor, posColor, posColor);
+		var posPoint  = new BoundaryRangeValues<Paint>(posColor,  posColor,  posColor);
 					
 		eventHelper.silenceEventSource(mapping);
 		try {
