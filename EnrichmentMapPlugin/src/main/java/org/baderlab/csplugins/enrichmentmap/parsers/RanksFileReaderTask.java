@@ -153,6 +153,9 @@ public class RanksFileReaderTask extends AbstractTask implements ObservableTask 
 			}
 
 			String[] tokens = line.split("\t");
+			if(tokens.length == 0) {
+				continue;
+			}
 
 			String name = tokens[0].toUpperCase();
 			double score = 0;
