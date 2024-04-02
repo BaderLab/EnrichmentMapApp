@@ -201,8 +201,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	@Override
 	public JPanel createBodyPanel(CardDialogCallback callback) {
 		this.callback = callback;
-//		this.commonPanel = commonPanelProvider.get();
-//		commonParams = new DataSetListItem(commonPanel);
 				
 		JPanel dataPanel = createDataSetPanel();
 		dataPanel.setBorder(LookAndFeelUtil.createPanelBorder());
@@ -232,6 +230,7 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		
 		dataSetListModel.add(0, commonParams);
 		dataSetDetailPanel.add(commonParams.getDetailPanel().getPanel(), commonParams.id);
+		dataSetList.clearSelection();
 		dataSetList.setSelectedValue(commonParams, true);
 	}
 	
@@ -249,7 +248,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		scrollPane.setViewportView(dataSetList);
 		
 		dataSetDetailPanel = new JPanel(new BorderLayout());
-//		dataSetDetailPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"))); 
 		cardLayout = new CardLayout();
 		dataSetDetailPanel.setLayout(cardLayout);
 		
@@ -257,10 +255,6 @@ public class MasterDetailDialogPage implements CardDialogPage {
 		DetailGettingStartedPanel nullPanel = nullPanelProvider.get();
 		nullPanel.setScanButtonCallback(this::scanButtonClicked);
 		dataSetDetailPanel.add(nullPanel, "nothing");
-		
-//		// Common page
-//		dataSetListModel.addElement(commonParams);
-//		dataSetDetailPanel.add(commonParams.getDetailPanel().getPanel(), commonParams.id);
 		
 		JPanel leftPanel = new JPanel(new BorderLayout());
 		leftPanel.add(titlePanel, BorderLayout.NORTH);
@@ -329,12 +323,10 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	
 	@Override
 	public void opened() {
-		if(dataSetListModel.getSize() == 1) { // no data sets, only "common files" in list
-			selectItem(null); // reset the detail panel, shows "getting started" message
-			dataSetList.clearSelection();
-		}
 		networkNamePanel.opened();
-		addButton.requestFocus();
+		if(dataSetListModel.isEmpty()) {
+			addButton.requestFocus();
+		}
 	}
 	
 	private void addDataSetToList(DataSetParameters params) {
@@ -403,10 +395,10 @@ public class MasterDetailDialogPage implements CardDialogPage {
 	}
 	
 	private void updateAutomaticNetworkName() {
-		if(dataSetListModel.isEmpty())
+		int start = commonPanel == null ? 0 : 1;
+		if(dataSetListModel.size() <= start)
 			return;
-		int index = commonPanel == null ? 0 : 1;
-		String name = dataSetListModel.get(index).getDetailPanel().getDataSetName();
+		String name = dataSetListModel.get(start).getDetailPanel().getDataSetName();
 		networkNamePanel.setAutomaticName(name);
 	}
 	
