@@ -37,6 +37,7 @@ public class NameAndLayoutPanel extends JPanel {
 	private JTextField nameText;
 	
 	private JComboBox<ComboItem<CyLayoutAlgorithm>> layoutComboBox;
+	private JCheckBox runAACheck;
 	
 	private JLabel yFilesLink;
 	
@@ -60,8 +61,16 @@ public class NameAndLayoutPanel extends JPanel {
 		
 		yFilesLink = createInstallLink();
 		
+		runAACheck = new JCheckBox("Run AutoAnnotate to highlight significant nodes");
+		if(isAAInstalled()) {
+			runAACheck.setSelected(true);
+		} else {
+			runAACheck.setSelected(false);
+			runAACheck.setVisible(false);
+		}
+		
 		makeSmall(networkLabel, useAutomaticCheck, nameText);
-		makeSmall(layoutLabel, layoutComboBox, yFilesLink);
+		makeSmall(layoutLabel, layoutComboBox, yFilesLink, runAACheck);
 		
 		useAutomaticCheck.setSelected(true);
 		nameText.setEnabled(false);
@@ -76,6 +85,7 @@ public class NameAndLayoutPanel extends JPanel {
 				manualValue = nameText.getText();
 			}
 		}));
+		
 		
 		
 		GroupLayout layout = new GroupLayout(this);
@@ -94,6 +104,7 @@ public class NameAndLayoutPanel extends JPanel {
 				.addComponent(layoutComboBox, 0, 400, 400)
 				.addComponent(yFilesLink)
 			)
+			.addComponent(runAACheck)
 		);
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
@@ -107,6 +118,7 @@ public class NameAndLayoutPanel extends JPanel {
 				.addComponent(layoutComboBox)
 				.addComponent(yFilesLink)
 			)
+			.addComponent(runAACheck)
 		);
 		
 		opened();
@@ -192,7 +204,7 @@ public class NameAndLayoutPanel extends JPanel {
 	}
 	
 	public boolean isRunAutoAnnotate() {
-		return isAAInstalled();
+		return runAACheck.isSelected() && isAAInstalled();
 	}
 
 }

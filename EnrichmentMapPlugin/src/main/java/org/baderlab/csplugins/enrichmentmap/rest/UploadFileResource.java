@@ -31,7 +31,6 @@ public class UploadFileResource {
 	
 	
 	@POST
-	@javax.ws.rs.Path("/")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value="Upload a file.",

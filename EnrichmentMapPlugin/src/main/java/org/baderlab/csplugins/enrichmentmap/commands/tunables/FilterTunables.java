@@ -67,6 +67,9 @@ public class FilterTunables {
 			+ "for the network based on the name of the first data set.")
 	public String networkName = null;
 	
+	@Tunable(description = "If true will run AutoAnnotate to highlight significant nodes with larger labels.")
+	public boolean runAutoAnnotate = false;
+	
 	// Not a tunable, for use by integration tests
 	public String attributePrefix = null;
 	
@@ -94,10 +97,23 @@ public class FilterTunables {
 		String attPrefix = this.attributePrefix == null ? EMStyleBuilder.Columns.NAMESPACE_PREFIX : attributePrefix;
 		String stylePrefix = legacySupport.getNextStylePrefix();
 		
-		return new EMCreationParameters(attPrefix, stylePrefix, pvalue, qvalue, getNesFilter(), 
-					Optional.ofNullable(minExperiments), filterByExpressions, parseBaderlabNames,
-					getSimilarityMetric(), similaritycutoff, combinedConstant, 
-					getEdgeStrategy());
+		EMCreationParameters params = new EMCreationParameters(
+				attPrefix, 
+				stylePrefix, 
+				pvalue, 
+				qvalue, 
+				getNesFilter(), 
+				Optional.ofNullable(minExperiments), 
+				filterByExpressions, 
+				parseBaderlabNames,
+				getSimilarityMetric(), 
+				similaritycutoff, 
+				combinedConstant, 
+				getEdgeStrategy()
+			);
+		
+		params.setRunAutoAnnotate(runAutoAnnotate);
+		return params;
 	}
 	
 	public static ListSingleSelection<String> enumNames(Enum<?>[] values) {

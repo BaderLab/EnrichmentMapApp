@@ -43,6 +43,9 @@ public class MastermapCommandTask extends AbstractTask implements ObservableTask
 	@Tunable(description="Absolute path to a class file that will be used for every data set. Overrides other class files.")
 	public File commonClassFile;
 	
+	@Tunable(description = "If true will run AutoAnnotate to highlight significant nodes with larger labels.")
+	public boolean runAutoAnnotate = false;
+	
 	@ContainsTunables
 	@Inject
 	public FilterTunables filterArgs;

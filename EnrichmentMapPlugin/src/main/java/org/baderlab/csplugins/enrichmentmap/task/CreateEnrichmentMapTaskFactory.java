@@ -35,12 +35,14 @@ import org.baderlab.csplugins.enrichmentmap.parsers.ParseGenericEnrichmentResult
 import org.baderlab.csplugins.enrichmentmap.parsers.RanksFileReaderTask;
 import org.baderlab.csplugins.enrichmentmap.resolver.DataSetResolver;
 import org.baderlab.csplugins.enrichmentmap.util.Baton;
+import org.baderlab.csplugins.enrichmentmap.view.creation.DependencyChecker;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskIterator;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 
 public class CreateEnrichmentMapTaskFactory {
@@ -52,6 +54,7 @@ public class CreateEnrichmentMapTaskFactory {
 	@Inject private CreateEMViewTask.Factory createEMViewTaskFactory;
 	@Inject private LoadEnrichmentsFromGenemaniaTask.Factory genemanaiaTaskFactory;
 	@Inject private AutoAnnotateInitTask.Factory initAutoAnnotateTaskFactory;
+	@Inject private Provider<DependencyChecker> dependencyCheckerProvider;
 	
 	private final EMCreationParameters params;
 	private final List<DataSetParameters> dataSets;
@@ -161,7 +164,7 @@ public class CreateEnrichmentMapTaskFactory {
 		if(!headless) {
 			tasks.append(createEMViewTaskFactory.create(map, params.getLayout()));
 
-			if(params.isRunAutoAnnotate()) {
+			if(params.isRunAutoAnnotate() && isAAInstalled()) {
 				var defaultDataSet = dataSets.get(0).getName();
 				tasks.append(initAutoAnnotateTaskFactory.create(defaultDataSet));
 			}
@@ -220,4 +223,7 @@ public class CreateEnrichmentMapTaskFactory {
 		}
 	}
 	
+	private boolean isAAInstalled() {
+		return dependencyCheckerProvider.get().isCommandAvailable("autoannotate", "eminit");
+	}
 }
