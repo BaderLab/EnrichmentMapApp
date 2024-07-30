@@ -67,8 +67,8 @@ public class FilterTunables {
 			+ "for the network based on the name of the first data set.")
 	public String networkName = null;
 	
-	@Tunable(description = "If true will run AutoAnnotate to highlight significant nodes with larger labels.")
-	public boolean runAutoAnnotate = false;
+	@Tunable(description = "If true will run AutoAnnotate to highlight significant nodes with larger labels. The AutoAnnotate app must be installed.")
+	public boolean runAutoAnnotate = true;
 	
 	// Not a tunable, for use by integration tests
 	public String attributePrefix = null;
