@@ -412,7 +412,10 @@ public class DataSetResolver {
 	public static Type guessEnrichmentTypeFromPath(String path) {
 		Path p = Paths.get(path);
 		DataLines lines = getFirstDataLines(p);
-		return guessEnrichmentType(lines.firstLine);
+		if(lines != null) {
+			return guessEnrichmentType(lines.firstLine);
+		}
+		return null;
 	}
 	
 	/*

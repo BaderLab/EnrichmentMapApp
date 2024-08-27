@@ -183,14 +183,20 @@ public class CreateEnrichmentMapTaskFactory {
 		
 		try {
 			if(!Strings.isNullOrEmpty(enrichmentsFileName1)) {
-				AbstractTask current = readFile(dataset, enrichmentsFileName1, gseaStrategy);
-				if(current instanceof ParseGREATEnrichmentResults)
-					parserTasks.append(new GREATWhichPvalueQuestionTask(dataset.getMap()));
-				parserTasks.append(current);
+				var task = readFile(dataset, enrichmentsFileName1, gseaStrategy);
+				if(task != null) {
+					if(task instanceof ParseGREATEnrichmentResults) {
+						parserTasks.append(new GREATWhichPvalueQuestionTask(dataset.getMap()));
+					}
+					parserTasks.append(task);
+				}
 			}
 			
 			if(!Strings.isNullOrEmpty(enrichmentsFileName2)) {
-				parserTasks.append(readFile(dataset, enrichmentsFileName2, gseaStrategy));
+				var task = readFile(dataset, enrichmentsFileName2, gseaStrategy);
+				if(task != null) {
+					parserTasks.append(task);
+				}
 			}
 			
 			//If both of the enrichment files are null then we want to default to building a gmt file only build
@@ -211,6 +217,9 @@ public class CreateEnrichmentMapTaskFactory {
 			return new ParseEDBEnrichmentResults(dataset);
 		} else {
 			DataSetResolver.Type type = DataSetResolver.guessEnrichmentTypeFromPath(fileName);
+			if(type == null) { // nothing to parse
+				return null;
+			}
 			switch(type) {
 				default:
 				case ENRICHMENT_GENERIC: return new ParseGenericEnrichmentResults(dataset);
