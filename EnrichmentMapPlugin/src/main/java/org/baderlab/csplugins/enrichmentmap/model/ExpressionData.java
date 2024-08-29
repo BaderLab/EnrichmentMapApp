@@ -1,7 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import java.util.Optional;
-
 /**
  * Common interface for different levels of compression.
  */
@@ -13,8 +11,8 @@ public interface ExpressionData {
 
 	String getName(int col);
 
-	public default Optional<String> getPhenotype(int col) {
-		return Optional.empty();
+	public default Phenotype getPhenotype(int col) {
+		return null;
 	};
 
 	int getSize();

@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.swing.table.AbstractTableModel;
@@ -22,6 +21,7 @@ import org.baderlab.csplugins.enrichmentmap.model.ExpressionCache;
 import org.baderlab.csplugins.enrichmentmap.model.ExpressionData;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
+import org.baderlab.csplugins.enrichmentmap.model.Phenotype;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.model.Uncompressed;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
@@ -98,7 +98,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		
 		ExpressionData uncompressed = new Uncompressed(this.datasets, expressionCache);
 		ExpressionData compressedDataSet = new CompressedDataSet(this.datasets, expressionCache, map != null && map.isDistinctExpressionSets());
-		ExpressionData compressedClass = new CompressedClass(this.datasets, expressionCache);
+		ExpressionData compressedClass = new CompressedClass(map, this.datasets, expressionCache);
 		
 		data.put(Compress.NONE, uncompressed);
 		data.put(Compress.DATASET_MEDIAN, compressedDataSet);
@@ -263,7 +263,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 		return leadingEdge;
 	}
 	
-	public Optional<String> getPhenotype(int col) {
+	public Phenotype getPhenotype(int col) {
 		ExpressionData exp = data.get(compress);
 		return exp != null ? exp.getPhenotype(col - DESC_COL_COUNT) : null;
 	}

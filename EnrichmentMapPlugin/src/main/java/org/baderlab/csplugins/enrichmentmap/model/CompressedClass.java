@@ -1,62 +1,134 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.lang3.tuple.Pair;
+import org.baderlab.csplugins.enrichmentmap.model.Phenotype.Type;
 
 public class CompressedClass implements ExpressionData {
 
 	private final ExpressionCache expressionCache;
-	private List<Pair<EMDataSet,String>> headers = new ArrayList<>();
+	private List<Phenotype> headers = new ArrayList<>();
 	
-	public CompressedClass(List<EMDataSet> datasets, ExpressionCache expressionCache) {
+	/**
+	 * If the expressions are the same for multiple data sets then we will only get one data set passed in
+	 * to the constructor, even if the map has more than one data set.
+	 */
+	public CompressedClass(EnrichmentMap map, List<EMDataSet> datasets, ExpressionCache expressionCache) {
 		this.expressionCache = expressionCache;
 		
-		for(EMDataSet dataset : datasets) {
-			LinkedHashSet<String> uniquePhenos = new LinkedHashSet<>();
-			SetOfEnrichmentResults enrichments = dataset.getEnrichments();
+		// Special case. There is more than one dataset in the map, and they have different phenotypes,
+		// but the expression values are the same and we don't want to repeat them in the table.
+		if(map != null && map.isCommonExpressionValues() && !phenotypesAreCommon(map)) {
+			// we only get passed one dataset because expressions are the same
+			var dataset = datasets.get(0); 
+			var classPhenos = getPhenotypesFromClassFile(dataset);
+			var highlightPhenos = getPhenotypesToHighlight(map.getDataSetList()); // get the phenotypes from all the data sets
+			addHeaders(dataset, classPhenos, highlightPhenos);
 			
-			// Make sure the chosen classes go first
-			String pheno1 = enrichments.getPhenotype1();
-			if(pheno1 != null)
-				uniquePhenos.add(pheno1);
-			
-			String pheno2 = enrichments.getPhenotype2();
-			if(pheno2 != null)
-				uniquePhenos.add(pheno2);
-			
-			// Add the rest of the classes
-			String[] phenotypes = enrichments.getPhenotypes();
-			if(phenotypes != null) {
-				for(String pheno : phenotypes) {
-					if(pheno != null) {
-						uniquePhenos.add(pheno);
-					}
-				}
-			}
-			
-			for(String pheno : uniquePhenos) {
-				headers.add(Pair.of(dataset, pheno));
+		} else {
+			for(var dataset : datasets) {
+				var classPhenos = getPhenotypesFromClassFile(dataset);
+				var highlightPhenos = getPhenotypesToHighlight(List.of(dataset));
+				addHeaders(dataset, classPhenos, highlightPhenos);
 			}
 		}
 	}
 	
+	
+	private void addHeaders(EMDataSet mainDataSet, LinkedHashSet<String> classPhenos, List<Phenotype> highlightPhenos) {
+		// move highlighted phenotypes to the front
+		for(Phenotype pheno : highlightPhenos) {
+			if(classPhenos.contains(pheno.getName())) {
+				headers.add(pheno);
+			}
+		}
+		for(Phenotype pheno : highlightPhenos) {
+			classPhenos.remove(pheno.getName());
+		}
+		
+		for(String phenoName : classPhenos) {
+			headers.add(new Phenotype(mainDataSet, phenoName, Type.OTHER));
+		}
+	}
+	
+	/**
+	 * These are the phenotypes entered into the "Phenotypes" fields in the creation dialo
+	 * They need to be highlighted in the table.
+	 */
+	private static List<Phenotype> getPhenotypesToHighlight(List<EMDataSet> datasets) {
+		List<Phenotype> phenos = new ArrayList<>();
+		
+		for(var dataset : datasets) {
+			var enrichments = dataset.getEnrichments();
+			
+			String pheno1 = enrichments.getPhenotype1();
+			if(pheno1 != null) {
+				phenos.add(new Phenotype(dataset, pheno1, Type.POSITIVE));
+			}
+			String pheno2 = enrichments.getPhenotype2();
+			if(pheno2 != null) {
+				phenos.add(new Phenotype(dataset, pheno2, Type.NEGATIVE));
+			}
+		}
+		
+		return phenos;
+	}
+	
+	/**
+	 * Returns unique classes from the class file in the same order as the file.
+	 */
+	private static LinkedHashSet<String> getPhenotypesFromClassFile(EMDataSet dataset) {
+		var enrichments = dataset.getEnrichments();
+		LinkedHashSet<String> uniquePhenos = new LinkedHashSet<>();
+		
+		String[] phenotypes = enrichments.getPhenotypes();
+		if(phenotypes != null) {
+			for(String pheno : phenotypes) {
+				if(pheno != null) {
+					uniquePhenos.add(pheno);
+				}
+			}
+		}
+		
+		return uniquePhenos;
+	}
+	
+	
+	private static boolean phenotypesAreCommon(EnrichmentMap map) {
+		Iterator<EMDataSet> iter = map.getDataSets().values().iterator();
+		SetOfEnrichmentResults r = iter.next().getEnrichments();
+		String p1 = r.getPhenotype1();
+		String p2 = r.getPhenotype2();
+		
+		while(iter.hasNext()) {
+			SetOfEnrichmentResults r2 = iter.next().getEnrichments();
+			if(!p1.equals(r2.getPhenotype1()))
+				return false;
+			if(!p2.equals(r2.getPhenotype2()))
+				return false;
+		}
+		
+		return true;
+	}
+	
+	
 	@Override
 	public EMDataSet getDataSet(int idx) {
-		return headers.get(idx).getLeft();
+		return headers.get(idx).getDataSet();
 	}
 
 	@Override
 	public String getName(int idx) {
-		return headers.get(idx).getRight();
+		return getPhenotype(idx).getName();
 	}
 	
 	@Override
-	public Optional<String> getPhenotype(int idx) {
-		return Optional.of(getName(idx));
+	public Phenotype getPhenotype(int idx) {
+		return headers.get(idx);
 	}
 	
 	@Override

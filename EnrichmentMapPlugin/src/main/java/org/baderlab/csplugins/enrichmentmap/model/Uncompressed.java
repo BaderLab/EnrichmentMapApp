@@ -2,8 +2,10 @@ package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.List;
 import java.util.NavigableMap;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.TreeMap;
+
+import org.baderlab.csplugins.enrichmentmap.model.Phenotype.Type;
 
 public class Uncompressed implements ExpressionData {
 
@@ -58,14 +60,30 @@ public class Uncompressed implements ExpressionData {
 	}
 
 	@Override
-	public Optional<String> getPhenotype(int idx) {
+	public Phenotype getPhenotype(int idx) {
 		EMDataSet dataset = getDataSet(idx);
 		int index = getIndexInDataSet(idx);
-		String[] classes = dataset.getEnrichments().getPhenotypes();
 		
-		if (classes != null && index < classes.length)
-			return Optional.ofNullable(classes[index]);
+		var enrichments = dataset.getEnrichments();
+		String[] classes = enrichments.getPhenotypes();
 		
-		return Optional.empty();
+		if(classes == null || index >= classes.length)
+			return null;
+		
+		String pheno = classes[index];
+		if(pheno == null) // being defensive, don't think this can actually happen
+			return null;
+		
+		Type type;
+		if(Objects.equals(pheno, enrichments.getPhenotype1())) {
+			type = Type.POSITIVE;
+		} else if(Objects.equals(pheno, enrichments.getPhenotype2())) {
+			type = Type.NEGATIVE;
+		} else {
+			type = Type.OTHER;
+		}
+		
+		return new Phenotype(dataset, pheno, type);
 	}
+	
 }

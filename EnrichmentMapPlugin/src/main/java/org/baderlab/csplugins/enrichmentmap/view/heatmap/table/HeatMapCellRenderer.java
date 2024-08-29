@@ -48,6 +48,8 @@ public class HeatMapCellRenderer extends JLabel implements TableCellRenderer {
 				setText(text);
 				setFont(new Font((UIManager.getFont("TableHeader.font")).getName(), Font.PLAIN, (UIManager.getFont("TableHeader.font")).getSize()-2));
 	      	   	setHorizontalAlignment(SwingConstants.RIGHT);
+			} else {
+				setText("");
 			}
 		} else {
 			setText("");
@@ -82,7 +84,7 @@ public class HeatMapCellRenderer extends JLabel implements TableCellRenderer {
 			Color color = range.getColor(d);
 			return color;
 		} else {
-			return Color.GRAY;
+			return Color.LIGHT_GRAY.brighter();
 		}
 	}
 	

@@ -899,7 +899,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 			case CLASS_MEDIAN:
 			case CLASS_MAX:
 			case CLASS_MIN:
-				exp = new CompressedClass(datasets, cache);
+				exp = new CompressedClass(map, datasets, cache);
 				break;
 			default:
 				exp = new Uncompressed(datasets, cache);

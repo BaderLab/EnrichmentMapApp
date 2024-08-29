@@ -41,6 +41,8 @@ import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.Compress;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
+import org.baderlab.csplugins.enrichmentmap.model.Phenotype;
+import org.baderlab.csplugins.enrichmentmap.model.Phenotype.Type;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
@@ -156,17 +158,15 @@ public class HeatMapContentPanel extends JPanel {
 		rankColumn.setHeaderRenderer(columnHeaderRankOptionRendererFactory.create(this, RANK_COL));
 		rankColumn.setPreferredWidth(100);
 		
+		// Iterate over the gene expression columns
 		int colCount = tableModel.getColumnCount();
 		for (int col = HeatMapTableModel.DESC_COL_COUNT; col < colCount; col++) {
-			EMDataSet dataset = tableModel.getDataSet(col);
-			String pheno1 = dataset.getEnrichments().getPhenotype1();
-			String pheno2 = dataset.getEnrichments().getPhenotype2();
+			Phenotype pheno = tableModel.getPhenotype(col);
 			
-			Optional<String> pheno = tableModel.getPhenotype(col);
 			TableCellRenderer renderer;
-			if (pheno.filter(p -> p.equals(pheno1)).isPresent())
+			if(pheno != null && pheno.getType() == Type.POSITIVE)
 				renderer = vertRendererPheno1;
-			else if(pheno.filter(p -> p.equals(pheno2)).isPresent())
+			else if(pheno != null && pheno.getType() == Type.NEGATIVE)
 				renderer = vertRendererPheno2;
 			else
 				renderer = vertRenderer;

@@ -61,7 +61,7 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 		// if there are multiple datasets check to see if they have the same set of genes
 		if(datasetsAreDistinct(map)) {
 			map.setDistinctExpressionSets(true);
-		} else if(expressionValuesAreCommon(map)) { // We only compress the heatmap if the expression values are the same
+		} else if(expressionAndClasssesAreCommon(map)) { // We only compress the heatmap if the expression values are the same
 			map.setCommonExpressionValues(true);
 		}
 	}
@@ -78,23 +78,17 @@ public class FilterGenesetsByDatasetGenes extends AbstractTask {
 		return false;
 	}
 	
-	private static boolean expressionValuesAreCommon(EnrichmentMap map) {
-		// If there is only one expression matrix then its obviously not distinct.
-		if(map.getExpressionMatrixKeys().size() != 1) {
+	private static boolean expressionAndClasssesAreCommon(EnrichmentMap map) {
+		if(map.getExpressionMatrixKeys().size() != 1)
 			return false;
-		}
+		
+		// The data sets have the same expression values, but they might not have the same phenotypes/classes.
 		Iterator<EMDataSet> iter = map.getDataSets().values().iterator();
 		SetOfEnrichmentResults r = iter.next().getEnrichments();
-		String p1 = r.getPhenotype1();
-		String p2 = r.getPhenotype2();
 		String[] ps = r.getPhenotypes();
 		
 		while(iter.hasNext()) {
 			SetOfEnrichmentResults r2 = iter.next().getEnrichments();
-			if(!p1.equals(r2.getPhenotype1()))
-				return false;
-			if(!p2.equals(r2.getPhenotype2()))
-				return false;
 			if(!Arrays.equals(ps, r2.getPhenotypes()))
 				return false;
 		}
