@@ -54,7 +54,7 @@ public class DetailCommonPanel extends JPanel implements DetailPanel {
 	
 	@AfterInjection
 	private void createContents() {
-		JLabel title = new JLabel("<html>These files will be included in all data sets. <br>Individual data sets may overide these files.</html>");
+		JLabel title = new JLabel("<html>These files will be included in all data sets.</html>");
 		SwingUtil.makeSmall(title);
 		gmtText = pathTextFactory.create("GMT File:", FileBrowser.Filter.GMT);
 		expressionsText = pathTextFactory.create("Expressions:", FileBrowser.Filter.EXPRESSION);
