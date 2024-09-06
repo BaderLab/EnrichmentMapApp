@@ -39,6 +39,11 @@ public class ClusterRankingOption implements RankingOption {
 	public String toString() {
 		return "Hierarchical Cluster";
 	}
+	
+	@Override
+	public Optional<String> getNameInDataSet() {
+		return Optional.empty();
+	}
 
 	@Override
 	public String getTableHeaderText() {

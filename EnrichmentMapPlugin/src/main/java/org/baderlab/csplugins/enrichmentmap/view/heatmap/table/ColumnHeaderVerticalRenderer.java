@@ -61,7 +61,9 @@ import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 import com.google.inject.Inject;
 
 /**
- * Flips column headers to vertical position
+ * Flips column headers to vertical position.
+ * 
+ * TODO This needs to be fixed to extend JPanel and return 'this' from getTableCellRendererComponent() ...
  */
 public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 
@@ -88,7 +90,7 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		panel.add(verticalLabel, BorderLayout.CENTER);
 		Color barColor = dataset.getColor();
 		
-		if (barColor != null) {
+		if(barColor != null) {
 			JPanel barPanel = new JPanel();
 			barPanel.setPreferredSize(new Dimension(verticalLabel.getWidth(), 5));
 			barPanel.setBackground(barColor);

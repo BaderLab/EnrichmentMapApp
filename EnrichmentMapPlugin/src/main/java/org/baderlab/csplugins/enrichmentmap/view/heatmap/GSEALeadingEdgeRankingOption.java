@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,9 +47,18 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 	}
 	
 	@Override
+	public Optional<String> getNameInDataSet() {
+		return Optional.empty();
+	}
+	
+	public Color getColor() {
+		return dataset.getColor();
+	}
+	
+	@Override
 	public String getTableHeaderText() {
-		String r = SwingUtil.abbreviate(rankingName, 11);
-		String d = SwingUtil.abbreviate(dataset.getName(), 11);
+		String r = rankingName; //SwingUtil.abbreviate(rankingName, 11);
+		String d = dataset.getName(); //SwingUtil.abbreviate(dataset.getName(), 11);
 		
 		if(r.equals(d))
 			return "<html>Ranks<br>" + r + "</html>";

@@ -1,5 +1,6 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
+import java.awt.Color;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -14,18 +15,18 @@ public interface RankingOption {
 	}
 	
 	/** If the ranking comes directly from a DataSet, then get the ranking's name in the DataSet. */
-	default Optional<String> getNameInDataSet() {
-		return Optional.empty();
-	}
+	Optional<String> getNameInDataSet();
+	
 	
 	/** Text to be used in the JTable header. The given string will be passed to JLabel.setText(), so basic html is allowed. */
-	default String getTableHeaderText() {
-		return toString();
-	}
+	String getTableHeaderText();
+	
 	
 	/** Text to be used in the PDF export table header. The given string will be split on newlines. */
-	default String getPdfHeaderText() {
-		return toString();
+	String getPdfHeaderText();
+	
+	default Color getColor() {
+		return null;
 	}
 	
 	/**
@@ -42,6 +43,15 @@ public interface RankingOption {
 			}
 			public CompletableFuture<Optional<RankingResult>> computeRanking(Collection<Integer> genes) {
 				return CompletableFuture.completedFuture(Optional.empty());
+			}
+			public Optional<String> getNameInDataSet() {
+				return Optional.empty();
+			}
+			public String getTableHeaderText() {
+				return toString();
+			}
+			public String getPdfHeaderText() {
+				return toString();
 			}
 		};
 	}
