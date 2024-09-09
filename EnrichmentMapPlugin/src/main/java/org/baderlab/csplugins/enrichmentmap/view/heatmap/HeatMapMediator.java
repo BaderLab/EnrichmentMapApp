@@ -42,6 +42,7 @@ import org.baderlab.csplugins.enrichmentmap.view.control.ControlPanelMediator;
 import org.baderlab.csplugins.enrichmentmap.view.control.io.ViewParams;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.GradientLegendPopup;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapCellRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel;
 import org.cytoscape.application.CyApplicationManager;
@@ -136,17 +137,21 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 			contentPanel.getShowValuesCheck().addActionListener(showValueActionListener);
 			
 			// Fire a setting changed event when column sort changes
-			contentPanel.getTable().getRowSorter().addRowSorterListener(e -> settingChanged()); 
+			var table = contentPanel.getTable();
+			table.getRowSorter().addRowSorterListener(e -> settingChanged());
+			table.getSelectionModel().addListSelectionListener(e -> GradientLegendPopup.show(table));
+			
 			
 			// Options Popup
-			contentPanel.getOptionsPopup().setDistanceConsumer(this::updateSetting_Distance);
-			contentPanel.getOptionsPopup().getGeneManiaButton().addActionListener(e -> runGeneMANIA());
-			contentPanel.getOptionsPopup().getStringButton().addActionListener(e -> runString());
-			contentPanel.getOptionsPopup().getPathwayCommonsButton().addActionListener(e -> runPathwayCommons());
-			contentPanel.getOptionsPopup().getAddRanksButton().addActionListener(e -> addRankings());
-			contentPanel.getOptionsPopup().getNameLengthButton().addActionListener(e -> promptForNameLength());
-			contentPanel.getOptionsPopup().getExportTxtButton().addActionListener(txtActionFactory.create(contentPanel.getTable()));
-			contentPanel.getOptionsPopup().getExportPdfButton().addActionListener(pdfActionFactory.create(contentPanel.getTable(), contentPanel::getRankingOption, contentPanel::isShowValues));
+			var popup = contentPanel.getOptionsPopup();
+			popup.setDistanceConsumer(this::updateSetting_Distance);
+			popup.getGeneManiaButton().addActionListener(e -> runGeneMANIA());
+			popup.getStringButton().addActionListener(e -> runString());
+			popup.getPathwayCommonsButton().addActionListener(e -> runPathwayCommons());
+			popup.getAddRanksButton().addActionListener(e -> addRankings());
+			popup.getNameLengthButton().addActionListener(e -> promptForNameLength());
+			popup.getExportTxtButton().addActionListener(txtActionFactory.create(contentPanel.getTable()));
+			popup.getExportPdfButton().addActionListener(pdfActionFactory.create(contentPanel.getTable(), contentPanel::getRankingOption, contentPanel::isShowValues));
 			
 			// Property Change Listeners
 			contentPanel.addPropertyChangeListener("selectedRankingOption", evt -> settingChanged());

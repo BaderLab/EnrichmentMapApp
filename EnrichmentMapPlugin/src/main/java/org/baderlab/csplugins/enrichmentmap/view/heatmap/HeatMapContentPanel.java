@@ -51,7 +51,6 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.RankingResult.SortSugge
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankOptionRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderVerticalRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.DataSetColorRange;
-import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.GradientLegendPanel;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapCellRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapRowSorter;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTableModel;
@@ -84,7 +83,6 @@ public class HeatMapContentPanel extends JPanel {
 	@Inject private IconManager iconManager;
 	@Inject private Provider<CyServiceRegistrar> registrarProvider;
 
-	private GradientLegendPanel gradientLegendPanel;
 	private OptionsPopup optionsPopup;
 	
 	private JTable table;
@@ -178,8 +176,6 @@ public class HeatMapContentPanel extends JPanel {
 	}
 	
 	private JPanel createToolbarPanel() {
-		gradientLegendPanel = new GradientLegendPanel(getTable());
-		
 		JLabel operatorLabel = new JLabel("Genes:");
 		JLabel normLabel = new JLabel("Expressions:");
 		JLabel compressLabel = new JLabel("Compress:");
@@ -197,8 +193,6 @@ public class HeatMapContentPanel extends JPanel {
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addContainerGap()
-				.addComponent(gradientLegendPanel, 140, 160, 180)
-				.addGap(15, 15, Short.MAX_VALUE)
 				.addComponent(operatorLabel)
 				.addComponent(getOperatorCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
@@ -209,14 +203,13 @@ public class HeatMapContentPanel extends JPanel {
 				.addComponent(getCompressCombo(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(getShowValuesCheck())
-				.addPreferredGap(ComponentPlacement.RELATED)
+				.addPreferredGap(ComponentPlacement.RELATED,  GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(helpButton)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(getOptionsButton())
 				.addContainerGap()
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER)
-				.addComponent(gradientLegendPanel)
 				.addComponent(operatorLabel)
 				.addComponent(getOperatorCombo())
 				.addComponent(normLabel)
