@@ -39,7 +39,9 @@ public class HeatMapTableModel extends AbstractTableModel {
 	private CyNetwork network;
 	private EnrichmentMap map;
 	
-	private List<EMDataSet> datasets;
+	private Set<EMDataSet> selectedDatasets; // All the data sets, or all the data sets that are selected. The "Display only selected data sets" menu option affects this.
+	private List<EMDataSet> datasets; // Data sets shown in the table. Might be a subset of selectedDatasets if the expression values are the same.
+	
 	private Map<Compress, ExpressionData> data = new EnumMap<>(Compress.class);
 	private ExpressionCache expressionCache;
 
@@ -94,6 +96,13 @@ public class HeatMapTableModel extends AbstractTableModel {
 			this.datasets = Collections.emptyList();
 		}
 		
+		if(datasets == null || datasets.isEmpty()) {
+			this.selectedDatasets = Collections.emptySet();
+		} else {
+			this.selectedDatasets = new HashSet<>(datasets);
+		}
+		
+		
 		expressionCache = new ExpressionCache();
 		
 		ExpressionData uncompressed = new Uncompressed(this.datasets, expressionCache);
@@ -113,6 +122,18 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	
+	/**
+	 * Returns all the data sets for the current selection.
+	 * The "Display only selected data sets" menu option affects this.
+	 */
+	public Set<EMDataSet> getDataSetsInCurrentSelection() {
+		return Collections.unmodifiableSet(selectedDatasets);
+	}
+	
+	/**
+	 * Returns the data sets shown in the table. 
+	 * Might be a subset of selectedDatasets if the expression values are the same.
+	 */
 	public List<EMDataSet> getDataSets() {
 		return Collections.unmodifiableList(datasets);
 	}

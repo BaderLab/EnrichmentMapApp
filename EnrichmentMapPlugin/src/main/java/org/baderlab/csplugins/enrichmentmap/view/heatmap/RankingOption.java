@@ -1,9 +1,10 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
-import java.awt.Color;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+
+import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 
 public interface RankingOption {
 	
@@ -25,7 +26,7 @@ public interface RankingOption {
 	/** Text to be used in the PDF export table header. The given string will be split on newlines. */
 	String getPdfHeaderText();
 	
-	default Color getColor() {
+	default EMDataSet getDataSet() {
 		return null;
 	}
 	

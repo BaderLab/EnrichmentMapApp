@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -51,8 +50,9 @@ public class GSEALeadingEdgeRankingOption implements RankingOption {
 		return Optional.empty();
 	}
 	
-	public Color getColor() {
-		return dataset.getColor();
+	@Override
+	public EMDataSet getDataSet() {
+		return dataset;
 	}
 	
 	@Override

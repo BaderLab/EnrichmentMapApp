@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 
+import javax.annotation.Nullable;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -58,6 +59,7 @@ import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 
 import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 
 /**
  * Flips column headers to vertical position.
@@ -69,14 +71,19 @@ public class ColumnHeaderVerticalRenderer extends JPanel implements TableCellRen
 	
 	@Inject private PropertyManager propertyManager;
 	
-	private Color phenoColor;
+	private final Color phenoColor;
 	
 	private JLabel verticalLabel;
 	private JPanel barPanel;
-
 	
-	public ColumnHeaderVerticalRenderer() {
+	public interface Factory {
+		ColumnHeaderVerticalRenderer create(Color phenoColor);
+	}
+
+	@Inject
+	public ColumnHeaderVerticalRenderer(@Assisted @Nullable Color phenoColor) {
 		super(new BorderLayout());
+		this.phenoColor = phenoColor;
 		
 		verticalLabel = createVerticalLabel();
 		
@@ -96,16 +103,18 @@ public class ColumnHeaderVerticalRenderer extends JPanel implements TableCellRen
 		setVerticalText(value.toString());
 		setToolTipText(value.toString() + " - " + dataset.getName());
 		
+		Color defaultColor = UIManager.getColor("TableHeader.background");
 		Color barColor = dataset.getColor();
-		barPanel.setBackground(barColor != null ? barColor : UIManager.getColor("TableHeader.background"));
-		setBackground(phenoColor != null ? phenoColor : UIManager.getColor("TableHeader.background"));
+		barPanel.setBackground(barColor != null ? barColor : defaultColor);
 		
-		return this;
-	}
-	
-	
-	public ColumnHeaderVerticalRenderer setPhenoColor(Color phenoColor) {
-		this.phenoColor = phenoColor;
+		var selectedDataSets = ((HeatMapTableModel)table.getModel()).getDataSetsInCurrentSelection();
+		
+		if(phenoColor != null && selectedDataSets.contains(dataset)) {
+			setBackground(phenoColor);
+		} else {
+			setBackground(defaultColor);
+		}
+		
 		return this;
 	}
 	

@@ -34,6 +34,7 @@ import org.baderlab.csplugins.enrichmentmap.view.heatmap.ClusterRankingOption;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.ExportPDFAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.ExportTXTAction;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderRankOptionRenderer;
+import org.baderlab.csplugins.enrichmentmap.view.heatmap.table.ColumnHeaderVerticalRenderer;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogPage;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PADialogParameters;
 import org.baderlab.csplugins.enrichmentmap.view.postanalysis.PAWeightPanel;
@@ -120,6 +121,7 @@ class FactoryModule extends AbstractModule {
 		installFactory(EMDialogTaskRunner.Factory.class);
 		installFactory(DataSetSelector.Factory.class);
 		installFactory(AutoAnnotateInitTask.Factory.class);
+		installFactory(ColumnHeaderVerticalRenderer.Factory.class);
 	}
 	
 	private void installFactory(Class<?> factoryInterface) {

@@ -203,7 +203,10 @@ public class ColumnHeaderRankOptionRenderer extends JPanel implements TableCellR
 	private Color getColor(Object value) {
 		if(value instanceof RankingOption) {
 			var rankingOption = (RankingOption) value;
-			return rankingOption.getColor();
+			var dataset = rankingOption.getDataSet();
+			if(dataset != null) {
+				return dataset.getColor();
+			}
 		}
 		return null;
 	}

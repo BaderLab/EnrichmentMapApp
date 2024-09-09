@@ -1,6 +1,5 @@
 package org.baderlab.csplugins.enrichmentmap.view.heatmap;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -38,8 +37,9 @@ public class BasicRankingOption implements RankingOption {
 		return "Ranks: " + rankingName + " - " + dataset.getName();
 	}
 	
-	public Color getColor() {
-		return dataset.getColor();
+	@Override
+	public EMDataSet getDataSet() {
+		return dataset;
 	}
 	
 	@Override
