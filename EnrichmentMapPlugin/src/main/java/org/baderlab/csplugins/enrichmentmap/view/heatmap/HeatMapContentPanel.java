@@ -148,8 +148,8 @@ public class HeatMapContentPanel extends JPanel {
 		TableColumnModel columnModel = getTable().getColumnModel();
 		
 		var vertRenderer = verticalRendererProvider.get();
-		var vertRendererPheno1 = verticalRendererProvider.get().setPhenoColor(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_1);
-		var vertRendererPheno2 = verticalRendererProvider.get().setPhenoColor(EMStyleBuilder.Colors.LIGHTEST_PHENOTYPE_2);
+		var vertRendererPos = verticalRendererProvider.get().setPhenoColor(EMStyleBuilder.Colors.HEAT_MAP_HIGHLIGHT_POS);
+		var vertRendererNeg = verticalRendererProvider.get().setPhenoColor(EMStyleBuilder.Colors.HEAT_MAP_HIGHLIGHT_NEG);
 		
 		TableColumn rankColumn = columnModel.getColumn(RANK_COL);
 
@@ -163,9 +163,9 @@ public class HeatMapContentPanel extends JPanel {
 			
 			TableCellRenderer renderer;
 			if(pheno != null && pheno.getType() == Type.POSITIVE)
-				renderer = vertRendererPheno1;
+				renderer = vertRendererPos;
 			else if(pheno != null && pheno.getType() == Type.NEGATIVE)
-				renderer = vertRendererPheno2;
+				renderer = vertRendererNeg;
 			else
 				renderer = vertRenderer;
 			

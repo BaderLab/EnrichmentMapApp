@@ -55,17 +55,15 @@ import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
-import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 
 import com.google.inject.Inject;
 
 /**
  * Flips column headers to vertical position.
- * 
- * TODO This needs to be fixed to extend JPanel and return 'this' from getTableCellRendererComponent() ...
  */
-public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
+@SuppressWarnings("serial")
+public class ColumnHeaderVerticalRenderer extends JPanel implements TableCellRenderer {
 
 	public static final int MIN_HEIGHT = 65;
 	
@@ -73,34 +71,42 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 	
 	private Color phenoColor;
 	
-	public ColumnHeaderVerticalRenderer setPhenoColor(Color phenoColor) {
-		this.phenoColor = phenoColor;
+	private JLabel verticalLabel;
+	private JPanel barPanel;
+
+	
+	public ColumnHeaderVerticalRenderer() {
+		super(new BorderLayout());
+		
+		verticalLabel = createVerticalLabel();
+		
+		barPanel = new JPanel();
+		barPanel.setPreferredSize(new Dimension(verticalLabel.getWidth(), 5));
+		
+		add(barPanel, BorderLayout.NORTH);
+		add(verticalLabel, BorderLayout.CENTER);
+	}
+	
+
+	@Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+		var model = (HeatMapTableModel) table.getModel();
+		var dataset = model.getDataSet(col);
+		
+		setVerticalText(value.toString());
+		setToolTipText(value.toString() + " - " + dataset.getName());
+		
+		Color barColor = dataset.getColor();
+		barPanel.setBackground(barColor != null ? barColor : UIManager.getColor("TableHeader.background"));
+		setBackground(phenoColor != null ? phenoColor : UIManager.getColor("TableHeader.background"));
+		
 		return this;
 	}
 	
-	@Override
-	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-		HeatMapTableModel model = (HeatMapTableModel) table.getModel();
-		EMDataSet dataset = model.getDataSet(col);
-		
-		String labelText = abbreviate(value.toString());
-		JLabel verticalLabel = createVerticalLabel(labelText);
-		
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(verticalLabel, BorderLayout.CENTER);
-		Color barColor = dataset.getColor();
-		
-		if(barColor != null) {
-			JPanel barPanel = new JPanel();
-			barPanel.setPreferredSize(new Dimension(verticalLabel.getWidth(), 5));
-			barPanel.setBackground(barColor);
-			panel.add(barPanel, BorderLayout.NORTH);
-		}
-		
-		panel.setBackground(phenoColor != null ? phenoColor : UIManager.getColor("TableHeader.background"));
-		panel.setToolTipText(value.toString() + " - " + dataset.getName());
-		
-		return panel;
+	
+	public ColumnHeaderVerticalRenderer setPhenoColor(Color phenoColor) {
+		this.phenoColor = phenoColor;
+		return this;
 	}
 	
 	
@@ -109,25 +115,25 @@ public class ColumnHeaderVerticalRenderer implements TableCellRenderer {
 		return SwingUtil.abbreviate(value, length);
 	}
 	
-	
-	private JLabel createVerticalLabel(String value) {
-		JLabel label = new JLabel();
-		label.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-		label.setToolTipText(value);
-		
-		// Create vertical text label
+	private void setVerticalText(String value) {
+		String labelText = abbreviate(value);
 		Font font = UIManager.getFont("TableHeader.font");
 		Color foreground = UIManager.getColor("TableHeader.foreground");
+		var icon = new VerticalTextIcon(verticalLabel.getFontMetrics(font), foreground, false, labelText);
+		verticalLabel.setIcon(icon);
+		verticalLabel.setToolTipText(value);
 		
-		label.setIcon(new VerticalTextIcon(label.getFontMetrics(font), foreground, false, value));
+		Dimension prefSize = verticalLabel.getPreferredSize();
+		if(prefSize.height < MIN_HEIGHT) {
+			verticalLabel.setPreferredSize(new Dimension(prefSize.width, MIN_HEIGHT));
+		}
+	}
+	
+	private static JLabel createVerticalLabel() {
+		JLabel label = new JLabel();
+		label.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 		label.setVerticalAlignment(JLabel.BOTTOM);
 		label.setHorizontalAlignment(JLabel.CENTER);
-		
-		Dimension prefSize = label.getPreferredSize();
-		if(prefSize.height < MIN_HEIGHT) {
-			label.setPreferredSize(new Dimension(prefSize.width, MIN_HEIGHT));
-		}
-		
 		return label;
 	}
 	
