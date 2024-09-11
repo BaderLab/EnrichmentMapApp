@@ -40,7 +40,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	private EnrichmentMap map;
 	
 	private Set<EMDataSet> selectedDatasets; // All the data sets, or all the data sets that are selected. The "Display only selected data sets" menu option affects this.
-	private List<EMDataSet> datasets; // Data sets shown in the table. Might be a subset of selectedDatasets if the expression values are the same.
+	private List<EMDataSet> expressionDatasets; // Data sets shown in the table. Might be a subset of selectedDatasets if the expression values are the same.
 	
 	private Map<Compress, ExpressionData> data = new EnumMap<>(Compress.class);
 	private ExpressionCache expressionCache;
@@ -86,14 +86,14 @@ public class HeatMapTableModel extends AbstractTableModel {
 		this.ranking = ranking;
 		this.genes = genes != null ? new ArrayList<>(genes) : Collections.emptyList();
 
-		if(map != null && map.isCommonExpressionValues()) {
-			this.datasets = map.getDataSetList().subList(0, 1);
+		if(map != null && map.isCommonExpressionValues()) { // use the first data set only if all data sets have the same expressions and classes
+			this.expressionDatasets = map.getDataSetList().subList(0, 1);
 		} else if(map != null && (datasets == null || datasets.isEmpty())) { // datasets can be empty for signature nodes
-			this.datasets = map.getDataSetList();
+			this.expressionDatasets = map.getDataSetList();
 		} else if(datasets != null) {
-			this.datasets = new ArrayList<>(datasets);
+			this.expressionDatasets = new ArrayList<>(datasets);
 		} else {
-			this.datasets = Collections.emptyList();
+			this.expressionDatasets = Collections.emptyList();
 		}
 		
 		if(datasets == null || datasets.isEmpty()) {
@@ -102,12 +102,11 @@ public class HeatMapTableModel extends AbstractTableModel {
 			this.selectedDatasets = new HashSet<>(datasets);
 		}
 		
-		
 		expressionCache = new ExpressionCache();
 		
-		ExpressionData uncompressed = new Uncompressed(this.datasets, expressionCache);
-		ExpressionData compressedDataSet = new CompressedDataSet(this.datasets, expressionCache, map != null && map.isDistinctExpressionSets());
-		ExpressionData compressedClass = new CompressedClass(map, this.datasets, expressionCache);
+		ExpressionData uncompressed = new Uncompressed(map, expressionDatasets, expressionCache);
+		ExpressionData compressedDataSet = new CompressedDataSet(map, expressionDatasets, expressionCache);
+		ExpressionData compressedClass = new CompressedClass(map, expressionDatasets, expressionCache);
 		
 		data.put(Compress.NONE, uncompressed);
 		data.put(Compress.DATASET_MEDIAN, compressedDataSet);
@@ -135,7 +134,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	 * Might be a subset of selectedDatasets if the expression values are the same.
 	 */
 	public List<EMDataSet> getDataSets() {
-		return Collections.unmodifiableList(datasets);
+		return Collections.unmodifiableList(expressionDatasets);
 	}
 	
 	public ExpressionData getExpressionData(Compress compress) {
@@ -295,7 +294,7 @@ public class HeatMapTableModel extends AbstractTableModel {
 	}
 	
 	private String getDescription(int geneID) {
-		for (EMDataSet dataset : datasets) {
+		for (EMDataSet dataset : expressionDatasets) {
 			GeneExpression row = getGeneExpression(dataset, geneID);
 			if (row != null)
 				return row.getDescription();

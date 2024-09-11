@@ -13,12 +13,12 @@ public class Uncompressed implements ExpressionData {
 	private final NavigableMap<Integer, EMDataSet> colToDataSet = new TreeMap<>();
 	private final int expressionCount;
 	
-	public Uncompressed(List<EMDataSet> datasets, ExpressionCache expressionCache) {
+	public Uncompressed(EnrichmentMap map, List<EMDataSet> datasets, ExpressionCache expressionCache) {
 		this.expressionCache = expressionCache;
 		int rangeFloor = 0;
 		colToDataSet.put(0, null);
 
-		for (EMDataSet dataset : datasets) {
+		for(EMDataSet dataset : datasets) {
 			GeneExpressionMatrix matrix = dataset.getExpressionSets();
 			colToDataSet.put(rangeFloor, dataset);
 			rangeFloor += matrix.getNumConditions() - 2;
@@ -34,15 +34,14 @@ public class Uncompressed implements ExpressionData {
 	
 	private int getIndexInDataSet(int idx) {
 		int start = colToDataSet.floorKey(idx);
-		
 		return idx - start;
 	}
 	
 	@Override
 	public double getValue(int geneID, int idx, Compress compress, Transform transform) {
 		EMDataSet dataset = getDataSet(idx);
-		
-		return expressionCache.getExpression(geneID, dataset, transform, getIndexInDataSet(idx));
+		int indexInDataSet = getIndexInDataSet(idx);
+		return expressionCache.getExpression(geneID, dataset, transform, indexInDataSet);
 	}
 
 	@Override
@@ -50,7 +49,6 @@ public class Uncompressed implements ExpressionData {
 		EMDataSet dataset = getDataSet(idx);
 		String[] columns = dataset.getExpressionSets().getColumnNames();
 		int index = getIndexInDataSet(idx) + 2;
-		
 		return columns[index];
 	}
 

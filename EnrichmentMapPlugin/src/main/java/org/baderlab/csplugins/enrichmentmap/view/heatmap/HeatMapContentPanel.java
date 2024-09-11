@@ -41,10 +41,7 @@ import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.Compress;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
 import org.baderlab.csplugins.enrichmentmap.model.EnrichmentMap;
-import org.baderlab.csplugins.enrichmentmap.model.Phenotype;
-import org.baderlab.csplugins.enrichmentmap.model.Phenotype.Type;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
-import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Distance;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.HeatMapParams.Operator;
 import org.baderlab.csplugins.enrichmentmap.view.heatmap.RankingResult.SortSuggestion;
@@ -147,30 +144,19 @@ public class HeatMapContentPanel extends JPanel {
 		HeatMapTableModel tableModel = (HeatMapTableModel) getTable().getModel();
 		TableColumnModel columnModel = getTable().getColumnModel();
 		
-		var vertRenderer    = verticalRendererFactory.create(null);
-		var vertRendererPos = verticalRendererFactory.create(EMStyleBuilder.Colors.HEAT_MAP_HIGHLIGHT_POS);
-		var vertRendererNeg = verticalRendererFactory.create(EMStyleBuilder.Colors.HEAT_MAP_HIGHLIGHT_NEG);
-		
 		TableColumn rankColumn = columnModel.getColumn(RANK_COL);
-
 		rankColumn.setHeaderRenderer(columnHeaderRankOptionRendererFactory.create(this, RANK_COL));
 		rankColumn.setPreferredWidth(100);
 		
-		// Iterate over the gene expression columns
+ 		// Iterate over the gene expression columns
 		int colCount = tableModel.getColumnCount();
 		for (int col = HeatMapTableModel.DESC_COL_COUNT; col < colCount; col++) {
-			Phenotype pheno = tableModel.getPhenotype(col);
-			
-			TableCellRenderer renderer;
-			if(pheno != null && pheno.getType() == Type.POSITIVE)
-				renderer = vertRendererPos;
-			else if(pheno != null && pheno.getType() == Type.NEGATIVE)
-				renderer = vertRendererNeg;
-			else
-				renderer = vertRenderer;
-			
 			TableColumn column = columnModel.getColumn(col);
-			column.setHeaderRenderer(renderer);
+			
+			// TODO: Don't use a separate instance of vertRenderer for every column.
+			// Only doing this because the column header height doesn't have to be pre-calcuated this way.
+			var vertRenderer = verticalRendererFactory.create();
+			column.setHeaderRenderer(vertRenderer);
 			column.setPreferredWidth(expressionColumnWidth);
 		}
 	}

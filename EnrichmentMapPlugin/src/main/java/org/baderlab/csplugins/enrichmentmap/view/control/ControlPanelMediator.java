@@ -893,8 +893,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 			case DATASET_MEDIAN:
 			case DATASET_MAX:
 			case DATASET_MIN:
-				boolean isDistinctExpressionSets = map != null && map.isDistinctExpressionSets();
-				exp = new CompressedDataSet(datasets, cache, isDistinctExpressionSets);
+				exp = new CompressedDataSet(map, datasets, cache);
 				break;
 			case CLASS_MEDIAN:
 			case CLASS_MAX:
@@ -902,7 +901,7 @@ public class ControlPanelMediator implements SetCurrentNetworkViewListener, Enri
 				exp = new CompressedClass(map, datasets, cache);
 				break;
 			default:
-				exp = new Uncompressed(datasets, cache);
+				exp = new Uncompressed(map, datasets, cache);
 				break;
 		}
 		

@@ -9,10 +9,10 @@ public class CompressedDataSet implements ExpressionData {
 	private final List<EMDataSet> datasets;
 	private final boolean isDistinctExpressionSets;
 	
-	public CompressedDataSet(List<EMDataSet> datasets, ExpressionCache expressionCache, boolean isDistinctExpressionSets) {
+	public CompressedDataSet(EnrichmentMap map, List<EMDataSet> datasets, ExpressionCache expressionCache) {
 		this.datasets = datasets;
 		this.expressionCache = expressionCache;
-		this.isDistinctExpressionSets = isDistinctExpressionSets;
+		this.isDistinctExpressionSets = map != null && map.isDistinctExpressionSets();
 	}
 	
 	@Override
