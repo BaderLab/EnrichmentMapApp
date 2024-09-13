@@ -4,7 +4,6 @@ import java.awt.AWTEventMulticaster;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
@@ -131,7 +130,7 @@ public class ColumnHeaderRankOptionRenderer extends JPanel implements TableCellR
 		delegate.setIcon(getIcon(value));
 		delegate.setText(getText(value));
 		
-		datasetColorPanel.setPreferredSize(new Dimension(this.getWidth(), 5));
+//		datasetColorPanel.setPreferredSize(new Dimension(this.getWidth(), 5));
 		datasetColorPanel.setBackground(getColor(value));
 		
 		return this;
