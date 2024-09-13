@@ -3,6 +3,8 @@ package org.baderlab.csplugins.enrichmentmap.model;
 import java.util.List;
 import java.util.Optional;
 
+import org.baderlab.csplugins.enrichmentmap.model.PhenotypeHighlight.Highlight;
+
 public class CompressedDataSet implements ExpressionData {
 	
 	private final ExpressionCache expressionCache;
@@ -29,10 +31,10 @@ public class CompressedDataSet implements ExpressionData {
 			return Float.NaN;
 		
 		switch (compress) {
-			case DATASET_MEDIAN:	return GeneExpression.median(expression.get());
-			case DATASET_MAX:	return GeneExpression.max(expression.get());
-			case DATASET_MIN:	return GeneExpression.min(expression.get());
-			default:				return Float.NaN;
+			case DATASET_MEDIAN: return GeneExpression.median(expression.get());
+			case DATASET_MAX:	 return GeneExpression.max(expression.get());
+			case DATASET_MIN:	 return GeneExpression.min(expression.get());
+			default:			 return Float.NaN;
 		}
 	}
 
@@ -45,5 +47,17 @@ public class CompressedDataSet implements ExpressionData {
 	@Override
 	public int getSize() {
 		return datasets.size();
+	}
+
+	@Override
+	public PhenotypeHighlight getHighlight(int col) {
+		var dataSet = getDataSet(col);
+		var name = getName(col);
+		return new PhenotypeHighlight(dataSet, name, Highlight.NONE);
+	}
+	
+	@Override
+	public boolean commonButDiffPheno() {
+		return false;
 	}
 }

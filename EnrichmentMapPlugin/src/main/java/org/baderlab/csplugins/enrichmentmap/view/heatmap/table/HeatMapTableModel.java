@@ -21,7 +21,7 @@ import org.baderlab.csplugins.enrichmentmap.model.ExpressionCache;
 import org.baderlab.csplugins.enrichmentmap.model.ExpressionData;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpression;
 import org.baderlab.csplugins.enrichmentmap.model.GeneExpressionMatrix;
-import org.baderlab.csplugins.enrichmentmap.model.Phenotype;
+import org.baderlab.csplugins.enrichmentmap.model.PhenotypeHighlight;
 import org.baderlab.csplugins.enrichmentmap.model.Transform;
 import org.baderlab.csplugins.enrichmentmap.model.Uncompressed;
 import org.baderlab.csplugins.enrichmentmap.util.NetworkUtil;
@@ -283,14 +283,19 @@ public class HeatMapTableModel extends AbstractTableModel {
 		return leadingEdge;
 	}
 	
-	public Phenotype getPhenotype(int col) {
+	public PhenotypeHighlight getHighlight(int col) {
 		ExpressionData exp = data.get(compress);
-		return exp != null ? exp.getPhenotype(col - DESC_COL_COUNT) : null;
+		return exp != null ? exp.getHighlight(col - DESC_COL_COUNT) : null;
 	}
 	
 	public EMDataSet getDataSet(int col) {
 		ExpressionData exp = data.get(compress);
 		return exp != null ? exp.getDataSet(col - DESC_COL_COUNT) : null;
+	}
+	
+	public boolean commonButDiffPheno() {
+        ExpressionData exp = data.get(compress);
+        return exp != null && exp.commonButDiffPheno();
 	}
 	
 	private String getDescription(int geneID) {

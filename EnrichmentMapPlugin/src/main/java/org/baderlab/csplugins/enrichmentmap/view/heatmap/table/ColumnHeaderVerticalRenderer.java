@@ -47,6 +47,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -56,7 +60,8 @@ import javax.swing.table.TableCellRenderer;
 
 import org.baderlab.csplugins.enrichmentmap.PropertyManager;
 import org.baderlab.csplugins.enrichmentmap.model.EMDataSet;
-import org.baderlab.csplugins.enrichmentmap.model.Phenotype.Type;
+import org.baderlab.csplugins.enrichmentmap.model.PhenotypeHighlight;
+import org.baderlab.csplugins.enrichmentmap.model.PhenotypeHighlight.Highlight;
 import org.baderlab.csplugins.enrichmentmap.style.EMStyleBuilder;
 import org.baderlab.csplugins.enrichmentmap.view.util.SwingUtil;
 
@@ -74,6 +79,7 @@ public class ColumnHeaderVerticalRenderer extends JPanel implements TableCellRen
 	
 	private final Color posColor;
 	private final Color negColor;
+	private final Color mixColor;
 	private final Color defaultColor;
 	
 	private JLabel verticalLabel;
@@ -89,6 +95,7 @@ public class ColumnHeaderVerticalRenderer extends JPanel implements TableCellRen
 		
 		posColor = EMStyleBuilder.Colors.HEAT_MAP_HIGHLIGHT_POS;
 		negColor = EMStyleBuilder.Colors.HEAT_MAP_HIGHLIGHT_NEG;
+		mixColor = EMStyleBuilder.Colors.HEAT_MAP_HIGHLIGHT_MIX;
 		defaultColor = UIManager.getColor("TableHeader.background");
 		
 		verticalLabel = createVerticalLabel();
@@ -104,25 +111,14 @@ public class ColumnHeaderVerticalRenderer extends JPanel implements TableCellRen
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 		var model = (HeatMapTableModel) table.getModel();
+		var expressionName = value.toString();
 		
-		var pheno = model.getPhenotype(col);
-		var dataset = model.getDataSet(col);
+		setVerticalText(expressionName);
 		
-		setVerticalText(value.toString());
-		setToolTipText(value.toString() + " - " + dataset.getName());
+		setToolTipText(getToolTipText(model, col, expressionName));
 		
-		var selectedDataSets = model.getDataSetsInCurrentSelection();
-		barPanel.setBackground(getBarColor(dataset));
-		
-		if(pheno == null || !selectedDataSets.contains(dataset)) {
-            setBackground(defaultColor);
-		} else if(pheno.getType() == Type.POSITIVE) {
-			setBackground(posColor);
-		} else if (pheno.getType() == Type.NEGATIVE) {
-			setBackground(negColor);
-		} else {
-			setBackground(defaultColor);
-		}
+		barPanel.setBackground(getBarColor(model, col));
+		setBackground(getBackgroundColor(model, col));
 		
 		return this;
 	}
@@ -133,6 +129,114 @@ public class ColumnHeaderVerticalRenderer extends JPanel implements TableCellRen
 		return SwingUtil.abbreviate(value, length);
 	}
 	
+	
+	private String getToolTipText(HeatMapTableModel model, int col, String expressionName) {
+		var pheno = model.getHighlight(col);
+		var compress = model.getCompress();
+		
+		var sb = new StringBuilder("<html>");
+		
+		if(compress.isDataSet()) {
+			List<EMDataSet> datasets;
+			if(model.getEnrichmentMap().isCommonExpressionValues()) {
+				datasets = new ArrayList<>(model.getDataSetsInCurrentSelection());
+			} else {
+				datasets = List.of(model.getDataSet(col));
+			}
+			for (var dataset : datasets) {
+				sb.append("<b>Dataset: </b>").append(dataset.getName()).append("<br>");
+			}
+		} 
+		else {
+			if(compress.isNone()) {
+				sb.append("<b>Expression: </b>").append(expressionName).append("<br>");
+			}
+			sb.append("<b>Class: </b>").append(pheno.getName()).append("<br>");
+			var datasets = getHighightDataSets(model, pheno);
+			for(var dataset : datasets) {
+				sb.append("<b>Dataset: </b>").append(dataset.getName());
+				var highlight = pheno.getHighlight(dataset);
+				if(highlight == Highlight.POSITIVE)
+					sb.append(" (Positive)");
+				else if (highlight == Highlight.NEGATIVE)
+					sb.append(" (Negative)");
+				sb.append("<br>");
+			}
+		}
+		
+		return sb.append("</html>").toString();
+	}
+	
+	
+	private Color getBackgroundColor(HeatMapTableModel model, int col) {
+		var pheno = model.getHighlight(col);
+		if(pheno == null)
+			return defaultColor;
+		
+		var datasets = getHighightDataSets(model, pheno);
+		
+		boolean pos = false, neg = false;
+		for(var dataset : datasets) {
+			var highlight = pheno.getHighlight(dataset);
+			if(highlight == Highlight.POSITIVE)
+				pos = true;
+			if(highlight == Highlight.NEGATIVE)
+				neg = true;
+		}
+		
+		if(pos && neg)
+			return mixColor;
+		if(pos)
+			return posColor;
+		if(neg)
+			return negColor;
+		
+		return defaultColor;
+	}
+	
+	
+	private Color getBarColor(HeatMapTableModel model, int col) {
+		var pheno = model.getHighlight(col);
+		var compress = model.getCompress();
+		var defcolor = defaultColor.darker();
+		
+		if(pheno == null)
+			return defcolor;
+		
+		if(compress.isDataSet()) {
+			if(model.getEnrichmentMap().isCommonExpressionValues()) {
+				var selectedDataSets = model.getDataSetsInCurrentSelection();
+				if(selectedDataSets.size() == 1) {
+					return selectedDataSets.iterator().next().getColor();
+				}
+				return defcolor;
+			} else {
+				return model.getDataSet(col).getColor();
+			}
+		}
+		
+		var datasets = getHighightDataSets(model, pheno);
+		
+		if(datasets.isEmpty()) {
+			return defcolor;
+		} 
+		if(datasets.size() == 1) {
+			var dataset = datasets.iterator().next();
+			return dataset.getColor();
+		}
+		
+		return defcolor;
+	}
+	
+	
+	private static Set<EMDataSet> getHighightDataSets(HeatMapTableModel model, PhenotypeHighlight pheno) {
+		var selectedDataSets = model.getDataSetsInCurrentSelection();
+		var datasets = new HashSet<>(pheno.getDatasets());
+		datasets.retainAll(selectedDataSets);
+		return datasets;
+	}
+	
+	
 	private void setVerticalText(String value) {
 		String labelText = abbreviate(value);
 		Font font = UIManager.getFont("TableHeader.font");
@@ -142,20 +246,11 @@ public class ColumnHeaderVerticalRenderer extends JPanel implements TableCellRen
 		verticalLabel.setToolTipText(value);
 		
 		Dimension prefSize = verticalLabel.getPreferredSize();
-		System.out.println("verticalLabel.getPreferredSize() " + prefSize);
 		if(prefSize.height < MIN_HEIGHT) {
 			verticalLabel.setPreferredSize(new Dimension(prefSize.width, MIN_HEIGHT));
 		}
 	}
 	
-	private Color getBarColor(EMDataSet dataset) {
-		if(dataset == null)
-			return defaultColor;
-		var color = dataset.getColor();
-		if(color == null)
-			return defaultColor;
-		return color;
-	}
 	
 	private static JLabel createVerticalLabel() {
 		JLabel label = new JLabel();

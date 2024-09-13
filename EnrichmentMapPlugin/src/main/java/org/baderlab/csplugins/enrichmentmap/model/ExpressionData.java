@@ -1,67 +1,48 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
-import org.baderlab.csplugins.enrichmentmap.model.Phenotype.Type;
+import org.baderlab.csplugins.enrichmentmap.model.PhenotypeHighlight.Highlight;
+
 
 /**
- * Common interface for different levels of compression.
+ * Common interface for ways of representing (compressing) expression data for use in the HeatMap.
  */
 public interface ExpressionData {
 	
-	EMDataSet getDataSet(int col);
-
-	double getValue(int geneID, int col, Compress compress, Transform transform);
-
-	String getName(int col);
-
-	public default Phenotype getPhenotype(int col) {
-		return null;
-	};
-
+	/**
+	 * number of columns
+	 */
 	int getSize();
 	
-	
+	/**
+	 * column name
+	 */
+	String getName(int col); 
 	
 	/**
-	 * Special case. There is more than one dataset in the map, and they have the same expressions,
-	 * but the pheontypes are different. We want to show the phenotypes for the selected data sets
-	 * but we don't want to repeat all the expression data.
+	 * Returns expression value for given gene and column.
 	 */
-	static boolean commonExpressionsButDifferentPhenotypes(EnrichmentMap map) {
-		return map != null && map.isCommonExpressionValues() && !phenotypesAreCommon(map);
-	}
-	
+	double getValue(int geneID, int col, Compress compress, Transform transform);
+
+	/**
+	 * Returns a data set that contains the expression value. Note, if multiple data
+	 * sets have the same expression values, only one will be returned.
+	 */
+	EMDataSet getDataSet(int col);
 	
 	/**
-	 * These are the phenotypes entered into the "Phenotypes" fields in the creation dialog.
-	 * They need to be highlighted in the table.
+	 * Info on how to highlight a column based on the classes and phenotypes.
+	 * Should not return null.
 	 */
-	static List<Phenotype> getPhenotypesToHighlight(List<EMDataSet> datasets) {
-		List<Phenotype> phenos = new ArrayList<>();
-		
-		for(var dataset : datasets) {
-			var enrichments = dataset.getEnrichments();
-			
-			String pheno1 = enrichments.getPhenotype1();
-			if(pheno1 != null) {
-				phenos.add(new Phenotype(dataset, pheno1, Type.POSITIVE));
-			}
-			String pheno2 = enrichments.getPhenotype2();
-			if(pheno2 != null) {
-				phenos.add(new Phenotype(dataset, pheno2, Type.NEGATIVE));
-			}
-		}
-		
-		return phenos;
-	}
+	PhenotypeHighlight getHighlight(int col);
+
 	
-	static List<Phenotype> getPhenotypesToHighlight(EMDataSet dataset) {
-		return getPhenotypesToHighlight(List.of(dataset));
-	}
+	boolean commonButDiffPheno();
 	
 	
 	/**
@@ -84,7 +65,50 @@ public interface ExpressionData {
 	}
 	
 	
-	static boolean phenotypesAreCommon(EnrichmentMap map) {
+	/**
+	 * These are the phenotypes entered into the "Phenotypes" fields in the creation dialog.
+	 * They need to be highlighted in the table.
+	 */
+	static Map<String,PhenotypeHighlight> getPhenotypesToHighlight(List<EMDataSet> datasets) {
+		Map<String,PhenotypeHighlight> phenoMap = new LinkedHashMap<>();
+		
+		for (var dataset : datasets) {
+			var enrichments = dataset.getEnrichments();
+
+			String phenoNamePos = enrichments.getPhenotype1();
+			if(phenoNamePos != null) {
+				var phenoHighlight = new PhenotypeHighlight(dataset, phenoNamePos, Highlight.POSITIVE);
+				var existingPheno = phenoMap.get(phenoNamePos);
+				phenoMap.put(phenoNamePos, phenoHighlight.merge(existingPheno));
+			}
+			
+			String phenoNameNeg = enrichments.getPhenotype2();
+			if (phenoNameNeg != null) {
+				var phenoHighlight = new PhenotypeHighlight(dataset, phenoNameNeg, Highlight.NEGATIVE);
+				var existingPheno = phenoMap.get(phenoNameNeg);
+				phenoMap.put(phenoNameNeg, phenoHighlight.merge(existingPheno));
+			}
+		}
+		
+		return phenoMap;
+	}
+	
+	static Map<String,PhenotypeHighlight> getPhenotypesToHighlight(EMDataSet dataset) {
+		return getPhenotypesToHighlight(List.of(dataset));
+	}
+	
+	
+	
+	/**
+	 * Special case. There is more than one dataset in the map, and they have the same expressions,
+	 * but the pheontypes are different. We want to show the phenotypes for the selected data sets
+	 * but we don't want to repeat all the expression data.
+	 */
+	static boolean commonExpressionsButDifferentPhenotypes(EnrichmentMap map) {
+		return map != null && map.isCommonExpressionValues() && !phenotypesAreCommon(map);
+	}
+	
+	private static boolean phenotypesAreCommon(EnrichmentMap map) {
 		Iterator<EMDataSet> iter = map.getDataSets().values().iterator();
 		SetOfEnrichmentResults r = iter.next().getEnrichments();
 		String p1 = r.getPhenotype1();

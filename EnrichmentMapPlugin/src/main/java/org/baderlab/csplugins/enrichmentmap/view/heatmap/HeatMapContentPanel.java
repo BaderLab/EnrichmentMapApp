@@ -7,6 +7,8 @@ import static org.baderlab.csplugins.enrichmentmap.view.heatmap.table.HeatMapTab
 import static org.cytoscape.util.swing.IconManager.ICON_BARS;
 
 import java.awt.BorderLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,6 +33,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
+import javax.swing.ToolTipManager;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -159,6 +162,16 @@ public class HeatMapContentPanel extends JPanel {
 			column.setHeaderRenderer(vertRenderer);
 			column.setPreferredWidth(expressionColumnWidth);
 		}
+		
+		int defaultDelay = ToolTipManager.sharedInstance().getDismissDelay();
+		header.addMouseListener(new MouseAdapter() {
+			public void mouseEntered(MouseEvent me) {
+				ToolTipManager.sharedInstance().setDismissDelay(60000);
+			}
+			public void mouseExited(MouseEvent me) {
+				ToolTipManager.sharedInstance().setDismissDelay(defaultDelay);
+			}
+		});
 	}
 	
 	private JPanel createToolbarPanel() {

@@ -93,6 +93,8 @@ public class NetworkUtil {
 	
 	public static AssociatedApp getAssociatedApp(CyNetwork network) {
 		CyTable table = network.getTable(CyNetwork.class, CyNetwork.HIDDEN_ATTRS);
+		if(table == null)
+			return null;
 		
 		if(!AssociatedAppColumns.EM_ASSOCIATED_APP.hasColumn(table))
 			return null;

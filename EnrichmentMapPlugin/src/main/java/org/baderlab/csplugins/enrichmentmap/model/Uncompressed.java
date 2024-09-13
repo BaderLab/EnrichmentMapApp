@@ -1,20 +1,35 @@
 package org.baderlab.csplugins.enrichmentmap.model;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.TreeMap;
 
-import org.baderlab.csplugins.enrichmentmap.model.Phenotype.Type;
+import org.baderlab.csplugins.enrichmentmap.model.PhenotypeHighlight.Highlight;
+
 
 public class Uncompressed implements ExpressionData {
 
+	private final EnrichmentMap map;
 	private final ExpressionCache expressionCache;
 	private final NavigableMap<Integer, EMDataSet> colToDataSet = new TreeMap<>();
 	private final int expressionCount;
 	
+	private final boolean commonButDiffPheno;
+	private final Map<String,PhenotypeHighlight> highlightPhenos;
+	
 	public Uncompressed(EnrichmentMap map, List<EMDataSet> datasets, ExpressionCache expressionCache) {
+		this.map = map;
 		this.expressionCache = expressionCache;
+		
+		commonButDiffPheno = ExpressionData.commonExpressionsButDifferentPhenotypes(map);
+		if(commonButDiffPheno) {
+			this.highlightPhenos = ExpressionData.getPhenotypesToHighlight(map.getDataSetList()); 
+		} else {
+			this.highlightPhenos = null;
+		}
+		
 		int rangeFloor = 0;
 		colToDataSet.put(0, null);
 
@@ -25,6 +40,11 @@ public class Uncompressed implements ExpressionData {
 		}
 
 		expressionCount = rangeFloor;
+	}
+	
+	@Override
+	public boolean commonButDiffPheno() {
+		return commonButDiffPheno;
 	}
 	
 	@Override
@@ -58,7 +78,7 @@ public class Uncompressed implements ExpressionData {
 	}
 
 	@Override
-	public Phenotype getPhenotype(int idx) {
+	public PhenotypeHighlight getHighlight(int idx) {
 		EMDataSet dataset = getDataSet(idx);
 		int index = getIndexInDataSet(idx);
 		
@@ -72,16 +92,25 @@ public class Uncompressed implements ExpressionData {
 		if(pheno == null) // being defensive, don't think this can actually happen
 			return null;
 		
-		Type type;
-		if(Objects.equals(pheno, enrichments.getPhenotype1())) {
-			type = Type.POSITIVE;
-		} else if(Objects.equals(pheno, enrichments.getPhenotype2())) {
-			type = Type.NEGATIVE;
+		if(commonButDiffPheno) {
+			var highlight = highlightPhenos.get(pheno);
+			if (highlight == null) {
+				return new PhenotypeHighlight(map.getDataSetList(), pheno, Highlight.NONE);
+			} else {
+				return highlight;
+			}
+			
 		} else {
-			type = Type.OTHER;
+			Highlight highlight;
+			if(Objects.equals(pheno, enrichments.getPhenotype1())) {
+				highlight = Highlight.POSITIVE;
+			} else if(Objects.equals(pheno, enrichments.getPhenotype2())) {
+				highlight = Highlight.NEGATIVE;
+			} else {
+				highlight = Highlight.NONE;
+			}
+			return new PhenotypeHighlight(dataset, pheno, highlight);
 		}
-		
-		return new Phenotype(dataset, pheno, type);
 	}
 	
 }

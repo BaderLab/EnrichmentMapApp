@@ -3,14 +3,16 @@ package org.baderlab.csplugins.enrichmentmap.model;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import org.baderlab.csplugins.enrichmentmap.model.Phenotype.Type;
+import org.baderlab.csplugins.enrichmentmap.model.PhenotypeHighlight.Highlight;
 
 public class CompressedClass implements ExpressionData {
 
+	private final boolean commonButDiffPheno;
 	private final ExpressionCache expressionCache;
-	private List<Phenotype> headers = new ArrayList<>();
+	private List<PhenotypeHighlight> headers = new ArrayList<>();
 	
 	/**
 	 * If the expressions are the same for multiple data sets then we will only get one data set passed in
@@ -22,52 +24,62 @@ public class CompressedClass implements ExpressionData {
 		// Special case. There is more than one dataset in the map, and they have the same expressions,
 		// but the pheontypes are different. We want to show the phenotypes for the selected data sets
 		// but we don't want to repeat all the expression data.
-		if(ExpressionData.commonExpressionsButDifferentPhenotypes(map)) {
+		commonButDiffPheno = ExpressionData.commonExpressionsButDifferentPhenotypes(map);
+		
+		if(commonButDiffPheno) {
 			// we only get passed one dataset because expressions are the same
 			var dataset = datasets.get(0); 
+			var allDatasets = map.getDataSetList();
 			var classPhenos = ExpressionData.getPhenotypesFromClassFile(dataset);
 			var highlightPhenos = ExpressionData.getPhenotypesToHighlight(map.getDataSetList()); // get the phenotypes from all the data sets
-			addHeaders(dataset, classPhenos, highlightPhenos);
+			addHeaders(allDatasets, classPhenos, highlightPhenos);
 			
 		} else {
 			for(var dataset : datasets) {
 				var classPhenos = ExpressionData.getPhenotypesFromClassFile(dataset);
 				var highlightPhenos = ExpressionData.getPhenotypesToHighlight(dataset);
-				addHeaders(dataset, classPhenos, highlightPhenos);
+				addHeaders(List.of(dataset), classPhenos, highlightPhenos);
 			}
 		}
 	}
 	
+	@Override
+	public boolean commonButDiffPheno() {
+		return commonButDiffPheno;
+	}
 	
-	private void addHeaders(EMDataSet mainDataSet, LinkedHashSet<String> classPhenos, List<Phenotype> highlightPhenos) {
+	private void addHeaders(List<EMDataSet> datasets, LinkedHashSet<String> classPhenos, Map<String,PhenotypeHighlight> highlightPhenos) {
 		// move highlighted phenotypes to the front
-		for(Phenotype pheno : highlightPhenos) {
+		var phenos = new ArrayList<>(highlightPhenos.values());
+		
+		for(PhenotypeHighlight pheno : phenos) {
 			if(classPhenos.contains(pheno.getName())) {
 				headers.add(pheno);
 			}
 		}
-		for(Phenotype pheno : highlightPhenos) {
+		for(PhenotypeHighlight pheno : phenos) {
 			classPhenos.remove(pheno.getName());
 		}
 		
 		for(String phenoName : classPhenos) {
-			headers.add(new Phenotype(mainDataSet, phenoName, Type.OTHER));
+			headers.add(new PhenotypeHighlight(datasets, phenoName, Highlight.NONE));
 		}
 	}
 	
 	
 	@Override
 	public EMDataSet getDataSet(int idx) {
-		return headers.get(idx).getDataSet();
-	}
-
-	@Override
-	public String getName(int idx) {
-		return getPhenotype(idx).getName();
+		// all of the data sets should have the same expression values, so returning any one of them is fine.
+		return getHighlight(idx).getDatasets().iterator().next();
 	}
 	
 	@Override
-	public Phenotype getPhenotype(int idx) {
+	public String getName(int idx) {
+		return getHighlight(idx).getName();
+	}
+	
+	@Override
+	public PhenotypeHighlight getHighlight(int idx) {
 		return headers.get(idx);
 	}
 	

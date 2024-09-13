@@ -165,6 +165,7 @@ public class EMStyleBuilder {
 		
 		public static final Color HEAT_MAP_HIGHLIGHT_POS = new Color(244, 165, 130);
 		public static final Color HEAT_MAP_HIGHLIGHT_NEG = new Color(146, 197, 222);
+		public static final Color HEAT_MAP_HIGHLIGHT_MIX = new Color(154, 120, 161);
 	
 		public static final Color LIGHT_GREY = new Color(190, 190, 190);
 		private static final Color BG_COLOR = Color.WHITE;
