@@ -447,7 +447,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 		Compress compress = getContentPanel().getCompress();
 		HeatMapTableModel tableModel = (HeatMapTableModel) getContentPanel().getTable().getModel();
 		
-		if (tableModel.getCompress() != compress) {
+		if(tableModel.getCompress() != compress) {
 			invokeOnEDT(() -> updateHeatMapPanel());
 		} else {
 			tableModel.setTransform(transform, compress);
@@ -460,7 +460,7 @@ public class HeatMapMediator implements RowsSetListener, SetCurrentNetworkViewLi
 	private void updateHeatMapPanel() {
 		HeatMapParams params = getContentPanel().buildParams();
 		HeatMapTableModel tableModel = (HeatMapTableModel) getContentPanel().getTable().getModel();
-		List<EMDataSet> datasets = tableModel.getDataSets();
+		List<EMDataSet> datasets = new ArrayList<>(tableModel.getDataSetsInCurrentSelection());
 		EnrichmentMap map = tableModel.getEnrichmentMap();
 		CyNetwork network = networkManager.getNetwork(map.getNetworkID());
 		List<RankingOption> rankOptions = rankingOptionFactory.getDataSetRankOptions(map);
