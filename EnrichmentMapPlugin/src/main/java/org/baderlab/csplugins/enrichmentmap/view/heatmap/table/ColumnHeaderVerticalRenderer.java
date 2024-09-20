@@ -102,6 +102,7 @@ public class ColumnHeaderVerticalRenderer extends JPanel implements TableCellRen
 		
 		barPanel = new JPanel();
 		barPanel.setPreferredSize(new Dimension(verticalLabel.getWidth(), 5));
+		barPanel.setMaximumSize(new Dimension(1000, 5));
 		
 		add(barPanel, BorderLayout.NORTH);
 		add(verticalLabel, BorderLayout.CENTER);
@@ -114,7 +115,6 @@ public class ColumnHeaderVerticalRenderer extends JPanel implements TableCellRen
 		var expressionName = value.toString();
 		
 		setVerticalText(expressionName);
-		
 		setToolTipText(getToolTipText(model, col, expressionName));
 		
 		barPanel.setBackground(getBarColor(model, col));
@@ -132,8 +132,10 @@ public class ColumnHeaderVerticalRenderer extends JPanel implements TableCellRen
 	
 	private String getToolTipText(HeatMapTableModel model, int col, String expressionName) {
 		var pheno = model.getHighlight(col);
-		var compress = model.getCompress();
+		if(pheno == null)
+			return "<html><b>Expression: </b>" + expressionName + "</html>";
 		
+ 		var compress = model.getCompress();
 		var sb = new StringBuilder("<html>");
 		
 		if(compress.isDataSet()) {
@@ -196,12 +198,13 @@ public class ColumnHeaderVerticalRenderer extends JPanel implements TableCellRen
 	
 	
 	private Color getBarColor(HeatMapTableModel model, int col) {
-		var pheno = model.getHighlight(col);
-		var compress = model.getCompress();
 		var defcolor = defaultColor.darker();
 		
+		var pheno = model.getHighlight(col);
 		if(pheno == null)
 			return defcolor;
+		
+		var compress = model.getCompress();
 		
 		if(compress.isDataSet()) {
 			if(model.getEnrichmentMap().isCommonExpressionValues()) {
