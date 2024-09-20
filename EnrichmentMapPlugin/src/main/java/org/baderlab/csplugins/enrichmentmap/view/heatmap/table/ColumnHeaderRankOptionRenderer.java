@@ -4,6 +4,7 @@ import java.awt.AWTEventMulticaster;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
@@ -127,10 +128,11 @@ public class ColumnHeaderRankOptionRenderer extends JPanel implements TableCellR
 			initialized = true;
 		}
 		
-		delegate.setIcon(getIcon(value));
 		delegate.setText(getText(value));
+		delegate.setIcon(getIcon(value));
+		setToolTipText(getToolTipText(value));
 		
-//		datasetColorPanel.setPreferredSize(new Dimension(this.getWidth(), 5));
+		datasetColorPanel.setPreferredSize(new Dimension(this.getWidth(), 5));
 		datasetColorPanel.setBackground(getColor(value));
 		
 		return this;
@@ -196,6 +198,19 @@ public class ColumnHeaderRankOptionRenderer extends JPanel implements TableCellR
 			var headerValue = (RankOptionErrorHeader) value;
 			return headerValue.getRankingOption().getTableHeaderText();
 		}
+		return null;
+	}
+	
+	private String getToolTipText(Object value) {
+		if(value instanceof RankingOption) {
+			var rankingOption = (RankingOption) value;
+			var sb = new StringBuilder("<html>");
+			var ds = rankingOption.getDataSet();
+			if (ds != null) {
+				sb.append("<b>Dataset: </b>").append(ds.getName());
+			}
+			return sb.append("</html>").toString();
+		} 
 		return null;
 	}
 	
