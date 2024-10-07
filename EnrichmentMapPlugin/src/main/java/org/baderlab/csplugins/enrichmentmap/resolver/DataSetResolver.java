@@ -249,7 +249,6 @@ public class DataSetResolver {
 				}
 				if(hasExtension(path, "rnk")) {
 					addScore(scores, Type.RANKS, 1);
-					addScore(scores, Type.EXPRESSION, 1);
 				}
 				if(hasExtension(path, "xls", "tsv", "txt")) {
 					Type type = guessEnrichmentType(lines.firstLine);
