@@ -26,10 +26,10 @@ import com.google.inject.Inject;
  */
 public class FilterTunables {
 
-	@Tunable(description = "P-value Cutoff (value between 0 and 1). Gene set nodes with a p-value lower than the given value will not be included in the network.")
+	@Tunable(description = "P-value Cutoff (value between 0 and 1). Gene set nodes with a p-value greater than the given value will not be included in the network.")
 	public Double pvalue = 0.005;
 
-	@Tunable(description = "FDR Q-value Cutoff (value between 0 and 1). Gene set nodes with a q-value lower than the one entered will not be included in the network.")
+	@Tunable(description = "FDR Q-value Cutoff (value between 0 and 1). Gene set nodes with a q-value greater than the one entered will not be included in the network.")
 	public Double qvalue = 0.1;
 
 	@Tunable(description = "Similarity Cutoff (value between 0 and 1). Edges with a similarity score lower than the one entered will not be included in the network.")
